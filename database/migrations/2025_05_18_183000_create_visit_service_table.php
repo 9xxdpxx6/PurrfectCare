@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vaccinations', function (Blueprint $table) {
+        Schema::create('visit_service', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pet_id')->constrained()->onDelete('cascade');
-            $table->foreignId('veterinarian_id')->constrained();
-            $table->date('administered_at');
-            $table->date('next_due')->nullable();
-            $table->string('batch_number');
+            $table->foreignId('visit_id')->constrained()->onDelete('cascade');
+            $table->foreignId('service_id')->constrained()->onDelete('cascade');
+            $table->decimal('price', 10, 2);
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vaccinations');
+        Schema::dropIfExists('visit_service');
     }
-};
+}; 
