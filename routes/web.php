@@ -1,6 +1,18 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\PetController;
+use App\Http\Controllers\Admin\VisitController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\DrugController;
+use App\Http\Controllers\Admin\VaccinationController;
+use App\Http\Controllers\Admin\LabTestController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\SupplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,8 +29,59 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Маршруты админ-панели
+Route::prefix('admin')->name('admin.')->group(function () {
+// Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Главная страница админ-панели
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // Клиенты
+    Route::resource('users', UserController::class);
+
+    // Питомцы
+    Route::resource('pets', PetController::class);
+
+    // Приемы
+    Route::resource('visits', VisitController::class);
+
+    // Заказы
+    Route::resource('orders', OrderController::class);
+
+    // Препараты
+    Route::resource('drugs', DrugController::class);
+
+    // Вакцинации
+    Route::resource('vaccinations', VaccinationController::class);
+
+    // Лабораторные анализы
+    Route::resource('lab-tests', LabTestController::class);
+
+    // Сотрудники
+    Route::resource('employees', EmployeeController::class);
+    Route::get('employees/{employee}/reset-password', [EmployeeController::class, 'resetPassword'])->name('employees.resetPassword');
+
+    // Услуги
+    Route::resource('services', ServiceController::class);
+
+    // Филиалы
+    Route::resource('branches', BranchController::class);
+
+    // Поставщики
+    Route::resource('suppliers', SupplierController::class);
+});
 
 //Route::middleware('auth')->group(function() {
 //    Route::get('/dashboard', [ClientController::class, 'dashboard']);
 //    Route::resource('pets', PetController::class);
 //});
+
+
+Route::get('/login', function () {
+    return 1111;
+    // return view('auth.login');
+})->name('login');
+
+Route::get('/register', function () {
+    return 1111;
+    // return view('auth.register');
+});

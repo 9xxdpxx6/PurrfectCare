@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-
+use Illuminate\Support\Facades\Hash;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Employee>
  */
@@ -17,7 +17,10 @@ class EmployeeFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => $this->faker->firstName . ' ' . $this->faker->lastName,
+            'email' => $this->faker->unique()->safeEmail,
+            'phone' => '+7' . $this->faker->numerify('##########'),  
+            'password' => Hash::make('password'),  
         ];
     }
 }

@@ -23,12 +23,25 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        // Проверяем, есть ли уже записи в таблице users
+        $existingUsers = \App\Models\User::all();
+
+        if ($existingUsers->count() > 0) {
+            // Если записи есть, выбираем случайного пользователя
+            return [
+                'id' => $this->faker->randomElement($existingUsers)->id,
+            ];
+        }
+
+        // Если записей нет, создаем нового пользователя
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $this->faker->firstName . ' ' . $this->faker->lastName,
+            'email' => $this->faker->unique()->safeEmail,
+            'phone' => '+7' . $this->faker->numerify('##########'), // Российский формат телефона
+            'address' => $this->faker->address,
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'password' => Hash::make('password'), // Установите пароль по умолчанию
+            'remember_token' => \Illuminate\Support\Str::random(10),
         ];
     }
 

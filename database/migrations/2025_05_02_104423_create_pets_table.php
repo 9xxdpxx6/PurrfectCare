@@ -16,7 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('breed_id')->constrained()->onDelete('cascade');
             $table->date('birthdate')->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('client_id')->constrained('users')->onDelete('cascade');
+            $table->decimal('temperature', 5, 2)->nullable();
+            $table->decimal('weight', 5, 2)->nullable();
+            $table->enum('gender', ['male', 'female', 'unknown'])->default('unknown');
             $table->timestamps();
         });
     }

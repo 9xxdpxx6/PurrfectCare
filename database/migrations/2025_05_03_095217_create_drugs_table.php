@@ -14,12 +14,11 @@ return new class extends Migration
         Schema::create('drugs', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('price', 8, 20);
+            $table->decimal('price', 8, 2);
             $table->integer('quantity');
             $table->date('expiry_date');
             $table->date('manufacture_date')->nullable();
             $table->date('packaging_date')->nullable();
-            $table->foreignId('supplier_id')->constrained();
             $table->timestamps();
         });
     }

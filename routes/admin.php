@@ -19,6 +19,6 @@ Route::get('/', function () {
 
 
 //Route::prefix('admin')->middleware(['auth:admin'])->group(function() {
-//    Route::get('/appointments', [AdminController::class, 'appointments']);
+//    Route::get('/visits', [AdminController::class, 'visits']);
 //    Route::post('/services', [ServiceController::class, 'store']);
 //});

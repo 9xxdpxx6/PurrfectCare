@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('lab_test_id')->constrained()->onDelete('cascade');
             $table->foreignId('lab_test_param_id')->constrained()->onDelete('cascade');
             $table->decimal('value', 8, 2)->nullable();
-            $table->text('note')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('status_id')->constrained()->onDelete('cascade');
             $table->foreignId('branch_id')->constrained()->onDelete('cascade');
             $table->foreignId('manager_id')->constrained('employees')->onDelete('cascade');
-            $table->string('note');
+            $table->string('notes');
             $table->decimal('total', 10, 2)->default(0);
             $table->timestamps();
         });

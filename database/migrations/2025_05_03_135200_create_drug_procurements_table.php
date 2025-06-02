@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('drug_procurements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('supplier_id')->constrained();
-            $table->foreignId('drud_id')->constrained();
+            $table->foreignId('drug_id')->constrained();
             $table->date('delivery_date');
             $table->decimal('price', 8, 2);
             $table->integer('quantity');

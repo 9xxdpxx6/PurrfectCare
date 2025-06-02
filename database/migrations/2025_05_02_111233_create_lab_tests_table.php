@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('lab_tests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pet_id')->constrained()->onDelete('cascade');
-            $table->foreignId('test_type_id')->constrained()->onDelete('cascade');
-            $table->foreignId('veterinarian_id')->constrained()->onDelete('cascade');
+            $table->foreignId('lab_test_type_id')->constrained()->onDelete('cascade');
+            $table->foreignId('veterinarian_id')->constrained('employees')->onDelete('cascade');
             $table->dateTime('received_at');
             $table->dateTime('completed_at')->nullable();
             $table->timestamps();

@@ -1,0 +1,51 @@
+// ====================
+// Переменные для тем
+// ====================
+$light-bg-in-dark-theme: #272830; 
+$dark-shadow-opacity: 0.3; 
+$ts-item-background-dark: #383a42;
+$ts-item-background-light: #efefef;
+$ts-dark-text: #dee2e6;
+
+// ====================
+// Стили для темной темы
+// ====================
+html[data-bs-theme="dark"] {
+    // Стили для карточек
+    .card {
+        border: none !important;
+        box-shadow: 
+            inset 0 0 0 1px rgba(0, 0, 0, 0.15),
+            0 2px 4px rgba(0, 0, 0, $dark-shadow-opacity) !important;
+    }
+
+    .ts-control {
+        .item {
+            background-color: $ts-item-background-dark;
+            border-radius: 0.25rem;
+            padding: 0 0.5rem;
+            color: $ts-dark-text;
+
+            .remove {
+                border-color: #272830 !important;
+            }
+        }
+    }
+
+    .ts-dropdown {
+        color: $ts-dark-text;
+    }
+}
+
+// ====================
+// Стили для светлой темы
+// ====================
+html[data-bs-theme="light"] {
+    .ts-control {
+        .item {
+            background-color: $ts-item-background-light;
+            border-radius: 0.25rem;
+            padding: 0 0.5rem;
+        }
+    }
+}

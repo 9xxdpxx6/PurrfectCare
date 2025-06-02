@@ -4,8 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Traits\Filterable;
 
 class Symptom extends Model
 {
-    use HasFactory;
+    use HasFactory, Filterable;
+
+    protected $fillable = [
+        'visit_id',
+        'dictionary_symptom_id',
+        'custom_symptom',
+        'notes'
+    ];
+
+    public function visit()
+    {
+        return $this->belongsTo(Visit::class);
+    }
+
+    public function dictionarySymptom()
+    {
+        return $this->belongsTo(DictionarySymptom::class);
+    }
 }

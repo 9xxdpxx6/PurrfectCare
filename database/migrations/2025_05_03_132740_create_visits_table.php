@@ -13,15 +13,13 @@ return new class extends Migration
     {
         Schema::create('visits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
+            $table->foreignId('client_id')->constrained('users');
             $table->foreignId('pet_id')->nullable()->constrained();
-            $table->foreignId('service_id')->nullable()->constrained();
-            $table->foreignId('veterinarian_id')->nullable()->constrained();
-            $table->foreignId('branch_id')->constrained();
-            $table->dateTime('datetime');
+            $table->foreignId('schedule_id')->nullable()->constrained();
+            $table->dateTime('starts_at');
+            $table->foreignId('status_id')->constrained();
             $table->text('complaints')->nullable();
-            $table->text('note')->nullable();
-            $table->string('status_id')->default('scheduled');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
