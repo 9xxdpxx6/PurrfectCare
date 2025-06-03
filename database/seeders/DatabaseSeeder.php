@@ -1,8 +1,10 @@
 <?php
 
 namespace Database\Seeders;
+use App\Models\Branch;
 use App\Models\Species;
 use App\Models\Breed;
+use App\Models\Supplier;
 use App\Models\User;
 use App\Models\Pet;
 use App\Models\Specialty;
@@ -32,5 +34,11 @@ class DatabaseSeeder extends Seeder
             $specialties = Specialty::inRandomOrder()->limit(rand(1, 3))->pluck('id');
             $employee->specialties()->attach($specialties);
         });
+        Employee::factory(30)->create()->each(function ($employee) {
+            $branches = Branch::inRandomOrder()->limit(rand(1, 2))->pluck('id');
+            $employee->branches()->attach($branches);
+        });
+
+        Supplier::factory(30)->create();
     }
 }

@@ -30,7 +30,7 @@ class EmployeeController extends AdminController
         ];
     }
 
-    public function index(Request $request) : View
+        public function index(Request $request) : View
     {
         $filter = app(EmployeeFilter::class, ['queryParams' => array_filter($request->all())]);
         $employees = Employee::filter($filter)
@@ -120,4 +120,4 @@ class EmployeeController extends AdminController
         return redirect()->route('admin.employees.index')
             ->with('success', 'Пароль успешно сброшен. Новый временный пароль: ' . $tempPassword);
     }
-} 
+}

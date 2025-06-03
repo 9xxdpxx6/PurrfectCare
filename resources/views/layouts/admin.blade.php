@@ -9,87 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.4.0/locale/ru.js"></script>
     @stack('styles')
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    <style>
-        .sidebar {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
-            padding: 48px 0 0;
-            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-        }
-        
-        .sidebar-sticky {
-            position: relative;
-            top: 0;
-            height: calc(100vh - 48px);
-            padding-top: .5rem;
-            overflow-x: hidden;
-            overflow-y: auto;
-            box-shadow: 2px 0 15px 0 rgba(26, 26, 26, 0.5);
-        }
-        
-        .navbar-brand {
-            padding-top: .75rem;
-            padding-bottom: .75rem;
-            background-color: rgba(0, 0, 0, .25);
-            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
-        }
-        
-        .navbar .navbar-toggler {
-            top: .25rem;
-            right: 1rem;
-        }
-        
-        .main-content {
-            margin-left: 240px;
-            padding: 20px;
-        }
-        
-        @media (max-width: 767.98px) {
-            .sidebar {
-                position: static;
-                height: auto;
-                padding-top: 0;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-        }
-        
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-        
-        .card-grid .card {
-            height: 100%;
-        }
-        
-        @media (min-width: 992px) {
-            .card-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            }
-        }
-
-        .theme-switch {
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            transition: background-color 0.2s;
-        }
-
-        .theme-switch:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .theme-switch i {
-            font-size: 1.2rem;
-        }
-    </style>
 </head>
 <body>
     <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
@@ -173,6 +92,11 @@
                                 <i class="bi bi-building"></i> Филиалы
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.suppliers.*') ? 'active' : '' }}" href="{{ route('admin.suppliers.index') }}">
+                                <i class="bi bi-truck"></i> Поставщики
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -234,10 +158,10 @@
             themeSwitch.addEventListener('click', () => {
                 const currentTheme = html.getAttribute('data-bs-theme');
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
+
                 html.setAttribute('data-bs-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
-                
+
                 if (newTheme === 'light') {
                     sunIcon.classList.remove('d-none');
                     moonIcon.classList.add('d-none');
@@ -249,4 +173,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

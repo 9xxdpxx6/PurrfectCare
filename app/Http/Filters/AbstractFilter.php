@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 abstract class AbstractFilter implements FilterInterface
 {
     /** @var array */
-    private $queryParams = [];
+    protected $queryParams = [];
 
     /**
      * AbstractFilter constructor.

@@ -29,7 +29,7 @@ abstract class AdminController extends Controller
     {
         $validated = $request->validate($this->validationRules);
         $this->model::create($validated);
-        
+
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Запись успешно создана');
@@ -46,7 +46,7 @@ abstract class AdminController extends Controller
         $item = $this->model::findOrFail($id);
         $validated = $request->validate($this->validationRules);
         $item->update($validated);
-        
+
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Запись успешно обновлена');
@@ -56,9 +56,9 @@ abstract class AdminController extends Controller
     {
         $item = $this->model::findOrFail($id);
         $item->delete();
-        
+
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Запись успешно удалена');
     }
-} 
+}

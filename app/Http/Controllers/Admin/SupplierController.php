@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Filters\SupplierFilter;
 use App\Models\Supplier;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class SupplierController extends AdminController
 {
@@ -17,9 +20,12 @@ class SupplierController extends AdminController
         ];
     }
 
-    public function index()
+    public function index(Request $request) : View
     {
-        $items = $this->model::with('procurements')->paginate(10);
+        $filter = app(SupplierFilter::class, ['queryParams' => $request->query()]);
+        $query = Supplier::query()->with('procurements')->filter($filter);
+        $items = $query->paginate(25)->withQueryString();
+
         return view("admin.{$this->viewPath}.index", compact('items'));
     }
-} 
+}

@@ -12,7 +12,7 @@
 
 <form method="POST" action="{{ route('admin.employees.update', $employee) }}" class="needs-validation" novalidate>
     @csrf
-    @method('PUT')
+    @method('PATCH')
     <div class="row g-3">
         <div class="col-md-6 col-lg-4">
             <label for="name" class="form-label">Имя</label>
@@ -50,14 +50,14 @@
     </div>
     <div class="mt-4 d-flex flex-column flex-md-row">
         <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">Отмена</a>
-    
+
         <!-- Кнопка "Сбросить пароль" -->
         <a href="{{ route('admin.employees.resetPassword', $employee) }}"
             class="btn btn-outline-warning mt-3 mt-md-0 ms-md-auto"
             onclick="return confirm('Сбросить пароль сотрудника? Новый временный пароль будет показан после сохранения.')">
             Сбросить пароль
         </a>
-    
+
         <!-- Кнопка "Сохранить" -->
         <button type="submit" class="btn btn-success mt-3 mt-md-0 ms-md-3">
             <i class="bi bi-check-lg"></i> Сохранить
