@@ -14,14 +14,20 @@ class DrugProcurement extends Model
         'supplier_id',
         'drug_id',
         'delivery_date',
+        'expiry_date',
+        'manufacture_date',
+        'packaging_date',
         'price',
-        'quantity'
+        'quantity',
     ];
 
     protected $casts = [
         'delivery_date' => 'date',
         'price' => 'decimal:2',
-        'quantity' => 'integer'
+        'quantity' => 'integer',
+        'expiry_date' => 'date',
+        'manufacture_date' => 'date',
+        'packaging_date' => 'date',
     ];
 
     public function supplier()

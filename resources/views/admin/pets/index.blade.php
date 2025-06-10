@@ -62,30 +62,43 @@
 <div class="row g-3">
     @foreach($items as $i => $pet)
         <div class="col-12">
-            <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
-                <div class="card-body flex-grow-1 d-flex flex-column flex-lg-row align-items-lg-center">
-                    <div class="flex-grow-1">
+            <div class="card h-100 border-0 border-bottom shadow-sm
+        @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
+
+                <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                    <!-- Основная информация -->
+                    <div class="d-flex flex-column justify-content-center flex-grow-1">
                         <h5 class="card-title mb-1">{{ $pet->name }}</h5>
+
                         <h6 class="card-subtitle mb-2 text-muted">
                             {{ $pet->breed->species->name }} - {{ $pet->breed->name }}
                         </h6>
-                        <p class="card-text mb-0">
-                            <strong>Владелец:</strong> {{ $pet->client->name }}
-                        </p>
-                        <p class="card-text mb-0">
-                            <strong>Дата рождения:</strong> {{ \Carbon\Carbon::parse($pet->birth_date)->format('d.m.Y') }}
-                        </p>
-                        <p class="card-text mb-0">
-                            <strong>Пол:</strong>
-                            @if($pet->gender === 'male')
-                                Самец
-                            @elseif($pet->gender === 'female')
-                                Самка
-                            @else
-                                Неизвестно
-                            @endif
-                        </p>
+
+                        <div class="d-flex flex-wrap gap-3">
+                            <p class="card-text mb-0">
+                                <span>Владелец:</span> {{ $pet->client->name }}
+                            </p>
+
+                            <p class="card-text mb-0">
+                                <span>Дата рождения:</span>
+                                {{ \Carbon\Carbon::parse($pet->birth_date)->format('d.m.Y') }}
+                            </p>
+
+                            <p class="card-text mb-0">
+                                <span>Пол:</span>
+                                @if($pet->gender === 'male')
+                                    <i class="bi bi-gender-male"></i>
+                                    Самец
+                                @elseif($pet->gender === 'female')
+                                    <i class="bi bi-gender-female"></i>
+                                    Самка
+                                @else
+                                    Неизвестно
+                                @endif
+                            </p>
+                        </div>
                     </div>
+
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start">
                         <a href="{{ route('admin.pets.edit', $pet) }}" class="btn btn-outline-warning" title="Редактировать">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
@@ -94,7 +107,8 @@
                         <form action="{{ route('admin.pets.destroy', $pet) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить" onclick="return confirm('Вы уверены, что хотите удалить запись?')">
+                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить"
+                                onclick="return confirm('Удалить питомца ({{ $pet->name }})?');">
                                 <span class="d-none d-lg-inline-block">Удалить</span>
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -109,7 +123,7 @@
 <div class="mt-4">
     {{ $items->links() }}
 </div>
-@endsection 
+@endsection
 
 @push('scripts')
 <script>

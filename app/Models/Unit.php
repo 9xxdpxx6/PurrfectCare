@@ -22,6 +22,6 @@ class Unit extends Model
 
     public function drugs()
     {
-        return $this->belongsToMany(Drug::class, 'drug_unit');
+        return $this->hasMany(Drug::class);
     }
 }

@@ -70,13 +70,13 @@
                             {{ $employee->specialties->pluck('name')->join(', ') ?: '—' }}
                         </h6>
                         <p class="card-text mb-0">
-                            <strong>Email:</strong> {{ $employee->email }}
+                            <span>Email:</span> {{ $employee->email }}
                         </p>
                         <p class="card-text mb-0">
-                            <strong>Телефон:</strong> {{ $employee->phone }}
+                            <span>Телефон:</span> {{ $employee->phone }}
                         </p>
                         <p class="card-text mb-0">
-                            <strong>Филиал:</strong> {{ $employee->branches->pluck('name')->join(', ') ?: '—' }}
+                            <span>Филиал:</span> {{ $employee->branches->pluck('name')->join(', ') ?: '—' }}
                         </p>
                     </div>
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start">
@@ -87,7 +87,7 @@
                         <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить" onclick="return confirm('Удалить сотрудника?');">
+                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить" onclick="return confirm('Удалить сотрудника ({{ $employee->name }})?');">
                                 <span class="d-none d-lg-inline-block">Удалить</span>
                                 <i class="bi bi-trash"></i>
                             </button>

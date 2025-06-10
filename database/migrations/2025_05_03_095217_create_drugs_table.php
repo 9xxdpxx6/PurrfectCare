@@ -16,9 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('price', 8, 2);
             $table->integer('quantity');
-            $table->date('expiry_date');
-            $table->date('manufacture_date')->nullable();
-            $table->date('packaging_date')->nullable();
+            $table->boolean('prescription_required')->default(false);
+            $table->foreignId('unit_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

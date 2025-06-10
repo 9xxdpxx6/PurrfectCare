@@ -20,22 +20,29 @@
             <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
-            <label for="owner" class="form-label mb-1">Владелец</label>
-            <select name="owner" id="owner" class="form-select">
+            <label for="supplier" class="form-label mb-1">Поставщик</label>
+            <select name="supplier" id="supplier" class="form-select">
                 <option value="">Все</option>
-                <!-- TODO: сделать загрузку опшионов с БД -->
-                @foreach($owners as $owner)
-                    <option value="{{ $owner->id }}" @if(request('owner') == $owner->id) selected @endif>{{ $owner->name }}</option>
+                @foreach($suppliers as $supplier)
+                    <option value="{{ $supplier->id }}" @if(request('supplier') == $supplier->id) selected @endif>{{ $supplier->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex-grow-1" style="min-width:180px;">
+            <label for="unit" class="form-label mb-1">Единица измерения</label>
+            <select name="unit" id="unit" class="form-select">
+                <option value="">Все</option>
+                @foreach($units as $unit)
+                    <option value="{{ $unit->id }}" @if(request('unit') == $unit->id) selected @endif>{{ $unit->name }}</option>
                 @endforeach
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
-            <label for="gender" class="form-label mb-1">Пол</label>
-            <select name="gender" id="gender" class="form-select">
-                <option value="">Любой</option>
-                <option value="male" @if(request('gender') == 'male') selected @endif>Самец</option>
-                <option value="female" @if(request('gender') == 'female') selected @endif>Самка</option>
-                <option value="unknown" @if(request('gender') == 'unknown') selected @endif>Неизвестно</option>
+            <label for="prescription_required" class="form-label mb-1">Требует рецепт</label>
+            <select name="prescription_required" id="prescription_required" class="form-select">
+                <option value="">&mdash;</option>
+                <option value="1" @if(request('prescription_required') == '1') selected @endif>Да</option>
+                <option value="0" @if(request('prescription_required') == '0') selected @endif>Нет</option>
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
@@ -44,8 +51,10 @@
                 <option value="">По умолчанию</option>
                 <option value="name_asc" @if(request('sort') == 'name_asc') selected @endif>По алфавиту (А-Я)</option>
                 <option value="name_desc" @if(request('sort') == 'name_desc') selected @endif>По алфавиту (Я-А)</option>
-                <option value="birth_desc" @if(request('sort') == 'birth_desc') selected @endif>Дата рождения (сначала новые)</option>
-                <option value="birth_asc" @if(request('sort') == 'birth_asc') selected @endif>Дата рождения (сначала старые)</option>
+                <option value="price_asc" @if(request('sort') == 'price_asc') selected @endif>По цене (дешевые)</option>
+                <option value="price_desc" @if(request('sort') == 'price_desc') selected @endif>По цене (дорогие)</option>
+                <option value="quantity_asc" @if(request('sort') == 'quantity_asc') selected @endif>По количеству (меньше)</option>
+                <option value="quantity_desc" @if(request('sort') == 'quantity_desc') selected @endif>По количеству (больше)</option>
             </select>
         </div>
         <div class="d-flex gap-2 me-3">
@@ -60,41 +69,57 @@
 </form>
 
 <div class="row g-3">
-    @foreach($items as $i => $pet)
+    @foreach($items as $i => $drug)
         <div class="col-12">
             <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
-                <div class="card-body flex-grow-1 d-flex flex-column flex-lg-row align-items-lg-center">
+                <div class="card-body flex-grow-1 d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
                     <div class="flex-grow-1">
-                        <h5 class="card-title mb-1">{{ $pet->name }}</h5>
+                        <h5 class="card-title mb-1">{{ $drug->name }}</h5>
+                        @if(!empty($drug->suppliers_display))
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                Поставщик{{ count($drug->suppliers_display) > 1 ? 'и' : '' }}: {{ implode(', ', $drug->suppliers_display) }}
+                            </h6>
+                        @endif
                         <h6 class="card-subtitle mb-2 text-muted">
-                            {{ $pet->breed->species->name }} - {{ $pet->breed->name }}
-                        </h6>
-                        <p class="card-text mb-0">
-                            <strong>Владелец:</strong> {{ $pet->client->name }}
-                        </p>
-                        <p class="card-text mb-0">
-                            <strong>Дата рождения:</strong> {{ \Carbon\Carbon::parse($pet->birth_date)->format('d.m.Y') }}
-                        </p>
-                        <p class="card-text mb-0">
-                            <strong>Пол:</strong>
-                            @if($pet->gender === 'male')
-                                Самец
-                            @elseif($pet->gender === 'female')
-                                Самка
-                            @else
-                                Неизвестно
+                            @if($drug->prescription_required)
+                                <i class="bi bi-exclamation-triangle text-warning"></i> Требуется рецепт
                             @endif
+                        </h6>
+
+                        @if($drug->latest_procurement)
+                            <div class="d-flex flex-column gap-1">
+                                <p class="card-text mb-0">
+                                    <span>Изготовлен:</span> {{ $drug->latest_procurement->manufacture_date->format('d.m.Y') }}
+                                </p>
+                                <p class="card-text mb-0">
+                                    <span>Упакован:</span> {{ $drug->latest_procurement->packaging_date->format('d.m.Y') }}
+                                </p>
+                                <p class="card-text mb-0 @if($drug->latest_procurement->expiry_date->lt(\Carbon\Carbon::now())) text-danger @elseif($drug->latest_procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30))) text-warning @endif">
+                                    <span>Годен до:</span> {{ $drug->latest_procurement->expiry_date->format('d.m.Y') }}
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="price-container d-flex flex-column align-items-lg-end align-self-start text-nowrap">
+                        <p class="card-text mb-0">
+                            <span>Цена:</span> {{ number_format($drug->price, 2, ',', ' ') }} ₽
+                        </p>
+                        <p class="card-text mb-0">
+                            <span>Количество:</span> {{ $drug->quantity }}{{ $drug->unit ? ' ' . $drug->unit->symbol : '' }}
                         </p>
                     </div>
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start">
-                        <a href="{{ route('admin.drugs.edit', $pet) }}" class="btn btn-outline-warning" title="Редактировать">
+
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap">
+                        <a href="{{ route('admin.drugs.edit', $drug) }}" class="btn btn-outline-warning" title="Редактировать">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <form action="{{ route('admin.drugs.destroy', $pet) }}" method="POST" class="d-inline">
+                        <form action="{{ route('admin.drugs.destroy', $drug) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить" onclick="return confirm('Вы уверены, что хотите удалить запись?')">
+                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить"
+                                onclick="return confirm('Удалить препарат ({{ $drug->name }})?');">
                                 <span class="d-none d-lg-inline-block">Удалить</span>
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -106,6 +131,13 @@
     @endforeach
 </div>
 
+@if($items->count() == 0)
+    <div class="text-center py-5">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <p class="text-muted mt-3">Препараты не найдены</p>
+    </div>
+@endif
+
 <div class="mt-4">
     {{ $items->links() }}
 </div>
@@ -114,8 +146,11 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        new createTomSelect('#owner', {
-            placeholder: 'Выберите владельца...',
+        new createTomSelect('#supplier', {
+            placeholder: 'Выберите поставщика...',
+        });
+        new createTomSelect('#unit', {
+            placeholder: 'Выберите единицу...',
         });
     });
 </script>

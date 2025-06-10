@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Species;
 use App\Models\Breed;
@@ -9,7 +10,7 @@ use App\Models\Breed;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Breed>
  */
-class BreedFactory extends Factory
+class DrugFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,27 +19,81 @@ class BreedFactory extends Factory
      */
     public function definition(): array
     {
-        // Получаем случайный вид (species)
-        $species = Species::inRandomOrder()->first() ?? Species::factory()->create();
-
-        // Проверяем, есть ли уже записи в таблице breeds
-        $existingBreeds = Breed::where('species_id', $species->id)->get();
-
-        if ($existingBreeds->count() > 0) {
-            // Если записи есть, выбираем случайную породу
-            return [
-                'id' => $this->faker->randomElement($existingBreeds)->id,
-                'species_id' => $species->id,
-            ];
-        }
-
-        // Если записей нет, создаем новую
         return [
             'name' => $this->faker->randomElement([
-                'Лабрадор', 'Немецкая овчарка', 'Мейн-кун', 'Британская короткошёрстная',
-                'Сиамская кошка', 'Дворняга', 'Сфинкс', 'Пудель', 'Шпиц', 'Русская голубая'
-            ]),
-            'species_id' => $species->id,
+                    'Аспирин',
+                    'Парацетамол',
+                    'Ибупрофен',
+                    'Нурофен',
+                    'Цитрамон',
+                    'Супрастин',
+                    'Левомицетин',
+                    'Амоксициллин',
+                    'Кеторол',
+                    'Нимесулид',
+                    'Анальгин',
+                    'Диклофенак',
+                    'Панадол',
+                    'Эффералган',
+                    'Кларитин',
+                    'Зодак',
+                    'Тавегил',
+                    'Фенистил',
+                    'Лоратадин',
+                    'Цетрин',
+                    'Аугментин',
+                    'Флемоксин Солютаб',
+                    'Азитромицин',
+                    'Сумамед',
+                    'Цефтриаксон',
+                    'Ципрофлоксацин',
+                    'Левофлоксацин',
+                    'Омепразол',
+                    'Ранитидин',
+                    'Фестал',
+                    'Мезим Форте',
+                    'Креон',
+                    'Панкреатин',
+                    'Гастал',
+                    'Альмагель',
+                    'Ренни',
+                    'Валериана',
+                    'Персен',
+                    'Корвалол',
+                    'Валокордин',
+                    'Кардиомагнил',
+                    'Аспаркам',
+                    'Магне В6',
+                    'Парацетамол Экстра',
+                    'Найз',
+                    'Мовалис',
+                    'Баралгин',
+                    'Но-шпа',
+                    'Спазмалгон',
+                    'Папаверин',
+                    'Эуфиллин',
+                    'Гепабене',
+                    'Урсофальк',
+                    'Холосас',
+                    'Канефрон',
+                    'Фурагин',
+                    'Фурадонин'
+                ]) . ' ' . $this->faker->randomElement([
+                    'таблетки',
+                    'капсулы',
+                    'раствор',
+                    'мазь',
+                    'гель',
+                    'суспензия',
+                    'сироп',
+                    'порошок',
+                    'инъекции',
+                    'спрей'
+                ]),
+            'price' => $this->faker->randomFloat(2, 100, 5000),
+            'quantity' => $this->faker->numberBetween(0, 1000),
+            'prescription_required' => $this->faker->boolean(30),
+            'unit_id' => Unit::inRandomOrder()->first()->id ?? Unit::factory()->create()->id,
         ];
     }
 }

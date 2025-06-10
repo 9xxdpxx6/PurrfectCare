@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\DrugProcurementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Клиенты
     Route::resource('users', UserController::class);
+    Route::get('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.resetPassword');
 
     // Питомцы
     Route::resource('pets', PetController::class);
@@ -49,6 +51,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Препараты
     Route::resource('drugs', DrugController::class);
+
+    // Поставки препаратов
+    Route::resource('drug-procurements', DrugProcurementController::class);
 
     // Вакцинации
     Route::resource('vaccinations', VaccinationController::class);

@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'PurrfectCare - Админ-панель')</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3.4.0/air-datepicker.css">
-    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.4.0/air-datepicker.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.4.0/locale/ru.js"></script>
     @stack('styles')
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
@@ -49,7 +47,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.pets.*') ? 'active' : '' }}" href="{{ route('admin.pets.index') }}">
-                                <i class="bi bi-gitlab"></i> Питомцы
+                                <i class="bi bi-heart"></i> Питомцы
                             </a>
                         </li>
                         <li class="nav-item">
@@ -65,6 +63,11 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.drugs.*') ? 'active' : '' }}" href="{{ route('admin.drugs.index') }}">
                                 <i class="bi bi-capsule"></i> Препараты
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.drug-procurements.*') ? 'active' : '' }}" href="{{ route('admin.drug-procurements.index') }}">
+                                <i class="bi bi-box-seam"></i> Поставки
                             </a>
                         </li>
                         <li class="nav-item">
@@ -120,13 +123,12 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
-
-                @yield('content')
+                <div class="conrainer col-12 col-xl-10 mx-auto">
+                    @yield('content')
+                </div>
             </main>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     @stack('scripts')
 

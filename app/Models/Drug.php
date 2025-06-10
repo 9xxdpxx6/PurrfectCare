@@ -14,17 +14,14 @@ class Drug extends Model
         'name',
         'price',
         'quantity',
-        'expiry_date',
-        'manufacture_date',
-        'packaging_date',
+        'prescription_required',
+        'unit_id',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'quantity' => 'integer',
-        'expiry_date' => 'date',
-        'manufacture_date' => 'date',
-        'packaging_date' => 'date'
+        'prescription_required' => 'boolean',
     ];
 
     public function procurements()
@@ -37,8 +34,8 @@ class Drug extends Model
         return $this->morphMany(OrderItem::class, 'item');
     }
 
-    public function units()
+    public function unit()
     {
-        return $this->belongsToMany(Unit::class, 'drug_unit');
+        return $this->belongsTo(Unit::class);
     }
 }

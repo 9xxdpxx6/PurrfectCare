@@ -47,14 +47,14 @@ class User extends Authenticatable
     ];
 
     public function pets() {
-        return $this->hasMany(Pet::class);
+        return $this->hasMany(Pet::class, 'client_id');
     }
 
     public function orders() {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(Order::class, 'client_id');
     }
 
     public function visits() {
-        return $this->hasMany(Visit::class);
+        return $this->hasMany(Visit::class, 'client_id');
     }
 }

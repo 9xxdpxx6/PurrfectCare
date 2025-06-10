@@ -16,6 +16,9 @@ return new class extends Migration
             $table->foreignId('supplier_id')->constrained();
             $table->foreignId('drug_id')->constrained();
             $table->date('delivery_date');
+            $table->date('expiry_date');
+            $table->date('manufacture_date');
+            $table->date('packaging_date')->nullable();
             $table->decimal('price', 8, 2);
             $table->integer('quantity');
             $table->timestamps();

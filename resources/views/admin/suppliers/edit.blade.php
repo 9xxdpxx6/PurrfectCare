@@ -14,7 +14,7 @@
     @csrf
     @method('PATCH')
     <div class="row g-3">
-        <div class="col-md-6 col-lg-4">
+        <div class="col-12">
             <label for="name" class="form-label">Название</label>
             <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $item->name) }}" required>
             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror

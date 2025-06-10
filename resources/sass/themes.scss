@@ -1,11 +1,21 @@
 // ====================
 // Переменные для тем
 // ====================
-$light-bg-in-dark-theme: #272830; 
-$dark-shadow-opacity: 0.3; 
-$ts-item-background-dark: #383a42;
-$ts-item-background-light: #efefef;
-$ts-dark-text: #dee2e6;
+
+@use "sass:color";
+
+// Общие переменные для тёмной темы
+$bg-dark: #272830; 
+$shadow-opacity: 0.3; 
+$bg-secondary: #383a42;
+$bg-light: #efefef;
+$light-text-color: #dee2e6;
+$hover-bg: #444; 
+$selected-bg: #818991; 
+$border-color: #333; 
+$highlight-color: #6a97d1;
+$secondary-text-color: #666; 
+$darkened-weekend-color: color.adjust($highlight-color, $lightness: -20%); 
 
 // ====================
 // Стили для темной темы
@@ -16,26 +26,108 @@ html[data-bs-theme="dark"] {
         border: none !important;
         box-shadow: 
             inset 0 0 0 1px rgba(0, 0, 0, 0.15),
-            0 2px 4px rgba(0, 0, 0, $dark-shadow-opacity) !important;
+            0 2px 4px rgba(0, 0, 0, $shadow-opacity) !important;
     }
 
     .ts-control {
         .item {
-            background-color: $ts-item-background-dark;
+            background-color: $bg-secondary;
             border-radius: 0.25rem;
             padding: 0 0.5rem;
-            color: $ts-dark-text;
+            color: $light-text-color;
 
             .remove {
-                border-color: #272830 !important;
+                border-color: $bg-dark !important;
             }
+        }
+
+        input {
+            color: $light-text-color;
         }
     }
 
     .ts-dropdown {
-        color: $ts-dark-text;
+        color: $light-text-color;
+    }
+
+    // Стилизация датапикера
+    .air-datepicker {
+        background-color: $bg-dark !important;
+        color: $light-text-color !important;
+        border: 1px solid $border-color !important;
+        border-radius: 0.5rem;
+
+        // Заголовок (месяц и год)
+        .air-datepicker-nav {
+            background-color: color.adjust($bg-dark, $lightness: -5%) !important;
+            color: $light-text-color !important;
+            border-radius: 0.5rem 0.5rem 0 0;
+            border-bottom: 1px solid $border-color !important;
+
+            // Кнопки навигации (стрелки)
+            .air-datepicker-nav--action {
+                svg {
+                    fill: $light-text-color !important;
+                }
+
+                &:hover {
+                    svg {
+                        fill: color.adjust($light-text-color, $lightness: 20%) !important;
+                    }
+                }
+            }
+
+            // Текст заголовка
+            .air-datepicker-nav--title {
+                color: $light-text-color !important;
+            }
+        }
+
+        // Дни недели
+        .air-datepicker-body--day-names {
+            .air-datepicker-body--day-name {
+                color: color.adjust($light-text-color, $lightness: 20%) !important;
+
+                &.-weekend- {
+                    color: $highlight-color !important;
+                }
+            }
+        }
+
+        // Ячейки с датами
+        .air-datepicker-cell {
+            color: $light-text-color !important;
+
+            &.-other-month- {
+                color: $secondary-text-color !important;
+            }
+
+            &.-weekend- {
+                color: $highlight-color !important;
+            }
+
+            &.-weekend-.-other-month- {
+                color: $darkened-weekend-color !important;
+            }
+
+            &:hover {
+                background-color: $hover-bg !important;
+            }
+
+            &.-selected- {
+                background-color: $selected-bg !important;
+                color: $light-text-color !important;
+            }
+        }
+    }
+
+    // Указатель (если используется inline-режим)
+    .air-datepicker--pointer {
+        display: none; // Убираем указатель, если он не нужен
     }
 }
+
+
 
 // ====================
 // Стили для светлой темы
@@ -43,7 +135,7 @@ html[data-bs-theme="dark"] {
 html[data-bs-theme="light"] {
     .ts-control {
         .item {
-            background-color: $ts-item-background-light;
+            background-color: $bg-light;
             border-radius: 0.25rem;
             padding: 0 0.5rem;
         }
