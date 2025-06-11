@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PetController;
 use App\Http\Controllers\Admin\VisitController;
@@ -34,7 +35,7 @@ Route::get('/', function () {
 Route::prefix('admin')->name('admin.')->group(function () {
 // Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Главная страница админ-панели
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
     // Клиенты
     Route::resource('users', UserController::class);

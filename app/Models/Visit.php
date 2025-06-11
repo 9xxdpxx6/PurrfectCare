@@ -63,4 +63,9 @@ class Visit extends Model
     {
         return $this->hasMany(VisitService::class);
     }
+
+    public function symptoms()
+    {
+        return $this->hasMany(Symptom::class);
+    }
 }

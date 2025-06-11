@@ -10,7 +10,10 @@ use App\Models\Status;
 use App\Models\Service;
 use App\Models\Symptom;
 use App\Models\Diagnosis;
+use App\Http\Filters\VisitFilter;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class VisitController extends AdminController
 {
@@ -36,7 +39,7 @@ class VisitController extends AdminController
         ];
     }
 
-    public function create()
+    public function create() : View
     {
         $clients = User::all();
         $pets = Pet::all();
@@ -51,7 +54,7 @@ class VisitController extends AdminController
         ));
     }
 
-    public function edit($id)
+    public function edit($id) : View
     {
         $item = $this->model::with([
             'services', 'diagnoses', 'labTests', 'vaccinations',
@@ -70,16 +73,33 @@ class VisitController extends AdminController
         ));
     }
 
-    public function index()
+    public function index(Request $request) : View
     {
-        $items = $this->model::with([
+        $filter = app(VisitFilter::class, ['queryParams' => $request->query()]);
+        $query = $this->model::with([
             'client', 'pet', 'schedule', 'status',
             'symptoms', 'diagnoses'
-        ])->paginate(10);
-        return view("admin.{$this->viewPath}.index", compact('items'));
+        ])->filter($filter);
+        $items = $query->paginate(10)->withQueryString();
+        
+        $clients = User::orderBy('name')->get();
+        $pets = Pet::with('client')->orderBy('name')->get();
+        $statuses = Status::orderBy('name')->get();
+        
+        return view("admin.{$this->viewPath}.index", compact('items', 'clients', 'pets', 'statuses'));
     }
 
-    public function store(Request $request)
+    public function show($id) : View
+    {
+        $item = $this->model::with([
+            'client', 'pet', 'schedule.veterinarian', 'status',
+            'services.service', 'symptoms', 'diagnoses', 'labTests', 'vaccinations'
+        ])->findOrFail($id);
+        
+        return view("admin.{$this->viewPath}.show", compact('item'));
+    }
+
+    public function store(Request $request) : RedirectResponse
     {
         $validated = $request->validate($this->validationRules);
         
@@ -96,7 +116,7 @@ class VisitController extends AdminController
         }
 
         if ($request->has('diagnoses')) {
-            $visit->diagnoses()->sync($request->diagnoses);
+            $visit->diagnoses()->sync($request->diagnoses); 
         }
         
         return redirect()
@@ -104,7 +124,7 @@ class VisitController extends AdminController
             ->with('success', 'Запись на прием успешно создана');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id) : RedirectResponse
     {
         $validated = $request->validate($this->validationRules);
         
