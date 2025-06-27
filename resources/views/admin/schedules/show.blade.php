@@ -85,7 +85,7 @@
                                     @elseif($item->shift_starts_at <= now() && $item->shift_ends_at >= now())
                                         <span class="badge bg-success">Активно</span>
                                     @else
-                                        <span class="badge bg-warning">Запланировано</span>
+                                        <span class="badge bg-info">Запланировано</span>
                                     @endif
                                 </td>
                             </tr>
@@ -210,7 +210,7 @@
                             @elseif($isActive)
                                 <span class="badge bg-success">Активно</span>
                             @else
-                                <span class="badge bg-warning">Запланировано</span>
+                                <span class="badge bg-info">Запланировано</span>
                             @endif
                         </span>
                     </div>

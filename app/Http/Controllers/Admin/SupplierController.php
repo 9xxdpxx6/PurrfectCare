@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Filters\SupplierFilter;
+use App\Http\Requests\Admin\Supplier\StoreRequest;
+use App\Http\Requests\Admin\Supplier\UpdateRequest;
 use App\Models\Supplier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,9 +17,6 @@ class SupplierController extends AdminController
         $this->model = Supplier::class;
         $this->viewPath = 'suppliers';
         $this->routePrefix = 'suppliers';
-        $this->validationRules = [
-            'name' => 'required|string|max:255'
-        ];
     }
 
     public function index(Request $request) : View
@@ -27,5 +26,28 @@ class SupplierController extends AdminController
         $items = $query->paginate(25)->withQueryString();
 
         return view("admin.{$this->viewPath}.index", compact('items'));
+    }
+
+    public function store(StoreRequest $request) : RedirectResponse
+    {
+        $validated = $request->validated();
+        
+        $this->model::create($validated);
+        
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', 'Поставщик успешно создан');
+    }
+
+    public function update(UpdateRequest $request, $id) : RedirectResponse
+    {
+        $validated = $request->validated();
+        
+        $item = $this->model::findOrFail($id);
+        $item->update($validated);
+        
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', 'Поставщик успешно обновлен');
     }
 }

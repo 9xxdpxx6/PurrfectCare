@@ -139,13 +139,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const alert = document.getElementById('auto-hide-alert');
-            if (alert) {
+            document.querySelectorAll('.alert-dismissible.fade.show:not(.alert-important)').forEach(function(alert) {
                 setTimeout(() => {
                     var bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
                     bsAlert.close();
                 }, 3000);
-            }
+            });
 
             // Theme switcher
             const themeSwitch = document.getElementById('themeSwitch');

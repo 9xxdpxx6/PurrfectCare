@@ -91,3 +91,8 @@
         padding-top: 0;
     }
 }
+
+.ts-wrapper.form-select,
+.ts-control.form-select {
+    width: 100% !important;
+}

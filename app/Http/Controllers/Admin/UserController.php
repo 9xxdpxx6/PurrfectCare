@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
 use App\Http\Filters\UserFilter;
+use App\Http\Requests\Admin\User\StoreRequest;
+use App\Http\Requests\Admin\User\UpdateRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
@@ -16,12 +18,6 @@ class UserController extends AdminController
         $this->model = User::class;
         $this->viewPath = 'users';
         $this->routePrefix = 'users';
-        $this->validationRules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'phone' => 'required|string|max:20',
-            'address' => 'nullable|string|max:255',
-        ];
     }
 
     public function index(Request $request) : View
@@ -49,9 +45,9 @@ class UserController extends AdminController
         return view("admin.{$this->viewPath}.show", compact('user'));
     }
 
-    public function store(Request $request) : RedirectResponse
+    public function store(StoreRequest $request) : RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
         
         // Генерируем временный пароль
         $tempPassword = \Illuminate\Support\Str::random(8);
@@ -66,12 +62,9 @@ class UserController extends AdminController
             ->with('success', 'Клиент успешно создан. Временный пароль: ' . $tempPassword);
     }
 
-    public function update(Request $request, $id) : RedirectResponse
+    public function update(UpdateRequest $request, $id) : RedirectResponse
     {
-        $validationRules = $this->validationRules;
-        $validationRules['email'] = 'required|email|max:255|unique:users,email,' . $id;
-        
-        $validated = $request->validate($validationRules);
+        $validated = $request->validated();
         
         $item = $this->model::findOrFail($id);
         $item->update($validated);

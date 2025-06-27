@@ -12,6 +12,8 @@ use Illuminate\View\View;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Schedule\StoreWeekRequest;
+use App\Http\Requests\Admin\Schedule\StoreRequest;
+use App\Http\Requests\Admin\Schedule\UpdateRequest;
 
 class ScheduleController extends AdminController
 {
@@ -38,8 +40,9 @@ class ScheduleController extends AdminController
             $query->where('is_veterinarian', true);
         })->orderBy('name')->get();
         $branches = Branch::orderBy('name')->get();
+        $specialties = \App\Models\Specialty::orderBy('name')->get();
         
-        return view("admin.{$this->viewPath}.index", compact('items', 'veterinarians', 'branches'));
+        return view("admin.{$this->viewPath}.index", compact('items', 'veterinarians', 'branches', 'specialties'));
     }
 
     public function create() : View
@@ -91,12 +94,11 @@ class ScheduleController extends AdminController
         })->toArray();
     }
 
-    public function store(Request $request) : RedirectResponse
+    public function store(StoreRequest $request) : RedirectResponse
     {
         // Обработка полей даты и времени
         $this->processDateTimeFields($request);
-        
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
 
         // Проверяем логические противоречия
         $errors = $this->validateScheduleConflicts(
@@ -288,7 +290,8 @@ class ScheduleController extends AdminController
 
             return back()
                 ->withInput()
-                ->withErrors(['schedule_conflicts' => $errorMessages]);
+                ->withErrors(['schedule_conflicts' => $errorMessages])
+                ->with('conflicts', $conflicts);
         }
 
         // Если нет расписаний для создания, возвращаем предупреждение

@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Pet;
 use App\Models\User;
 use App\Models\Breed;
+use App\Http\Requests\Admin\Pet\StoreRequest;
+use App\Http\Requests\Admin\Pet\UpdateRequest;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 use App\Http\Filters\PetFilter;
 
 class PetController extends AdminController
@@ -16,15 +19,6 @@ class PetController extends AdminController
         $this->model = Pet::class;
         $this->viewPath = 'pets';
         $this->routePrefix = 'pets';
-        $this->validationRules = [
-            'name' => 'required|string|max:255',
-            'client_id' => 'required|exists:users,id',
-            'breed_id' => 'required|exists:breeds,id',
-            'birthdate' => 'nullable|date',
-            'gender' => 'required|in:male,female,unknown',
-            'weight' => 'nullable|numeric|min:0',
-            'temperature' => 'nullable|numeric|min:0',
-        ];
     }
 
     public function create() : View
@@ -40,6 +34,29 @@ class PetController extends AdminController
         $clients = User::all();
         $breeds = Breed::all();
         return view("admin.{$this->viewPath}.edit", compact('item', 'clients', 'breeds'));
+    }
+
+    public function store(StoreRequest $request) : RedirectResponse
+    {
+        $validated = $request->validated();
+        
+        $pet = $this->model::create($validated);
+        
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', 'Питомец успешно создан');
+    }
+
+    public function update(UpdateRequest $request, $id) : RedirectResponse
+    {
+        $validated = $request->validated();
+        
+        $item = $this->model::findOrFail($id);
+        $item->update($validated);
+        
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', 'Данные питомца успешно обновлены');
     }
 
     public function index(Request $request) : View

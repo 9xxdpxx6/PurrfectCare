@@ -33,6 +33,10 @@
     </div>
 @endif
 
+@php
+    $conflicts = session('conflicts', []);
+@endphp
+
 <div class="row">
     <div class="col-md-8">
         <div class="card">
@@ -164,6 +168,13 @@
                                                     @enderror
                                                 </div>
                                             </div>
+                                            @if(isset($conflicts[$value]))
+                                                <div class="text-warning small mt-1">
+                                                    @foreach($conflicts[$value]['errors'] as $err)
+                                                        {{ $err }}<br>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach

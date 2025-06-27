@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Employee;
 use App\Models\Specialty;
 use App\Models\Branch;
+use App\Http\Requests\Admin\Employee\StoreRequest;
+use App\Http\Requests\Admin\Employee\UpdateRequest;
 use App\Http\Filters\EmployeeFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -19,18 +21,9 @@ class EmployeeController extends AdminController
         $this->model = Employee::class;
         $this->viewPath = 'employees';
         $this->routePrefix = 'employees';
-        $this->validationRules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:employees,email',
-            'phone' => 'required|string|max:20',
-            'specialization' => 'nullable|string|max:255',
-            'hire_date' => 'required|date',
-            'salary' => 'required|numeric|min:0',
-            'is_active' => 'required|boolean'
-        ];
     }
 
-        public function index(Request $request) : View
+    public function index(Request $request) : View
     {
         $filter = app(EmployeeFilter::class, ['queryParams' => array_filter($request->all())]);
         $employees = Employee::filter($filter)
@@ -49,26 +42,22 @@ class EmployeeController extends AdminController
         return view('admin.employees.create', compact('specialties', 'branches'));
     }
 
-    public function store(Request $request) : RedirectResponse
+    public function store(StoreRequest $request) : RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:employees,email',
-            'phone' => 'required|string|max:20',
-            'specialties' => 'nullable|array',
-            'specialties.*' => 'exists:specialties,id',
-            'branches' => 'nullable|array',
-            'branches.*' => 'exists:branches,id',
-        ]);
+        $validated = $request->validated();
+        
         $tempPassword = Str::random(8);
         $validated['password'] = Hash::make($tempPassword);
+
         $employee = Employee::create($validated);
+        
         if ($request->filled('specialties')) {
             $employee->specialties()->attach($request->input('specialties'));
         }
         if ($request->filled('branches')) {
             $employee->branches()->attach($request->input('branches'));
         }
+        
         // TODO: отправить временный пароль на email
         return redirect()->route('admin.employees.index')
             ->with('success', 'Сотрудник успешно создан. Временный пароль: ' . $tempPassword);
@@ -82,21 +71,15 @@ class EmployeeController extends AdminController
         return view('admin.employees.edit', compact('employee', 'specialties', 'branches'));
     }
 
-    public function update(Request $request, $id) : RedirectResponse
+    public function update(UpdateRequest $request, $id) : RedirectResponse
     {
         $employee = Employee::findOrFail($id);
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:employees,email,' . $employee->id,
-            'phone' => 'required|string|max:20',
-            'specialties' => 'nullable|array',
-            'specialties.*' => 'exists:specialties,id',
-            'branches' => 'nullable|array',
-            'branches.*' => 'exists:branches,id',
-        ]);
+        $validated = $request->validated();
+        
         $employee->update($validated);
         $employee->specialties()->sync($request->input('specialties', []));
         $employee->branches()->sync($request->input('branches', []));
+        
         return redirect()->route('admin.employees.index')
             ->with('success', 'Данные сотрудника успешно обновлены');
     }

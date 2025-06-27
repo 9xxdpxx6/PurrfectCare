@@ -25,31 +25,10 @@ abstract class AdminController extends Controller
         return view("admin.{$this->viewPath}.create");
     }
 
-    public function store(Request $request): RedirectResponse
-    {
-        $validated = $request->validate($this->validationRules);
-        $this->model::create($validated);
-
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Запись успешно создана');
-    }
-
     public function edit($id): View
     {
         $item = $this->model::findOrFail($id);
         return view("admin.{$this->viewPath}.edit", compact('item'));
-    }
-
-    public function update(Request $request, $id): RedirectResponse
-    {
-        $item = $this->model::findOrFail($id);
-        $validated = $request->validate($this->validationRules);
-        $item->update($validated);
-
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Запись успешно обновлена');
     }
 
     public function destroy($id): RedirectResponse

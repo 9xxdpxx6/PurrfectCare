@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Drug;
 use App\Models\Unit;
 use App\Models\Supplier;
+use App\Http\Requests\Admin\Drug\StoreRequest;
+use App\Http\Requests\Admin\Drug\UpdateRequest;
 use App\Http\Filters\DrugFilter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,13 +19,6 @@ class DrugController extends AdminController
         $this->model = Drug::class;
         $this->viewPath = 'drugs';
         $this->routePrefix = 'drugs';
-        $this->validationRules = [
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:0',
-            'unit_id' => 'nullable|exists:units,id',
-            'prescription_required' => 'boolean'
-        ];
     }
 
     public function index(Request $request): View
@@ -83,9 +78,9 @@ class DrugController extends AdminController
         return view("admin.{$this->viewPath}.edit", compact('item', 'units'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
         $validated['prescription_required'] = $request->has('prescription_required');
 
         $this->model::create($validated);
@@ -95,9 +90,9 @@ class DrugController extends AdminController
             ->with('success', 'Препарат успешно создан');
     }
 
-    public function update(Request $request, $id): RedirectResponse
+    public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
         $validated['prescription_required'] = $request->has('prescription_required');
 
         $item = $this->model::findOrFail($id);

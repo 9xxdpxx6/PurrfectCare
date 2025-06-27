@@ -4,7 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Service;
 use App\Models\Branch;
+use App\Http\Requests\Admin\Service\StoreRequest;
+use App\Http\Requests\Admin\Service\UpdateRequest;
+use App\Http\Filters\ServiceFilter;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class ServiceController extends AdminController
 {
@@ -13,38 +18,37 @@ class ServiceController extends AdminController
         $this->model = Service::class;
         $this->viewPath = 'services';
         $this->routePrefix = 'services';
-        $this->validationRules = [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'duration' => 'required|integer|min:1',
-            'branches' => 'required|array',
-            'branches.*' => 'exists:branches,id'
-        ];
     }
 
-    public function create()
+    public function create(): View
     {
         $branches = Branch::all();
         return view("admin.{$this->viewPath}.create", compact('branches'));
     }
 
-    public function edit($id)
+    public function edit($id): View
     {
         $item = $this->model::with('branches')->findOrFail($id);
         $branches = Branch::all();
         return view("admin.{$this->viewPath}.edit", compact('item', 'branches'));
     }
 
-    public function index()
+    public function index(Request $request): View
     {
-        $items = $this->model::with('branches')->paginate(10);
-        return view("admin.{$this->viewPath}.index", compact('items'));
+        $filter = app()->make(ServiceFilter::class, ['queryParams' => array_filter($request->all())]);
+        
+        $query = $this->model::with('branches');
+        $filter->apply($query);
+        
+        $items = $query->paginate(10)->appends($request->query());
+        $branches = Branch::orderBy('name')->get();
+        
+        return view("admin.{$this->viewPath}.index", compact('items', 'branches'));
     }
 
-    public function store(Request $request)
+    public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
         $branches = $validated['branches'];
         unset($validated['branches']);
         
@@ -56,9 +60,9 @@ class ServiceController extends AdminController
             ->with('success', 'Услуга успешно создана');
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
         $branches = $validated['branches'];
         unset($validated['branches']);
         

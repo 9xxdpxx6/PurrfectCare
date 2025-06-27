@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Models\DrugProcurement;
 use App\Models\Drug;
 use App\Models\Supplier;
+use App\Http\Requests\Admin\DrugProcurement\StoreRequest;
+use App\Http\Requests\Admin\DrugProcurement\UpdateRequest;
 use App\Http\Filters\DrugProcurementFilter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class DrugProcurementController extends AdminController
 {
@@ -17,16 +20,6 @@ class DrugProcurementController extends AdminController
         $this->model = DrugProcurement::class;
         $this->viewPath = 'drug-procurements';
         $this->routePrefix = 'drug-procurements';
-        $this->validationRules = [
-            'supplier_id' => 'required|exists:suppliers,id',
-            'drug_id' => 'required|exists:drugs,id',
-            'delivery_date' => 'required|date',
-            'expiry_date' => 'required|date|after:delivery_date',
-            'manufacture_date' => 'required|date|before_or_equal:delivery_date',
-            'packaging_date' => 'required|date|after_or_equal:manufacture_date|before_or_equal:delivery_date',
-            'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:1',
-        ];
     }
 
     public function index(Request $request): View
@@ -58,26 +51,79 @@ class DrugProcurementController extends AdminController
         return view("admin.{$this->viewPath}.edit", compact('item', 'drugs', 'suppliers'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
 
-        $this->model::create($validated);
+        DB::transaction(function () use ($validated) {
+            // Создаем поставку
+            $procurement = $this->model::create($validated);
+            
+            // Увеличиваем количество на складе
+            $drug = Drug::find($validated['drug_id']);
+            $drug->increment('quantity', $validated['quantity']);
+        });
 
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Поставка успешно создана');
     }
 
-    public function update(Request $request, $id): RedirectResponse
+    public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
 
-        $item = $this->model::findOrFail($id);
-        $item->update($validated);
+        DB::transaction(function () use ($validated, $id) {
+            // Получаем старую поставку
+            $oldProcurement = $this->model::findOrFail($id);
+            $oldQuantity = $oldProcurement->quantity;
+            $oldDrugId = $oldProcurement->drug_id;
+            
+            // Обновляем поставку
+            $oldProcurement->update($validated);
+            
+            // Если изменился препарат или количество
+            if ($oldDrugId != $validated['drug_id'] || $oldQuantity != $validated['quantity']) {
+                // Откатываем старое изменение (уменьшаем количество старого препарата)
+                $oldDrug = Drug::find($oldDrugId);
+                $oldDrug->decrement('quantity', $oldQuantity);
+                
+                // Применяем новое изменение (увеличиваем количество нового препарата)
+                $newDrug = Drug::find($validated['drug_id']);
+                $newDrug->increment('quantity', $validated['quantity']);
+            } else {
+                // Если препарат не изменился, но изменилось количество
+                $quantityDiff = $validated['quantity'] - $oldQuantity;
+                if ($quantityDiff != 0) {
+                    $drug = Drug::find($validated['drug_id']);
+                    $drug->increment('quantity', $quantityDiff);
+                }
+            }
+        });
 
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Поставка успешно обновлена');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        DB::transaction(function () use ($id) {
+            // Получаем поставку
+            $procurement = $this->model::findOrFail($id);
+            $quantity = $procurement->quantity;
+            $drugId = $procurement->drug_id;
+            
+            // Удаляем поставку
+            $procurement->delete();
+            
+            // Уменьшаем количество на складе
+            $drug = Drug::find($drugId);
+            $drug->decrement('quantity', $quantity);
+        });
+
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', 'Поставка успешно удалена');
     }
 } 

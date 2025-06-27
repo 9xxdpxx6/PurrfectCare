@@ -1,8 +1,9 @@
 import './bootstrap';
-import 'bootstrap';
+import * as bootstrap from 'bootstrap';
 import TomSelect from 'tom-select';
 import AirDatepicker from 'air-datepicker';
 import localeRu from 'air-datepicker/locale/ru.js';
+window.bootstrap = bootstrap;
 
 window.createTomSelect = function (selector, options = {}) {
     const defaultTomSelectOptions = {

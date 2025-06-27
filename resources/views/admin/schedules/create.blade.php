@@ -38,7 +38,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="veterinarian_id" class="form-label">Ветеринар <span class="text-danger">*</span></label>
-                            <select name="veterinarian_id" id="veterinarian_id" class="form-select @error('veterinarian_id') is-invalid @enderror" required>
+                            <select name="veterinarian_id" id="veterinarian_id" class="form-select @error('veterinarian_id') is-invalid @enderror">
                                 <option value="">Выберите ветеринара</option>
                                 @foreach($veterinarians as $veterinarian)
                                     <option value="{{ $veterinarian->id }}" @if(old('veterinarian_id') == $veterinarian->id) selected @endif>
@@ -56,7 +56,7 @@
 
                         <div class="col-md-6 mb-3">
                             <label for="branch_id" class="form-label">Филиал <span class="text-danger">*</span></label>
-                            <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror" required>
+                            <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
                                 <option value="">Выберите филиал</option>
                                 @foreach($branches as $branch)
                                     <option value="{{ $branch->id }}" @if(old('branch_id') == $branch->id) selected @endif>
@@ -85,7 +85,7 @@
                             @endphp
                             <input type="text" name="shift_date" id="shift_date" 
                                 class="form-control @error('shift_starts_at') is-invalid @enderror" 
-                                value="{{ $shiftDate }}" readonly required placeholder="дд.мм.гггг">
+                                value="{{ $shiftDate }}" readonly placeholder="дд.мм.гггг">
                             @error('shift_starts_at')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -107,7 +107,10 @@
                             @endphp
                             <input type="text" name="start_time" id="start_time" 
                                 class="form-control @error('shift_starts_at') is-invalid @enderror" 
-                                value="{{ $startTime }}" required>
+                                value="{{ $startTime }}">
+                            @error('shift_starts_at')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-4 mb-3">
@@ -126,7 +129,7 @@
                             @endphp
                             <input type="text" name="end_time" id="end_time" 
                                 class="form-control @error('shift_ends_at') is-invalid @enderror" 
-                                value="{{ $endTime }}" required>
+                                value="{{ $endTime }}">
                             @error('shift_ends_at')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

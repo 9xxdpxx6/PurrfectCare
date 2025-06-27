@@ -33,12 +33,12 @@
     <div class="row g-3">
         <div class="col-md-6 col-lg-4">
             <label for="name" class="form-label">Имя</label>
-            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
+            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}">
             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="breed_id" class="form-label">Порода</label>
-            <select class="form-select @error('breed_id') is-invalid @enderror" id="breed_id" name="breed_id" required>
+            <select class="form-select @error('breed_id') is-invalid @enderror" id="breed_id" name="breed_id">
                 <option value="">Выберите породу</option>
                 @foreach($breeds as $breed)
                     <option value="{{ $breed->id }}" @if(old('breed_id') == $breed->id) selected @endif>{{ $breed->name }}</option>
@@ -65,7 +65,7 @@
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="gender" class="form-label">Пол</label>
-            <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender" required>
+            <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender">
                 <option value="">Выберите пол</option>
                 <option value="male" @if(old('gender') == 'male') selected @endif>Самец</option>
                 <option value="female" @if(old('gender') == 'female') selected @endif>Самка</option>
@@ -75,7 +75,7 @@
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="client_id" class="form-label">Владелец</label>
-            <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id" required>
+            <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id">
                 <option value="">Выберите владельца</option>
                 @foreach($clients as $client)
                     <option value="{{ $client->id }}" @if(old('client_id', request('client_id')) == $client->id) selected @endif>{{ $client->name }}</option>

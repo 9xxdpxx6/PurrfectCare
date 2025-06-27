@@ -18,8 +18,8 @@
         
         <div class="row">
             <div class="col-lg-6 mb-3">
-                <label for="drug_id" class="form-label">Препарат *</label>
-                <select name="drug_id" id="drug_id" class="form-select @error('drug_id') is-invalid @enderror" required>
+                <label for="drug_id" class="form-label">Препарат</label>
+                <select name="drug_id" id="drug_id" class="form-select @error('drug_id') is-invalid @enderror">
                     <option value="">Выберите препарат</option>
                     @foreach($drugs as $drug)
                         <option value="{{ $drug->id }}" @if(old('drug_id') == $drug->id) selected @endif>{{ $drug->name }}</option>
@@ -31,8 +31,8 @@
             </div>
 
             <div class="col-lg-6 mb-3">
-                <label for="supplier_id" class="form-label">Поставщик *</label>
-                <select name="supplier_id" id="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror" required>
+                <label for="supplier_id" class="form-label">Поставщик</label>
+                <select name="supplier_id" id="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror">
                     <option value="">Выберите поставщика</option>
                     @foreach($suppliers as $supplier)
                         <option value="{{ $supplier->id }}" @if(old('supplier_id') == $supplier->id) selected @endif>{{ $supplier->name }}</option>
@@ -44,7 +44,7 @@
             </div>
 
             <div class="col-lg-6 mb-3">
-                <label for="delivery_date" class="form-label">Дата поставки *</label>
+                <label for="delivery_date" class="form-label">Дата поставки</label>
                 @php
                     $deliveryDate = old('delivery_date');
                     if (!$deliveryDate) {
@@ -57,14 +57,14 @@
                         }
                     }
                 @endphp
-                <input type="text" name="delivery_date" id="delivery_date" class="form-control @error('delivery_date') is-invalid @enderror" value="{{ $deliveryDate }}" readonly required>
+                <input type="text" name="delivery_date" id="delivery_date" class="form-control @error('delivery_date') is-invalid @enderror" value="{{ $deliveryDate }}" autocomplete="off">
                 @error('delivery_date')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
             <div class="col-lg-6 mb-3">
-                <label for="manufacture_date" class="form-label">Дата изготовления *</label>
+                <label for="manufacture_date" class="form-label">Дата изготовления</label>
                 @php
                     $manufactureDate = old('manufacture_date');
                     if ($manufactureDate) {
@@ -75,14 +75,14 @@
                         }
                     }
                 @endphp
-                <input type="text" name="manufacture_date" id="manufacture_date" class="form-control @error('manufacture_date') is-invalid @enderror" value="{{ $manufactureDate }}" readonly required>
+                <input type="text" name="manufacture_date" id="manufacture_date" class="form-control @error('manufacture_date') is-invalid @enderror" value="{{ $manufactureDate }}" autocomplete="off">
                 @error('manufacture_date')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
             <div class="col-lg-6 mb-3">
-                <label for="packaging_date" class="form-label">Дата упаковки *</label>
+                <label for="packaging_date" class="form-label">Дата упаковки</label>
                 @php
                     $packagingDate = old('packaging_date');
                     if ($packagingDate) {
@@ -93,14 +93,14 @@
                         }
                     }
                 @endphp
-                <input type="text" name="packaging_date" id="packaging_date" class="form-control @error('packaging_date') is-invalid @enderror" value="{{ $packagingDate }}" readonly required>
+                <input type="text" name="packaging_date" id="packaging_date" class="form-control @error('packaging_date') is-invalid @enderror" value="{{ $packagingDate }}" autocomplete="off">
                 @error('packaging_date')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
             <div class="col-lg-6 mb-3">
-                <label for="expiry_date" class="form-label">Срок годности *</label>
+                <label for="expiry_date" class="form-label">Годен до</label>
                 @php
                     $expiryDate = old('expiry_date');
                     if ($expiryDate) {
@@ -111,16 +111,16 @@
                         }
                     }
                 @endphp
-                <input type="text" name="expiry_date" id="expiry_date" class="form-control @error('expiry_date') is-invalid @enderror" value="{{ $expiryDate }}" readonly required>
+                <input type="text" name="expiry_date" id="expiry_date" class="form-control @error('expiry_date') is-invalid @enderror" value="{{ $expiryDate }}" autocomplete="off">
                 @error('expiry_date')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
             <div class="col-lg-6 mb-3">
-                <label for="price" class="form-label">Цена *</label>
+                <label for="price" class="form-label">Цена</label>
                 <div class="input-group">
-                    <input type="number" name="price" id="price" class="form-control @error('price') is-invalid @enderror" step="0.01" min="0" value="{{ old('price') }}" required>
+                    <input type="number" name="price" id="price" class="form-control @error('price') is-invalid @enderror" step="0.01" min="0" value="{{ old('price') }}">
                     <span class="input-group-text">₽</span>
                     @error('price')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -129,8 +129,8 @@
             </div>
 
             <div class="col-lg-6 mb-3">
-                <label for="quantity" class="form-label">Количество *</label>
-                <input type="number" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" min="1" value="{{ old('quantity') }}" required>
+                <label for="quantity" class="form-label">Количество</label>
+                <input type="number" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" min="1" value="{{ old('quantity') }}">
                 @error('quantity')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

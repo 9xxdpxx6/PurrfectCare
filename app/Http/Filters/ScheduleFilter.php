@@ -33,7 +33,9 @@ class ScheduleFilter extends AbstractFilter
                 $query->where(function ($q) use ($word) {
                     $q->whereHas('veterinarian', function ($q2) use ($word) {
                         $q2->where('name', 'like', "%{$word}%")
-                           ->orWhere('specialization', 'like', "%{$word}%");
+                           ->orWhereHas('specialties', function ($q3) use ($word) {
+                               $q3->where('name', 'like', "%{$word}%");
+                           });
                     })
                     ->orWhereHas('branch', function ($q2) use ($word) {
                         $q2->where('name', 'like', "%{$word}%")
@@ -56,12 +58,22 @@ class ScheduleFilter extends AbstractFilter
 
     protected function dateFrom(Builder $builder, $value)
     {
-        $builder->whereDate('shift_starts_at', '>=', $value);
+        try {
+            $date = \Carbon\Carbon::createFromFormat('d.m.Y', $value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            $date = $value; // fallback, если вдруг формат уже верный
+        }
+        $builder->whereDate('shift_starts_at', '>=', $date);
     }
 
     protected function dateTo(Builder $builder, $value)
     {
-        $builder->whereDate('shift_starts_at', '<=', $value);
+        try {
+            $date = \Carbon\Carbon::createFromFormat('d.m.Y', $value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            $date = $value;
+        }
+        $builder->whereDate('shift_starts_at', '<=', $date);
     }
 
     protected function sort(Builder $builder, $value)
