@@ -10,9 +10,9 @@
             <i class="bi bi-arrow-left"></i> Назад к клиенту
         </a>
     @else
-        <a href="{{ route('admin.pets.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Назад к списку
-        </a>
+    <a href="{{ route('admin.pets.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад к списку
+    </a>
     @endif
 </div>
 
@@ -98,7 +98,7 @@
         @if(request('client_id'))
             <a href="{{ route('admin.users.edit', request('client_id')) }}" class="btn btn-outline-secondary">Отмена</a>
         @else
-            <a href="{{ route('admin.pets.index') }}" class="btn btn-outline-secondary">Отмена</a>
+        <a href="{{ route('admin.pets.index') }}" class="btn btn-outline-secondary">Отмена</a>
         @endif
         <button type="submit" class="btn btn-success">
             <i class="bi bi-check-lg"></i> Сохранить

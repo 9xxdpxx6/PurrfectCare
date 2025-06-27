@@ -119,6 +119,47 @@ html[data-bs-theme="dark"] {
                 color: $light-text-color !important;
             }
         }
+
+        // Timepicker
+        .air-datepicker-time {
+            background-color: $bg-dark !important;
+            color: $light-text-color !important;
+            border: 1px solid $border-color !important;
+            border-radius: 0.5rem;
+
+            // Общие стили для элементов времени
+            .air-datepicker-time-c {
+                color: $light-text-color !important;
+                background-color: transparent !important;
+                border: none !important;
+
+                &:hover {
+                    background-color: $hover-bg !important;
+                    cursor: pointer;
+                }
+
+                &.-focus- {
+                    background-color: $hover-bg !important;
+                    color: $light-text-color !important;
+                }
+            }
+
+            // Часы
+            .air-datepicker-time--current-hours.-focus- {
+                color: #000000 !important;
+            }
+
+            // Минуты
+            .air-datepicker-time--current-minutes.-focus- {
+                color: #000000 !important;
+            }
+
+            // Сепаратор (:)
+            .air-datepicker-time-c.current-colon {
+                color: $light-text-color !important;
+                background-color: transparent !important;
+            }
+        }
     }
 
     // Указатель (если используется inline-режим)

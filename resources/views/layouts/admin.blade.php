@@ -56,6 +56,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}" href="{{ route('admin.schedules.index') }}">
+                                <i class="bi bi-calendar3"></i> Расписания
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">
                                 <i class="bi bi-cart"></i> Заказы
                             </a>
@@ -123,7 +128,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
-                <div class="conrainer col-12 col-xl-10 mx-auto">
+                <div class="conrainer col-12 col-xxl-10 mx-auto">
                     @yield('content')
                 </div>
             </main>

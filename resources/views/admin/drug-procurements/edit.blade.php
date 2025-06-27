@@ -15,7 +15,7 @@
 <div class="row">
     <form action="{{ route('admin.drug-procurements.update', $item) }}" method="POST">
         @csrf
-        @method('PUT')
+        @method('PATCH')
         
         <div class="row">
             <div class="col-lg-6 mb-3">

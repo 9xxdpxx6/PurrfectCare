@@ -16,7 +16,7 @@
     <div class="col-12">
         <form action="{{ route('admin.users.update', $item) }}" method="POST">
             @csrf
-            @method('PUT')
+            @method('PATCH')
             
             <div class="row">
                 <div class="col-12 col-lg-6 mb-3">

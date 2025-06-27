@@ -31,4 +31,9 @@ class Schedule extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
+    public function visits()
+    {
+        return $this->hasMany(Visit::class);
+    }
 }

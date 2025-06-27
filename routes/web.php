@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\DrugProcurementController;
 
@@ -32,7 +33,7 @@ Route::get('/', function () {
 });
 
 // Маршруты админ-панели
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
 // Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Главная страница админ-панели
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
@@ -74,6 +75,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Поставщики
     Route::resource('suppliers', SupplierController::class);
+
+    // Расписания
+    Route::resource('schedules', ScheduleController::class);
+    Route::get('schedules-week/create', [ScheduleController::class, 'createWeek'])->name('schedules.create-week');
+    Route::post('schedules-week', [ScheduleController::class, 'storeWeek'])->name('schedules.store-week');
 });
 
 //Route::middleware('auth')->group(function() {

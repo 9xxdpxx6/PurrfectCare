@@ -7,6 +7,8 @@ use App\Models\Pet;
 use App\Models\Drug;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class VaccinationController extends AdminController
 {
@@ -27,7 +29,7 @@ class VaccinationController extends AdminController
         ];
     }
 
-    public function create()
+    public function create() : View
     {
         $pets = Pet::all();
         $drugs = Drug::all();
@@ -35,7 +37,7 @@ class VaccinationController extends AdminController
         return view("admin.{$this->viewPath}.create", compact('pets', 'drugs', 'veterinarians'));
     }
 
-    public function edit($id)
+    public function edit($id) : View
     {
         $item = $this->model::with('drugs')->findOrFail($id);
         $pets = Pet::all();
@@ -44,7 +46,7 @@ class VaccinationController extends AdminController
         return view("admin.{$this->viewPath}.edit", compact('item', 'pets', 'drugs', 'veterinarians'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request) : RedirectResponse
     {
         $validated = $request->validate($this->validationRules);
         
@@ -67,7 +69,7 @@ class VaccinationController extends AdminController
             ->with('success', 'Вакцинация успешно создана');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id) : RedirectResponse
     {
         $validated = $request->validate($this->validationRules);
         

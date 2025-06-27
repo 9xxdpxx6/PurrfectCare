@@ -13,6 +13,8 @@ use App\Models\Drug;
 use App\Models\LabTest;
 use App\Models\Vaccination;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class OrderController extends AdminController
 {
@@ -37,7 +39,7 @@ class OrderController extends AdminController
         ];
     }
 
-    public function create()
+    public function create(): View
     {
         $clients = User::all();
         $pets = Pet::all();
@@ -54,7 +56,7 @@ class OrderController extends AdminController
         ));
     }
 
-    public function edit($id)
+    public function edit($id): View
     {
         $item = $this->model::with(['items', 'client', 'pet', 'status', 'branch', 'manager'])->findOrFail($id);
         $clients = User::all();
@@ -72,13 +74,13 @@ class OrderController extends AdminController
         ));
     }
 
-    public function index()
+    public function index(Request $request) : View
     {
         $items = $this->model::with(['client', 'pet', 'status', 'branch', 'manager'])->paginate(10);
         return view("admin.{$this->viewPath}.index", compact('items'));
     }
 
-    public function show($id)
+    public function show($id) : View
     {
         $order = $this->model::with([
             'client', 'pet', 'status', 'branch', 'manager',
@@ -87,7 +89,7 @@ class OrderController extends AdminController
         return view("admin.{$this->viewPath}.show", compact('order'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request) : RedirectResponse
     {
         $validated = $request->validate($this->validationRules);
         
@@ -115,7 +117,7 @@ class OrderController extends AdminController
             ->with('success', 'Заказ успешно создан');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id) : RedirectResponse
     {
         $validated = $request->validate($this->validationRules);
         

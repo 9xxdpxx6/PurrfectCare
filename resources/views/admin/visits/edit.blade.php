@@ -18,7 +18,7 @@
             <div class="card-body">
                 <form action="{{ route('admin.visits.update', $item) }}" method="POST">
                     @csrf
-                    @method('PUT')
+                    @method('PATCH')
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
