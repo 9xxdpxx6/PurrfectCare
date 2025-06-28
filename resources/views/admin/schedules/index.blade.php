@@ -6,14 +6,12 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Расписания</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{{ route('admin.schedules.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Создать расписание</span>
-            </a>
-            <a href="{{ route('admin.schedules.create-week') }}" class="btn btn-success">
-                <i class="bi bi-calendar-week"></i> <span class="d-none d-lg-inline">Расписание на неделю</span>
-            </a>
-        </div>
+        <a href="{{ route('admin.schedules.create') }}" class="btn btn-primary me-2">
+            <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить расписание</span>
+        </a>
+        <a href="{{ route('admin.schedules.create-week') }}" class="btn btn-success">
+            <i class="bi bi-calendar-week"></i> <span class="d-none d-lg-inline">Расписание на неделю</span>
+        </a>
     </div>
 </div>
 
@@ -83,7 +81,7 @@
                 <option value="branch_desc" @if(request('sort') == 'branch_desc') selected @endif>Филиал (Я-А)</option>
             </select>
         </div>
-        <div class="d-flex gap-2 me-3">
+        <div class="d-flex gap-2 ms-auto w-auto">
             <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>

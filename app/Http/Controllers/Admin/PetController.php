@@ -67,4 +67,15 @@ class PetController extends AdminController
         $owners = User::orderBy('name')->get();
         return view("admin.{$this->viewPath}.index", compact('items', 'owners'));
     }
+
+    public function show($id) : View
+    {
+        $pet = $this->model::with([
+            'client',
+            'breed.species',
+            'visits' => function($q) { $q->latest()->limit(10); },
+            'orders' => function($q) { $q->latest()->limit(10); }
+        ])->findOrFail($id);
+        return view("admin.{$this->viewPath}.show", compact('pet'));
+    }
 } 

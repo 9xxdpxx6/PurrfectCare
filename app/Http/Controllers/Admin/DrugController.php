@@ -78,6 +78,19 @@ class DrugController extends AdminController
         return view("admin.{$this->viewPath}.edit", compact('item', 'units'));
     }
 
+    public function show($id): View
+    {
+        $item = $this->model::with([
+            'unit',
+            'procurements.supplier',
+            'procurements' => function($query) {
+                $query->orderBy('delivery_date', 'desc');
+            }
+        ])->findOrFail($id);
+        
+        return view("admin.{$this->viewPath}.show", compact('item'));
+    }
+
     public function store(StoreRequest $request): RedirectResponse
     {
         $validated = $request->validated();

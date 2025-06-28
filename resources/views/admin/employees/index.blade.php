@@ -6,9 +6,8 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Сотрудники</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('admin.employees.create') }}" class="btn btn-primary d-flex flex-row align-items-center gap-2 ms-lg-2 me-3">
-            <span class="d-none d-lg-inline-block">Добавить сотрудника</span>
-            <i class="bi bi-plus"></i>
+        <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить сотрудника</span>
         </a>
     </div>
 </div>
@@ -47,7 +46,7 @@
                 <option value="email_desc" @selected(request('sort')=='email_desc')>Email Z-A</option>
             </select>
         </div>
-        <div class="d-flex gap-2 me-3">
+        <div class="d-flex gap-2 ms-auto w-auto">
             <!-- TODO: сделать загрузку опшионов с БД -->
             <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>

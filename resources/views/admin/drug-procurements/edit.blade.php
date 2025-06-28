@@ -54,7 +54,7 @@
                         $deliveryDate = $deliveryDate;
                     }
                 @endphp
-                <input type="text" name="delivery_date" id="delivery_date" class="form-control @error('delivery_date') is-invalid @enderror" value="{{ $deliveryDate }}" readonly autocomplete="off">
+                <input type="text" name="delivery_date" id="delivery_date" class="form-control @error('delivery_date') is-invalid @enderror" value="{{ $deliveryDate }}" autocomplete="off">
                 @error('delivery_date')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -70,7 +70,7 @@
                         $manufactureDate = $manufactureDate;
                     }
                 @endphp
-                <input type="text" name="manufacture_date" id="manufacture_date" class="form-control @error('manufacture_date') is-invalid @enderror" value="{{ $manufactureDate }}" readonly autocomplete="off">
+                <input type="text" name="manufacture_date" id="manufacture_date" class="form-control @error('manufacture_date') is-invalid @enderror" value="{{ $manufactureDate }}" autocomplete="off">
                 @error('manufacture_date')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -86,7 +86,7 @@
                         $packagingDate = $packagingDate;
                     }
                 @endphp
-                <input type="text" name="packaging_date" id="packaging_date" class="form-control @error('packaging_date') is-invalid @enderror" value="{{ $packagingDate }}" readonly autocomplete="off">
+                <input type="text" name="packaging_date" id="packaging_date" class="form-control @error('packaging_date') is-invalid @enderror" value="{{ $packagingDate }}" autocomplete="off">
                 @error('packaging_date')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -102,7 +102,7 @@
                         $expiryDate = $expiryDate;
                     }
                 @endphp
-                <input type="text" name="expiry_date" id="expiry_date" class="form-control @error('expiry_date') is-invalid @enderror" value="{{ $expiryDate }}" readonly autocomplete="off">
+                <input type="text" name="expiry_date" id="expiry_date" class="form-control @error('expiry_date') is-invalid @enderror" value="{{ $expiryDate }}" autocomplete="off">
                 @error('expiry_date')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

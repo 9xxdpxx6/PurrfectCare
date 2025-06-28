@@ -41,7 +41,11 @@ class UserController extends AdminController
 
     public function show($id) : View
     {
-        $user = $this->model::with(['pets', 'appointments'])->findOrFail($id);
+        $user = $this->model::with([
+            'pets' => function($q) { $q->latest()->limit(10); },
+            'orders' => function($q) { $q->latest()->limit(10); },
+            'visits' => function($q) { $q->latest()->limit(10); }
+        ])->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('user'));
     }
 

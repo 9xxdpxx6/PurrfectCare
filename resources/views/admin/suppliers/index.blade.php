@@ -6,9 +6,8 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Поставщики</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('admin.suppliers.create') }}" class="btn btn-primary d-flex flex-row align-items-center gap-2 ms-lg-2 me-3">
-            <span class="d-none d-lg-inline-block">Добавить поставщика</span>
-            <i class="bi bi-plus"></i>
+        <a href="{{ route('admin.suppliers.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить поставщика</span>
         </a>
     </div>
 </div>
@@ -28,7 +27,7 @@
                 <option value="name_desc" @if(request('sort') == 'name_desc') selected @endif>По алфавиту (Я-А)</option>
             </select>
         </div>
-        <div class="d-flex gap-2 me-3">
+        <div class="d-flex gap-2 ms-auto w-auto">
             <a href="{{ route('admin.suppliers.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
@@ -43,17 +42,23 @@
     @foreach($items as $i => $supplier)
         <div class="col-12">
             <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
-                <div class="card-body flex-grow-1 d-flex flex-column flex-lg-row align-items-lg-center">
-                    <div class="flex-grow-1">
-                        <h5 class="card-title mb-1">{{ $supplier->name }}</h5>
-                        <p class="card-text mb-0">
-                            <strong>Поставок:</strong> {{ $supplier->procurements->count() }}
-                        </p>
-                        <p class="card-text mb-0">
-                            <strong>Сотрудничество с:</strong> {{ \Carbon\Carbon::parse($supplier->created_at)->format('d.m.Y') }}
-                        </p>
+                <div class="card-body h-100 flex-grow-1 d-flex flex-column flex-lg-row align-items-lg-center">
+                    <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
+                        <h5 class="card-title">{{ $supplier->name }}</h5>
+                        <div class="mt-auto">
+                            <p class="card-text mb-0">
+                                <strong>Поставок:</strong> {{ $supplier->procurements->count() }}
+                            </p>
+                            <p class="card-text mb-0">
+                                <strong>Сотрудничество с</strong> {{ \Carbon\Carbon::parse($supplier->created_at)->format('d.m.Y') }}
+                            </p>
+                        </div>
                     </div>
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start">
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
+                        <a href="{{ route('admin.suppliers.show', $supplier) }}" class="btn btn-outline-info" title="Просмотр">
+                            <span class="d-none d-lg-inline-block">Просмотр</span>
+                            <i class="bi bi-eye"></i>
+                        </a>
                         <a href="{{ route('admin.suppliers.edit', $supplier) }}" class="btn btn-outline-warning" title="Редактировать">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>

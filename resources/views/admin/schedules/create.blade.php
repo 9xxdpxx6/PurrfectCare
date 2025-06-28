@@ -6,14 +6,12 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Создать расписание</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{{ route('admin.schedules.create-week') }}" class="btn btn-success">
-                <i class="bi bi-calendar-week"></i> <span class="d-none d-lg-inline">Расписание на неделю</span>
-            </a>
-            <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> К списку расписаний
-            </a>
-        </div>
+        <a href="{{ route('admin.schedules.create-week') }}" class="btn btn-success me-2">
+            <i class="bi bi-calendar-week"></i> <span class="d-none d-lg-inline">Расписание на неделю</span>
+        </a>
+        <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> К списку расписаний
+        </a>
     </div>
 </div>
 

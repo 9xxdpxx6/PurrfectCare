@@ -28,6 +28,15 @@ class SupplierController extends AdminController
         return view("admin.{$this->viewPath}.index", compact('items'));
     }
 
+    public function show($id) : View
+    {
+        $supplier = $this->model::with(['procurements.drug', 'procurements' => function($query) {
+            $query->orderBy('delivery_date', 'desc')->limit(10);
+        }])->findOrFail($id);
+        
+        return view("admin.{$this->viewPath}.show", compact('supplier'));
+    }
+
     public function store(StoreRequest $request) : RedirectResponse
     {
         $validated = $request->validated();

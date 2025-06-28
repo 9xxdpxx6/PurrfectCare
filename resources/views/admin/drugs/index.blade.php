@@ -6,9 +6,8 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Препараты</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('admin.drugs.create') }}" class="btn btn-primary d-flex flex-row align-items-center gap-2 ms-lg-2 me-3">
-            <span class="d-none d-lg-inline-block">Добавить препарат</span>
-            <i class="bi bi-plus"></i>
+        <a href="{{ route('admin.drugs.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить препарат</span>
         </a>
     </div>
 </div>
@@ -57,7 +56,7 @@
                 <option value="quantity_desc" @if(request('sort') == 'quantity_desc') selected @endif>По количеству (больше)</option>
             </select>
         </div>
-        <div class="d-flex gap-2 me-3">
+        <div class="d-flex gap-2 ms-auto w-auto">
             <a href="{{ route('admin.drugs.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
@@ -72,45 +71,62 @@
     @foreach($items as $i => $drug)
         <div class="col-12">
             <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
-                <div class="card-body flex-grow-1 d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
-                    <div class="flex-grow-1">
-                        <h5 class="card-title mb-1">{{ $drug->name }}</h5>
-                        @if(!empty($drug->suppliers_display))
+                <div class="card-body h-100 flex-grow-1 d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
+                    <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
+                        <h5 class="card-title mb-1">
+                            {{ $drug->name }}
+                            @if($drug->prescription_required)
+                                <i class="bi bi-exclamation-triangle text-warning" data-bs-toggle="tooltip" data-bs-title="Только по рецепту!"></i>
+                            @endif
+                        </h5>
+                        @if(!empty($drug->suppliers_display) && count($drug->suppliers_display))
                             <h6 class="card-subtitle mb-2 text-muted">
                                 Поставщик{{ count($drug->suppliers_display) > 1 ? 'и' : '' }}: {{ implode(', ', $drug->suppliers_display) }}
                             </h6>
+                        @else
+                            <h6 class="card-subtitle mb-2 text-muted">Поставщики: —</h6>
                         @endif
                         <h6 class="card-subtitle mb-2 text-muted">
                             @if($drug->prescription_required)
-                                <i class="bi bi-exclamation-triangle text-warning"></i> Требуется рецепт
+                                <i class="bi bi-exclamation-triangle text-warning" data-bs-toggle="tooltip" data-bs-title="Только по рецепту!"></i>
                             @endif
                         </h6>
 
                         @if($drug->latest_procurement)
                             <div class="d-flex flex-column gap-1">
                                 <p class="card-text mb-0">
-                                    <span>Изготовлен:</span> {{ $drug->latest_procurement->manufacture_date->format('d.m.Y') }}
+                                    <span>Изготовлен:</span> {{ $drug->latest_procurement->manufacture_date ? $drug->latest_procurement->manufacture_date->format('d.m.Y') : '—' }}
                                 </p>
                                 <p class="card-text mb-0">
-                                    <span>Упакован:</span> {{ $drug->latest_procurement->packaging_date->format('d.m.Y') }}
+                                    <span>Упакован:</span> {{ $drug->latest_procurement->packaging_date ? $drug->latest_procurement->packaging_date->format('d.m.Y') : '—' }}
                                 </p>
-                                <p class="card-text mb-0 @if($drug->latest_procurement->expiry_date->lt(\Carbon\Carbon::now())) text-danger @elseif($drug->latest_procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30))) text-warning @endif">
-                                    <span>Годен до:</span> {{ $drug->latest_procurement->expiry_date->format('d.m.Y') }}
+                                <p class="card-text mb-0 @if($drug->latest_procurement->expiry_date && $drug->latest_procurement->expiry_date->lt(\Carbon\Carbon::now())) text-danger @elseif($drug->latest_procurement->expiry_date && $drug->latest_procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30))) text-warning @endif">
+                                    <span>Годен до:</span> {{ $drug->latest_procurement->expiry_date ? $drug->latest_procurement->expiry_date->format('d.m.Y') : '—' }}
                                 </p>
+                            </div>
+                        @else
+                            <div class="d-flex flex-column gap-1">
+                                <p class="card-text mb-0"><span>Изготовлен:</span> —</p>
+                                <p class="card-text mb-0"><span>Упакован:</span> —</p>
+                                <p class="card-text mb-0"><span>Годен до:</span> —</p>
                             </div>
                         @endif
                     </div>
 
                     <div class="price-container d-flex flex-column align-items-lg-end align-self-start text-nowrap">
-                        <p class="card-text mb-0">
-                            <span>Цена:</span> {{ number_format($drug->price, 2, ',', ' ') }} ₽
+                        <p class="card-text">
+                            <span>Цена:</span> {{ $drug->price !== null ? number_format($drug->price, 2, ',', ' ') . ' ₽' : '—' }}
                         </p>
-                        <p class="card-text mb-0">
-                            <span>Количество:</span> {{ $drug->quantity }}{{ $drug->unit ? ' ' . $drug->unit->symbol : '' }}
+                        <p class="card-text">
+                            <span>Количество:</span> {{ $drug->quantity !== null ? $drug->quantity . ($drug->unit ? ' ' . $drug->unit->symbol : '') : '—' }}
                         </p>
                     </div>
 
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap">
+                        <a href="{{ route('admin.drugs.show', $drug) }}" class="btn btn-outline-info" title="Просмотр">
+                            <span class="d-none d-lg-inline-block">Просмотр</span>
+                            <i class="bi bi-eye"></i>
+                        </a>
                         <a href="{{ route('admin.drugs.edit', $drug) }}" class="btn btn-outline-warning" title="Редактировать">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
@@ -151,6 +167,12 @@
         });
         new createTomSelect('#unit', {
             placeholder: 'Выберите единицу...',
+        });
+        
+        // Инициализация Bootstrap тултипов
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     });
 </script>

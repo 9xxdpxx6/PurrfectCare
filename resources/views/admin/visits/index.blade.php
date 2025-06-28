@@ -6,9 +6,8 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Приёмы</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('admin.visits.create') }}" class="btn btn-primary d-flex flex-row align-items-center gap-2 ms-lg-2 me-3">
-            <span class="d-none d-lg-inline-block">Создать приём</span>
-            <i class="bi bi-plus"></i>
+        <a href="{{ route('admin.visits.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Создать приём</span>
         </a>
     </div>
 </div>
@@ -68,7 +67,7 @@
                 <option value="pet_desc" @if(request('sort') == 'pet_desc') selected @endif>Питомец (Я-А)</option>
             </select>
         </div>
-        <div class="d-flex gap-2 me-3">
+        <div class="d-flex gap-2 ms-auto w-auto">
             <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
