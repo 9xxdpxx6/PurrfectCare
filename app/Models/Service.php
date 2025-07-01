@@ -31,9 +31,4 @@ class Service extends Model
     {
         return $this->belongsToMany(Branch::class, 'branch_service');
     }
-
-    public function visits()
-    {
-        return $this->hasMany(VisitService::class);
-    }
 }

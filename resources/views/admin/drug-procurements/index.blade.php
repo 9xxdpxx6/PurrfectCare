@@ -20,20 +20,28 @@
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="supplier" class="form-label mb-1">Поставщик</label>
-            <select name="supplier" id="supplier" class="form-select">
-                <option value="">Все поставщики</option>
-                @foreach($suppliers as $supplier)
-                    <option value="{{ $supplier->id }}" @if(request('supplier') == $supplier->id) selected @endif>{{ $supplier->name }}</option>
-                @endforeach
+            <select name="supplier" id="supplier" class="form-select tomselect" data-url="{{ route('admin.drug-procurements.supplier-options') }}">
+                @if(request('supplier'))
+                    @php
+                        $selectedSupplier = \App\Models\Supplier::find(request('supplier'));
+                    @endphp
+                    @if($selectedSupplier)
+                        <option value="{{ $selectedSupplier->id }}" selected>{{ $selectedSupplier->name }}</option>
+                    @endif
+                @endif
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="drug" class="form-label mb-1">Препарат</label>
-            <select name="drug" id="drug" class="form-select">
-                <option value="">Все препараты</option>
-                @foreach($drugs as $drug)
-                    <option value="{{ $drug->id }}" @if(request('drug') == $drug->id) selected @endif>{{ $drug->name }}</option>
-                @endforeach
+            <select name="drug" id="drug" class="form-select tomselect" data-url="{{ route('admin.drug-procurements.drug-options') }}">
+                @if(request('drug'))
+                    @php
+                        $selectedDrug = \App\Models\Drug::find(request('drug'));
+                    @endphp
+                    @if($selectedDrug)
+                        <option value="{{ $selectedDrug->id }}" selected>{{ $selectedDrug->name }}</option>
+                    @endif
+                @endif
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
@@ -178,12 +186,57 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Tom Select
+        const selectedSupplier = '{{ request("supplier") }}';
+        const selectedDrug = '{{ request("drug") }}';
+        
+        // TomSelect для поставщиков с динамической загрузкой
         new createTomSelect('#supplier', {
             placeholder: 'Выберите поставщика...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                if (selectedSupplier && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedSupplier);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
+        
+        // TomSelect для препаратов с динамической загрузкой
         new createTomSelect('#drug', {
             placeholder: 'Выберите препарат...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                if (selectedDrug && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedDrug);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
 
         // Air Datepickers

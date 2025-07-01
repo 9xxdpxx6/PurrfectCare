@@ -35,7 +35,7 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="veterinarian_id" class="form-label">Ветеринар <span class="text-danger">*</span></label>
+                            <label for="veterinarian_id" class="form-label">Ветеринар</label>
                             <select name="veterinarian_id" id="veterinarian_id" class="form-select @error('veterinarian_id') is-invalid @enderror">
                                 <option value="">Выберите ветеринара</option>
                                 @foreach($veterinarians as $veterinarian)
@@ -53,7 +53,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="branch_id" class="form-label">Филиал <span class="text-danger">*</span></label>
+                            <label for="branch_id" class="form-label">Филиал</label>
                             <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
                                 <option value="">Выберите филиал</option>
                                 @foreach($branches as $branch)
@@ -70,7 +70,7 @@
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="shift_date" class="form-label">Дата смены <span class="text-danger">*</span></label>
+                            <label for="shift_date" class="form-label">Дата смены</label>
                             @php
                                 $shiftDate = old('shift_date');
                                 if (!$shiftDate && old('shift_starts_at')) {
@@ -90,7 +90,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="start_time" class="form-label">Время начала <span class="text-danger">*</span></label>
+                            <label for="start_time" class="form-label">Время начала</label>
                             @php
                                 $startTime = old('start_time');
                                 if (!$startTime && old('shift_starts_at')) {
@@ -112,7 +112,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="end_time" class="form-label">Время окончания <span class="text-danger">*</span></label>
+                            <label for="end_time" class="form-label">Время окончания</label>
                             @php
                                 $endTime = old('end_time');
                                 if (!$endTime && old('shift_ends_at')) {
@@ -157,16 +157,6 @@
                 <h6 class="card-title mb-0">Информация</h6>
             </div>
             <div class="card-body">
-                <div class="alert alert-info">
-                    <h6 class="alert-heading">Обязательные поля</h6>
-                    <ul class="mb-0">
-                        <li>Ветеринар</li>
-                        <li>Филиал</li>
-                        <li>Начало смены</li>
-                        <li>Окончание смены</li>
-                    </ul>
-                </div>
-                
                 <div class="alert alert-warning">
                     <h6 class="alert-heading">Быстрое создание</h6>
                     <p class="mb-0">Для создания расписания сразу на несколько дней недели используйте кнопку "Расписание на неделю".</p>
@@ -174,11 +164,6 @@
                     <a href="{{ route('admin.schedules.create-week') }}" class="btn btn-success btn-sm w-100">
                         <i class="bi bi-calendar-week"></i> Расписание на неделю
                     </a>
-                </div>
-
-                <div class="alert alert-secondary">
-                    <h6 class="alert-heading">Справка</h6>
-                    <p class="mb-0">Время окончания смены должно быть позже времени начала. Расписание создается для одного дня.</p>
                 </div>
             </div>
         </div>

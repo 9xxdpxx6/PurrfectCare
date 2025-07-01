@@ -26,4 +26,16 @@ class Diagnosis extends Model
     {
         return $this->belongsTo(DictionaryDiagnosis::class);
     }
+
+    /**
+     * Получить название диагноза (из справочника или кастомный)
+     */
+    public function getName()
+    {
+        if ($this->dictionary_diagnosis_id && $this->dictionaryDiagnosis) {
+            return $this->dictionaryDiagnosis->name;
+        }
+        
+        return $this->custom_diagnosis;
+    }
 }

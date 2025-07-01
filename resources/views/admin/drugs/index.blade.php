@@ -20,11 +20,15 @@
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="supplier" class="form-label mb-1">Поставщик</label>
-            <select name="supplier" id="supplier" class="form-select">
-                <option value="">Все</option>
-                @foreach($suppliers as $supplier)
-                    <option value="{{ $supplier->id }}" @if(request('supplier') == $supplier->id) selected @endif>{{ $supplier->name }}</option>
-                @endforeach
+            <select name="supplier" id="supplier" class="form-select tomselect" data-url="{{ route('admin.drugs.supplier-options') }}">
+                @if(request('supplier'))
+                    @php
+                        $selectedSupplier = \App\Models\Supplier::find(request('supplier'));
+                    @endphp
+                    @if($selectedSupplier)
+                        <option value="{{ $selectedSupplier->id }}" selected>{{ $selectedSupplier->name }}</option>
+                    @endif
+                @endif
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
@@ -73,10 +77,10 @@
             <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
                 <div class="card-body h-100 flex-grow-1 d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
                     <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
-                        <h5 class="card-title mb-1">
+                        <h5 class="card-title mb-3">
                             {{ $drug->name }}
                             @if($drug->prescription_required)
-                                <i class="bi bi-exclamation-triangle text-warning" data-bs-toggle="tooltip" data-bs-title="Только по рецепту!"></i>
+                                <i class="bi bi-prescription text-warning" data-bs-toggle="tooltip" data-bs-title="Только по рецепту!"></i>
                             @endif
                         </h5>
                         @if(!empty($drug->suppliers_display) && count($drug->suppliers_display))
@@ -86,11 +90,6 @@
                         @else
                             <h6 class="card-subtitle mb-2 text-muted">Поставщики: —</h6>
                         @endif
-                        <h6 class="card-subtitle mb-2 text-muted">
-                            @if($drug->prescription_required)
-                                <i class="bi bi-exclamation-triangle text-warning" data-bs-toggle="tooltip" data-bs-title="Только по рецепту!"></i>
-                            @endif
-                        </h6>
 
                         @if($drug->latest_procurement)
                             <div class="d-flex flex-column gap-1">
@@ -162,9 +161,38 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const selectedSupplier = '{{ request("supplier") }}';
+        
+        // TomSelect для поставщиков с динамической загрузкой
         new createTomSelect('#supplier', {
             placeholder: 'Выберите поставщика...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть выбранное значение и это первая загрузка, передаём его
+                if (selectedSupplier && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedSupplier);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => {
+                        callback(json);
+                        // НЕ вызываем setValue() - значение уже установлено в HTML
+                    })
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
+        
+        // Обычный TomSelect для единиц измерения
         new createTomSelect('#unit', {
             placeholder: 'Выберите единицу...',
         });

@@ -49,21 +49,6 @@ class Visit extends Model
         return $this->hasMany(Diagnosis::class);
     }
 
-    public function labTests()
-    {
-        return $this->hasMany(LabTest::class);
-    }
-
-    public function vaccinations()
-    {
-        return $this->hasMany(Vaccination::class);
-    }
-
-    public function services()
-    {
-        return $this->hasMany(VisitService::class);
-    }
-
     public function symptoms()
     {
         return $this->hasMany(Symptom::class);

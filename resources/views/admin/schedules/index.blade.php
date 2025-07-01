@@ -23,20 +23,28 @@
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="veterinarian" class="form-label mb-1">Ветеринар</label>
-            <select name="veterinarian" id="veterinarian" class="form-select">
-                <option value="">Все ветеринары</option>
-                @foreach($veterinarians as $veterinarian)
-                    <option value="{{ $veterinarian->id }}" @if(request('veterinarian') == $veterinarian->id) selected @endif>{{ $veterinarian->name }}</option>
-                @endforeach
+            <select name="veterinarian" id="veterinarian" class="form-select tomselect" data-url="{{ route('admin.schedules.veterinarian-options') }}">
+                @if(request('veterinarian'))
+                    @php
+                        $selectedVeterinarian = \App\Models\Employee::find(request('veterinarian'));
+                    @endphp
+                    @if($selectedVeterinarian)
+                        <option value="{{ $selectedVeterinarian->id }}" selected>{{ $selectedVeterinarian->name }}</option>
+                    @endif
+                @endif
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="branch" class="form-label mb-1">Филиал</label>
-            <select name="branch" id="branch" class="form-select">
-                <option value="">Все филиалы</option>
-                @foreach($branches as $branch)
-                    <option value="{{ $branch->id }}" @if(request('branch') == $branch->id) selected @endif>{{ $branch->name }}</option>
-                @endforeach
+            <select name="branch" id="branch" class="form-select tomselect" data-url="{{ route('admin.schedules.branch-options') }}">
+                @if(request('branch'))
+                    @php
+                        $selectedBranch = \App\Models\Branch::find(request('branch'));
+                    @endphp
+                    @if($selectedBranch)
+                        <option value="{{ $selectedBranch->id }}" selected>{{ $selectedBranch->name }}</option>
+                    @endif
+                @endif
             </select>
         </div>
     </div>
@@ -186,12 +194,57 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const selectedVeterinarian = '{{ request("veterinarian") }}';
+        const selectedBranch = '{{ request("branch") }}';
+        
+        // TomSelect для ветеринаров с динамической загрузкой
         new createTomSelect('#veterinarian', {
             placeholder: 'Выберите ветеринара...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                if (selectedVeterinarian && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedVeterinarian);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
         
+        // TomSelect для филиалов с динамической загрузкой
         new createTomSelect('#branch', {
             placeholder: 'Выберите филиал...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                if (selectedBranch && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedBranch);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
 
         // Air Datepickers

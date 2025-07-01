@@ -8,12 +8,15 @@ use App\Models\Supplier;
 use App\Http\Requests\Admin\Drug\StoreRequest;
 use App\Http\Requests\Admin\Drug\UpdateRequest;
 use App\Http\Filters\DrugFilter;
+use App\Http\Traits\HasSelectOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DrugController extends AdminController
 {
+    use HasSelectOptions;
+
     public function __construct()
     {
         $this->model = Drug::class;
@@ -115,4 +118,6 @@ class DrugController extends AdminController
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Препарат успешно обновлен');
     }
+
+    // Метод supplierOptions теперь наследуется из трейта HasSelectOptions
 }

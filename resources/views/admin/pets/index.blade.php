@@ -20,11 +20,15 @@
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="owner" class="form-label mb-1">Владелец</label>
-            <select name="owner" id="owner" class="form-select">
-                <option value="">Все</option>
-                @foreach($owners as $owner)
-                    <option value="{{ $owner->id }}" @if(request('owner') == $owner->id) selected @endif>{{ $owner->name }}</option>
-                @endforeach
+            <select name="owner" id="owner" class="form-select tomselect" data-url="{{ route('admin.pets.owner-options') }}">
+                @if(request('owner'))
+                    @php
+                        $selectedOwner = \App\Models\User::find(request('owner'));
+                    @endphp
+                    @if($selectedOwner)
+                        <option value="{{ $selectedOwner->id }}" selected>{{ $selectedOwner->name }}</option>
+                    @endif
+                @endif
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
@@ -120,8 +124,32 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const selectedOwner = '{{ request("owner") }}';
+        
+        // TomSelect для владельцев с динамической загрузкой
         new createTomSelect('#owner', {
             placeholder: 'Выберите владельца...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть выбранное значение и это первая загрузка, передаём его
+                if (selectedOwner && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedOwner);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
     });
 </script>

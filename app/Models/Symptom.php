@@ -26,4 +26,16 @@ class Symptom extends Model
     {
         return $this->belongsTo(DictionarySymptom::class);
     }
+
+    /**
+     * Получить название симптома (из справочника или кастомный)
+     */
+    public function getName()
+    {
+        if ($this->dictionary_symptom_id && $this->dictionarySymptom) {
+            return $this->dictionarySymptom->name;
+        }
+        
+        return $this->custom_symptom;
+    }
 }

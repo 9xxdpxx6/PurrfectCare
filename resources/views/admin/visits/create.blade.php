@@ -13,7 +13,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-12">
         <div class="card">
             <div class="card-body">
                 <form action="{{ route('admin.visits.store') }}" method="POST">
@@ -21,12 +21,12 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="client_id" class="form-label">Клиент <span class="text-danger">*</span></label>
-                            <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror" required>
+                            <label for="client_id" class="form-label">Клиент</label>
+                            <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror">
                                 <option value="">Выберите клиента</option>
                                 @foreach($clients as $client)
                                     <option value="{{ $client->id }}" @if(old('client_id') == $client->id) selected @endif>
-                                        {{ $client->name }} ({{ $client->email }})
+                                        {{ $client->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -36,12 +36,12 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="pet_id" class="form-label">Питомец <span class="text-danger">*</span></label>
-                            <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" required>
+                            <label for="pet_id" class="form-label">Питомец</label>
+                            <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.visits.pet-options') }}">
                                 <option value="">Выберите питомца</option>
                                 @foreach($pets as $pet)
                                     <option value="{{ $pet->id }}" data-client="{{ $pet->client_id }}" @if(old('pet_id') == $pet->id) selected @endif>
-                                        {{ $pet->name }} ({{ $pet->client->name }})
+                                        {{ $pet->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -53,8 +53,8 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="schedule_id" class="form-label">Расписание <span class="text-danger">*</span></label>
-                            <select name="schedule_id" id="schedule_id" class="form-select @error('schedule_id') is-invalid @enderror" required>
+                            <label for="schedule_id" class="form-label">Расписание</label>
+                            <select name="schedule_id" id="schedule_id" class="form-select @error('schedule_id') is-invalid @enderror">
                                 <option value="">Выберите расписание</option>
                                 @foreach($schedules as $schedule)
                                     <option value="{{ $schedule->id }}" @if(old('schedule_id') == $schedule->id) selected @endif>
@@ -72,10 +72,10 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="starts_at" class="form-label">Время начала <span class="text-danger">*</span></label>
-                            <input type="datetime-local" name="starts_at" id="starts_at" 
+                            <label for="starts_at" class="form-label">Время начала</label>
+                            <input type="text" name="starts_at" id="starts_at" 
                                 class="form-control @error('starts_at') is-invalid @enderror" 
-                                value="{{ old('starts_at') }}" required>
+                                value="{{ old('starts_at', $default_starts_at ?? '') }}" readonly placeholder="дд.мм.гггг чч:мм">
                             @error('starts_at')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -83,11 +83,11 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="status_id" class="form-label">Статус <span class="text-danger">*</span></label>
-                        <select name="status_id" id="status_id" class="form-select @error('status_id') is-invalid @enderror" required>
+                        <label for="status_id" class="form-label">Статус</label>
+                        <select name="status_id" id="status_id" class="form-select @error('status_id') is-invalid @enderror">
                             <option value="">Выберите статус</option>
                             @foreach($statuses as $status)
-                                <option value="{{ $status->id }}" @if(old('status_id') == $status->id) selected @endif>
+                                <option value="{{ $status->id }}" @if(old('status_id', $default_status_id ?? '') == $status->id) selected @endif>
                                     {{ $status->name }}
                                 </option>
                             @endforeach
@@ -117,37 +117,10 @@
                         @enderror
                     </div>
 
-                    <!-- Услуги -->
-                    <div class="mb-3">
-                        <label class="form-label">Услуги</label>
-                        <div class="row">
-                            @foreach($services as $service)
-                                <div class="col-md-4 mb-2">
-                                    <div class="form-check">
-                                        <input type="checkbox" name="services[]" value="{{ $service->id }}" 
-                                            id="service_{{ $service->id }}" class="form-check-input"
-                                            @if(in_array($service->id, old('services', []))) checked @endif>
-                                        <label for="service_{{ $service->id }}" class="form-check-label">
-                                            {{ $service->name }}
-                                            @if($service->price)
-                                                <small class="text-muted">({{ number_format($service->price, 0, ',', ' ') }} ₽)</small>
-                                            @endif
-                                        </label>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
                     <!-- Симптомы -->
                     <div class="mb-3">
                         <label for="symptoms" class="form-label">Симптомы</label>
-                        <select name="symptoms[]" id="symptoms" class="form-select" multiple>
-                            @foreach($symptoms as $symptom)
-                                <option value="{{ $symptom->id }}" @if(in_array($symptom->id, old('symptoms', []))) selected @endif>
-                                    {{ $symptom->name }}
-                                </option>
-                            @endforeach
+                        <select name="symptoms[]" id="symptoms" class="form-select" multiple data-url="{{ route('admin.visits.symptom-options') }}">
                         </select>
                         <div class="form-text">Удерживайте Ctrl для выбора нескольких симптомов</div>
                     </div>
@@ -155,12 +128,7 @@
                     <!-- Диагнозы -->
                     <div class="mb-3">
                         <label for="diagnoses" class="form-label">Диагнозы</label>
-                        <select name="diagnoses[]" id="diagnoses" class="form-select" multiple>
-                            @foreach($diagnoses as $diagnosis)
-                                <option value="{{ $diagnosis->id }}" @if(in_array($diagnosis->id, old('diagnoses', []))) selected @endif>
-                                    {{ $diagnosis->name }}
-                                </option>
-                            @endforeach
+                        <select name="diagnoses[]" id="diagnoses" class="form-select" multiple data-url="{{ route('admin.visits.diagnosis-options') }}">
                         </select>
                         <div class="form-text">Удерживайте Ctrl для выбора нескольких диагнозов</div>
                     </div>
@@ -174,31 +142,6 @@
                         </a>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title mb-0">Информация</h6>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <h6 class="alert-heading">Обязательные поля</h6>
-                    <ul class="mb-0">
-                        <li>Клиент</li>
-                        <li>Питомец</li>
-                        <li>Расписание</li>
-                        <li>Время начала</li>
-                        <li>Статус</li>
-                    </ul>
-                </div>
-                
-                <div class="alert alert-warning">
-                    <h6 class="alert-heading">Примечание</h6>
-                    <p class="mb-0">Питомец должен принадлежать выбранному клиенту. При смене клиента список питомцев обновится автоматически.</p>
-                </div>
             </div>
         </div>
     </div>
@@ -230,10 +173,34 @@
         
         new createTomSelect('#symptoms', {
             placeholder: 'Выберите симптомы...',
+            create: true,
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            }
         });
         
         new createTomSelect('#diagnoses', {
             placeholder: 'Выберите диагнозы...',
+            create: true,
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            }
         });
         
         // Фильтрация питомцев по клиенту
@@ -243,6 +210,13 @@
             petTomSelect.clear();
             petTomSelect.clearOptions();
             
+            if (!clientId) {
+                petSelect.setAttribute('disabled', 'disabled');
+                return;
+            } else {
+                petSelect.removeAttribute('disabled');
+            }
+            
             petOptions.forEach(option => {
                 if (option.value === '' || option.dataset.client === clientId) {
                     petTomSelect.addOption({
@@ -251,32 +225,27 @@
                     });
                 }
             });
+            
+            // Восстанавливаем выбранное значение питомца
+            const currentPetId = '{{ old("pet_id") }}';
+            if (currentPetId) {
+                petTomSelect.setValue(currentPetId);
+            }
         }
         
         // Слушатель изменения клиента
         clientSelect.addEventListener('change', function() {
             const clientId = this.value;
-            if (clientId) {
-                filterPetsByClient(clientId);
-            } else {
-                // Если клиент не выбран, показываем всех питомцев
-                petTomSelect.clear();
-                petTomSelect.clearOptions();
-                const petOptions = petSelect.querySelectorAll('option');
-                petOptions.forEach(option => {
-                    petTomSelect.addOption({
-                        value: option.value,
-                        text: option.textContent
-                    });
-                });
-            }
+            filterPetsByClient(clientId);
         });
         
         // Инициализация при загрузке страницы
         const initialClientId = clientSelect.value;
-        if (initialClientId) {
-            filterPetsByClient(initialClientId);
-        }
+        filterPetsByClient(initialClientId);
+
+        createDatepicker('#starts_at', {
+            timepicker: true
+        });
     });
 </script>
 @endpush 

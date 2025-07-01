@@ -6,6 +6,7 @@ use App\Models\Schedule;
 use App\Models\Employee;
 use App\Models\Branch;
 use App\Http\Filters\ScheduleFilter;
+use App\Http\Traits\HasSelectOptions;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -17,6 +18,8 @@ use App\Http\Requests\Admin\Schedule\UpdateRequest;
 
 class ScheduleController extends AdminController
 {
+    use HasSelectOptions;
+
     public function __construct()
     {
         $this->model = Schedule::class;
@@ -34,7 +37,7 @@ class ScheduleController extends AdminController
     {
         $filter = app(ScheduleFilter::class, ['queryParams' => $request->query()]);
         $query = $this->model::with(['veterinarian', 'branch'])->filter($filter);
-        $items = $query->paginate(10)->withQueryString();
+        $items = $query->paginate(30)->withQueryString();
         
         $veterinarians = Employee::whereHas('specialties', function($query) {
             $query->where('is_veterinarian', true);

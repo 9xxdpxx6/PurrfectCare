@@ -33,7 +33,7 @@
     <div class="container-fluid">
         <div class="row">
             <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-                <div class="sidebar-sticky">
+                <div class="sidebar-sticky shadow">
                     <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
@@ -52,7 +52,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.visits.*') ? 'active' : '' }}" href="{{ route('admin.visits.index') }}">
-                                <i class="bi bi-calendar-check"></i> Приемы
+                                <i class="bi bi-clipboard2-pulse"></i> Приемы
                             </a>
                         </li>
                         <li class="nav-item">
@@ -67,7 +67,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.drugs.*') ? 'active' : '' }}" href="{{ route('admin.drugs.index') }}">
-                                <i class="bi bi-capsule"></i> Препараты
+                                <i class="bi bi-capsule-pill"></i> Препараты
                             </a>
                         </li>
                         <li class="nav-item">
@@ -92,7 +92,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}" href="{{ route('admin.services.index') }}">
-                                <i class="bi bi-gear"></i> Услуги
+                                <i class="bi bi-bandaid"></i> Услуги
                             </a>
                         </li>
                         <li class="nav-item">
@@ -143,7 +143,7 @@
                 setTimeout(() => {
                     var bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
                     bsAlert.close();
-                }, 3000);
+                }, 5000);
             });
 
             // Theme switcher

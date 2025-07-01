@@ -36,7 +36,7 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="veterinarian_id" class="form-label">Ветеринар <span class="text-danger">*</span></label>
+                            <label for="veterinarian_id" class="form-label">Ветеринар</label>
                             <select name="veterinarian_id" id="veterinarian_id" class="form-select @error('veterinarian_id') is-invalid @enderror" required>
                                 <option value="">Выберите ветеринара</option>
                                 @foreach($veterinarians as $veterinarian)
@@ -55,7 +55,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="branch_id" class="form-label">Филиал <span class="text-danger">*</span></label>
+                            <label for="branch_id" class="form-label">Филиал</label>
                             <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror" required>
                                 <option value="">Выберите филиал</option>
                                 @foreach($branches as $branch)
@@ -73,7 +73,7 @@
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="shift_date" class="form-label">Дата смены <span class="text-danger">*</span></label>
+                            <label for="shift_date" class="form-label">Дата смены</label>
                             @php
                                 $shiftDate = old('shift_date');
                                 if (!$shiftDate) {
@@ -89,7 +89,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="start_time" class="form-label">Время начала <span class="text-danger">*</span></label>
+                            <label for="start_time" class="form-label">Время начала</label>
                             @php
                                 $startTime = old('start_time');
                                 if (!$startTime) {
@@ -102,7 +102,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="end_time" class="form-label">Время окончания <span class="text-danger">*</span></label>
+                            <label for="end_time" class="form-label">Время окончания</label>
                             @php
                                 $endTime = old('end_time');
                                 if (!$endTime) {
@@ -122,16 +122,13 @@
                         <input type="hidden" name="shift_ends_at" id="shift_ends_at">
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-warning">
-                            <i class="bi bi-check-lg"></i> Обновить расписание
-                        </button>
-                        <a href="{{ route('admin.schedules.show', $item) }}" class="btn btn-outline-info">
-                            <i class="bi bi-eye"></i> Просмотр
-                        </a>
+                    <div class="d-flex gap-2 justify-content-between">
                         <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i> Отмена
                         </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-lg"></i> Сохранить
+                        </button>
                     </div>
                 </form>
             </div>
@@ -181,44 +178,6 @@
                         <strong>Филиал:</strong><br>
                         {{ $item->branch->name ?? 'Не указан' }}
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6 class="card-title mb-0">Действия</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('admin.schedules.show', $item) }}" class="btn btn-outline-info">
-                        <i class="bi bi-eye"></i> Просмотр расписания
-                    </a>
-                    
-                    <form action="{{ route('admin.schedules.destroy', $item) }}" method="POST" 
-                        onsubmit="return confirm('Удалить расписание {{ $item->shift_starts_at->format('d.m.Y H:i') }}?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="bi bi-trash"></i> Удалить расписание
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6 class="card-title mb-0">Справка</h6>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <h6 class="alert-heading">Редактирование</h6>
-                    <ul class="mb-0 small">
-                        <li>Все поля обязательны для заполнения</li>
-                        <li>Время окончания должно быть позже времени начала</li>
-                        <li>При изменении даты проверьте наличие конфликтов с другими расписаниями</li>
-                    </ul>
                 </div>
             </div>
         </div>

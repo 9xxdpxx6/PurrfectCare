@@ -65,7 +65,7 @@
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label for="veterinarian_id" class="form-label">Ветеринар <span class="text-danger">*</span></label>
+                            <label for="veterinarian_id" class="form-label">Ветеринар</label>
                             <select name="veterinarian_id" id="veterinarian_id" class="form-select @error('veterinarian_id') is-invalid @enderror">
                                 <option value="">Выберите ветеринара</option>
                                 @foreach($veterinarians as $veterinarian)
@@ -83,7 +83,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="branch_id" class="form-label">Филиал <span class="text-danger">*</span></label>
+                            <label for="branch_id" class="form-label">Филиал</label>
                             <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
                                 <option value="">Выберите филиал</option>
                                 @foreach($branches as $branch)
@@ -100,7 +100,7 @@
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label for="week_start" class="form-label">Начало недели <span class="text-danger">*</span></label>
+                            <label for="week_start" class="form-label">Начало недели</label>
                             <input type="text" name="week_start" id="week_start" 
                                 class="form-control @error('week_start') is-invalid @enderror" 
                                 value="{{ old('week_start') }}" readonly>
@@ -226,17 +226,6 @@
                 </h6>
             </div>
             <div class="card-body">
-                <div class="alert alert-info">
-                    <h6 class="alert-heading">Обязательные поля</h6>
-                    <ul class="mb-0">
-                        <li>Ветерина</li>
-                        <li>Филиал</li>
-                        <li>Начало недели</li>
-                        <li>Минимум один день недели</li>
-                        <li>Время начала и окончания для каждого выбранного дня</li>
-                    </ul>
-                </div>
-
                 <div class="alert alert-warning">
                     <h6 class="alert-heading">Важно</h6>
                     <p class="mb-0">Если для выбранного дня уже существует расписание, оно не будет перезаписано.</p>
@@ -470,6 +459,45 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // Функция для обновления дат в подписях дней недели
+    function updateDayLabels() {
+        const weekStartVal = document.getElementById('week_start').value;
+        if (!weekStartVal) return;
+        const selectedDate = new Date(weekStartVal.split('.').reverse().join('-'));
+        // Определяем понедельник недели для выбранной даты
+        const dayOfWeek = selectedDate.getDay();
+        // JS: 0 - воскресенье, 1 - понедельник, ...
+        const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const monday = new Date(selectedDate);
+        monday.setDate(selectedDate.getDate() + diffToMonday);
+        const days = [
+            {key: 'monday', label: 'Понедельник'},
+            {key: 'tuesday', label: 'Вторник'},
+            {key: 'wednesday', label: 'Среда'},
+            {key: 'thursday', label: 'Четверг'},
+            {key: 'friday', label: 'Пятница'},
+            {key: 'saturday', label: 'Суббота'},
+            {key: 'sunday', label: 'Воскресенье'}
+        ];
+        days.forEach((day, idx) => {
+            const label = document.querySelector('label[for="day_' + day.key + '"]');
+            if (label) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + idx);
+                const d = String(date.getDate()).padStart(2, '0');
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                label.innerHTML = day.label + ' <small class="text-muted">(' + d + '.' + m + ')</small>';
+            }
+        });
+    }
+
+    // Вызов при изменении week_start
+    document.getElementById('week_start').addEventListener('change', function() {
+        updateDayLabels();
+    });
+    // Вызов при загрузке, если дата уже есть
+    updateDayLabels();
 
     // Первоначальное обновление предпросмотра
     updateSchedulePreview();

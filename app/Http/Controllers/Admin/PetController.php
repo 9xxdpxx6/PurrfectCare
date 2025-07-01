@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Breed;
 use App\Http\Requests\Admin\Pet\StoreRequest;
 use App\Http\Requests\Admin\Pet\UpdateRequest;
+use App\Http\Traits\HasSelectOptions;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,8 @@ use App\Http\Filters\PetFilter;
 
 class PetController extends AdminController
 {
+    use HasSelectOptions;
+
     public function __construct()
     {
         $this->model = Pet::class;

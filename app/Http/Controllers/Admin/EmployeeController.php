@@ -8,6 +8,7 @@ use App\Models\Branch;
 use App\Http\Requests\Admin\Employee\StoreRequest;
 use App\Http\Requests\Admin\Employee\UpdateRequest;
 use App\Http\Filters\EmployeeFilter;
+use App\Http\Traits\HasSelectOptions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -16,6 +17,8 @@ use Illuminate\Http\RedirectResponse;
 
 class EmployeeController extends AdminController
 {
+    use HasSelectOptions;
+
     public function __construct()
     {
         $this->model = Employee::class;
@@ -23,7 +26,7 @@ class EmployeeController extends AdminController
         $this->routePrefix = 'employees';
     }
 
-    public function index(Request $request) : View
+        public function index(Request $request) : View
     {
         $filter = app(EmployeeFilter::class, ['queryParams' => array_filter($request->all())]);
         $employees = Employee::filter($filter)
@@ -102,5 +105,11 @@ class EmployeeController extends AdminController
         // TODO: отправить новый временный пароль на email
         return redirect()->route('admin.employees.index')
             ->with('success', 'Пароль успешно сброшен. Новый временный пароль: ' . $tempPassword);
+    }
+
+    public function show($id): View
+    {
+        $employee = Employee::with(['specialties', 'branches'])->findOrFail($id);
+        return view('admin.employees.show', compact('employee'));
     }
 }

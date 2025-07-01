@@ -29,11 +29,15 @@
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="specialty" class="form-label mb-1">Специальность</label>
-            <select name="specialty" id="specialty" class="form-select tomselect">
-                <option value="">Все</option>
-                @foreach($specialties as $specialty)
-                    <option value="{{ $specialty->id }}" @selected(request('specialty') == $specialty->id)>{{ $specialty->name }}</option>
-                @endforeach
+            <select name="specialty" id="specialty" class="form-select tomselect" data-url="{{ route('admin.employees.specialty-options') }}">
+                @if(request('specialty'))
+                    @php
+                        $selectedSpecialty = \App\Models\Specialty::find(request('specialty'));
+                    @endphp
+                    @if($selectedSpecialty)
+                        <option value="{{ $selectedSpecialty->id }}" selected>{{ $selectedSpecialty->name }}</option>
+                    @endif
+                @endif
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
@@ -47,7 +51,6 @@
             </select>
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-            <!-- TODO: сделать загрузку опшионов с БД -->
             <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
@@ -64,7 +67,7 @@
             <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
                 <div class="card-body flex-grow-1 d-flex flex-column flex-lg-row align-items-lg-center">
                     <div class="flex-grow-1">
-                        <h5 class="card-title mb-1">{{ $employee->name }}</h5>
+                        <h5 class="card-title mb-3">{{ $employee->name }}</h5>
                         <h6 class="card-subtitle mb-2 text-muted">
                             {{ $employee->specialties->pluck('name')->join(', ') ?: '—' }}
                         </h6>
@@ -79,6 +82,10 @@
                         </p>
                     </div>
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start">
+                        <a href="{{ route('admin.employees.show', $employee) }}" class="btn btn-outline-info" title="Просмотр">
+                            <span class="d-none d-lg-inline-block">Просмотр</span>
+                            <i class="bi bi-eye"></i>
+                        </a>
                         <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-outline-warning" title="Редактировать">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
@@ -111,8 +118,34 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        new createTomSelect('#specialty', {
-            placeholder: 'Выберите специальность...'
+        const selectedValue = '{{ request("specialty") }}';
+        
+        const specialtySelect = new createTomSelect('#specialty', {
+            placeholder: 'Выберите специальность...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть выбранное значение и это первая загрузка, передаём его
+                if (selectedValue && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedValue);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => {
+                        callback(json);
+                        // НЕ вызываем setValue() - значение уже установлено в HTML
+                    })
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
     });
 </script>

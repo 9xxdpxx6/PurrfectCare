@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Поставка препарата</h1>
+    <h1 class="h2">Поставка препарата {{ $item->delivery_date->format('d.m.Y') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.drug-procurements.edit', $item) }}" class="btn btn-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
@@ -62,14 +62,6 @@
                         </span>
                     </div>
                 </div>
-                <div class="row mb-2">
-                    <div class="col-sm-4 fw-bold">Добавлено:</div>
-                    <div class="col-sm-8">{{ $item->created_at->format('d.m.Y H:i') }}</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-sm-4 fw-bold">Обновлено:</div>
-                    <div class="col-sm-8">{{ $item->updated_at->format('d.m.Y H:i') }}</div>
-                </div>
             </div>
         </div>
     </div>
@@ -83,6 +75,7 @@
                     <a href="{{ route('admin.drug-procurements.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
+                    <hr>
                     <form action="{{ route('admin.drug-procurements.destroy', $item) }}" method="POST" class="d-grid">
                         @csrf
                         @method('DELETE')

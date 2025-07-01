@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Unit;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class UnitSeeder extends Seeder
 {
@@ -26,6 +25,6 @@ class UnitSeeder extends Seeder
             ['name' => 'Упаковка', 'symbol' => 'уп'],
         ];
 
-        DB::table('units')->insert($units);
+        Unit::insert($units);
     }
 }

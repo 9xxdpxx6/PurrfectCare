@@ -7,16 +7,16 @@
     <h1 class="h2">Расписание {{ $item->shift_starts_at->format('d.m.Y') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.schedules.edit', $item) }}" class="btn btn-warning me-2">
-            <i class="bi bi-pencil"></i> Редактировать
+            <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
         <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> К списку расписаний
+            <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <!-- Основная информация -->
         <div class="card mb-4">
             <div class="card-header">
@@ -26,26 +26,25 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
+                    <div class="col-xl-6">
+                        <table class="table table-borderless w-100">
                             <tr>
-                                <td class="fw-bold">Дата:</td>
-                                <td>
-                                    {{ $item->shift_starts_at->format('d.m.Y') }}
+                                <td class="fw-bold" style="width: 50%;">Дата:</td>
+                                <td style="width: 50%;">{{ $item->shift_starts_at->format('d.m.Y') }}
                                     <span class="badge bg-secondary">{{ $item->shift_starts_at->locale('ru')->translatedFormat('l') }}</span>
                                 </td>
                             </tr>
                             <tr>
-                                <td class="fw-bold">Время начала:</td>
-                                <td>{{ $item->shift_starts_at->format('H:i') }}</td>
+                                <td class="fw-bold" style="width: 50%;">Время начала:</td>
+                                <td style="width: 50%;">{{ $item->shift_starts_at->format('H:i') }}</td>
                             </tr>
                             <tr>
-                                <td class="fw-bold">Время окончания:</td>
-                                <td>{{ $item->shift_ends_at->format('H:i') }}</td>
+                                <td class="fw-bold" style="width: 50%;">Время окончания:</td>
+                                <td style="width: 50%;">{{ $item->shift_ends_at->format('H:i') }}</td>
                             </tr>
                             <tr>
-                                <td class="fw-bold">Продолжительность:</td>
-                                <td>
+                                <td class="fw-bold" style="width: 50%;">Продолжительность:</td>
+                                <td style="width: 50%;">
                                     @php
                                         $duration = $item->shift_starts_at->diffInHours($item->shift_ends_at);
                                     @endphp
@@ -55,29 +54,27 @@
                         </table>
                     </div>
                     
-                    <div class="col-md-6">
-                        <table class="table table-borderless">
+                    <div class="col-xl-6">
+                        <table class="table table-borderless w-100">
                             <tr>
-                                <td class="fw-bold">Ветеринар:</td>
-                                <td>
-                                    {{ $item->veterinarian->name ?? 'Не указан' }}
+                                <td class="fw-bold" style="width: 50%;">Ветеринар:</td>
+                                <td style="width: 50%;">{{ $item->veterinarian->name ?? 'Не указан' }}
                                     @if($item->veterinarian && $item->veterinarian->specialization)
                                         <br><small class="text-muted">{{ $item->veterinarian->specialization }}</small>
                                     @endif
                                 </td>
                             </tr>
                             <tr>
-                                <td class="fw-bold">Филиал:</td>
-                                <td>
-                                    {{ $item->branch->name ?? 'Не указан' }}
+                                <td class="fw-bold" style="width: 50%;">Филиал:</td>
+                                <td style="width: 50%;">{{ $item->branch->name ?? 'Не указан' }}
                                     @if($item->branch && $item->branch->address)
                                         <br><small class="text-muted">{{ $item->branch->address }}</small>
                                     @endif
                                 </td>
                             </tr>
                             <tr>
-                                <td class="fw-bold">Статус:</td>
-                                <td>
+                                <td class="fw-bold" style="width: 50%;">Статус:</td>
+                                <td style="width: 50%;">
                                     @if($item->shift_ends_at < now())
                                         <span class="badge bg-secondary">Завершено</span>
                                     @elseif($item->shift_starts_at <= now() && $item->shift_ends_at >= now())
@@ -102,7 +99,6 @@
             </div>
             <div class="card-body">
                 @php
-                    // Получаем приемы для этого расписания (если есть связь)
                     $visits = \App\Models\Visit::where('schedule_id', $item->id)->with(['client', 'pet', 'status'])->get();
                 @endphp
                 
@@ -156,36 +152,7 @@
         </div>
     </div>
 
-    <div class="col-md-4">
-        <!-- Действия -->
-        <div class="card mb-3">
-            <div class="card-header">
-                <h6 class="card-title mb-0">Действия</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('admin.schedules.edit', $item) }}" class="btn btn-warning">
-                        <i class="bi bi-pencil"></i> Редактировать расписание
-                    </a>
-                    
-                    <a href="{{ route('admin.visits.create') }}?schedule_id={{ $item->id }}" class="btn btn-outline-primary">
-                        <i class="bi bi-calendar-plus"></i> Запланировать прием
-                    </a>
-                    
-                    <hr>
-                    
-                    <form action="{{ route('admin.schedules.destroy', $item) }}" method="POST" 
-                        onsubmit="return confirm('Удалить расписание {{ $item->shift_starts_at->format('d.m.Y H:i') }}?\n\nВнимание: Связанные приемы также могут быть затронуты.');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="bi bi-trash"></i> Удалить расписание
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
+    <div class="col-lg-4">
         <!-- Информация о времени -->
         <div class="card mb-3">
             <div class="card-header">
@@ -238,19 +205,31 @@
             </div>
         </div>
 
-        <!-- Информация о создании/обновлении -->
-        <div class="card">
+        <!-- Действия -->
+        <div class="card mb-3">
             <div class="card-header">
-                <h6 class="card-title mb-0">Системная информация</h6>
+                <h6 class="card-title mb-0">Действия</h6>
             </div>
-            <div class="card-body small text-muted">
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Создано:</span>
-                    <span>{{ $item->created_at->format('d.m.Y H:i') }}</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                    <span>Обновлено:</span>
-                    <span>{{ $item->updated_at->format('d.m.Y H:i') }}</span>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ route('admin.schedules.edit', $item) }}" class="btn btn-outline-warning">
+                        <i class="bi bi-pencil"></i> Редактировать расписание
+                    </a>
+        
+                    <a href="{{ route('admin.visits.create') }}?schedule_id={{ $item->id }}" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-plus"></i> Запланировать прием
+                    </a>
+        
+                    <hr>
+        
+                    <form action="{{ route('admin.schedules.destroy', $item) }}" method="POST"
+                        onsubmit="return confirm('Удалить расписание {{ $item->shift_starts_at->format('d.m.Y H:i') }}?\n\nВнимание: Связанные приемы также могут быть затронуты.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-trash"></i> Удалить расписание
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

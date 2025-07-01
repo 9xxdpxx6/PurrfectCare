@@ -7,12 +7,15 @@ use App\Models\Branch;
 use App\Http\Requests\Admin\Service\StoreRequest;
 use App\Http\Requests\Admin\Service\UpdateRequest;
 use App\Http\Filters\ServiceFilter;
+use App\Http\Traits\HasSelectOptions;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class ServiceController extends AdminController
 {
+    use HasSelectOptions;
+
     public function __construct()
     {
         $this->model = Service::class;
@@ -73,5 +76,41 @@ class ServiceController extends AdminController
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Услуга успешно обновлена');
+    }
+
+    public function show($id): View
+    {
+        $item = $this->model::with(['branches'])->findOrFail($id);
+        
+        // Подсчитываем количество раз, когда услуга была оказана (из order_items)
+        $ordersCount = $item->orders()->sum('quantity');
+        
+        // Находим первое и последнее оказание услуги через order_items
+        $firstOrderDate = $item->orders()
+            ->with('order')
+            ->get()
+            ->pluck('order.created_at')
+            ->filter()
+            ->min();
+            
+        $lastOrderDate = $item->orders()
+            ->with('order')
+            ->get()
+            ->pluck('order.created_at')
+            ->filter()
+            ->max();
+        
+        return view("admin.{$this->viewPath}.show", compact('item', 'ordersCount', 'firstOrderDate', 'lastOrderDate'));
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        $item = $this->model::findOrFail($id);
+        $item->branches()->detach();
+        $item->delete();
+
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', 'Услуга успешно удалена');
     }
 } 

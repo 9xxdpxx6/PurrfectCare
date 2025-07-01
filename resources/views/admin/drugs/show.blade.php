@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Препарат: {{ $item->name }}</h1>
+    <h1 class="h2 col-12 col-md-7 col-xl-8">Препарат: {{ $item->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.drugs.edit', $item) }}" class="btn btn-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
@@ -175,6 +175,7 @@
                     <a href="{{ route('admin.drugs.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
+                    <hr>
                     <form action="{{ route('admin.drugs.destroy', $item) }}" method="POST" class="d-grid">
                         @csrf
                         @method('DELETE')

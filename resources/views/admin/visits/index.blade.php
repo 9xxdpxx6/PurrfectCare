@@ -81,65 +81,63 @@
 <div class="row g-3">
     @foreach($items as $visit)
         <div class="col-12">
-            <div class="card h-100 border-0 border-bottom shadow-sm
-        @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
-
-                <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-                    <!-- Основная информация -->
-                    <div class="d-flex flex-column justify-content-center flex-grow-1">
-                        <h5 class="card-title mb-1">
-                            <i class="bi bi-calendar-check"></i>
-                            {{ \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') }}
-                        </h5>
-
-                        <h6 class="card-subtitle mb-2 text-muted">
+            <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
+                <div class="card-body h-100 flex-grow-1 d-flex flex-column flex-lg-row align-items-lg-center">
+                    <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
+                        <div class="d-flex flex-row align-items-center gap-3 mb-2">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-calendar-check"></i>
+                                {{ \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') }}
+                            </h5>
                             @if($visit->status)
-                                <span class="badge" style="background-color: {{ $visit->status->color ?? '#6c757d' }}">
-                                    {{ $visit->status->name }}
-                                </span>
-                            @endif
-                        </h6>
-
-                        <div class="d-flex flex-wrap gap-3">
-                            <p class="card-text mb-0">
-                                <strong>Клиент:</strong> {{ $visit->client->name ?? 'Не указан' }}
-                            </p>
-
-                            <p class="card-text mb-0">
-                                <strong>Питомец:</strong> {{ $visit->pet->name ?? 'Не указан' }}
-                            </p>
-
-                            @if($visit->schedule && $visit->schedule->veterinarian)
-                                <p class="card-text mb-0">
-                                    <strong>Ветеринар:</strong> {{ $visit->schedule->veterinarian->name ?? 'Не указан' }}
-                                </p>
+                                <span class="badge" style="background-color: {{ $visit->status->color ?? '#6c757d' }}">{{ $visit->status->name }}</span>
                             @endif
                         </div>
-
-                        @if($visit->complaints)
-                            <div class="mt-2">
-                                <small><strong>Жалобы:</strong> {{ Str::limit($visit->complaints, 100) }}</small>
+                        <div class="mt-auto">
+                            <div class="d-flex flex-wrap gap-3">
+                                <p class="card-text mb-0">
+                                    <strong>Клиент:</strong> {{ $visit->client->name ?? 'Не указан' }}
+                                </p>
+                                <p class="card-text mb-0">
+                                    <strong>Питомец:</strong> {{ $visit->pet->name ?? 'Не указан' }}
+                                </p>
+                                @if($visit->schedule && $visit->schedule->veterinarian)
+                                    <p class="card-text mb-0">
+                                        <strong>Ветеринар:</strong> {{ $visit->schedule->veterinarian->name ?? 'Не указан' }}
+                                    </p>
+                                @endif
                             </div>
-                        @endif
-
-                        @if($visit->notes)
-                            <div class="mt-1">
-                                <small><strong>Заметки:</strong> {{ Str::limit($visit->notes, 100) }}</small>
-                            </div>
-                        @endif
-
-                        @if($visit->diagnoses && $visit->diagnoses->count() > 0)
-                            <div class="mt-2">
-                                <small><strong>Диагнозы:</strong>
-                                    @foreach($visit->diagnoses as $diagnosis)
-                                        <span class="badge bg-info">{{ $diagnosis->name }}</span>
-                                    @endforeach
-                                </small>
-                            </div>
-                        @endif
+                            @if($visit->complaints)
+                                <div class="mt-2">
+                                    <small><strong>Жалобы:</strong> {{ Str::limit($visit->complaints, 100) }}</small>
+                                </div>
+                            @endif
+                            @if($visit->notes)
+                                <div class="mt-1">
+                                    <small><strong>Заметки:</strong> {{ Str::limit($visit->notes, 100) }}</small>
+                                </div>
+                            @endif
+                            @if($visit->symptoms && $visit->symptoms->count() > 0)
+                                <div class="mt-2">
+                                    <small><strong>Симптомы:</strong>
+                                        @foreach($visit->symptoms as $symptom)
+                                            <span class="text-warning">{{ $symptom->getName() }}@if(!$loop->last), @endif</span>
+                                        @endforeach
+                                    </small>
+                                </div>
+                            @endif
+                            @if($visit->diagnoses && $visit->diagnoses->count() > 0)
+                                <div class="mt-2">
+                                    <small><strong>Диагнозы:</strong>
+                                        @foreach($visit->diagnoses as $diagnosis)
+                                            <span class="text-info">{{ $diagnosis->getName() }}@if(!$loop->last), @endif</span>
+                                        @endforeach
+                                    </small>
+                                </div>
+                            @endif
+                        </div>
                     </div>
-
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start">
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
                         <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-info" title="Просмотр">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>

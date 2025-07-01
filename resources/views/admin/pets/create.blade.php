@@ -108,11 +108,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        new AirDatepicker('#birthdate');
-        new createTomSelect('#client_id', {
+        createDatepicker('#birthdate', {});
+        createTomSelect('#client_id', {
             placeholder: 'Выберите владельца...'
         });
-        new createTomSelect('#breed_id', {
+        createTomSelect('#breed_id', {
             placeholder: 'Выберите породу...'
         });
     });
