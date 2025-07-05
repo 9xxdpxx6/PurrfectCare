@@ -78,6 +78,17 @@
     @endforeach
 </div>
 
+@if($items->isEmpty())
+    <div class="text-center py-5">
+        <i class="bi bi-truck-flatbed display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">Поставщики не найдены</h3>
+        <p class="text-muted">Попробуйте изменить параметры поиска или создайте нового поставщика.</p>
+        <a href="{{ route('admin.suppliers.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Добавить поставщика
+        </a>
+    </div>
+@endif
+
 <div class="mt-4">
     {{ $items->links() }}
 </div>

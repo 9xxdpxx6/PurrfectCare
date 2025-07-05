@@ -107,58 +107,86 @@
     </div>
     <div class="card-body">
         @if($supplier->procurements->count() > 0)
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>Дата поставки</th>
-                            <th>Препарат</th>
-                            <th>Количество</th>
-                            <th>Цена за единицу</th>
-                            <th>Общая стоимость</th>
-                            <th>Дата производства</th>
-                            <th>Дата упаковки</th>
-                            <th>Срок годности</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($supplier->procurements as $procurement)
-                            <tr>
-                                <td>
-                                    <strong>{{ $procurement->delivery_date->format('d.m.Y') }}</strong>
-                                    <br>
-                                    <small class="text-muted">{{ $procurement->delivery_date->format('H:i') }}</small>
-                                </td>
-                                <td>
-                                    <strong>{{ $procurement->drug->name ?? 'Неизвестный препарат' }}</strong>
-                                </td>
-                                <td>
-                                    <span>{{ $procurement->quantity }}</span>
-                                </td>
-                                <td>{{ number_format($procurement->price, 2) }} ₽</td>
-                                <td>
-                                    <strong>{{ number_format($procurement->price * $procurement->quantity, 2) }} ₽</strong>
-                                </td>
-                                <td>{{ $procurement->manufacture_date->format('d.m.Y') }}</td>
-                                <td>{{ $procurement->packaging_date->format('d.m.Y') }}</td>
-                                <td>
-                                    @php
-                                        $isExpired = $procurement->expiry_date->isPast();
-                                        $isExpiringSoon = $procurement->expiry_date->diffInDays(now()) <= 30;
-                                    @endphp
-                                    <span class="badge {{ $isExpired ? 'bg-danger' : ($isExpiringSoon ? 'bg-warning' : 'bg-success') }}">
-                                        {{ $procurement->expiry_date->format('d.m.Y') }}
-                                    </span>
-                                    @if($isExpired)
-                                        <br><small class="text-danger">Истёк</small>
-                                    @elseif($isExpiringSoon)
-                                        <br><small class="text-warning">Скоро истечёт</small>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <div class="d-flex flex-column gap-3">
+                @foreach($supplier->procurements as $procurement)
+                    <div class="border rounded p-3 bg-body-tertiary">
+                        <div class="row align-items-center g-2">
+                            <!-- Строка 1 для MD: Препарат и дата -->
+                            <div class="col-12 col-md-12 col-xl-3 mb-2 mb-xl-0">
+                                <div class="d-md-flex d-xl-block justify-content-between align-items-center">
+                                    <h6 class="mb-1 mb-md-0 mb-xl-1">
+                                        <a href="{{ route('admin.drugs.show', $procurement->drug) }}" class="text-decoration-none">
+                                            {{ $procurement->drug->name ?? 'Неизвестный препарат' }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar3"></i> {{ $procurement->delivery_date->format('d.m.Y') }}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Строка 2 для MD: Количество и цена -->
+                            <div class="col-12 col-md-6 col-xl-2 mb-2 mb-xl-0">
+                                <div class="mb-1">
+                                    <small class="text-muted">Количество:</small> {{ $procurement->quantity }}
+                                </div>
+                                <div>
+                                    <small class="text-muted">Цена:</small> {{ number_format($procurement->price, 2) }} ₽
+                                </div>
+                            </div>
+                            
+                            <!-- Строка 2 для MD: Сумма -->
+                            <div class="col-12 col-md-6 col-xl-2 mb-2 mb-xl-0">
+                                <div class="text-end">
+                                    <small class="text-muted d-block">Сумма</small>
+                                    <span class="fw-bold">{{ number_format($procurement->price * $procurement->quantity, 2) }} ₽</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Строка 3 для MD: Даты производства и упаковки -->
+                            <div class="col-12 col-md-6 col-xl-2 mb-2 mb-xl-0">
+                                <div class="gap-md-3">
+                                    <div class="mb-1 mb-md-0 mb-xl-1">
+                                        <small class="text-muted">Произв.:</small> {{ $procurement->manufacture_date->format('d.m.Y') }}
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Упак.:</small> {{ $procurement->packaging_date->format('d.m.Y') }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Строка 3 для MD: Срок годности и действие -->
+                            <div class="col-12 col-md-6 col-xl-2 mb-2 mb-xl-0">
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <div>
+                                        @php
+                                            $isExpired = $procurement->expiry_date->isPast();
+                                            $isExpiringSoon = $procurement->expiry_date->diffInDays(now()) <= 30;
+                                        @endphp
+                                        <small class="text-muted d-block">
+                                            {{ $isExpired ? 'Просрочен' : 'Годен до' }}
+                                        </small>
+                                        <span class="badge {{ $isExpired ? 'bg-danger' : ($isExpiringSoon ? 'bg-warning' : 'bg-success') }}">
+                                            {{ $procurement->expiry_date->format('d.m.Y') }}
+                                        </span>
+                                    </div>
+                                    <div class="d-block d-xl-none">
+                                        <a href="{{ route('admin.drug-procurements.show', $procurement) }}" class="btn btn-outline-primary btn-sm" title="Подробнее">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-12 col-xl-1 mb-2 mb-xl-0 d-none d-xl-block">
+                                <div class="text-end">
+                                    <a href="{{ route('admin.drug-procurements.show', $procurement) }}" class="btn btn-outline-primary btn-sm" title="Подробнее">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         @else
             <div class="text-center py-4">

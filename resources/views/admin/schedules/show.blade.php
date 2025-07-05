@@ -29,21 +29,37 @@
                     <div class="col-xl-6">
                         <table class="table table-borderless w-100">
                             <tr>
-                                <td class="fw-bold" style="width: 50%;">Дата:</td>
+                                <td class="fw-bold" style="width: 50%;">
+                                    <i class="bi bi-calendar3"></i> 
+                                    <span class="d-none d-md-inline">Дата:</span>
+                                    <span class="d-md-none">Дата:</span>
+                                </td>
                                 <td style="width: 50%;">{{ $item->shift_starts_at->format('d.m.Y') }}
                                     <span class="badge bg-secondary">{{ $item->shift_starts_at->locale('ru')->translatedFormat('l') }}</span>
                                 </td>
                             </tr>
                             <tr>
-                                <td class="fw-bold" style="width: 50%;">Время начала:</td>
+                                <td class="fw-bold" style="width: 50%;">
+                                    <i class="bi bi-clock"></i> 
+                                    <span class="d-none d-md-inline">Время начала:</span>
+                                    <span class="d-md-none">Начало:</span>
+                                </td>
                                 <td style="width: 50%;">{{ $item->shift_starts_at->format('H:i') }}</td>
                             </tr>
                             <tr>
-                                <td class="fw-bold" style="width: 50%;">Время окончания:</td>
+                                <td class="fw-bold" style="width: 50%;">
+                                    <i class="bi bi-clock-fill"></i> 
+                                    <span class="d-none d-md-inline">Время окончания:</span>
+                                    <span class="d-md-none">Конец:</span>
+                                </td>
                                 <td style="width: 50%;">{{ $item->shift_ends_at->format('H:i') }}</td>
                             </tr>
                             <tr>
-                                <td class="fw-bold" style="width: 50%;">Продолжительность:</td>
+                                <td class="fw-bold" style="width: 50%;">
+                                    <i class="bi bi-hourglass-split"></i> 
+                                    <span class="d-none d-md-inline">Длительность:</span>
+                                    <span class="d-md-none">Длит.:</span>
+                                </td>
                                 <td style="width: 50%;">
                                     @php
                                         $duration = $item->shift_starts_at->diffInHours($item->shift_ends_at);
@@ -57,7 +73,11 @@
                     <div class="col-xl-6">
                         <table class="table table-borderless w-100">
                             <tr>
-                                <td class="fw-bold" style="width: 50%;">Ветеринар:</td>
+                                <td class="fw-bold" style="width: 50%;">
+                                    <i class="bi bi-person-check"></i> 
+                                    <span class="d-none d-md-inline">Ветеринар:</span>
+                                    <span class="d-md-none">Врач:</span>
+                                </td>
                                 <td style="width: 50%;">{{ $item->veterinarian->name ?? 'Не указан' }}
                                     @if($item->veterinarian && $item->veterinarian->specialization)
                                         <br><small class="text-muted">{{ $item->veterinarian->specialization }}</small>
@@ -65,7 +85,11 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="fw-bold" style="width: 50%;">Филиал:</td>
+                                <td class="fw-bold" style="width: 50%;">
+                                    <i class="bi bi-building"></i> 
+                                    <span class="d-none d-md-inline">Филиал:</span>
+                                    <span class="d-md-none">Филиал:</span>
+                                </td>
                                 <td style="width: 50%;">{{ $item->branch->name ?? 'Не указан' }}
                                     @if($item->branch && $item->branch->address)
                                         <br><small class="text-muted">{{ $item->branch->address }}</small>
@@ -73,7 +97,11 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="fw-bold" style="width: 50%;">Статус:</td>
+                                <td class="fw-bold" style="width: 50%;">
+                                    <i class="bi bi-activity"></i> 
+                                    <span class="d-none d-md-inline">Статус:</span>
+                                    <span class="d-md-none">Статус:</span>
+                                </td>
                                 <td style="width: 50%;">
                                     @if($item->shift_ends_at < now())
                                         <span class="badge bg-secondary">Завершено</span>
@@ -103,41 +131,56 @@
                 @endphp
                 
                 @if($visits->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Время</th>
-                                    <th>Клиент</th>
-                                    <th>Питомец</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($visits as $visit)
-                                    <tr>
-                                        <td>{{ $visit->starts_at->format('H:i') }}</td>
-                                        <td>{{ $visit->client->name ?? 'Не указан' }}</td>
-                                        <td>{{ $visit->pet->name ?? 'Не указан' }}</td>
-                                        <td>
-                                            @if($visit->status)
-                                                <span class="badge" style="background-color: {{ $visit->status->color ?? '#6c757d' }}">
-                                                    {{ $visit->status->name }}
-                                                </span>
-                                            @else
-                                                <span class="badge bg-secondary">Без статуса</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-sm btn-outline-info">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="d-flex flex-column gap-3">
+                        @foreach($visits as $visit)
+                            <div class="border rounded p-3 bg-body-tertiary position-relative">
+                                <!-- Статус для мобильных (правый верхний угол) -->
+                                <div class="position-absolute top-0 end-0 mt-3 me-3 d-md-none">
+                                    @if($visit->status)
+                                        <span class="badge" style="background-color: {{ $visit->status->color ?? '#6c757d' }}">
+                                            {{ $visit->status->name }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary">Без статуса</span>
+                                    @endif
+                                </div>
+                                
+                                <div class="row align-items-center g-2">
+                                    <!-- Время -->
+                                    <div class="col-12 col-md-2 mb-2 mb-md-0">
+                                        <div class="badge bg-dark fs-6 px-2 py-1">
+                                            {{ $visit->starts_at->format('H:i') }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Основная информация -->
+                                    <div class="col-12 col-md-5 col-xl-4 mb-2 mb-md-0 pe-md-0 pe-5">
+                                        <h6 class="mb-1">{{ $visit->client->name ?? 'Не указан' }}</h6>
+                                        <p class="text-muted small mb-0">
+                                            {{ $visit->pet->name ?? 'Питомец не указан' }}
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Статус для десктопа -->
+                                    <div class="col-md-3 text-center mb-2 mb-md-0 d-none d-md-block">
+                                        @if($visit->status)
+                                            <span class="badge" style="background-color: {{ $visit->status->color ?? '#6c757d' }}">
+                                                {{ $visit->status->name }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary">Без статуса</span>
+                                        @endif
+                                    </div>
+                                    
+                                    <!-- Действия -->
+                                    <div class="col-12 col-md-2 col-xl-3 text-center">
+                                        <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm w-100 text-nowrap" title="Подробнее о приеме">
+                                            <i class="bi bi-eye"></i> <span class="d-inline d-md-none d-xl-inline">Подробнее</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @else
                     <div class="text-center py-4 text-muted">
@@ -212,16 +255,13 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('admin.schedules.edit', $item) }}" class="btn btn-outline-warning">
-                        <i class="bi bi-pencil"></i> Редактировать расписание
-                    </a>
-        
                     <a href="{{ route('admin.visits.create') }}?schedule_id={{ $item->id }}" class="btn btn-outline-primary">
                         <i class="bi bi-calendar-plus"></i> Запланировать прием
                     </a>
-        
+                    <a href="{{ route('admin.schedules.edit', $item) }}" class="btn btn-outline-warning">
+                        <i class="bi bi-pencil"></i> Редактировать расписание
+                    </a>
                     <hr>
-        
                     <form action="{{ route('admin.schedules.destroy', $item) }}" method="POST"
                         onsubmit="return confirm('Удалить расписание {{ $item->shift_starts_at->format('d.m.Y H:i') }}?\n\nВнимание: Связанные приемы также могут быть затронуты.');">
                         @csrf

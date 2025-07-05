@@ -28,7 +28,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p class="mb-2">
-                            <strong><i class="bi bi-currency-dollar"></i> Цена:</strong>
+                            <strong><i class="bi bi-cash-stack"></i> Цена:</strong>
                             {{ number_format($item->price, 2, ',', ' ') }} ₽
                         </p>
                         <p class="mb-2">
@@ -70,47 +70,67 @@
             </div>
             <div class="card-body">
                 @if($item->procurements->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Поставщик</th>
-                                    <th>Дата поставки</th>
-                                    <th>Количество</th>
-                                    <th>Цена</th>
-                                    <th>Срок годности</th>
-                                    <th>Статус</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($item->procurements as $procurement)
-                                    <tr>
-                                        <td>
+                    <div class="d-flex flex-column gap-3">
+                        @foreach($item->procurements as $procurement)
+                            <div class="border rounded p-3 bg-body-tertiary">
+                                <div class="row align-items-center g-2">
+                                    <!-- Поставщик и дата -->
+                                    <div class="col-12 col-md-6 col-xl-4 mb-2 mb-xl-0">
+                                        <h6 class="mb-1">
                                             <a href="{{ route('admin.suppliers.show', $procurement->supplier) }}" class="text-decoration-none">
                                                 {{ $procurement->supplier->name }}
                                             </a>
-                                        </td>
-                                        <td>{{ $procurement->delivery_date->format('d.m.Y') }}</td>
-                                        <td>{{ $procurement->quantity }}{{ $item->unit ? ' ' . $item->unit->symbol : '' }}</td>
-                                        <td>{{ number_format($procurement->price, 2, ',', ' ') }} ₽</td>
-                                        <td>
-                                            <span class="@if($procurement->expiry_date->lt(\Carbon\Carbon::now())) text-danger @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30))) text-warning @endif">
-                                                {{ $procurement->expiry_date->format('d.m.Y') }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @if($procurement->expiry_date->lt(\Carbon\Carbon::now()))
-                                                <span class="badge bg-danger">Просрочен</span>
-                                            @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30)))
-                                                <span class="badge bg-warning">Скоро истечет</span>
-                                            @else
-                                                <span class="badge bg-success">Годен</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar3"></i> {{ $procurement->delivery_date->format('d.m.Y') }}
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Количество и цена -->
+                                    <div class="col-12 col-md-6 col-xl-4 mb-2 mb-xl-0">
+                                        <div class="d-flex justify-content-between justify-content-md-start gap-md-3">
+                                            <div>
+                                                <small class="text-muted d-block">Количество</small>
+                                                <span class="fw-bold">{{ $procurement->quantity }}{{ $item->unit ? $item->unit->symbol : '' }}</span>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Цена</small>
+                                                <span class="fw-bold">{{ number_format($procurement->price, 2, ',', ' ') }} ₽</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Срок годности и статус -->
+                                    <div class="col-12 col-xl-4 text-xl-end">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-xl-none">
+                                                <small class="text-muted d-block">Срок годности</small>
+                                                <span class="@if($procurement->expiry_date->lt(\Carbon\Carbon::now())) text-danger @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30))) text-warning @endif">
+                                                    {{ $procurement->expiry_date->format('d.m.Y') }}
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="d-none d-xl-block text-end">
+                                                <small class="text-muted d-block">Срок годности</small>
+                                                <div class="@if($procurement->expiry_date->lt(\Carbon\Carbon::now())) text-danger @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30))) text-warning @endif">
+                                                    {{ $procurement->expiry_date->format('d.m.Y') }}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="ms-2">
+                                                @if($procurement->expiry_date->lt(\Carbon\Carbon::now()))
+                                                    <span class="badge bg-danger">Просрочен</span>
+                                                @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30)))
+                                                    <span class="badge bg-warning">Скоро истечет</span>
+                                                @else
+                                                    <span class="badge bg-success">Годен</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @else
                     <p class="text-muted mb-0">Поставки не найдены</p>
@@ -137,8 +157,8 @@
                     <strong>{{ $item->procurements->pluck('supplier')->unique('id')->count() }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span>Общая стоимость:</span>
-                    <strong>{{ number_format($item->procurements->sum('price'), 2, ',', ' ') }} ₽</strong>
+                    <span>Средняя стоимость:</span>
+                    <strong>{{ number_format($item->procurements->avg('price'), 2, ',', ' ') }} ₽</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span>Общее количество:</span>

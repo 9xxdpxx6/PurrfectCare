@@ -103,12 +103,18 @@
             </div>
         </div>
     @endforeach
-    @if($employees->isEmpty())
-        <div class="col-12">
-            <div class="alert alert-info">Сотрудники не найдены.</div>
-        </div>
-    @endif
 </div>
+
+@if($employees->isEmpty())
+    <div class="text-center py-5">
+        <i class="bi bi-emoji-neutral display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">Сотрудники не найдены</h3>
+        <p class="text-muted">Попробуйте изменить параметры поиска или создайте нового сотрудника.</p>
+        <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Добавить сотрудника
+        </a>
+    </div>
+@endif
 
 <div class="mt-4">
     {{ $employees->links() }}

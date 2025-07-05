@@ -60,7 +60,7 @@
                     }
                 }
             @endphp
-            <input type="text" class="form-control @error('birthdate') is-invalid @enderror" id="birthdate" name="birthdate" value="{{ $birthdate }}" readonly>
+            <input type="text" class="form-control @error('birthdate') is-invalid @enderror" id="birthdate" name="birthdate" value="{{ $birthdate }}" autocomplete="off">
             @error('birthdate')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">

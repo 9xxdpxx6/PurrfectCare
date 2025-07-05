@@ -148,8 +148,12 @@
 
 @if($items->count() == 0)
     <div class="text-center py-5">
-        <i class="bi bi-inbox display-1 text-muted"></i>
-        <p class="text-muted mt-3">Препараты не найдены</p>
+        <i class="bi bi-capsule-pill display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">Препараты не найдены</h3>
+        <p class="text-muted">Попробуйте изменить параметры поиска или создайте новый препарат.</p>
+        <a href="{{ route('admin.drugs.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Добавить препарат
+        </a>
     </div>
 @endif
 

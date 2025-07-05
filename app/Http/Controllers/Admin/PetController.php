@@ -75,10 +75,21 @@ class PetController extends AdminController
     {
         $pet = $this->model::with([
             'client',
-            'breed.species',
-            'visits' => function($q) { $q->latest()->limit(10); },
-            'orders' => function($q) { $q->latest()->limit(10); }
+            'breed.species'
         ])->findOrFail($id);
-        return view("admin.{$this->viewPath}.show", compact('pet'));
+        
+        // Получаем общее количество записей
+        $visitsTotal = $pet->visits()->count();
+        $vaccinationsTotal = $pet->vaccinations()->count();
+        $labTestsTotal = $pet->labTests()->count();
+        $ordersTotal = $pet->orders()->count();
+        
+        // Загружаем ограниченные данные для отображения
+        $visits = $pet->visits()->with(['schedule.veterinarian'])->latest()->limit(10)->get();
+        $vaccinations = $pet->vaccinations()->with(['veterinarian'])->latest()->limit(10)->get();
+        $labTests = $pet->labTests()->with(['veterinarian', 'labTestType'])->latest()->limit(10)->get();
+        $orders = $pet->orders()->latest()->limit(10)->get();
+        
+        return view("admin.{$this->viewPath}.show", compact('pet', 'visits', 'vaccinations', 'labTests', 'orders', 'visitsTotal', 'vaccinationsTotal', 'labTestsTotal', 'ordersTotal'));
     }
 } 

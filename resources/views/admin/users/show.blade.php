@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Клиент: {{ $user->name }}</h1>
+    <h1 class="h2 col-12 col-md-7 col-xl-8">Клиент: {{ $user->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
@@ -16,106 +16,259 @@
 </div>
 
 <div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
+    <div class="col-lg-8">
+        <!-- Основная информация -->
+        <div class="card mb-4">
             <div class="card-header">
-                <h5 class="card-title mb-0"><i class="bi bi-person"></i> Информация о клиенте</h5>
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-person"></i> {{ $user->name }}
+                </h5>
             </div>
             <div class="card-body">
-                <div class="row mb-3"><div class="col-sm-4 fw-bold">Имя:</div><div class="col-sm-8">{{ $user->name }}</div></div>
-                <div class="row mb-3"><div class="col-sm-4 fw-bold">Email:</div><div class="col-sm-8">{{ $user->email }}</div></div>
-                <div class="row mb-3"><div class="col-sm-4 fw-bold">Телефон:</div><div class="col-sm-8">{{ $user->phone }}</div></div>
-                <div class="row mb-3"><div class="col-sm-4 fw-bold">Адрес:</div><div class="col-sm-8">{{ $user->address }}</div></div>
-                <div class="row mb-3"><div class="col-sm-4 fw-bold">Дата регистрации:</div><div class="col-sm-8">{{ $user->created_at->format('d.m.Y H:i') }}</div></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <strong><i class="bi bi-envelope"></i> Email:</strong>
+                            {{ $user->email }}
+                        </p>
+                        <p class="mb-2">
+                            <strong><i class="bi bi-telephone"></i> Телефон:</strong>
+                            {{ $user->phone }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <strong><i class="bi bi-geo-alt"></i> Адрес:</strong>
+                            {{ $user->address }}
+                        </p>
+                        <p class="mb-2">
+                            <strong><i class="bi bi-calendar-plus"></i> Дата регистрации:</strong>
+                            {{ $user->created_at->format('d.m.Y H:i') }}
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="card-title mb-0"><i class="bi bi-graph-up"></i> Статистика</h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3"><div class="col-sm-6 fw-bold">Питомцев:</div><div class="col-sm-6">{{ $user->pets->count() }}</div></div>
-                <div class="row mb-3"><div class="col-sm-6 fw-bold">Заказов:</div><div class="col-sm-6">{{ $user->orders->count() }}</div></div>
-                <div class="row mb-3"><div class="col-sm-6 fw-bold">Посещений:</div><div class="col-sm-6">{{ $user->visits->count() }}</div></div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="card-title mb-0"><i class="bi bi-paw"></i> Последние питомцы</h5>
-                <a href="{{ route('admin.pets.create', ['owner' => $user->id]) }}" class="btn btn-sm btn-outline-primary float-end">
-                    <i class="bi bi-plus"></i> Добавить питомца
-                </a>
+        <!-- Аккордеон активности -->
+        <div class="accordion" id="activityAccordion">
+            <!-- Питомцы -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#petsCollapse" aria-expanded="true" aria-controls="petsCollapse">
+                        <i class="bi bi-paw me-2"></i> Питомцы ({{ $petsTotal }})
+                    </button>
+                </h2>
+                <div id="petsCollapse" class="accordion-collapse collapse show">
+                    <div class="accordion-body">
+                        @if($pets->count() > 0)
+                            <div class="d-flex flex-column gap-3">
+                                @foreach($pets as $pet)
+                                    <div class="border rounded p-3 bg-body-tertiary">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">{{ $pet->name }}</h6>
+                                                <p class="text-muted small mb-0">
+                                                    {{ $pet->breed->name ?? '—' }}
+                                                    @if($pet->breed && $pet->breed->species)
+                                                        ({{ $pet->breed->species->name }})
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="align-self-center">
+                                                <a href="{{ route('admin.pets.show', $pet) }}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted mb-0">Питомцы не найдены</p>
+                        @endif
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                @if($user->pets->count())
-                    <ul class="list-group list-group-flush">
-                        @foreach($user->pets as $pet)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ $pet->name }}</span>
-                                <a href="{{ route('admin.pets.show', $pet) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <div class="text-muted">Нет питомцев</div>
-                @endif
+
+            <!-- Заказы -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ordersCollapse" aria-expanded="false" aria-controls="ordersCollapse">
+                        <i class="bi bi-bag me-2"></i> Заказы ({{ $ordersTotal }})
+                    </button>
+                </h2>
+                <div id="ordersCollapse" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        @if($orders->count() > 0)
+                            <div class="d-flex flex-column gap-3">
+                                @foreach($orders as $order)
+                                    <div class="border rounded p-3 bg-body-tertiary">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Заказ #{{ $order->id }}</h6>
+                                                <p class="text-muted small mb-2">{{ $order->created_at->format('d.m.Y') }}</p>
+                                                
+                                                @if($order->pet)
+                                                    <div class="mb-2">
+                                                        <small class="text-muted">Питомец:</small>
+                                                        <span>{{ $order->pet->name }}</span>
+                                                    </div>
+                                                @endif
+                                                
+                                                @if($order->total_amount)
+                                                    <div>
+                                                        <span class="badge bg-success">
+                                                            {{ number_format($order->total_amount, 2, ',', ' ') }} ₽
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            
+                                            <div class="align-self-center">
+                                                <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted mb-0">Заказы не найдены</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Приёмы -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#visitsCollapse" aria-expanded="false" aria-controls="visitsCollapse">
+                        <i class="bi bi-calendar-check me-2"></i> Приёмы ({{ $visitsTotal }})
+                    </button>
+                </h2>
+                <div id="visitsCollapse" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        @if($visits->count() > 0)
+                            <div class="d-flex flex-column gap-3">
+                                @foreach($visits as $visit)
+                                    <div class="border rounded p-3 bg-body-tertiary">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">Приём #{{ $visit->id }}</h6>
+                                                <p class="text-muted small mb-2">{{ $visit->created_at->format('d.m.Y') }}</p>
+                                                
+                                                @if($visit->pet)
+                                                    <div class="mb-2">
+                                                        <small class="text-muted">Питомец:</small>
+                                                        <span>{{ $visit->pet->name }}</span>
+                                                    </div>
+                                                @endif
+                                                
+                                                @if($visit->schedule && $visit->schedule->employee)
+                                                    <div>
+                                                        <small class="text-muted">Ветеринар:</small>
+                                                        <span>{{ $visit->schedule->employee->name }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            
+                                            <div class="align-self-center">
+                                                <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted mb-0">Приёмы не найдены</p>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
+
+    <div class="col-lg-4">
+        <!-- Статистика -->
+        <div class="card mb-4">
             <div class="card-header">
-                <h5 class="card-title mb-0"><i class="bi bi-bag"></i> Последние заказы</h5>
-                <a href="{{ route('admin.orders.create', ['client' => $user->id]) }}" class="btn btn-sm btn-outline-primary float-end">
-                    <i class="bi bi-plus"></i> Добавить заказ
-                </a>
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i> Статистика
+                </h5>
             </div>
             <div class="card-body">
-                @if($user->orders->count())
-                    <ul class="list-group list-group-flush">
-                        @foreach($user->orders as $order)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Заказ #{{ $order->id }} от {{ $order->created_at->format('d.m.Y') }}</span>
-                                <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <div class="text-muted">Нет заказов</div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Всего питомцев:</span>
+                    <strong>{{ $petsTotal }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Всего заказов:</span>
+                    <strong>{{ $ordersTotal }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Всего приёмов:</span>
+                    <strong>{{ $visitsTotal }}</strong>
+                </div>
+                @if($orders->count() > 0)
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Общая сумма заказов:</span>
+                        <strong>{{ number_format($orders->sum('total_amount'), 2, ',', ' ') }} ₽</strong>
+                    </div>
+                @endif
+                @if($visits->count() > 0 || $orders->count() > 0)
+                    <hr>
+                @endif
+                @if($visits->count() > 0)
+                    <div class="d-flex justify-content-between">
+                        <span>Последний приём:</span>
+                        <strong>{{ $visits->first()->created_at->format('d.m.Y') }}</strong>
+                    </div>
+                @endif
+                @if($orders->count() > 0)
+                    <div class="d-flex justify-content-between">
+                        <span>Последний заказ:</span>
+                        <strong>{{ $orders->first()->created_at->format('d.m.Y') }}</strong>
+                    </div>
                 @endif
             </div>
         </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card h-100">
+
+        <!-- Действия -->
+        <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0"><i class="bi bi-calendar-check"></i> Последние посещения</h5>
-                <a href="{{ route('admin.visits.create', ['client' => $user->id]) }}" class="btn btn-sm btn-outline-primary float-end">
-                    <i class="bi bi-plus"></i> Записать на приём
-                </a>
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-gear"></i> Действия
+                </h5>
             </div>
             <div class="card-body">
-                @if($user->visits->count())
-                    <ul class="list-group list-group-flush">
-                        @foreach($user->visits as $visit)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Посещение #{{ $visit->id }} от {{ $visit->created_at->format('d.m.Y') }}</span>
-                                <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <div class="text-muted">Нет посещений</div>
-                @endif
+                <div class="d-grid gap-2">
+                    <a href="{{ route('admin.visits.create', ['client' => $user->id]) }}" class="btn btn-outline-info">
+                        <i class="bi bi-plus"></i> Записать на приём
+                    </a>
+                    <a href="{{ route('admin.pets.create', ['owner' => $user->id]) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus"></i> Добавить питомца
+                    </a>
+                    <a href="{{ route('admin.orders.create', ['client' => $user->id]) }}" class="btn btn-outline-success">
+                        <i class="bi bi-plus"></i> Добавить заказ
+                    </a>
+                    <hr>
+                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-outline-warning">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                    <hr>
+                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-grid">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить клиента?')">
+                            <i class="bi bi-trash"></i> Удалить
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

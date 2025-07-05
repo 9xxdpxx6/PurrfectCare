@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\LabTestResult;
 use App\Models\LabTestParam;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class LabTestController extends AdminController
 {
@@ -30,7 +31,7 @@ class LabTestController extends AdminController
         ];
     }
 
-    public function create()
+    public function create(): View
     {
         $pets = Pet::all();
         $testTypes = LabTestType::all();
@@ -38,7 +39,7 @@ class LabTestController extends AdminController
         return view("admin.{$this->viewPath}.create", compact('pets', 'testTypes', 'veterinarians'));
     }
 
-    public function edit($id)
+    public function edit($id): View
     {
         $item = $this->model::with(['results', 'labTestType'])->findOrFail($id);
         $pets = Pet::all();
@@ -48,7 +49,7 @@ class LabTestController extends AdminController
         return view("admin.{$this->viewPath}.edit", compact('item', 'pets', 'testTypes', 'veterinarians', 'testParams'));
     }
 
-    public function index()
+    public function index(Request $request): View
     {
         $items = $this->model::with(['pet', 'labTestType', 'veterinarian'])->paginate(10);
         return view("admin.{$this->viewPath}.index", compact('items'));

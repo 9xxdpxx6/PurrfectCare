@@ -68,6 +68,9 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('drug-procurements', DrugProcurementController::class);
 
     // Вакцинации
+    Route::get('vaccinations/pet-options', [VaccinationController::class, 'petOptions'])->name('vaccinations.pet-options');
+    Route::get('vaccinations/veterinarian-options', [VaccinationController::class, 'veterinarianOptions'])->name('vaccinations.veterinarian-options');
+    Route::get('vaccinations/drug-options', [VaccinationController::class, 'drugOptions'])->name('vaccinations.drug-options');
     Route::resource('vaccinations', VaccinationController::class);
 
     // Лабораторные анализы

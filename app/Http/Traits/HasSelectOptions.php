@@ -70,11 +70,12 @@ trait HasSelectOptions
 
         // Если есть выбранный препарат, добавляем его первым (если он не "Все")
         if ($selectedId && is_numeric($selectedId)) {
-            $selectedDrug = Drug::find($selectedId);
+            $selectedDrug = Drug::with('unit')->find($selectedId);
             if ($selectedDrug) {
+                $unit = $selectedDrug->unit ? $selectedDrug->unit->symbol : null;
                 $options[] = [
                     'value' => $selectedDrug->id,
-                    'text' => $selectedDrug->name
+                    'text' => $selectedDrug->name . ($unit ? ' (' . $unit . ')' : '')
                 ];
                 // Исключаем выбранный препарат из основного запроса
                 $query->where('id', '!=', $selectedId);
@@ -86,13 +87,14 @@ trait HasSelectOptions
             $query->where('name', 'like', "%$search%");
         }
 
-        $drugs = $query->orderBy('name')->limit(19)->get();
+        $drugs = $query->with('unit')->orderBy('name')->limit(19)->get();
 
         // Добавляем остальные препараты
         foreach ($drugs as $drug) {
+            $unit = $drug->unit ? $drug->unit->symbol : null;
             $options[] = [
                 'value' => $drug->id,
-                'text' => $drug->name
+                'text' => $drug->name . ($unit ? ' (' . $unit . ')' : '')
             ];
         }
 
@@ -192,6 +194,8 @@ trait HasSelectOptions
 
         return response()->json($options);
     }
+
+
 
     /**
      * Получить опции для селекта филиалов
@@ -359,34 +363,54 @@ trait HasSelectOptions
 
     public function petOptions(Request $request)
     {
-        $query = \App\Models\Pet::query();
+        $query = \App\Models\Pet::with('client');
         $search = $request->input('q');
         $selectedId = $request->input('selected');
         $clientId = $request->input('client_id');
-        $options = [];
+        
+        // Всегда добавляем "Все" первым элементом
+        $options = [
+            ['value' => '', 'text' => 'Все питомцы']
+        ];
+        
+        // Если есть выбранный питомец, добавляем его первым (если он не "Все")
         if ($selectedId && is_numeric($selectedId)) {
-            $selected = \App\Models\Pet::find($selectedId);
-            if ($selected) {
+            $selectedPet = \App\Models\Pet::with('client')->find($selectedId);
+            if ($selectedPet) {
                 $options[] = [
-                    'value' => $selected->id,
-                    'text' => $selected->name
+                    'value' => $selectedPet->id,
+                    'text' => $selectedPet->name . ' (' . ($selectedPet->client->name ?? 'Без владельца') . ')'
                 ];
+                // Исключаем выбранного питомца из основного запроса
                 $query->where('id', '!=', $selectedId);
             }
         }
+        
+        // Фильтр по клиенту (если указан)
         if ($clientId) {
             $query->where('client_id', $clientId);
         }
+        
+        // Основной запрос для поиска/загрузки
         if ($search) {
-            $query->where('name', 'like', "%$search%");
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhereHas('client', function ($q2) use ($search) {
+                      $q2->where('name', 'like', "%$search%");
+                  });
+            });
         }
+        
         $pets = $query->orderBy('name')->limit(19)->get();
+        
+        // Добавляем остальных питомцев
         foreach ($pets as $pet) {
             $options[] = [
                 'value' => $pet->id,
-                'text' => $pet->name
+                'text' => $pet->name . ' (' . ($pet->client->name ?? 'Без владельца') . ')'
             ];
         }
+        
         return response()->json($options);
     }
 
@@ -532,7 +556,7 @@ trait HasSelectOptions
                 'text' => "Добавить: {$search}"
             ];
         }
-        
+
         return response()->json($options);
     }
 } 

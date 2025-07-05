@@ -82,7 +82,24 @@ class VisitController extends AdminController
 
     public function index(Request $request) : View
     {
-        $filter = app(VisitFilter::class, ['queryParams' => $request->query()]);
+        // Преобразуем даты из формата d.m.Y в Y-m-d для фильтров
+        $queryParams = $request->query();
+        if (isset($queryParams['date_from']) && $queryParams['date_from']) {
+            try {
+                $queryParams['date_from'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['date_from'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Если не удается преобразовать, оставляем как есть
+            }
+        }
+        if (isset($queryParams['date_to']) && $queryParams['date_to']) {
+            try {
+                $queryParams['date_to'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['date_to'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Если не удается преобразовать, оставляем как есть
+            }
+        }
+        
+        $filter = app(VisitFilter::class, ['queryParams' => $queryParams]);
         $query = $this->model::with([
             'client', 'pet', 'schedule', 'status',
             'symptoms.dictionarySymptom', 'diagnoses.dictionaryDiagnosis'
@@ -131,7 +148,7 @@ class VisitController extends AdminController
                 }
             }
         }
-        
+
         if ($request->has('diagnoses')) {
             foreach ($request->diagnoses as $diagnosisData) {
                 if (is_numeric($diagnosisData)) {
@@ -179,7 +196,7 @@ class VisitController extends AdminController
                         'custom_symptom' => null,
                         'notes' => null
                     ]);
-                } else {
+        } else {
                     // Создаем кастомный симптом
                     Symptom::create([
                         'visit_id' => $visit->id,
@@ -205,7 +222,7 @@ class VisitController extends AdminController
                         'custom_diagnosis' => null,
                         'treatment_plan' => null
                     ]);
-                } else {
+        } else {
                     // Создаем кастомный диагноз
                     Diagnosis::create([
                         'visit_id' => $visit->id,

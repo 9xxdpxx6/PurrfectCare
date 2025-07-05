@@ -28,7 +28,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p class="mb-2">
-                            <strong><i class="bi bi-cash-coin"></i> Цена:</strong>
+                            <strong><i class="bi bi-cash-stack"></i> Цена:</strong>
                             {{ $item->price !== null ? number_format($item->price, 2, ',', ' ') . ' ₽' : '—' }}
                         </p>
                         <p class="mb-2">

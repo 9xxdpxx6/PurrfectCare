@@ -16,7 +16,7 @@
     <div class="d-flex flex-wrap align-items-end gap-2">
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="search" class="form-label mb-1">Поиск</label>
-            <input type="text" name="search" id="search" class="form-control" placeholder="Поиск по жалобам, заметкам, клиенту..." value="{{ request('search') }}">
+            <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="client" class="form-label mb-1">Клиент</label>
@@ -49,11 +49,31 @@
     <div class="d-flex flex-wrap align-items-end gap-2 mt-2">
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="date_from" class="form-label mb-1">Дата с</label>
-            <input type="date" name="date_from" id="date_from" class="form-control" value="{{ request('date_from') }}">
+            @php
+                $dateFrom = request('date_from');
+                if ($dateFrom) {
+                    try {
+                        $dateFrom = \Carbon\Carbon::parse($dateFrom)->format('d.m.Y');
+                    } catch (\Exception $e) {
+                        $dateFrom = '';
+                    }
+                }
+            @endphp
+            <input type="text" name="date_from" id="date_from" class="form-control" value="{{ $dateFrom }}" readonly placeholder="дд.мм.гггг">
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="date_to" class="form-label mb-1">Дата до</label>
-            <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request('date_to') }}">
+            @php
+                $dateTo = request('date_to');
+                if ($dateTo) {
+                    try {
+                        $dateTo = \Carbon\Carbon::parse($dateTo)->format('d.m.Y');
+                    } catch (\Exception $e) {
+                        $dateTo = '';
+                    }
+                }
+            @endphp
+            <input type="text" name="date_to" id="date_to" class="form-control" value="{{ $dateTo }}" readonly placeholder="дд.мм.гггг">
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
@@ -86,37 +106,37 @@
                     <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
                         <div class="d-flex flex-row align-items-center gap-3 mb-2">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-calendar-check"></i>
-                                {{ \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') }}
-                            </h5>
+                            <i class="bi bi-calendar-check"></i>
+                            {{ \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') }}
+                        </h5>
                             @if($visit->status)
                                 <span class="badge" style="background-color: {{ $visit->status->color ?? '#6c757d' }}">{{ $visit->status->name }}</span>
                             @endif
                         </div>
                         <div class="mt-auto">
-                            <div class="d-flex flex-wrap gap-3">
+                        <div class="d-flex flex-wrap gap-3">
+                            <p class="card-text mb-0">
+                                <strong>Клиент:</strong> {{ $visit->client->name ?? 'Не указан' }}
+                            </p>
+                            <p class="card-text mb-0">
+                                <strong>Питомец:</strong> {{ $visit->pet->name ?? 'Не указан' }}
+                            </p>
+                            @if($visit->schedule && $visit->schedule->veterinarian)
                                 <p class="card-text mb-0">
-                                    <strong>Клиент:</strong> {{ $visit->client->name ?? 'Не указан' }}
+                                    <strong>Ветеринар:</strong> {{ $visit->schedule->veterinarian->name ?? 'Не указан' }}
                                 </p>
-                                <p class="card-text mb-0">
-                                    <strong>Питомец:</strong> {{ $visit->pet->name ?? 'Не указан' }}
-                                </p>
-                                @if($visit->schedule && $visit->schedule->veterinarian)
-                                    <p class="card-text mb-0">
-                                        <strong>Ветеринар:</strong> {{ $visit->schedule->veterinarian->name ?? 'Не указан' }}
-                                    </p>
-                                @endif
+                            @endif
+                        </div>
+                        @if($visit->complaints)
+                            <div class="mt-2">
+                                <small><strong>Жалобы:</strong> {{ Str::limit($visit->complaints, 100) }}</small>
                             </div>
-                            @if($visit->complaints)
-                                <div class="mt-2">
-                                    <small><strong>Жалобы:</strong> {{ Str::limit($visit->complaints, 100) }}</small>
-                                </div>
-                            @endif
-                            @if($visit->notes)
-                                <div class="mt-1">
-                                    <small><strong>Заметки:</strong> {{ Str::limit($visit->notes, 100) }}</small>
-                                </div>
-                            @endif
+                        @endif
+                        @if($visit->notes)
+                            <div class="mt-1">
+                                <small><strong>Заметки:</strong> {{ Str::limit($visit->notes, 100) }}</small>
+                            </div>
+                        @endif
                             @if($visit->symptoms && $visit->symptoms->count() > 0)
                                 <div class="mt-2">
                                     <small><strong>Симптомы:</strong>
@@ -126,16 +146,16 @@
                                     </small>
                                 </div>
                             @endif
-                            @if($visit->diagnoses && $visit->diagnoses->count() > 0)
-                                <div class="mt-2">
-                                    <small><strong>Диагнозы:</strong>
-                                        @foreach($visit->diagnoses as $diagnosis)
+                        @if($visit->diagnoses && $visit->diagnoses->count() > 0)
+                            <div class="mt-2">
+                                <small><strong>Диагнозы:</strong>
+                                    @foreach($visit->diagnoses as $diagnosis)
                                             <span class="text-info">{{ $diagnosis->getName() }}@if(!$loop->last), @endif</span>
-                                        @endforeach
-                                    </small>
-                                </div>
-                            @endif
-                        </div>
+                                    @endforeach
+                                </small>
+                            </div>
+                        @endif
+                    </div>
                     </div>
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
                         <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-info" title="Просмотр">
@@ -192,6 +212,10 @@
         new createTomSelect('#status', {
             placeholder: 'Выберите статус...',
         });
+
+        // Air Datepickers
+        createDatepicker('#date_from');
+        createDatepicker('#date_to');
     });
 </script>
 @endpush 

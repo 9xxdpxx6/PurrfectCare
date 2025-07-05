@@ -116,6 +116,17 @@
     @endforeach
 </div>
 
+@if($items->isEmpty())
+    <div class="text-center py-5">
+        <i class="bi bi-heartbreak display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">Питомцы не найдены</h3>
+        <p class="text-muted">Попробуйте изменить параметры поиска или создайте нового питомца.</p>
+        <a href="{{ route('admin.pets.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Добавить питомца
+        </a>
+    </div>
+@endif
+
 <div class="mt-4">
     {{ $items->links() }}
 </div>

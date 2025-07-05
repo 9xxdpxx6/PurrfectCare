@@ -175,9 +175,9 @@
         <i class="bi bi-calendar-x display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Расписания не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте новое расписание.</p>
-        <div class="d-flex gap-2 justify-content-center">
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
             <a href="{{ route('admin.schedules.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus"></i> Создать расписание
+                <i class="bi bi-plus"></i> Добавить расписание
             </a>
             <a href="{{ route('admin.schedules.create-week') }}" class="btn btn-success">
                 <i class="bi bi-calendar-week"></i> Расписание на неделю

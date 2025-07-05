@@ -52,7 +52,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.visits.*') ? 'active' : '' }}" href="{{ route('admin.visits.index') }}">
-                                <i class="bi bi-clipboard2-pulse"></i> Приемы
+                                <i class="bi bi-calendar-check"></i> Приемы
                             </a>
                         </li>
                         <li class="nav-item">
@@ -82,7 +82,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.lab-tests.*') ? 'active' : '' }}" href="{{ route('admin.lab-tests.index') }}">
-                                <i class="bi bi-clipboard2-pulse"></i> Анализы
+                                <i class="bi bi-clipboard-pulse"></i> Анализы
                             </a>
                         </li>
                         <li class="nav-item">

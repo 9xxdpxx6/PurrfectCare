@@ -41,12 +41,19 @@ class UserController extends AdminController
 
     public function show($id) : View
     {
-        $user = $this->model::with([
-            'pets' => function($q) { $q->latest()->limit(10); },
-            'orders' => function($q) { $q->latest()->limit(10); },
-            'visits' => function($q) { $q->latest()->limit(10); }
-        ])->findOrFail($id);
-        return view("admin.{$this->viewPath}.show", compact('user'));
+        $user = $this->model::findOrFail($id);
+        
+        // Получаем общее количество записей
+        $petsTotal = $user->pets()->count();
+        $ordersTotal = $user->orders()->count();
+        $visitsTotal = $user->visits()->count();
+        
+        // Загружаем ограниченные данные для отображения
+        $pets = $user->pets()->with(['breed.species'])->latest()->limit(10)->get();
+        $orders = $user->orders()->with(['pet'])->latest()->limit(10)->get();
+        $visits = $user->visits()->with(['pet', 'schedule.veterinarian'])->latest()->limit(10)->get();
+        
+        return view("admin.{$this->viewPath}.show", compact('user', 'pets', 'orders', 'visits', 'petsTotal', 'ordersTotal', 'visitsTotal'));
     }
 
     public function store(StoreRequest $request) : RedirectResponse

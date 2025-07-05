@@ -126,10 +126,14 @@
     @endforeach
 </div>
 
-@if($items->count() == 0)
+@if($items->isEmpty())
     <div class="text-center py-5">
-        <i class="bi bi-people display-1 text-muted"></i>
-        <p class="text-muted mt-3">Клиенты не найдены</p>
+        <i class="bi bi-incognito display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">Клиенты не найдены</h3>
+        <p class="text-muted">Попробуйте изменить параметры поиска или создайте нового клиента.</p>
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Создать клиента
+        </a>
     </div>
 @endif
 

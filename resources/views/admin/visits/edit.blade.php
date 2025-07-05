@@ -231,12 +231,12 @@
         // Слушатель изменения клиента
         clientSelect.addEventListener('change', function() {
             const clientId = this.value;
-            filterPetsByClient(clientId);
+                filterPetsByClient(clientId);
         });
         
         // Инициализация при загрузке страницы
         const initialClientId = clientSelect.value;
-        filterPetsByClient(initialClientId);
+            filterPetsByClient(initialClientId);
 
         createDatepicker('#starts_at', {
             timepicker: true

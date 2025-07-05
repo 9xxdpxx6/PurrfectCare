@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Просмотр приёма</h1>
+    <h1 class="h2">Приём от {{ $item->starts_at->format('d.m.Y H:i') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
         <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-warning">
             <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Редактировать</span>
@@ -127,7 +127,7 @@
                                     Все симптомы ({{ $item->symptoms->count() }})
                                 </button>
                             </h2>
-                            <div id="symptomsCollapse" class="accordion-collapse collapse" aria-labelledby="symptomsHeading" data-bs-parent="#symptomsAccordion">
+                            <div id="symptomsCollapse" class="accordion-collapse collapse" aria-labelledby="symptomsHeading">
                                 <div class="accordion-body">
                                     <ul class="list-group list-group-flush">
                                         @foreach($item->symptoms as $symptom)
@@ -176,7 +176,7 @@
                                     Все диагнозы ({{ $item->diagnoses->count() }})
                                 </button>
                             </h2>
-                            <div id="diagnosesCollapse" class="accordion-collapse collapse" aria-labelledby="diagnosesHeading" data-bs-parent="#diagnosesAccordion">
+                            <div id="diagnosesCollapse" class="accordion-collapse collapse" aria-labelledby="diagnosesHeading">
                                 <div class="accordion-body">
                                     <ul class="list-group list-group-flush">
                                         @foreach($item->diagnoses as $diagnosis)
@@ -230,6 +230,7 @@
                             <i class="bi bi-heart"></i> Карточка питомца
                         </a>
                     @endif
+                    <hr>
                     <form action="{{ route('admin.visits.destroy', $item) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')

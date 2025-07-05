@@ -125,7 +125,11 @@
 @if($items->count() == 0)
     <div class="text-center py-5">
         <i class="bi bi-bandaid display-1 text-muted"></i>
-        <p class="text-muted mt-3">Услуги не найдены</p>
+        <h3 class="mt-3 text-muted">Услуги не найдены</h3>
+        <p class="text-muted">Попробуйте изменить параметры поиска или создайте новую услугу.</p>
+        <a href="{{ route('admin.services.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Добавить услугу
+        </a>
     </div>
 @endif
 
