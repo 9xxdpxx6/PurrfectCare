@@ -87,11 +87,14 @@ class DrugController extends AdminController
             'unit',
             'procurements.supplier',
             'procurements' => function($query) {
-                $query->orderBy('delivery_date', 'desc');
+                $query->orderBy('delivery_date', 'desc')->limit(10);
             }
         ])->findOrFail($id);
         
-        return view("admin.{$this->viewPath}.show", compact('item'));
+        // Получаем общее количество закупок для отображения в заголовке
+        $procurementsTotal = $item->procurements()->count();
+        
+        return view("admin.{$this->viewPath}.show", compact('item', 'procurementsTotal'));
     }
 
     public function store(StoreRequest $request): RedirectResponse

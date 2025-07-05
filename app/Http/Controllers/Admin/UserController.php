@@ -39,6 +39,12 @@ class UserController extends AdminController
         return view("admin.{$this->viewPath}.index", compact('items'));
     }
 
+    public function edit($id): View
+    {
+        $item = $this->model::findOrFail($id);
+        return view("admin.{$this->viewPath}.edit", compact('item'));
+    }
+
     public function show($id) : View
     {
         $user = $this->model::findOrFail($id);
@@ -48,7 +54,7 @@ class UserController extends AdminController
         $ordersTotal = $user->orders()->count();
         $visitsTotal = $user->visits()->count();
         
-        // Загружаем ограниченные данные для отображения
+        // Загружаем ограиченные данные для отображения
         $pets = $user->pets()->with(['breed.species'])->latest()->limit(10)->get();
         $orders = $user->orders()->with(['pet'])->latest()->limit(10)->get();
         $visits = $user->visits()->with(['pet', 'schedule.veterinarian'])->latest()->limit(10)->get();

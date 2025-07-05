@@ -58,12 +58,20 @@ class VisitFactory extends Factory
 
         $client = User::inRandomOrder()->first();
         $pet = Pet::where('client_id', $client->id)->inRandomOrder()->first();
+        $schedule = Schedule::inRandomOrder()->first();
+        
+        // Генерируем время приёма в пределах рабочего времени ветеринара
+        $shiftStart = $schedule->shift_starts_at;
+        $shiftEnd = $schedule->shift_ends_at;
+        
+        // Создаем случайное время между началом и концом смены
+        $visitTime = $this->faker->dateTimeBetween($shiftStart, $shiftEnd);
 
         return [
             'client_id' => $client->id,
             'pet_id' => $pet ? $pet->id : null,
-            'schedule_id' => Schedule::inRandomOrder()->first()->id,
-            'starts_at' => $this->faker->dateTimeBetween('-6 months', '+1 month'),
+            'schedule_id' => $schedule->id,
+            'starts_at' => $visitTime,
             'status_id' => Status::inRandomOrder()->first()->id,
             'complaints' => $this->faker->randomElement($complaints),
             'notes' => $this->faker->optional(0.7)->randomElement($notes),

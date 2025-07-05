@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Traits\HasSelectOptions;
 use App\Models\Visit;
 use App\Models\User;
 use App\Models\Pet;
@@ -18,7 +19,6 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Http\Requests\Admin\Visit\StoreRequest;
 use App\Http\Requests\Admin\Visit\UpdateRequest;
-use App\Http\Traits\HasSelectOptions;
 use Illuminate\Support\Facades\DB;
 
 class VisitController extends AdminController
@@ -30,19 +30,6 @@ class VisitController extends AdminController
         $this->model = Visit::class;
         $this->viewPath = 'visits';
         $this->routePrefix = 'visits';
-        $this->validationRules = [
-            'client_id' => 'required|exists:users,id',
-            'pet_id' => 'required|exists:pets,id',
-            'schedule_id' => 'required|exists:schedules,id',
-            'starts_at' => 'required|date',
-            'status_id' => 'required|exists:statuses,id',
-            'complaints' => 'nullable|string',
-            'notes' => 'nullable|string',
-            'symptoms' => 'nullable|array',
-            'symptoms.*' => 'exists:symptoms,id',
-            'diagnoses' => 'nullable|array',
-            'diagnoses.*' => 'exists:diagnoses,id'
-        ];
     }
 
     public function create() : View
@@ -104,13 +91,42 @@ class VisitController extends AdminController
             'client', 'pet', 'schedule', 'status',
             'symptoms.dictionarySymptom', 'diagnoses.dictionaryDiagnosis'
         ])->filter($filter);
-        $items = $query->paginate(10)->withQueryString();
+        $items = $query->paginate(25)->withQueryString();
         
-        $clients = User::orderBy('name')->get();
-        $pets = Pet::with('client')->orderBy('name')->get();
+        // Подготавливаем данные для каждого приёма
+        foreach ($items as $visit) {
+            // Ограничиваем симптомы для отображения
+            $limitedSymptoms = $visit->symptoms->take(3);
+            $symptomsCount = $visit->symptoms->count();
+            
+            $symptomNames = $limitedSymptoms->map(function($symptom) {
+                return $symptom->getName();
+            })->toArray();
+            
+            if ($symptomsCount > 3) {
+                $symptomNames[] = '...';
+            }
+            
+            $visit->symptoms_display = $symptomNames;
+            
+            // Ограничиваем диагнозы для отображения
+            $limitedDiagnoses = $visit->diagnoses->take(3);
+            $diagnosesCount = $visit->diagnoses->count();
+            
+            $diagnosisNames = $limitedDiagnoses->map(function($diagnosis) {
+                return $diagnosis->getName();
+            })->toArray();
+            
+            if ($diagnosesCount > 3) {
+                $diagnosisNames[] = '...';
+            }
+            
+            $visit->diagnoses_display = $diagnosisNames;
+        }
+        
         $statuses = Status::orderBy('name')->get();
         
-        return view("admin.{$this->viewPath}.index", compact('items', 'clients', 'pets', 'statuses'));
+        return view("admin.{$this->viewPath}.index", compact('items', 'statuses'));
     }
 
     public function show($id) : View
@@ -246,4 +262,5 @@ class VisitController extends AdminController
         return redirect()->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Запись на приём успешно удалена');
     }
+
 } 

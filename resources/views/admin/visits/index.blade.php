@@ -20,20 +20,28 @@
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="client" class="form-label mb-1">Клиент</label>
-            <select name="client" id="client" class="form-select">
-                <option value="">Все клиенты</option>
-                @foreach($clients as $client)
-                    <option value="{{ $client->id }}" @if(request('client') == $client->id) selected @endif>{{ $client->name }}</option>
-                @endforeach
+            <select name="client" id="client" class="form-select tomselect" data-url="{{ route('admin.visits.client-options') }}">
+                @if(request('client'))
+                    @php
+                        $selectedClient = \App\Models\User::find(request('client'));
+                    @endphp
+                    @if($selectedClient)
+                        <option value="{{ $selectedClient->id }}" selected>{{ $selectedClient->name }} ({{ $selectedClient->email }})</option>
+                    @endif
+                @endif
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="pet" class="form-label mb-1">Питомец</label>
-            <select name="pet" id="pet" class="form-select">
-                <option value="">Все питомцы</option>
-                @foreach($pets as $pet)
-                    <option value="{{ $pet->id }}" @if(request('pet') == $pet->id) selected @endif>{{ $pet->name }} ({{ $pet->client->name }})</option>
-                @endforeach
+            <select name="pet" id="pet" class="form-select tomselect" data-url="{{ route('admin.visits.pet-options') }}">
+                @if(request('pet'))
+                    @php
+                        $selectedPet = \App\Models\Pet::with('client')->find(request('pet'));
+                    @endphp
+                    @if($selectedPet)
+                        <option value="{{ $selectedPet->id }}" selected>{{ $selectedPet->name }} ({{ $selectedPet->client ? $selectedPet->client->name : 'Без владельца' }})</option>
+                    @endif
+                @endif
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
@@ -137,20 +145,20 @@
                                 <small><strong>Заметки:</strong> {{ Str::limit($visit->notes, 100) }}</small>
                             </div>
                         @endif
-                            @if($visit->symptoms && $visit->symptoms->count() > 0)
+                            @if(!empty($visit->symptoms_display) && count($visit->symptoms_display))
                                 <div class="mt-2">
                                     <small><strong>Симптомы:</strong>
-                                        @foreach($visit->symptoms as $symptom)
-                                            <span class="text-warning">{{ $symptom->getName() }}@if(!$loop->last), @endif</span>
+                                        @foreach($visit->symptoms_display as $symptom)
+                                            <span class="text-warning">{{ $symptom }}@if(!$loop->last), @endif</span>
                                         @endforeach
                                     </small>
                                 </div>
                             @endif
-                        @if($visit->diagnoses && $visit->diagnoses->count() > 0)
+                        @if(!empty($visit->diagnoses_display) && count($visit->diagnoses_display))
                             <div class="mt-2">
                                 <small><strong>Диагнозы:</strong>
-                                    @foreach($visit->diagnoses as $diagnosis)
-                                            <span class="text-info">{{ $diagnosis->getName() }}@if(!$loop->last), @endif</span>
+                                    @foreach($visit->diagnoses_display as $diagnosis)
+                                            <span class="text-info">{{ $diagnosis }}@if(!$loop->last), @endif</span>
                                     @endforeach
                                 </small>
                             </div>
@@ -201,14 +209,66 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const selectedClient = '{{ request("client") }}';
+        const selectedPet = '{{ request("pet") }}';
+        
+        // TomSelect для клиентов с динамической загрузкой
         new createTomSelect('#client', {
             placeholder: 'Выберите клиента...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть выбранное значение и это первая загрузка, передаём его
+                if (selectedClient && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedClient);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => {
+                        callback(json);
+                    })
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
         
+        // TomSelect для питомцев с динамической загрузкой
         new createTomSelect('#pet', {
             placeholder: 'Выберите питомца...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть выбранное значение и это первая загрузка, передаём его
+                if (selectedPet && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedPet);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => {
+                        callback(json);
+                    })
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+            }
         });
         
+        // Обычный TomSelect для статусов
         new createTomSelect('#status', {
             placeholder: 'Выберите статус...',
         });

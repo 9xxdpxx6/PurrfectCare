@@ -51,7 +51,7 @@
         </div>
 
         <!-- Аккордеон активности -->
-        <div class="accordion" id="activityAccordion">
+        <div class="accordion mb-4" id="activityAccordion">
             <!-- Питомцы -->
             <div class="accordion-item">
                 <h2 class="accordion-header">
@@ -248,13 +248,13 @@
             <div class="card-body">
                 <div class="d-grid gap-2">
                     <a href="{{ route('admin.visits.create', ['client' => $user->id]) }}" class="btn btn-outline-info">
-                        <i class="bi bi-plus"></i> Записать на приём
+                        <i class="bi bi-calendar-plus"></i> Записать на приём
                     </a>
                     <a href="{{ route('admin.pets.create', ['owner' => $user->id]) }}" class="btn btn-outline-primary">
-                        <i class="bi bi-plus"></i> Добавить питомца
+                        <i class="bi bi-plus-circle"></i> Добавить питомца
                     </a>
                     <a href="{{ route('admin.orders.create', ['client' => $user->id]) }}" class="btn btn-outline-success">
-                        <i class="bi bi-plus"></i> Добавить заказ
+                        <i class="bi bi-cart-plus"></i> Добавить заказ
                     </a>
                     <hr>
                     <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-outline-warning">

@@ -86,7 +86,7 @@
         </div>
 
         <!-- Аккордеон активности -->
-        <div class="accordion" id="activityAccordion">
+        <div class="accordion mb-4" id="activityAccordion">
             <!-- Приёмы -->
             <div class="accordion-item">
                 <h2 class="accordion-header">
@@ -112,11 +112,17 @@
                                                 @endif
                                             </div>
                                             
-                                            <div class="align-self-center">
+                                            <div class="align-self-center d-none d-md-block">
                                                 <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
+                                        </div>
+                                        <!-- Кнопка на всю ширину для маленьких экранов -->
+                                        <div class="d-md-none mt-2">
+                                            <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-eye"></i> Подробнее
+                                            </a>
                                         </div>
                                     </div>
                                 @endforeach
@@ -153,11 +159,17 @@
                                                 @endif
                                             </div>
                                             
-                                            <div class="align-self-center">
+                                            <div class="align-self-center d-none d-md-block">
                                                 <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
+                                        </div>
+                                        <!-- Кнопка на всю ширину для маленьких экранов -->
+                                        <div class="d-md-none mt-2">
+                                            <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-eye"></i> Подробнее
+                                            </a>
                                         </div>
                                     </div>
                                 @endforeach
@@ -199,11 +211,17 @@
                                                 </div>
                                             </div>
                                             
-                                            <div class="align-self-center">
+                                            <div class="align-self-center d-none d-md-block">
                                                 <a href="{{ route('admin.lab-tests.show', $labTest) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
+                                        </div>
+                                        <!-- Кнопка на всю ширину для маленьких экранов -->
+                                        <div class="d-md-none mt-2">
+                                            <a href="{{ route('admin.lab-tests.show', $labTest) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-eye"></i> Подробнее
+                                            </a>
                                         </div>
                                     </div>
                                 @endforeach
@@ -242,11 +260,17 @@
                                                 @endif
                                             </div>
                                             
-                                            <div class="align-self-center">
+                                            <div class="align-self-center d-none d-md-block">
                                                 <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
+                                        </div>
+                                        <!-- Кнопка на всю ширину для маленьких экранов -->
+                                        <div class="d-md-none mt-2">
+                                            <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-eye"></i> Подробнее
+                                            </a>
                                         </div>
                                     </div>
                                 @endforeach

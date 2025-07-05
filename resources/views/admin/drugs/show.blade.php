@@ -65,13 +65,13 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-truck"></i> Поставки ({{ $item->procurements->count() }})
+                                            <i class="bi bi-truck"></i> Поставки ({{ $procurementsTotal }})
                 </h5>
             </div>
             <div class="card-body">
-                @if($item->procurements->count() > 0)
+                @if($procurementsTotal > 0)
                     <div class="d-flex flex-column gap-3">
-                        @foreach($item->procurements as $procurement)
+                                @foreach($item->procurements as $procurement)
                             <div class="border rounded p-3 bg-body-tertiary">
                                 <div class="row align-items-center g-2">
                                     <!-- Поставщик и дата -->
@@ -105,9 +105,9 @@
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div class="d-xl-none">
                                                 <small class="text-muted d-block">Срок годности</small>
-                                                <span class="@if($procurement->expiry_date->lt(\Carbon\Carbon::now())) text-danger @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30))) text-warning @endif">
-                                                    {{ $procurement->expiry_date->format('d.m.Y') }}
-                                                </span>
+                                            <span class="@if($procurement->expiry_date->lt(\Carbon\Carbon::now())) text-danger @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30))) text-warning @endif">
+                                                {{ $procurement->expiry_date->format('d.m.Y') }}
+                                            </span>
                                             </div>
                                             
                                             <div class="d-none d-xl-block text-end">
@@ -118,19 +118,19 @@
                                             </div>
                                             
                                             <div class="ms-2">
-                                                @if($procurement->expiry_date->lt(\Carbon\Carbon::now()))
-                                                    <span class="badge bg-danger">Просрочен</span>
-                                                @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30)))
-                                                    <span class="badge bg-warning">Скоро истечет</span>
-                                                @else
-                                                    <span class="badge bg-success">Годен</span>
-                                                @endif
+                                            @if($procurement->expiry_date->lt(\Carbon\Carbon::now()))
+                                                <span class="badge bg-danger">Просрочен</span>
+                                            @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30)))
+                                                <span class="badge bg-warning">Скоро истечет</span>
+                                            @else
+                                                <span class="badge bg-success">Годен</span>
+                                            @endif
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+                                @endforeach
                     </div>
                 @else
                     <p class="text-muted mb-0">Поставки не найдены</p>
@@ -150,7 +150,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-2">
                     <span>Всего поставок:</span>
-                    <strong>{{ $item->procurements->count() }}</strong>
+                    <strong>{{ $procurementsTotal }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span>Уникальных поставщиков:</span>
@@ -164,7 +164,7 @@
                     <span>Общее количество:</span>
                     <strong>{{ $item->procurements->sum('quantity') }}{{ $item->unit ? ' ' . $item->unit->symbol : '' }}</strong>
                 </div>
-                @if($item->procurements->count() > 0)
+                @if($procurementsTotal > 0)
                     <hr>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Последняя поставка:</span>

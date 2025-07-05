@@ -34,7 +34,10 @@ class SupplierController extends AdminController
             $query->orderBy('delivery_date', 'desc')->limit(10);
         }])->findOrFail($id);
         
-        return view("admin.{$this->viewPath}.show", compact('supplier'));
+        // Получаем общее количество закупок для отображения в заголовке
+        $procurementsTotal = $supplier->procurements()->count();
+        
+        return view("admin.{$this->viewPath}.show", compact('supplier', 'procurementsTotal'));
     }
 
     public function store(StoreRequest $request) : RedirectResponse

@@ -7,10 +7,10 @@
     <h1 class="h2">Приём от {{ $item->starts_at->format('d.m.Y H:i') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
         <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-warning">
-            <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Редактировать</span>
+            <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
         <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> <span class="d-none d-md-inline">Назад к списку</span>
+            <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
     </div>
 </div>
@@ -28,7 +28,16 @@
                 <div class="row">
                     <div class="col-md-6">
                         <h6 class="text-muted">Дата и время</h6>
-                        <p class="fs-5">{{ \Carbon\Carbon::parse($item->starts_at)->format('d.m.Y H:i') }}</p>
+                        <p class="fs-5">
+                            @if($item->schedule)
+                                <a href="{{ route('admin.schedules.show', $item->schedule) }}" class="text-decoration-none">
+                                    {{ \Carbon\Carbon::parse($item->starts_at)->format('d.m.Y') }}
+                                </a>
+                            @else
+                                {{ \Carbon\Carbon::parse($item->starts_at)->format('d.m.Y') }}
+                            @endif
+                            {{ \Carbon\Carbon::parse($item->starts_at)->format(' H:i') }}
+                        </p>
                         
                         <div class="d-flex align-items-center gap-2 mt-3">
                             <span class="text-muted">Статус:</span>
@@ -228,6 +237,11 @@
                     @if($item->pet)
                         <a href="{{ route('admin.pets.show', $item->pet) }}" class="btn btn-outline-success">
                             <i class="bi bi-heart"></i> Карточка питомца
+                        </a>
+                    @endif
+                    @if($item->schedule)
+                        <a href="{{ route('admin.schedules.show', $item->schedule) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-calendar3"></i> Расписание
                         </a>
                     @endif
                     <hr>

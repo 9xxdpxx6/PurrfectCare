@@ -58,7 +58,7 @@
             </div>
             <div class="card-body">
                 @php
-                    $totalProcurements = $supplier->procurements->count();
+                            $totalProcurements = $procurementsTotal;
                     $totalDrugs = $supplier->procurements->unique('drug_id')->count();
                     $totalQuantity = $supplier->procurements->sum('quantity');
                     $totalValue = $supplier->procurements->sum(function($procurement) {
@@ -102,13 +102,13 @@
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-0">
-            <i class="bi bi-truck"></i> Последние поставки ({{ $supplier->procurements->count() }} из {{ $supplier->procurements->count() }})
+                                    <i class="bi bi-truck"></i> Последние поставки ({{ $procurementsTotal }})
         </h5>
     </div>
     <div class="card-body">
         @if($supplier->procurements->count() > 0)
             <div class="d-flex flex-column gap-3">
-                @foreach($supplier->procurements as $procurement)
+                        @foreach($supplier->procurements as $procurement)
                     <div class="border rounded p-3 bg-body-tertiary">
                         <div class="row align-items-center g-2">
                             <!-- Строка 1 для MD: Препарат и дата -->
@@ -159,16 +159,16 @@
                             <div class="col-12 col-md-6 col-xl-2 mb-2 mb-xl-0">
                                 <div class="d-flex justify-content-between align-items-center gap-2">
                                     <div>
-                                        @php
-                                            $isExpired = $procurement->expiry_date->isPast();
-                                            $isExpiringSoon = $procurement->expiry_date->diffInDays(now()) <= 30;
-                                        @endphp
+                                    @php
+                                        $isExpired = $procurement->expiry_date->isPast();
+                                        $isExpiringSoon = $procurement->expiry_date->diffInDays(now()) <= 30;
+                                    @endphp
                                         <small class="text-muted d-block">
                                             {{ $isExpired ? 'Просрочен' : 'Годен до' }}
                                         </small>
-                                        <span class="badge {{ $isExpired ? 'bg-danger' : ($isExpiringSoon ? 'bg-warning' : 'bg-success') }}">
-                                            {{ $procurement->expiry_date->format('d.m.Y') }}
-                                        </span>
+                                    <span class="badge {{ $isExpired ? 'bg-danger' : ($isExpiringSoon ? 'bg-warning' : 'bg-success') }}">
+                                        {{ $procurement->expiry_date->format('d.m.Y') }}
+                                    </span>
                                     </div>
                                     <div class="d-block d-xl-none">
                                         <a href="{{ route('admin.drug-procurements.show', $procurement) }}" class="btn btn-outline-primary btn-sm" title="Подробнее">
@@ -186,7 +186,7 @@
                             </div>
                         </div>
                     </div>
-                @endforeach
+                        @endforeach
             </div>
         @else
             <div class="text-center py-4">
