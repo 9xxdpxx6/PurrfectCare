@@ -21,7 +21,7 @@ class StoreRequest extends FormRequest
             'drugs' => 'required|array|min:1',
             'drugs.*.drug_id' => 'required|exists:drugs,id',
             'drugs.*.batch_number' => 'nullable|string|max:255',
-            'drugs.*.dosage' => 'required|numeric|min:0.01|max:999.99'
+            'drugs.*.dosage' => 'required|numeric|min:0.01|max:9999.99'
         ];
     }
 
@@ -46,7 +46,7 @@ class StoreRequest extends FormRequest
             'drugs.*.dosage.required' => 'Необходимо указать дозировку',
             'drugs.*.dosage.numeric' => 'Дозировка должна быть числом',
             'drugs.*.dosage.min' => 'Дозировка должна быть больше 0',
-            'drugs.*.dosage.max' => 'Дозировка не должна превышать 999.99'
+            'drugs.*.dosage.max' => 'Дозировка не должна превышать 9999.99'
         ];
     }
 

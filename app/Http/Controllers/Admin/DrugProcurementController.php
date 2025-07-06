@@ -41,17 +41,13 @@ class DrugProcurementController extends AdminController
 
     public function create(): View
     {
-        $drugs = Drug::orderBy('name')->get();
-        $suppliers = Supplier::orderBy('name')->get();
-        return view("admin.{$this->viewPath}.create", compact('drugs', 'suppliers'));
+        return view("admin.{$this->viewPath}.create");
     }
 
     public function edit($id): View
     {
-        $item = $this->model::findOrFail($id);
-        $drugs = Drug::orderBy('name')->get();
-        $suppliers = Supplier::orderBy('name')->get();
-        return view("admin.{$this->viewPath}.edit", compact('item', 'drugs', 'suppliers'));
+        $item = $this->model::with(['drug.unit', 'supplier'])->findOrFail($id);
+        return view("admin.{$this->viewPath}.edit", compact('item'));
     }
 
     public function show($id): View

@@ -122,6 +122,9 @@
                     <div class="mb-3">
                         <label for="symptoms" class="form-label">Симптомы</label>
                         <select name="symptoms[]" id="symptoms" class="form-select" multiple data-url="{{ route('admin.visits.symptom-options') }}">
+                            @foreach($selectedSymptoms as $symptom)
+                                <option value="{{ $symptom['id'] }}" selected>{{ $symptom['name'] }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -129,6 +132,9 @@
                     <div class="mb-3">
                         <label for="diagnoses" class="form-label">Диагнозы</label>
                         <select name="diagnoses[]" id="diagnoses" class="form-select" multiple data-url="{{ route('admin.visits.diagnosis-options') }}">
+                            @foreach($selectedDiagnoses as $diagnosis)
+                                <option value="{{ $diagnosis['id'] }}" selected>{{ $diagnosis['name'] }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -136,7 +142,7 @@
                         <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i> Отмена
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-lg"></i> Сохранить изменения
                         </button>
                     </div>
@@ -170,7 +176,8 @@
             placeholder: 'Выберите статус...',
         });
         
-        new createTomSelect('#symptoms', {
+        // Инициализация TomSelect для симптомов с предварительно выбранными значениями
+        const symptomsSelect = new createTomSelect('#symptoms', {
             placeholder: 'Выберите симптомы...',
             create: true,
             valueField: 'value',
@@ -179,6 +186,13 @@
             preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Добавляем уже выбранные значения к запросу
+                const selectedValues = this.getValue();
+                if (selectedValues.length > 0) {
+                    url += '&selected=' + encodeURIComponent(selectedValues.join(','));
+                }
+                
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))
@@ -186,7 +200,8 @@
             }
         });
         
-        new createTomSelect('#diagnoses', {
+        // Инициализация TomSelect для диагнозов с предварительно выбранными значениями
+        const diagnosesSelect = new createTomSelect('#diagnoses', {
             placeholder: 'Выберите диагнозы...',
             create: true,
             valueField: 'value',
@@ -195,6 +210,13 @@
             preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Добавляем уже выбранные значения к запросу
+                const selectedValues = this.getValue();
+                if (selectedValues.length > 0) {
+                    url += '&selected=' + encodeURIComponent(selectedValues.join(','));
+                }
+                
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))

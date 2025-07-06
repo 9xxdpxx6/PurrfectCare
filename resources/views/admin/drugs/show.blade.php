@@ -47,10 +47,17 @@
                             <strong><i class="bi bi-calendar-plus"></i> Добавлен:</strong>
                             {{ \Carbon\Carbon::parse($item->created_at)->format('d.m.Y H:i') }}
                         </p>
-                        <p class="mb-2">
-                            <strong><i class="bi bi-calendar-check"></i> Обновлен:</strong>
-                            {{ \Carbon\Carbon::parse($item->updated_at)->format('d.m.Y H:i') }}
-                        </p>
+                        @if($firstProcurement)
+                            <p class="mb-2">
+                                <strong><i class="bi bi-truck"></i> Поставляется с:</strong>
+                                {{ $firstProcurement->delivery_date->format('d.m.Y') }}
+                            </p>
+                        @else
+                            <p class="mb-2">
+                                <strong><i class="bi bi-calendar-check"></i> Обновлен:</strong>
+                                {{ \Carbon\Carbon::parse($item->updated_at)->format('d.m.Y H:i') }}
+                            </p>
+                        @endif
                         @if($item->prescription_required)
                             <p class="mb-2">
                                 <strong><i class="bi bi-exclamation-triangle text-warning"></i> Требуется рецепт</strong>
@@ -153,7 +160,7 @@
                     <strong>{{ $procurementsTotal }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span>Уникальных поставщиков:</span>
+                    <span>Поставщиков:</span>
                     <strong>{{ $item->procurements->pluck('supplier')->unique('id')->count() }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">

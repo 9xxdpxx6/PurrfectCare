@@ -167,7 +167,7 @@
                             @endif
                         </div>
                     </div>
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
                         <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-info" title="Просмотр">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>

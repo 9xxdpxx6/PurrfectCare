@@ -121,7 +121,7 @@
                                             </div> --}}
                                             <div>
                                                 <small class="text-muted">Дозировка:</small>
-                                                <div class="fw-bold">{{ $drug->pivot->dosage }} {{ $drug->unit->name ?? '' }}</div>
+                                                <div class="fw-bold">{{ $drug->pivot->dosage }} {{ $drug->unit->symbol ?? '' }}</div>
                                             </div>
                                         </div>
                                     </div>

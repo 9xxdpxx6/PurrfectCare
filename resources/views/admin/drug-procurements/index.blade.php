@@ -68,7 +68,7 @@
                     }
                 }
             @endphp
-            <input type="text" name="delivery_date_from" id="delivery_date_from" class="form-control" value="{{ $deliveryDateFrom }}" readonly>
+            <input type="text" name="delivery_date_from" id="delivery_date_from" class="form-control" value="{{ $deliveryDateFrom }}" readonly placeholder="дд.мм.гггг">
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="delivery_date_to" class="form-label mb-1">Дата поставки до</label>
@@ -82,7 +82,7 @@
                     }
                 }
             @endphp
-            <input type="text" name="delivery_date_to" id="delivery_date_to" class="form-control" value="{{ $deliveryDateTo }}" readonly>
+            <input type="text" name="delivery_date_to" id="delivery_date_to" class="form-control" value="{{ $deliveryDateTo }}" readonly placeholder="дд.мм.гггг">
         </div>
         <div class="flex-grow-1" style="min-width:120px;">
             <label for="price_from" class="form-label mb-1">Цена от</label>

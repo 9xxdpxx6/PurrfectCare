@@ -133,13 +133,13 @@
                         <div class="form-text">Удерживайте Ctrl для выбора нескольких диагнозов</div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg"></i> Создать приём
-                        </button>
+                    <div class="d-flex justify-content-between gap-2">
                         <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i> Отмена
                         </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i> Сохранить
+                        </button>
                     </div>
                 </form>
             </div>

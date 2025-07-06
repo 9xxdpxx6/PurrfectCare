@@ -7,10 +7,10 @@
     <h1 class="h2">Редактировать вакцинацию</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.vaccinations.show', $item) }}" class="btn btn-outline-info me-2">
-            <i class="bi bi-eye"></i> <span class="d-none d-md-inline">Просмотр</span>
+            <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Просмотр</span>
         </a>
         <a href="{{ route('admin.vaccinations.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> <span class="d-none d-md-inline">Назад к списку</span>
+            <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
     </div>
 </div>
@@ -77,7 +77,7 @@
                                 <label for="administered_at" class="form-label">Дата проведения</label>
                                 <input type="text" name="administered_at" id="administered_at" 
                                     class="form-control @error('administered_at') is-invalid @enderror" 
-                                    value="{{ old('administered_at', $item->administered_at?->format('d.m.Y')) }}" placeholder="дд.мм.гггг">
+                                    value="{{ old('administered_at', $item->administered_at?->format('d.m.Y')) }}" placeholder="дд.мм.гггг" autocomplete="off">
                                 @error('administered_at')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -88,7 +88,7 @@
                                 <label for="next_due" class="form-label">Дата следующей вакцинации</label>
                                 <input type="text" name="next_due" id="next_due" 
                                     class="form-control @error('next_due') is-invalid @enderror" 
-                                    value="{{ old('next_due', $item->next_due?->format('d.m.Y')) }}" placeholder="дд.мм.гггг">
+                                    value="{{ old('next_due', $item->next_due?->format('d.m.Y')) }}" placeholder="дд.мм.гггг" autocomplete="off">
                                 @error('next_due')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -137,12 +137,24 @@
                                                     @endif
                                                 </select>
                                             </div>
-                                            <div class="col-8 col-md-4 col-lg-3 d-flex flex-column">
+                                            <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
                                                 <label class="form-label">Дозировка</label>
-                                                <input type="number" step="0.01" min="0.01" max="999.99" name="drugs[{{ $index }}][dosage]" class="form-control" value="{{ $drug['dosage'] }}">
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[{{ $index }}][dosage]" class="form-control" value="{{ $drug['dosage'] }}">
+                                                    <span class="input-group-text dosage-unit" data-drug-index="{{ $index }}">
+                                                        @if($drug['drug_id'])
+                                                            @php
+                                                                $selectedDrug = \App\Models\Drug::with('unit')->find($drug['drug_id']);
+                                                            @endphp
+                                                            {{ $selectedDrug && $selectedDrug->unit ? $selectedDrug->unit->symbol : 'у.е.' }}
+                                                        @else
+                                                            у.е.
+                                                        @endif
+                                                    </span>
+                                                </div>
                                                 <input type="hidden" name="drugs[{{ $index }}][batch_number]" value="BATCH{{ $drug['drug_id'] ?? '' }}">
                                             </div>
-                                            <div class="col-auto d-flex align-items-end justify-content-end mh-100" style="min-width:48px;">
+                                            <div class="col-4 col-md-6 col-lg-auto d-flex justify-content-end align-items-center" style="min-width:48px;">
                                                 <button type="button" class="btn btn-outline-danger remove-drug ms-md-2">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -159,12 +171,15 @@
                                                     data-url="{{ route('admin.vaccinations.drug-options') }}">
                                             </select>
                                         </div>
-                                        <div class="col-8 col-md-4 col-lg-3 d-flex flex-column">
+                                        <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
                                             <label class="form-label">Дозировка</label>
-                                            <input type="number" step="0.01" min="0.01" max="999.99" name="drugs[0][dosage]" class="form-control">
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[0][dosage]" class="form-control">
+                                                <span class="input-group-text dosage-unit" data-drug-index="0">у.е.</span>
+                                            </div>
                                             <input type="hidden" name="drugs[0][batch_number]" value="">
                                         </div>
-                                        <div class="col-auto d-flex align-items-end justify-content-end" style="min-width:48px;">
+                                        <div class="col-4 col-md-6 col-lg-auto d-flex justify-content-end align-items-center" style="min-width:48px;">
                                             <button type="button" class="btn btn-outline-danger remove-drug ms-md-2">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -175,10 +190,12 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('admin.vaccinations.show', $item) }}" class="btn btn-secondary">Отмена</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check"></i> Сохранить изменения
+                    <div class="d-flex justify-content-between gap-2">
+                        <a href="{{ route('admin.vaccinations.show', $item) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i> Сохранить
                         </button>
                     </div>
                 </form>
@@ -253,11 +270,43 @@
                         .then(json => callback(json))
                         .catch(() => callback());
                 },
+                onChange: function(value) {
+                    updateDosageUnit(this.input, value);
+                },
                 onItemAdd: function() {
                     this.setTextboxValue('');
                     this.refreshOptions();
                 }
             });
+        }
+        
+        function updateDosageUnit(selectElement, drugId) {
+            const drugItem = selectElement.closest('.drug-item');
+            const unitSpan = drugItem.querySelector('.dosage-unit');
+            
+            if (!drugId || !unitSpan) {
+                if (unitSpan) unitSpan.textContent = 'у.е.';
+                return;
+            }
+            
+            fetch(`{{ route('admin.vaccinations.drug-options') }}?selected=${drugId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const drug = data.find(item => item.value == drugId);
+                    if (drug && drug.text) {
+                        const match = drug.text.match(/\(([^)]+)\)$/);
+                        if (match) {
+                            unitSpan.textContent = match[1];
+                        } else {
+                            unitSpan.textContent = 'у.е.';
+                        }
+                    } else {
+                        unitSpan.textContent = 'у.е.';
+                    }
+                })
+                .catch(() => {
+                    unitSpan.textContent = 'у.е.';
+                });
         }
         document.getElementById('add-drug').addEventListener('click', function() {
             const container = document.getElementById('drugs-container');
@@ -270,12 +319,15 @@
                         <select name="drugs[${drugIndex}][drug_id]" class="form-select drug-select" 
                                 data-url="{{ route('admin.vaccinations.drug-options') }}"></select>
                     </div>
-                    <div class="col-8 col-md-4 col-lg-3 d-flex flex-column">
+                    <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
                         <label class="form-label">Дозировка</label>
-                        <input type="number" step="0.01" min="0.01" max="999.99" name="drugs[${drugIndex}][dosage]" class="form-control">
+                        <div class="input-group">
+                            <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[${drugIndex}][dosage]" class="form-control">
+                            <span class="input-group-text dosage-unit" data-drug-index="${drugIndex}">у.е.</span>
+                        </div>
                         <input type="hidden" name="drugs[${drugIndex}][batch_number]" value="">
                     </div>
-                    <div class="col-auto d-flex align-items-end justify-content-end" style="min-width:48px;">
+                    <div class="col-4 col-md-6 col-lg-auto d-flex justify-content-end align-items-center" style="min-width:48px;">
                         <button type="button" class="btn btn-outline-danger remove-drug ms-md-2">
                             <i class="bi bi-trash"></i>
                         </button>

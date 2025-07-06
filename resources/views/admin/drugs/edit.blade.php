@@ -3,10 +3,10 @@
 @section('title', 'Редактировать препарат')
 
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom flex-nowrap">
     <h1 class="h2">Редактировать препарат</h1>
     <a href="{{ route('admin.drugs.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Назад к списку
+        <i class="bi bi-arrow-left"></i> <span class="d-none d-md-inline">Назад</span>
     </a>
 </div>
 

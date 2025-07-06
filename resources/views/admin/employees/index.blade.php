@@ -81,7 +81,7 @@
                             <span>Филиал:</span> {{ $employee->branches->pluck('name')->join(', ') ?: '—' }}
                         </p>
                     </div>
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start">
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap mt-3 mt-lg-0">
                         <a href="{{ route('admin.employees.show', $employee) }}" class="btn btn-outline-info" title="Просмотр">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>

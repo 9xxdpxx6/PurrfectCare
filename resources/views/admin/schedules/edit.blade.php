@@ -7,16 +7,16 @@
     <h1 class="h2">Редактировать расписание</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.schedules.show', $item) }}" class="btn btn-outline-info me-2">
-                <i class="bi bi-eye"></i> Просмотр
+                <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Просмотр</span>
             </a>
             <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> К списку расписаний
+                <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад</span>
             </a>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
                 <form action="{{ route('admin.schedules.update', $item) }}" method="POST">
@@ -122,11 +122,11 @@
                         <input type="hidden" name="shift_ends_at" id="shift_ends_at">
                     </div>
 
-                    <div class="d-flex gap-2 justify-content-between">
+                    <div class="d-flex justify-content-between gap-2">
                         <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i> Отмена
                         </a>
-                        <button type="submit" class="btn btn-warning">
+                        <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-lg"></i> Сохранить
                         </button>
                     </div>
@@ -135,7 +135,7 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">Текущее расписание</h6>

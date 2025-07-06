@@ -94,7 +94,12 @@ class DrugController extends AdminController
         // Получаем общее количество закупок для отображения в заголовке
         $procurementsTotal = $item->procurements()->count();
         
-        return view("admin.{$this->viewPath}.show", compact('item', 'procurementsTotal'));
+        // Получаем дату первой поставки
+        $firstProcurement = $item->procurements()
+            ->orderBy('delivery_date', 'asc')
+            ->first();
+        
+        return view("admin.{$this->viewPath}.show", compact('item', 'procurementsTotal', 'firstProcurement'));
     }
 
     public function store(StoreRequest $request): RedirectResponse

@@ -61,9 +61,40 @@ class VisitController extends AdminController
         $symptoms = DictionarySymptom::all();
         $diagnoses = DictionaryDiagnosis::all();
         $edit_starts_at = $item->starts_at ? $item->starts_at->format('d.m.Y H:i') : null;
+        
+        // Подготавливаем выбранные симптомы
+        $selectedSymptoms = $item->symptoms->map(function($symptom) {
+            if ($symptom->dictionary_symptom_id) {
+                return [
+                    'id' => $symptom->dictionary_symptom_id,
+                    'name' => $symptom->dictionarySymptom->name
+                ];
+            } else {
+                return [
+                    'id' => $symptom->custom_symptom,
+                    'name' => $symptom->custom_symptom
+                ];
+            }
+        });
+        
+        // Подготавливаем выбранные диагнозы
+        $selectedDiagnoses = $item->diagnoses->map(function($diagnosis) {
+            if ($diagnosis->dictionary_diagnosis_id) {
+                return [
+                    'id' => $diagnosis->dictionary_diagnosis_id,
+                    'name' => $diagnosis->dictionaryDiagnosis->name
+                ];
+            } else {
+                return [
+                    'id' => $diagnosis->custom_diagnosis,
+                    'name' => $diagnosis->custom_diagnosis
+                ];
+            }
+        });
+        
         return view("admin.{$this->viewPath}.edit", compact(
             'item', 'clients', 'pets', 'schedules', 'statuses',
-            'symptoms', 'diagnoses', 'edit_starts_at'
+            'symptoms', 'diagnoses', 'edit_starts_at', 'selectedSymptoms', 'selectedDiagnoses'
         ));
     }
 

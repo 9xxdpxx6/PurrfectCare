@@ -100,7 +100,7 @@
                                             <div class="col-12 col-md-3 text-md-end">
                                                 <div>
                                                     <small class="text-muted d-block">Сумма</small>
-                                                    <span>{{ number_format($order->total_amount, 2, ',', ' ') }} ₽</span>
+                                                    <span>{{ number_format($order->total, 2, ',', ' ') }} ₽</span>
                                                 </div>
                                             </div>
                                             
@@ -270,7 +270,7 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Общая сумма заказов:</span>
-                        <strong>{{ number_format($orders->sum('total_amount'), 2, ',', ' ') }} ₽</strong>
+                        <strong>{{ number_format($orders->sum('total'), 2, ',', ' ') }} ₽</strong>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span>Последний заказ:</span>

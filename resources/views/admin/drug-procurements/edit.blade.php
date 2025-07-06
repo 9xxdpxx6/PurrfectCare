@@ -18,33 +18,43 @@
         @method('PATCH')
         
         <div class="row">
-            <div class="col-lg-6 mb-3">
+            <div class="col-md-6 col-lg-6 mb-3">
                 <label for="drug_id" class="form-label">Препарат</label>
-                <select name="drug_id" id="drug_id" class="form-select @error('drug_id') is-invalid @enderror">
+                <select name="drug_id" id="drug_id" class="form-select @error('drug_id') is-invalid @enderror" data-url="{{ route('admin.drug-procurements.drug-options') }}">
                     <option value="">Выберите препарат</option>
-                    @foreach($drugs as $drug)
-                        <option value="{{ $drug->id }}" @if(old('drug_id', $item->drug_id) == $drug->id) selected @endif>{{ $drug->name }}</option>
-                    @endforeach
+                    @if(old('drug_id', $item->drug_id))
+                        @php
+                            $selectedDrug = old('drug_id') ? \App\Models\Drug::with('unit')->find(old('drug_id')) : $item->drug;
+                        @endphp
+                        @if($selectedDrug)
+                            <option value="{{ $selectedDrug->id }}" selected>{{ $selectedDrug->name }}{{ $selectedDrug->unit ? ' (' . $selectedDrug->unit->symbol . ')' : '' }}</option>
+                        @endif
+                    @endif
                 </select>
                 @error('drug_id')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="col-lg-6 mb-3">
+            <div class="col-md-6 col-lg-6 mb-3">
                 <label for="supplier_id" class="form-label">Поставщик</label>
-                <select name="supplier_id" id="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror">
+                <select name="supplier_id" id="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror" data-url="{{ route('admin.drug-procurements.supplier-options') }}">
                     <option value="">Выберите поставщика</option>
-                    @foreach($suppliers as $supplier)
-                        <option value="{{ $supplier->id }}" @if(old('supplier_id', $item->supplier_id) == $supplier->id) selected @endif>{{ $supplier->name }}</option>
-                    @endforeach
+                    @if(old('supplier_id', $item->supplier_id))
+                        @php
+                            $selectedSupplier = old('supplier_id') ? \App\Models\Supplier::find(old('supplier_id')) : $item->supplier;
+                        @endphp
+                        @if($selectedSupplier)
+                            <option value="{{ $selectedSupplier->id }}" selected>{{ $selectedSupplier->name }}</option>
+                        @endif
+                    @endif
                 </select>
                 @error('supplier_id')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="col-lg-6 mb-3">
+            <div class="col-md-6 col-lg-6 mb-3">
                 <label for="delivery_date" class="form-label">Дата поставки</label>
                 @php
                     $deliveryDate = old('delivery_date', $item->delivery_date);
@@ -60,7 +70,7 @@
                 @enderror
             </div>
 
-            <div class="col-lg-6 mb-3">
+            <div class="col-md-6 col-lg-6 mb-3">
                 <label for="manufacture_date" class="form-label">Дата изготовления</label>
                 @php
                     $manufactureDate = old('manufacture_date', $item->manufacture_date);
@@ -76,7 +86,7 @@
                 @enderror
             </div>
 
-            <div class="col-lg-6 mb-3">
+            <div class="col-md-6 col-lg-6 mb-3">
                 <label for="packaging_date" class="form-label">Дата упаковки</label>
                 @php
                     $packagingDate = old('packaging_date', $item->packaging_date);
@@ -92,7 +102,7 @@
                 @enderror
             </div>
 
-            <div class="col-lg-6 mb-3">
+            <div class="col-md-6 col-lg-6 mb-3">
                 <label for="expiry_date" class="form-label">Срок годности</label>
                 @php
                     $expiryDate = old('expiry_date', $item->expiry_date);
@@ -108,7 +118,7 @@
                 @enderror
             </div>
 
-            <div class="col-lg-6 mb-3">
+            <div class="col-md-6 col-lg-6 mb-3">
                 <label for="price" class="form-label">Цена</label>
                 <div class="input-group">
                     <input type="number" name="price" id="price" class="form-control @error('price') is-invalid @enderror" step="0.01" min="0" value="{{ old('price', $item->price) }}">
@@ -119,12 +129,21 @@
                 </div>
             </div>
 
-            <div class="col-lg-6 mb-3">
+            <div class="col-md-6 col-lg-6 mb-3">
                 <label for="quantity" class="form-label">Количество</label>
-                <input type="number" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" min="1" value="{{ old('quantity', $item->quantity) }}">
-                @error('quantity')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                <div class="input-group">
+                    <input type="number" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" min="1" value="{{ old('quantity', $item->quantity) }}">
+                    <span class="input-group-text" id="quantity-unit">
+                        @if(old('drug_id', $item->drug_id) && $item->drug && $item->drug->unit)
+                            {{ $item->drug->unit->symbol }}
+                        @else
+                            у.е.
+                        @endif
+                    </span>
+                    @error('quantity')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
             </div>
         </div>
 
@@ -141,12 +160,83 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Tom Select
-        new createTomSelect('#drug_id', {
+        // Tom Select с динамической загрузкой
+        const drugSelect = new createTomSelect('#drug_id', {
             placeholder: 'Выберите препарат...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть выбранное значение и это первая загрузка, передаём его
+                const selectedValue = this.getValue();
+                if (selectedValue && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedValue);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onChange: function(value) {
+                // Обновляем единицу измерения при выборе препарата
+                updateQuantityUnit(value);
+            }
         });
+        
+        // Функция для обновления единицы измерения
+        function updateQuantityUnit(drugId) {
+            const quantityUnit = document.getElementById('quantity-unit');
+            if (!drugId) {
+                quantityUnit.textContent = 'у.е.';
+                return;
+            }
+            
+            // Получаем информацию о препарате
+            fetch(`{{ route('admin.drug-procurements.drug-options') }}?selected=${drugId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const drug = data.find(item => item.value == drugId);
+                    if (drug && drug.text) {
+                        // Извлекаем единицу измерения из текста (в скобках)
+                        const match = drug.text.match(/\(([^)]+)\)$/);
+                        if (match) {
+                            quantityUnit.textContent = match[1];
+                        } else {
+                            quantityUnit.textContent = 'у.е.';
+                        }
+                    } else {
+                        quantityUnit.textContent = 'у.е.';
+                    }
+                })
+                .catch(() => {
+                    quantityUnit.textContent = 'у.е.';
+                });
+        }
+        
         new createTomSelect('#supplier_id', {
             placeholder: 'Выберите поставщика...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть выбранное значение и это первая загрузка, передаём его
+                const selectedValue = this.getValue();
+                if (selectedValue && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedValue);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            }
         });
 
         // Air Datepickers

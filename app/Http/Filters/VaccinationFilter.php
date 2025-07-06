@@ -110,7 +110,7 @@ class VaccinationFilter extends AbstractFilter
                     ->select('vaccinations.*');
                 break;
             default:
-                $builder->orderBy('administered_at', 'desc');
+                $builder->orderBy('id', 'desc');
                 break;
         }
     }
