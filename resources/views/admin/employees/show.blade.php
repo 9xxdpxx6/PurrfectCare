@@ -57,10 +57,6 @@
                             <strong><i class="bi bi-calendar-plus"></i> Добавлен:</strong>
                             {{ $employee->created_at->format('d.m.Y H:i') }}
                         </p>
-                        <p class="mb-2">
-                            <strong><i class="bi bi-calendar-check"></i> Обновлен:</strong>
-                            {{ $employee->updated_at->format('d.m.Y H:i') }}
-                        </p>
                     </div>
                 </div>
             </div>

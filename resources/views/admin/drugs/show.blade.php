@@ -82,7 +82,7 @@
                             <div class="border rounded p-3 bg-body-tertiary">
                                 <div class="row align-items-center g-2">
                                     <!-- Поставщик и дата -->
-                                    <div class="col-12 col-md-6 col-xl-4 mb-2 mb-xl-0">
+                                    <div class="col-12 col-md-6 col-xl-5 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             <a href="{{ route('admin.suppliers.show', $procurement->supplier) }}" class="text-decoration-none">
                                                 {{ $procurement->supplier->name }}
@@ -108,7 +108,7 @@
                                     </div>
                                     
                                     <!-- Срок годности и статус -->
-                                    <div class="col-12 col-xl-4 text-xl-end">
+                                    <div class="col-12 col-xl-3 text-xl-end">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div class="d-xl-none">
                                                 <small class="text-muted d-block">Срок годности</small>
@@ -125,13 +125,12 @@
                                             </div>
                                             
                                             <div class="ms-2">
-                                            @if($procurement->expiry_date->lt(\Carbon\Carbon::now()))
-                                                <span class="badge bg-danger">Просрочен</span>
-                                            @elseif($procurement->expiry_date->lte(\Carbon\Carbon::now()->addDays(30)))
-                                                <span class="badge bg-warning">Скоро истечет</span>
-                                            @else
-                                                <span class="badge bg-success">Годен</span>
-                                            @endif
+                                                <a href="{{ route('admin.drug-procurements.show', $procurement) }}" class="btn btn-sm btn-outline-primary d-none d-sm-inline-block">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{{ route('admin.drug-procurements.show', $procurement) }}" class="btn btn-sm btn-outline-primary d-sm-none w-100">
+                                                    <i class="bi bi-eye"></i> Подробнее
+                                                </a>
                                             </div>
                                         </div>
                                     </div>

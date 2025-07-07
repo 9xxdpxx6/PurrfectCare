@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Редактировать сотрудника</h1>
     <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Назад к списку
+        <i class="bi bi-arrow-left"></i> Назад
     </a>
 </div>
 
@@ -55,6 +55,7 @@
         <a href="{{ route('admin.employees.resetPassword', $employee) }}"
             class="btn btn-outline-warning mt-3 mt-md-0 ms-md-auto"
             onclick="return confirm('Сбросить пароль сотрудника? Новый временный пароль будет показан после сохранения.')">
+            <i class="bi bi-key"></i>
             Сбросить пароль
         </a>
 

@@ -36,14 +36,16 @@
                 </div>
                 
                 <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Дата создания:</div>
-                    <div class="col-sm-8">{{ $supplier->created_at->format('d.m.Y H:i') }}</div>
+                    <div class="col-sm-4 fw-bold">Добавлен:</div>
+                    <div class="col-sm-8">{{ $supplier->created_at->format('d.m.Y') }}</div>
                 </div>
                 
+                @if($lastDelivery)
                 <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Последнее обновление:</div>
-                    <div class="col-sm-8">{{ $supplier->updated_at->format('d.m.Y H:i') }}</div>
+                    <div class="col-sm-4 fw-bold">Последняя поставка:</div>
+                    <div class="col-sm-8">{{ $lastDelivery->delivery_date->format('d.m.Y') }}</div>
                 </div>
+                @endif
             </div>
         </div>
     </div>
@@ -57,15 +59,6 @@
                 </h5>
             </div>
             <div class="card-body">
-                @php
-                            $totalProcurements = $procurementsTotal;
-                    $totalDrugs = $supplier->procurements->unique('drug_id')->count();
-                    $totalQuantity = $supplier->procurements->sum('quantity');
-                    $totalValue = $supplier->procurements->sum(function($procurement) {
-                        return $procurement->price * $procurement->quantity;
-                    });
-                    $lastDelivery = $supplier->procurements->sortByDesc('delivery_date')->first();
-                @endphp
                 
                 <div class="row mb-3">
                     <div class="col-sm-6 fw-bold">Всего поставок:</div>
@@ -84,15 +77,10 @@
                 
                 <div class="row mb-3">
                     <div class="col-sm-6 fw-bold">Общая стоимость:</div>
-                    <div class="col-sm-6">{{ number_format($totalValue, 2) }} ₽</div>
+                    <div class="col-sm-6">{{ number_format($totalValue, 2, ',', ' ') }} ₽</div>
                 </div>
                 
-                @if($lastDelivery)
-                <div class="row mb-3">
-                    <div class="col-sm-6 fw-bold">Последняя поставка:</div>
-                    <div class="col-sm-6">{{ $lastDelivery->delivery_date->format('d.m.Y') }}</div>
-                </div>
-                @endif
+
             </div>
         </div>
     </div>
@@ -131,7 +119,7 @@
                                     <small class="text-muted">Количество:</small> {{ $procurement->quantity }}
                                 </div>
                                 <div>
-                                    <small class="text-muted">Цена:</small> {{ number_format($procurement->price, 2) }} ₽
+                                    <small class="text-muted">Цена:</small> {{ number_format($procurement->price, 2, ',', ' ') }} ₽
                                 </div>
                             </div>
                             
@@ -139,7 +127,7 @@
                             <div class="col-12 col-md-6 col-xl-2 mb-2 mb-xl-0">
                                 <div class="text-end">
                                     <small class="text-muted d-block">Сумма</small>
-                                    <span class="fw-bold">{{ number_format($procurement->price * $procurement->quantity, 2) }} ₽</span>
+                                    <span class="fw-bold">{{ number_format($procurement->price * $procurement->quantity, 2, ',', ' ') }} ₽</span>
                                 </div>
                             </div>
                             

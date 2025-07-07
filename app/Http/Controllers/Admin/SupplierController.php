@@ -37,7 +37,24 @@ class SupplierController extends AdminController
         // Получаем общее количество закупок для отображения в заголовке
         $procurementsTotal = $supplier->procurements()->count();
         
-        return view("admin.{$this->viewPath}.show", compact('supplier', 'procurementsTotal'));
+        // Вычисляем статистику поставок
+        $totalProcurements = $procurementsTotal;
+        $totalDrugs = $supplier->procurements->unique('drug_id')->count();
+        $totalQuantity = $supplier->procurements->sum('quantity');
+        $totalValue = $supplier->procurements->sum(function($procurement) {
+            return $procurement->price * $procurement->quantity;
+        });
+        $lastDelivery = $supplier->procurements->sortByDesc('delivery_date')->first();
+        
+        return view("admin.{$this->viewPath}.show", compact(
+            'supplier', 
+            'procurementsTotal', 
+            'totalProcurements', 
+            'totalDrugs', 
+            'totalQuantity', 
+            'totalValue', 
+            'lastDelivery'
+        ));
     }
 
     public function store(StoreRequest $request) : RedirectResponse

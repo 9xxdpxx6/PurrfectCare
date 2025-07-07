@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Редактировать услугу</h1>
     <a href="{{ route('admin.services.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Назад к списку
+        <i class="bi bi-arrow-left"></i> Назад
     </a>
 </div>
 
@@ -47,10 +47,12 @@
             <div class="form-text">Выберите один или несколько филиалов</div>
         </div>
     </div>
-    <div class="mt-4 d-flex justify-content-between">
-        <a href="{{ route('admin.services.index') }}" class="btn btn-outline-secondary">Отмена</a>
+    <div class="mt-4 d-flex justify-content-between gap-2">
+        <a href="{{ route('admin.services.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
         <button type="submit" class="btn btn-success">
-            <i class="bi bi-check-lg"></i> Сохранить изменения
+            <i class="bi bi-check-lg"></i> Сохранить
         </button>
     </div>
 </form>
