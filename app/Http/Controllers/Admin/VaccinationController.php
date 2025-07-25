@@ -63,7 +63,7 @@ class VaccinationController extends AdminController
         $query = $this->model::with([
             'pet.client', 'veterinarian', 'drugs'
         ])->filter($filter);
-        $items = $query->paginate(10)->withQueryString();
+        $items = $query->paginate(25)->withQueryString();
         
         return view("admin.{$this->viewPath}.index", compact('items'));
     }

@@ -59,7 +59,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         new createTomSelect('#unit_id', {
-            placeholder: 'Выберите единицу измерения...'
+            placeholder: 'Выберите единицу измерения...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
     });
 </script>

@@ -236,6 +236,10 @@
             onItemAdd: function() {
                 this.setTextboxValue('');
                 this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
             }
         });
         
@@ -261,6 +265,10 @@
             onItemAdd: function() {
                 this.setTextboxValue('');
                 this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
             }
         });
 

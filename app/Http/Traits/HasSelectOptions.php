@@ -17,11 +17,14 @@ trait HasSelectOptions
         $query = Supplier::query();
         $search = $request->input('q');
         $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
 
-        // Всегда добавляем "Все" первым элементом
-        $options = [
-            ['value' => '', 'text' => 'Все']
-        ];
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все'];
+        }
 
         // Если есть выбранный поставщик, добавляем его первым (если он не "Все")
         if ($selectedId && is_numeric($selectedId)) {
@@ -39,9 +42,12 @@ trait HasSelectOptions
         // Основной запрос для поиска/загрузки
         if ($search) {
             $query->where('name', 'like', "%$search%");
+        } else {
+            // Если нет поиска, загружаем только последние 20 записей
+            $query->orderBy('id', 'desc');
         }
 
-        $suppliers = $query->orderBy('name')->limit(19)->get();
+        $suppliers = $query->limit(20)->get();
 
         // Добавляем остальных поставщиков
         foreach ($suppliers as $supplier) {
@@ -62,11 +68,14 @@ trait HasSelectOptions
         $query = Drug::query();
         $search = $request->input('q');
         $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
 
-        // Всегда добавляем "Все" первым элементом
-        $options = [
-            ['value' => '', 'text' => 'Все']
-        ];
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все'];
+        }
 
         // Если есть выбранный препарат, добавляем его первым (если он не "Все")
         if ($selectedId && is_numeric($selectedId)) {
@@ -85,9 +94,12 @@ trait HasSelectOptions
         // Основной запрос для поиска/загрузки
         if ($search) {
             $query->where('name', 'like', "%$search%");
+        } else {
+            // Если нет поиска, загружаем только последние 20 записей
+            $query->orderBy('id', 'desc');
         }
 
-        $drugs = $query->with('unit')->orderBy('name')->limit(19)->get();
+        $drugs = $query->with('unit')->limit(20)->get();
 
         // Добавляем остальные препараты
         foreach ($drugs as $drug) {
@@ -109,11 +121,14 @@ trait HasSelectOptions
         $query = Specialty::query();
         $search = $request->input('q');
         $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
 
-        // Всегда добавляем "Все" первым элементом
-        $options = [
-            ['value' => '', 'text' => 'Все']
-        ];
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все'];
+        }
 
         // Если есть выбранная специальность, добавляем её первой (если она не "Все")
         if ($selectedId && is_numeric($selectedId)) {
@@ -131,9 +146,12 @@ trait HasSelectOptions
         // Основной запрос для поиска/загрузки
         if ($search) {
             $query->where('name', 'like', "%$search%");
+        } else {
+            // Если нет поиска, загружаем только последние 20 записей
+            $query->orderBy('id', 'desc');
         }
 
-        $specialties = $query->orderBy('name')->limit(19)->get();
+        $specialties = $query->limit(20)->get();
 
         // Добавляем остальные специальности
         foreach ($specialties as $specialty) {
@@ -158,11 +176,14 @@ trait HasSelectOptions
             
         $search = $request->input('q');
         $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
 
-        // Всегда добавляем "Все" первым элементом
-        $options = [
-            ['value' => '', 'text' => 'Все']
-        ];
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все'];
+        }
 
         // Если есть выбранный ветеринар, добавляем его первым (если он не "Все")
         if ($selectedId && is_numeric($selectedId)) {
@@ -180,9 +201,12 @@ trait HasSelectOptions
         // Основной запрос для поиска/загрузки
         if ($search) {
             $query->where('name', 'like', "%$search%");
+        } else {
+            // Если нет поиска, загружаем только последние 20 записей
+            $query->orderBy('id', 'desc');
         }
 
-        $veterinarians = $query->orderBy('name')->limit(19)->get();
+        $veterinarians = $query->limit(20)->get();
 
         // Добавляем остальных ветеринаров
         foreach ($veterinarians as $veterinarian) {
@@ -205,11 +229,14 @@ trait HasSelectOptions
         $query = \App\Models\Branch::query();
         $search = $request->input('q');
         $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
 
-        // Всегда добавляем "Все" первым элементом
-        $options = [
-            ['value' => '', 'text' => 'Все']
-        ];
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все'];
+        }
 
         // Если есть выбранный филиал, добавляем его первым (если он не "Все")
         if ($selectedId && is_numeric($selectedId)) {
@@ -250,11 +277,14 @@ trait HasSelectOptions
         $query = \App\Models\User::query();
         $search = $request->input('q');
         $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
 
-        // Всегда добавляем "Все" первым элементом
-        $options = [
-            ['value' => '', 'text' => 'Все']
-        ];
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все'];
+        }
 
         // Если есть выбранный владелец, добавляем его первым (если он не "Все")
         if ($selectedId && is_numeric($selectedId)) {
@@ -295,11 +325,14 @@ trait HasSelectOptions
         $query = \App\Models\Service::query();
         $search = $request->input('q');
         $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
 
-        // Всегда добавляем "Все" первым элементом
-        $options = [
-            ['value' => '', 'text' => 'Все']
-        ];
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все'];
+        }
 
         // Если есть выбранная услуга, добавляем её первой (если она не "Все")
         if ($selectedId && is_numeric($selectedId)) {
@@ -368,10 +401,12 @@ trait HasSelectOptions
         $selectedId = $request->input('selected');
         $clientId = $request->input('client_id');
         
-        // Всегда добавляем "Все" первым элементом
-        $options = [
-            ['value' => '', 'text' => 'Все питомцы']
-        ];
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все питомцы'];
+        }
         
         // Если есть выбранный питомец, добавляем его первым (если он не "Все")
         if ($selectedId && is_numeric($selectedId)) {
@@ -399,9 +434,12 @@ trait HasSelectOptions
                       $q2->where('name', 'like', "%$search%");
                   });
             });
+        } else {
+            // Если нет поиска, загружаем только последние 20 записей
+            $query->orderBy('id', 'desc');
         }
-        
-        $pets = $query->orderBy('name')->limit(19)->get();
+
+        $pets = $query->limit(20)->get();
         
         // Добавляем остальных питомцев
         foreach ($pets as $pet) {
@@ -557,6 +595,96 @@ trait HasSelectOptions
             ];
         }
 
+        return response()->json($options);
+    }
+
+    public function labTestTypeOptions(Request $request)
+    {
+        $query = \App\Models\LabTestType::query();
+        $search = $request->input('q');
+        $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
+        
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все типы анализов'];
+        }
+        
+        if ($selectedId && is_numeric($selectedId)) {
+            $selectedType = \App\Models\LabTestType::find($selectedId);
+            if ($selectedType) {
+                $options[] = [
+                    'value' => $selectedType->id,
+                    'text' => $selectedType->name
+                ];
+                $query->where('id', '!=', $selectedId);
+            }
+        }
+        
+        if ($search) {
+            $query->where('name', 'like', "%$search%");
+        } else {
+            // Если нет поиска, загружаем только последние 20 записей
+            $query->orderBy('id', 'desc');
+        }
+
+        $types = $query->limit(20)->get();
+        
+        foreach ($types as $type) {
+            $options[] = [
+                'value' => $type->id,
+                'text' => $type->name
+            ];
+        }
+        
+        return response()->json($options);
+    }
+
+    public function labTestParamOptions(Request $request)
+    {
+        $query = \App\Models\LabTestParam::query();
+        $search = $request->input('q');
+        $selectedId = $request->input('selected');
+        $isFilter = $request->input('filter', false);
+        
+        $options = [];
+        
+        // Добавляем "Все" только для фильтров
+        if ($isFilter) {
+            $options[] = ['value' => '', 'text' => 'Все параметры'];
+        }
+        
+        if ($selectedId && is_numeric($selectedId)) {
+            $selectedParam = \App\Models\LabTestParam::find($selectedId);
+            if ($selectedParam) {
+                $unit = $selectedParam->unit ? $selectedParam->unit->symbol : null;
+                $options[] = [
+                    'value' => $selectedParam->id,
+                    'text' => $selectedParam->name . ($unit ? ' (' . $unit . ')' : '')
+                ];
+                $query->where('id', '!=', $selectedId);
+            }
+        }
+        
+        if ($search) {
+            $query->where('name', 'like', "%$search%");
+        } else {
+            // Если нет поиска, загружаем только последние 20 записей
+            $query->orderBy('id', 'desc');
+        }
+
+        $params = $query->with('unit')->limit(20)->get();
+        
+        foreach ($params as $param) {
+            $unit = $param->unit ? $param->unit->symbol : null;
+            $options[] = [
+                'value' => $param->id,
+                'text' => $param->name . ($unit ? ' (' . $unit . ')' : '')
+            ];
+        }
+        
         return response()->json($options);
     }
 } 

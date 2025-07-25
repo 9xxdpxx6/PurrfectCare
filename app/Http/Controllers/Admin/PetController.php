@@ -66,7 +66,7 @@ class PetController extends AdminController
     {
         $filter = app(PetFilter::class, ['queryParams' => $request->query()]);
         $query = Pet::query()->with(['breed.species', 'client'])->filter($filter);
-        $items = $query->paginate(10)->withQueryString();
+        $items = $query->paginate(25)->withQueryString();
         $owners = User::orderBy('name')->get();
         return view("admin.{$this->viewPath}.index", compact('items', 'owners'));
     }

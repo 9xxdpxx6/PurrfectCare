@@ -2,124 +2,173 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Filters\LabTestFilter;
+use App\Http\Requests\Admin\LabTest\StoreRequest;
+use App\Http\Requests\Admin\LabTest\UpdateRequest;
 use App\Models\LabTest;
 use App\Models\Pet;
-use App\Models\LabTestType;
 use App\Models\Employee;
-use App\Models\LabTestResult;
+use App\Models\LabTestType;
 use App\Models\LabTestParam;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use App\Http\Traits\HasSelectOptions;
 
 class LabTestController extends AdminController
 {
+    use HasSelectOptions;
+
     public function __construct()
     {
         $this->model = LabTest::class;
         $this->viewPath = 'lab-tests';
         $this->routePrefix = 'lab-tests';
-        $this->validationRules = [
-            'pet_id' => 'required|exists:pets,id',
-            'lab_test_type_id' => 'required|exists:lab_test_types,id',
-            'veterinarian_id' => 'required|exists:employees,id',
-            'received_at' => 'required|date',
-            'completed_at' => 'nullable|date|after:received_at',
-            'results' => 'nullable|array',
-            'results.*.lab_test_param_id' => 'required|exists:lab_test_params,id',
-            'results.*.value' => 'required|string',
-            'results.*.notes' => 'nullable|string'
-        ];
-    }
-
-    public function create(): View
-    {
-        $pets = Pet::all();
-        $testTypes = LabTestType::all();
-        $veterinarians = Employee::where('position', 'veterinarian')->get();
-        return view("admin.{$this->viewPath}.create", compact('pets', 'testTypes', 'veterinarians'));
-    }
-
-    public function edit($id): View
-    {
-        $item = $this->model::with(['results', 'labTestType'])->findOrFail($id);
-        $pets = Pet::all();
-        $testTypes = LabTestType::all();
-        $veterinarians = Employee::where('position', 'veterinarian')->get();
-        $testParams = LabTestParam::where('lab_test_type_id', $item->lab_test_type_id)->get();
-        return view("admin.{$this->viewPath}.edit", compact('item', 'pets', 'testTypes', 'veterinarians', 'testParams'));
     }
 
     public function index(Request $request): View
     {
-        $items = $this->model::with(['pet', 'labTestType', 'veterinarian'])->paginate(10);
+        // Преобразуем даты из формата d.m.Y в Y-m-d для фильтров
+        $queryParams = $request->query();
+        if (isset($queryParams['received_at_from']) && $queryParams['received_at_from']) {
+            try {
+                $queryParams['received_at_from'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['received_at_from'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Если не удается преобразовать, оставляем как есть
+            }
+        }
+        if (isset($queryParams['received_at_to']) && $queryParams['received_at_to']) {
+            try {
+                $queryParams['received_at_to'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['received_at_to'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Если не удается преобразовать, оставляем как есть
+            }
+        }
+        if (isset($queryParams['completed_at_from']) && $queryParams['completed_at_from']) {
+            try {
+                $queryParams['completed_at_from'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['completed_at_from'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Если не удается преобразовать, оставляем как есть
+            }
+        }
+        if (isset($queryParams['completed_at_to']) && $queryParams['completed_at_to']) {
+            try {
+                $queryParams['completed_at_to'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['completed_at_to'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Если не удается преобразовать, оставляем как есть
+            }
+        }
+        
+        $filter = app(LabTestFilter::class, ['queryParams' => $queryParams]);
+        $query = $this->model::with([
+            'pet.client', 'veterinarian', 'labTestType', 'results.labTestParam'
+        ])->filter($filter);
+        $items = $query->paginate(25)->withQueryString();
+        
         return view("admin.{$this->viewPath}.index", compact('items'));
     }
 
-    public function show($id)
+    public function create(): View
     {
-        $test = $this->model::with(['pet', 'labTestType', 'veterinarian', 'results.labTestParam'])->findOrFail($id);
-        return view("admin.{$this->viewPath}.show", compact('test'));
+        $labTestTypes = LabTestType::with('params')->get();
+        
+        return view("admin.{$this->viewPath}.create", compact('labTestTypes'));
     }
 
-    public function store(Request $request)
+    public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
         
-        $test = $this->model::create([
+        $labTest = $this->model::create([
             'pet_id' => $validated['pet_id'],
-            'lab_test_type_id' => $validated['lab_test_type_id'],
             'veterinarian_id' => $validated['veterinarian_id'],
+            'lab_test_type_id' => $validated['lab_test_type_id'],
             'received_at' => $validated['received_at'],
-            'completed_at' => $validated['completed_at'] ?? null
+            'completed_at' => $validated['completed_at'] ?? null,
         ]);
 
-        if ($request->has('results')) {
-            foreach ($request->results as $result) {
-                $test->results()->create([
-                    'lab_test_param_id' => $result['lab_test_param_id'],
-                    'value' => $result['value'],
-                    'notes' => $result['notes'] ?? null
+        // Создаем результаты анализов
+        if (isset($validated['results'])) {
+            foreach ($validated['results'] as $resultData) {
+                $labTest->results()->create([
+                    'lab_test_param_id' => $resultData['lab_test_param_id'],
+                    'value' => $resultData['value'],
+                    'notes' => $resultData['notes'] ?? null,
                 ]);
             }
         }
-        
+
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Лабораторный тест успешно создан');
+            ->with('success', 'Анализ успешно создан');
     }
 
-    public function update(Request $request, $id)
+    public function show($id): View
     {
-        $validated = $request->validate($this->validationRules);
+        $item = $this->model::with([
+            'pet.client', 'veterinarian', 'labTestType', 'results.labTestParam'
+        ])->findOrFail($id);
         
-        $test = $this->model::findOrFail($id);
-        $test->update([
+        return view("admin.{$this->viewPath}.show", compact('item'));
+    }
+
+    public function edit($id): View
+    {
+        $item = $this->model::with([
+            'pet.client', 'veterinarian', 'labTestType', 'results.labTestParam'
+        ])->findOrFail($id);
+        
+        $labTestTypes = LabTestType::with('params')->get();
+        
+        return view("admin.{$this->viewPath}.edit", compact('item', 'labTestTypes'));
+    }
+
+    public function update(UpdateRequest $request, $id): RedirectResponse
+    {
+        $labTest = $this->model::findOrFail($id);
+        $validated = $request->validated();
+        
+        $labTest->update([
             'pet_id' => $validated['pet_id'],
-            'lab_test_type_id' => $validated['lab_test_type_id'],
             'veterinarian_id' => $validated['veterinarian_id'],
+            'lab_test_type_id' => $validated['lab_test_type_id'],
             'received_at' => $validated['received_at'],
-            'completed_at' => $validated['completed_at'] ?? null
+            'completed_at' => $validated['completed_at'] ?? null,
         ]);
 
-        if ($request->has('results')) {
-            $test->results()->delete();
-            foreach ($request->results as $result) {
-                $test->results()->create([
-                    'lab_test_param_id' => $result['lab_test_param_id'],
-                    'value' => $result['value'],
-                    'notes' => $result['notes'] ?? null
+        // Обновляем результаты анализов
+        if (isset($validated['results'])) {
+            // Удаляем старые результаты
+            $labTest->results()->delete();
+            
+            // Создаем новые результаты
+            foreach ($validated['results'] as $resultData) {
+                $labTest->results()->create([
+                    'lab_test_param_id' => $resultData['lab_test_param_id'],
+                    'value' => $resultData['value'],
+                    'notes' => $resultData['notes'] ?? null,
                 ]);
             }
         }
-        
+
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Лабораторный тест успешно обновлен');
+            ->with('success', 'Анализ успешно обновлен');
     }
 
-    public function getTestParams($testTypeId)
+    public function destroy($id): RedirectResponse
     {
-        $params = LabTestParam::where('lab_test_type_id', $testTypeId)->get();
-        return response()->json($params);
+        $labTest = $this->model::findOrFail($id);
+        
+        // Удаляем результаты анализов
+        $labTest->results()->delete();
+        
+        // Удаляем сам анализ
+        $labTest->delete();
+
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', 'Анализ успешно удален');
     }
 } 

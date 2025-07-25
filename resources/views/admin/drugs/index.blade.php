@@ -193,12 +193,22 @@
             onItemAdd: function() {
                 this.setTextboxValue('');
                 this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
             }
         });
         
         // Обычный TomSelect для единиц измерения
         new createTomSelect('#unit', {
             placeholder: 'Выберите единицу...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
         
         // Инициализация Bootstrap тултипов

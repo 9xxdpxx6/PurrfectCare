@@ -110,10 +110,22 @@
     document.addEventListener('DOMContentLoaded', function() {
         createDatepicker('#birthdate', {});
         createTomSelect('#client_id', {
-            placeholder: 'Выберите владельца...'
+            placeholder: 'Выберите владельца...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
         createTomSelect('#breed_id', {
-            placeholder: 'Выберите породу...'
+            placeholder: 'Выберите породу...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
     });
 </script>

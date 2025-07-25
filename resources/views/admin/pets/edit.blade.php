@@ -92,9 +92,21 @@
         });
         new createTomSelect('#client_id', {
             placeholder: 'Выберите владельца...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
         new createTomSelect('#breed_id', {
             placeholder: 'Выберите породу...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
     });
 </script>

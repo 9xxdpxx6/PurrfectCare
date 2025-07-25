@@ -228,6 +228,10 @@
             onItemAdd: function() {
                 this.setTextboxValue('');
                 this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
             }
         });
         const selectedVetId = '{{ old('veterinarian_id', $item->veterinarian_id) }}';
@@ -250,6 +254,10 @@
             onItemAdd: function() {
                 this.setTextboxValue('');
                 this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
             }
         });
         let drugIndex = parseInt('{{ count($existingDrugs ?? []) }}');
@@ -276,6 +284,10 @@
                 onItemAdd: function() {
                     this.setTextboxValue('');
                     this.refreshOptions();
+                    setTimeout(() => {
+                        this.close();
+                        this.blur();
+                    }, 50);
                 }
             });
         }

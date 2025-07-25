@@ -43,7 +43,7 @@ class ServiceController extends AdminController
         $query = $this->model::with('branches');
         $filter->apply($query);
         
-        $items = $query->paginate(10)->appends($request->query());
+        $items = $query->paginate(25)->appends($request->query());
         $branches = Branch::orderBy('name')->get();
         
         return view("admin.{$this->viewPath}.index", compact('items', 'branches'));

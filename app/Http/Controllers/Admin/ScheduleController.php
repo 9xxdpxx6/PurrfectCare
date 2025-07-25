@@ -37,7 +37,7 @@ class ScheduleController extends AdminController
     {
         $filter = app(ScheduleFilter::class, ['queryParams' => $request->query()]);
         $query = $this->model::with(['veterinarian', 'branch'])->filter($filter);
-        $items = $query->paginate(30)->withQueryString();
+        $items = $query->paginate(25)->withQueryString();
         
         $veterinarians = Employee::whereHas('specialties', function($query) {
             $query->where('is_veterinarian', true);

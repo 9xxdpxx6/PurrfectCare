@@ -151,6 +151,10 @@
             onItemAdd: function() {
                 this.setTextboxValue('');
                 this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
             }
         });
     });

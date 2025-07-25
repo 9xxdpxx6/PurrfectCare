@@ -114,4 +114,13 @@ class VaccinationFilter extends AbstractFilter
                 break;
         }
     }
+
+    public function apply(Builder $builder)
+    {
+        parent::apply($builder);
+        // Если сортировка не указана, сортируем по ID DESC
+        if (!isset($this->queryParams['sort']) || !$this->queryParams['sort']) {
+            $builder->orderByDesc('id');
+        }
+    }
 } 

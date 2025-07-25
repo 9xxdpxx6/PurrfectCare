@@ -76,7 +76,7 @@ class OrderController extends AdminController
 
     public function index(Request $request) : View
     {
-        $items = $this->model::with(['client', 'pet', 'status', 'branch', 'manager'])->paginate(10);
+        $items = $this->model::with(['client', 'pet', 'status', 'branch', 'manager'])->paginate(25);
         return view("admin.{$this->viewPath}.index", compact('items'));
     }
 

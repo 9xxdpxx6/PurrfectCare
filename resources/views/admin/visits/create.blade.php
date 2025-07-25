@@ -157,18 +157,42 @@
         // Инициализация TomSelect
         const clientTomSelect = new createTomSelect('#client_id', {
             placeholder: 'Выберите клиента...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
         
         const petTomSelect = new createTomSelect('#pet_id', {
             placeholder: 'Выберите питомца...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
         
         new createTomSelect('#schedule_id', {
             placeholder: 'Выберите расписание...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
         
         new createTomSelect('#status_id', {
             placeholder: 'Выберите статус...',
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
         });
         
         new createTomSelect('#symptoms', {
@@ -184,6 +208,12 @@
                     .then(response => response.json())
                     .then(json => callback(json))
                     .catch(() => callback());
+            },
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
             }
         });
         
@@ -200,6 +230,12 @@
                     .then(response => response.json())
                     .then(json => callback(json))
                     .catch(() => callback());
+            },
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
             }
         });
         
