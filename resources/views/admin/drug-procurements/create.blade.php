@@ -20,7 +20,6 @@
             <div class="col-md-6 col-lg-6 mb-3">
                 <label for="drug_id" class="form-label">Препарат</label>
                 <select name="drug_id" id="drug_id" class="form-select @error('drug_id') is-invalid @enderror" data-url="{{ route('admin.drug-procurements.drug-options') }}">
-                    <option value="">Выберите препарат</option>
                     @if(old('drug_id'))
                         @php
                             $selectedDrug = \App\Models\Drug::with('unit')->find(old('drug_id'));
@@ -38,7 +37,6 @@
             <div class="col-md-6 col-lg-6 mb-3">
                 <label for="supplier_id" class="form-label">Поставщик</label>
                 <select name="supplier_id" id="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror" data-url="{{ route('admin.drug-procurements.supplier-options') }}">
-                    <option value="">Выберите поставщика</option>
                     @if(old('supplier_id'))
                         @php
                             $selectedSupplier = \App\Models\Supplier::find(old('supplier_id'));
@@ -169,6 +167,7 @@
             valueField: 'value',
             labelField: 'text',
             searchField: 'text',
+            allowEmptyOption: false,
             preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
@@ -225,6 +224,7 @@
             valueField: 'value',
             labelField: 'text',
             searchField: 'text',
+            allowEmptyOption: false,
             preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);

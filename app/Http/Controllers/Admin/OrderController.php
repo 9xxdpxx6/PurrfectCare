@@ -12,6 +12,9 @@ use App\Models\Service;
 use App\Models\Drug;
 use App\Models\LabTest;
 use App\Models\Vaccination;
+use App\Http\Requests\Admin\Order\StoreRequest;
+use App\Http\Requests\Admin\Order\UpdateRequest;
+use App\Http\Filters\OrderFilter;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -23,75 +26,67 @@ class OrderController extends AdminController
         $this->model = Order::class;
         $this->viewPath = 'orders';
         $this->routePrefix = 'orders';
-        $this->validationRules = [
-            'client_id' => 'required|exists:users,id',
-            'pet_id' => 'required|exists:pets,id',
-            'status_id' => 'required|exists:statuses,id',
-            'branch_id' => 'required|exists:branches,id',
-            'manager_id' => 'required|exists:employees,id',
-            'notes' => 'nullable|string',
-            'total' => 'required|numeric|min:0',
-            'items' => 'required|array',
-            'items.*.type' => 'required|in:service,drug,lab_test,vaccination',
-            'items.*.id' => 'required|integer',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|numeric|min:0'
-        ];
     }
 
     public function create(): View
     {
-        $clients = User::all();
-        $pets = Pet::all();
-        $statuses = Status::all();
-        $branches = Branch::all();
-        $managers = Employee::where('position', 'manager')->get();
-        $services = Service::all();
-        $drugs = Drug::all();
-        $labTests = LabTest::all();
-        $vaccinations = Vaccination::all();
-        return view("admin.{$this->viewPath}.create", compact(
-            'clients', 'pets', 'statuses', 'branches', 'managers',
-            'services', 'drugs', 'labTests', 'vaccinations'
-        ));
+        return view("admin.{$this->viewPath}.create");
     }
 
     public function edit($id): View
     {
-        $item = $this->model::with(['items', 'client', 'pet', 'status', 'branch', 'manager'])->findOrFail($id);
-        $clients = User::all();
-        $pets = Pet::all();
-        $statuses = Status::all();
-        $branches = Branch::all();
-        $managers = Employee::where('position', 'manager')->get();
-        $services = Service::all();
-        $drugs = Drug::all();
-        $labTests = LabTest::all();
-        $vaccinations = Vaccination::all();
-        return view("admin.{$this->viewPath}.edit", compact(
-            'item', 'clients', 'pets', 'statuses', 'branches', 'managers',
-            'services', 'drugs', 'labTests', 'vaccinations'
-        ));
+        $item = $this->model::with(['items.item'])->findOrFail($id);
+        return view("admin.{$this->viewPath}.edit", compact('item'));
     }
 
-    public function index(Request $request) : View
+    public function index(Request $request): View
     {
-        $items = $this->model::with(['client', 'pet', 'status', 'branch', 'manager'])->paginate(25);
+        // Преобразуем даты из формата d.m.Y в Y-m-d для фильтров
+        $queryParams = $request->query();
+        if (isset($queryParams['created_at_from']) && $queryParams['created_at_from']) {
+            try {
+                $queryParams['created_at_from'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['created_at_from'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Если не удается преобразовать, оставляем как есть
+            }
+        }
+        if (isset($queryParams['created_at_to']) && $queryParams['created_at_to']) {
+            try {
+                $queryParams['created_at_to'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['created_at_to'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Если не удается преобразовать, оставляем как есть
+            }
+        }
+        
+        $filter = app(OrderFilter::class, ['queryParams' => $queryParams]);
+        $query = $this->model::with([
+            'client', 'pet', 'status', 'branch', 'manager', 'items.item'
+        ])->filter($filter);
+        
+        // Если есть поиск и это число, сортируем результаты
+        $search = $request->input('search');
+        if ($search && is_numeric($search)) {
+            $query->orderByRaw("CASE WHEN id = ? THEN 0 ELSE 1 END", [$search])
+                  ->orderBy('id', 'desc');
+        }
+        
+        $items = $query->paginate(25)->withQueryString();
+        
         return view("admin.{$this->viewPath}.index", compact('items'));
     }
 
-    public function show($id) : View
+    public function show($id): View
     {
-        $order = $this->model::with([
+        $item = $this->model::with([
             'client', 'pet', 'status', 'branch', 'manager',
             'items.item'
         ])->findOrFail($id);
-        return view("admin.{$this->viewPath}.show", compact('order'));
+        return view("admin.{$this->viewPath}.show", compact('item'));
     }
 
-    public function store(Request $request) : RedirectResponse
+    public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
         
         $order = $this->model::create([
             'client_id' => $validated['client_id'],
@@ -105,10 +100,10 @@ class OrderController extends AdminController
 
         foreach ($validated['items'] as $item) {
             $order->items()->create([
-                'item_type' => $this->getItemType($item['type']),
-                'item_id' => $item['id'],
+                'item_type' => $this->getItemType($item['item_type']),
+                'item_id' => $item['item_id'],
                 'quantity' => $item['quantity'],
-                'price' => $item['price']
+                'unit_price' => $item['unit_price']
             ]);
         }
         
@@ -117,9 +112,9 @@ class OrderController extends AdminController
             ->with('success', 'Заказ успешно создан');
     }
 
-    public function update(Request $request, $id) : RedirectResponse
+    public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
         
         $order = $this->model::findOrFail($id);
         $order->update([
@@ -135,10 +130,10 @@ class OrderController extends AdminController
         $order->items()->delete();
         foreach ($validated['items'] as $item) {
             $order->items()->create([
-                'item_type' => $this->getItemType($item['type']),
-                'item_id' => $item['id'],
+                'item_type' => $this->getItemType($item['item_type']),
+                'item_id' => $item['item_id'],
                 'quantity' => $item['quantity'],
-                'price' => $item['price']
+                'unit_price' => $item['unit_price']
             ]);
         }
         
@@ -156,5 +151,95 @@ class OrderController extends AdminController
             'vaccination' => Vaccination::class,
             default => throw new \InvalidArgumentException('Неизвестный тип элемента')
         };
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        $order = $this->model::findOrFail($id);
+        
+        // Удаляем элементы заказа
+        $order->items()->delete();
+        
+        // Удаляем сам заказ
+        $order->delete();
+
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', 'Заказ успешно удален');
+    }
+
+    // TomSelect опции
+    public function clientOptions(Request $request)
+    {
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->clientOptions($request);
+    }
+
+    public function petOptions(Request $request)
+    {
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->petOptions($request);
+    }
+
+    public function statusOptions(Request $request)
+    {
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->statusOptions($request);
+    }
+
+    public function branchOptions(Request $request)
+    {
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->branchOptions($request);
+    }
+
+    public function managerOptions(Request $request)
+    {
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->managerOptions($request);
+    }
+
+    public function orderServiceOptions(Request $request)
+    {
+        $request->merge(['include_price' => true]);
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->serviceOptions($request);
+    }
+
+    public function orderDrugOptions(Request $request)
+    {
+        $request->merge(['include_price' => true]);
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->drugOptions($request);
+    }
+
+    public function labTestOptions(Request $request)
+    {
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->labTestOptions($request);
+    }
+
+    public function vaccinationOptions(Request $request)
+    {
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->vaccinationOptions($request);
     }
 } 
