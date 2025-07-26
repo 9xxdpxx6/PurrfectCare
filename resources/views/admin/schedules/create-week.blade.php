@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', 'Создать расписание на неделю')
+@section('title', 'Добавить расписание на неделю')
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Создать расписание на неделю</h1>
+    <h1 class="h2">Добавить расписание на неделю</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.schedules.create') }}" class="btn btn-outline-primary me-2">
                 <i class="bi bi-calendar-day"></i> <span class="d-none d-lg-inline">Расписание на день</span>

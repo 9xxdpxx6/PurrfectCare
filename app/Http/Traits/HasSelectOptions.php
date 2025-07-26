@@ -20,7 +20,7 @@ trait HasSelectOptions
         $isFilter = $request->input('filter', false);
 
         $options = [];
-        
+
         // Добавляем "Все" только для фильтров
         if ($isFilter) {
             $options[] = ['value' => '', 'text' => 'Все'];
@@ -72,7 +72,7 @@ trait HasSelectOptions
         $includePrice = $request->input('include_price', false);
 
         $options = [];
-        
+
         // Добавляем "Все" только для фильтров
         if ($isFilter) {
             $options[] = ['value' => '', 'text' => 'Все'];
@@ -133,7 +133,7 @@ trait HasSelectOptions
         $isFilter = $request->input('filter', false);
 
         $options = [];
-        
+
         // Добавляем "Все" только для фильтров
         if ($isFilter) {
             $options[] = ['value' => '', 'text' => 'Все'];
@@ -188,7 +188,7 @@ trait HasSelectOptions
         $isFilter = $request->input('filter', false);
 
         $options = [];
-        
+
         // Добавляем "Все" только для фильтров
         if ($isFilter) {
             $options[] = ['value' => '', 'text' => 'Все'];
@@ -241,7 +241,7 @@ trait HasSelectOptions
         $isFilter = $request->input('filter', false);
 
         $options = [];
-        
+
         // Добавляем "Все" только для фильтров
         if ($isFilter) {
             $options[] = ['value' => '', 'text' => 'Все'];
@@ -292,7 +292,7 @@ trait HasSelectOptions
         $isFilter = $request->input('filter', false);
 
         $options = [];
-        
+
         // Добавляем "Все" только для фильтров
         if ($isFilter) {
             $options[] = ['value' => '', 'text' => 'Все'];
@@ -344,7 +344,7 @@ trait HasSelectOptions
         $includePrice = $request->input('include_price', false);
 
         $options = [];
-        
+
         // Добавляем "Все" только для фильтров
         if ($isFilter) {
             $options[] = ['value' => '', 'text' => 'Все'];
@@ -484,7 +484,7 @@ trait HasSelectOptions
             // Если нет поиска, загружаем только последние 20 записей
             $query->orderBy('id', 'desc');
         }
-
+        
         $pets = $query->limit(20)->get();
         
         // Добавляем остальных питомцев
@@ -960,7 +960,7 @@ trait HasSelectOptions
                 'price' => 0
             ];
         }
-        
+
         return response()->json($options);
     }
 } 

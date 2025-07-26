@@ -7,7 +7,7 @@
     <h1 class="h2">Вакцинации</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.vaccinations.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Создать вакцинацию</span>
+            <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить вакцинацию</span>
         </a>
     </div>
 </div>
@@ -198,7 +198,7 @@
         <h3 class="mt-3 text-muted">Вакцинации не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте новую вакцинацию.</p>
         <a href="{{ route('admin.vaccinations.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus"></i> Создать вакцинацию
+            <i class="bi bi-plus"></i> Добавить вакцинацию
         </a>
     </div>
 @endif

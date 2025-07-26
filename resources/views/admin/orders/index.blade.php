@@ -7,7 +7,7 @@
     <h1 class="h2">Заказы</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.orders.create') }}" class="btn btn-success">
-            <i class="bi bi-plus-lg"></i> Создать заказ
+            <i class="bi bi-plus-lg"></i> Добавить заказ
         </a>
     </div>
 </div>
@@ -221,7 +221,7 @@
         <h4 class="mt-3">Заказы не найдены</h4>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте новый заказ.</p>
         <a href="{{ route('admin.orders.create') }}" class="btn btn-success">
-            <i class="bi bi-plus-lg"></i> Создать заказ
+            <i class="bi bi-plus-lg"></i> Добавить заказ
         </a>
     </div>
 @endif

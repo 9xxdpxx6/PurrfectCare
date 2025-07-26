@@ -50,7 +50,7 @@
                                         $selectedPet = \App\Models\Pet::with('client')->find(old('pet_id', $item->pet_id));
                                     @endphp
                                     @if($selectedPet)
-                                        <option value="{{ $selectedPet->id }}" selected>{{ $selectedPet->name }} ({{ $selectedPet->client->name ?? 'Без владельца' }})</option>
+                                        <option value="{{ $selectedPet->id }}" selected data-client="{{ $selectedPet->client_id }}">{{ $selectedPet->name }} ({{ $selectedPet->client->name ?? 'Без владельца' }})</option>
                                     @endif
                                 @endif
                             </select>
@@ -145,7 +145,7 @@
                             @foreach($item->items->where('item_type', 'App\Models\Service') as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="service">
                                     <div class="row g-3">
-                                        <div class="col-md-5">
+                                        <div class="col-12 col-lg-5">
                                             <label class="form-label">Услуга</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.service-options') }}" required>
                                                 @if($orderItem->item)
@@ -155,17 +155,17 @@
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="service">
                                         </div>
                                         
-                                        <div class="col-md-3">
-                                            <label class="form-label">Количество</label>
+                                        <div class="col-6 col-lg-3">
+                                            <label class="form-label">Кол-во</label>
                                             <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="1" max="9999" required>
                                         </div>
                                         
-                                        <div class="col-md-3">
+                                        <div class="col-6 col-lg-3">
                                             <label class="form-label">Цена</label>
                                             <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $orderItem->unit_price }}" min="0" max="999999.99" step="0.01" required>
                                         </div>
                                         
-                                        <div class="col-md-1">
+                                        <div class="col-lg-1">
                                             <label class="form-label">&nbsp;</label>
                                             <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                                                 <i class="bi bi-trash"></i>
@@ -202,7 +202,7 @@
                             @foreach($item->items->where('item_type', 'App\Models\Drug') as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="drug">
                                     <div class="row g-3">
-                                        <div class="col-md-5">
+                                        <div class="col-12 col-lg-5">
                                             <label class="form-label">Препарат</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.drug-options') }}" required>
                                                 @if($orderItem->item)
@@ -212,17 +212,17 @@
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="drug">
                                         </div>
                                         
-                                        <div class="col-md-3">
-                                            <label class="form-label">Количество</label>
+                                        <div class="col-6 col-lg-3">
+                                            <label class="form-label">Кол-во</label>
                                             <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="1" max="9999" required>
                                         </div>
                                         
-                                        <div class="col-md-3">
+                                        <div class="col-6 col-lg-3">
                                             <label class="form-label">Цена</label>
                                             <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $orderItem->unit_price }}" min="0" max="999999.99" step="0.01" required>
                                         </div>
                                         
-                                        <div class="col-md-1">
+                                        <div class="col-lg-1">
                                             <label class="form-label">&nbsp;</label>
                                             <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                                                 <i class="bi bi-trash"></i>
@@ -259,7 +259,7 @@
                             @foreach($item->items->where('item_type', 'App\Models\LabTest') as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="lab_test">
                                     <div class="row g-3">
-                                        <div class="col-md-5">
+                                        <div class="col-12 col-lg-5">
                                             <label class="form-label">Анализ</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}" required>
                                                 @if($orderItem->item)
@@ -269,17 +269,17 @@
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="lab_test">
                                         </div>
                                         
-                                        <div class="col-md-3">
-                                            <label class="form-label">Количество</label>
+                                        <div class="col-6 col-lg-3">
+                                            <label class="form-label">Кол-во</label>
                                             <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="1" max="9999" required>
                                         </div>
                                         
-                                        <div class="col-md-3">
+                                        <div class="col-6 col-lg-3">
                                             <label class="form-label">Цена</label>
                                             <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $orderItem->unit_price }}" min="0" max="999999.99" step="0.01" required>
                                         </div>
                                         
-                                        <div class="col-md-1">
+                                        <div class="col-lg-1">
                                             <label class="form-label">&nbsp;</label>
                                             <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                                                 <i class="bi bi-trash"></i>
@@ -316,7 +316,7 @@
                             @foreach($item->items->where('item_type', 'App\Models\Vaccination') as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="vaccination">
                                     <div class="row g-3">
-                                        <div class="col-md-5">
+                                        <div class="col-12 col-lg-5">
                                             <label class="form-label">Вакцинация</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
                                                 @if($orderItem->item)
@@ -326,17 +326,17 @@
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="vaccination">
                                         </div>
                                         
-                                        <div class="col-md-3">
-                                            <label class="form-label">Количество</label>
+                                        <div class="col-6 col-lg-3">
+                                            <label class="form-label">Кол-во</label>
                                             <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="1" max="9999" required>
                                         </div>
                                         
-                                        <div class="col-md-3">
+                                        <div class="col-6 col-lg-3">
                                             <label class="form-label">Цена</label>
                                             <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $orderItem->unit_price }}" min="0" max="999999.99" step="0.01" required>
                                         </div>
                                         
-                                        <div class="col-md-1">
+                                        <div class="col-lg-1">
                                             <label class="form-label">&nbsp;</label>
                                             <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                                                 <i class="bi bi-trash"></i>
@@ -372,13 +372,13 @@
         
         <!-- Кнопки -->
         <div class="col-12">
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success">
-                    <i class="bi bi-check-lg"></i> Сохранить изменения
-                </button>
+            <div class="d-flex justify-content-between gap-2">
                 <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-x-lg"></i> Отмена
                 </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Сохранить изменения
+                </button>
             </div>
         </div>
     </div>
@@ -388,24 +388,24 @@
 <template id="serviceItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="service">
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <label class="form-label">Услуга</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.service-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="service">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Количество</label>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Кол-во</label>
                 <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
                 <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
             </div>
             
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                     <i class="bi bi-trash"></i>
@@ -427,24 +427,24 @@
 <template id="drugItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="drug">
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <label class="form-label">Препарат</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.drug-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="drug">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Количество</label>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Кол-во</label>
                 <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
                 <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
             </div>
             
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                     <i class="bi bi-trash"></i>
@@ -466,24 +466,24 @@
 <template id="labTestItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="lab_test">
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <label class="form-label">Анализ</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="lab_test">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Количество</label>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Кол-во</label>
                 <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
                 <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
             </div>
             
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                     <i class="bi bi-trash"></i>
@@ -505,24 +505,24 @@
 <template id="vaccinationItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="vaccination">
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <label class="form-label">Вакцинация</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="vaccination">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Количество</label>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Кол-во</label>
                 <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
                 <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
             </div>
             
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                     <i class="bi bi-trash"></i>
@@ -556,8 +556,11 @@
     };
 
     document.addEventListener('DOMContentLoaded', function () {
+        const clientSelect = document.getElementById('client_id');
+        const petSelect = document.getElementById('pet_id');
+        
         // TomSelect для основных полей
-        new createTomSelect('#client_id', {
+        const clientTomSelect = new createTomSelect('#client_id', {
             placeholder: 'Выберите клиента...',
             valueField: 'value',
             labelField: 'text',
@@ -579,19 +582,25 @@
             }
         });
 
-        new createTomSelect('#pet_id', {
+        const petTomSelect = new createTomSelect('#pet_id', {
             placeholder: 'Выберите питомца...',
             valueField: 'value',
             labelField: 'text',
             searchField: 'text',
             allowEmptyOption: false,
-            preload: true,
+            preload: false,
             load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                const clientId = clientTomSelect.getValue();
+                if (!clientId) {
+                    callback([]);
+                    return;
+                }
+                
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false&client_id=' + clientId;
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))
-                    .catch(() => callback());
+                    .catch(() => callback([]));
             },
             onItemAdd: function() {
                 setTimeout(() => {
@@ -666,6 +675,49 @@
                 }, 50);
             }
         });
+
+        // Фильтрация питомцев по клиенту
+        function filterPetsByClient(clientId) {
+            petTomSelect.clear();
+            petTomSelect.clearOptions();
+            
+            if (!clientId) {
+                petTomSelect.disable();
+                return;
+            } else {
+                petTomSelect.enable();
+            }
+            
+            // Загружаем питомцев для выбранного клиента
+            fetch(`{{ route('admin.orders.pet-options') }}?client_id=${clientId}&filter=false`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(option => {
+                        petTomSelect.addOption(option);
+                    });
+                    
+                    // Восстанавливаем выбранное значение питомца только если клиент совпадает
+                    const currentPetId = '{{ old("pet_id", $item->pet_id) }}';
+                    const currentClientId = '{{ old("client_id", $item->client_id) }}';
+                    if (currentPetId && clientId === currentClientId) {
+                        petTomSelect.setValue(currentPetId);
+                    }
+                })
+                .catch(() => {
+                    petTomSelect.disable();
+                });
+        }
+        
+        // Слушатель изменения клиента
+        clientTomSelect.on('change', function(value) {
+            filterPetsByClient(value);
+        });
+        
+        // Инициализация при загрузке страницы
+        const initialClientId = clientTomSelect.getValue();
+        if (initialClientId) {
+            filterPetsByClient(initialClientId);
+        }
 
         // Инициализируем TomSelect для существующих элементов заказа
         const existingItems = document.querySelectorAll('.order-item');
@@ -768,7 +820,7 @@
                 // Устанавливаем цену по умолчанию
                 const itemDiv = this.input.closest('.order-item');
                 const priceInput = itemDiv.querySelector('.item-price');
-                const itemType = itemDiv.querySelector('.item-type').value;
+                const itemType = itemDiv.querySelector('input[name*="[item_type]"]').value;
                 
                 // Получаем цену по умолчанию из выбранного элемента
                 if (value && value.price !== undefined) {

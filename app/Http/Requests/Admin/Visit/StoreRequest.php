@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\Visit;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\BelongsToClient;
 
 class StoreRequest extends FormRequest
 {
@@ -15,7 +16,7 @@ class StoreRequest extends FormRequest
     {
         return [
             'client_id' => 'required|exists:users,id',
-            'pet_id' => 'required|exists:pets,id',
+            'pet_id' => ['required', 'exists:pets,id', new BelongsToClient],
             'schedule_id' => 'required|exists:schedules,id',
             'starts_at' => 'required|date',
             'status_id' => 'required|exists:statuses,id',
@@ -61,6 +62,7 @@ class StoreRequest extends FormRequest
             'client_id.exists' => 'Клиент не найден',
             'pet_id.required' => 'Необходимо выбрать питомца',
             'pet_id.exists' => 'Питомец не найден',
+            'pet_id.belongs_to_client' => 'Выбранный питомец не принадлежит указанному клиенту',
             'schedule_id.required' => 'Необходимо выбрать расписание',
             'schedule_id.exists' => 'Расписание не найдено',
             'starts_at.required' => 'Необходимо указать дату и время',

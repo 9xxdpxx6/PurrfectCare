@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', 'Создать заказ')
+@section('title', 'Добавить заказ')
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Создать заказ</h1>
+    <h1 class="h2">Добавить заказ</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад к списку
@@ -49,7 +49,7 @@
                                         $selectedPet = \App\Models\Pet::with('client')->find(old('pet_id'));
                                     @endphp
                                     @if($selectedPet)
-                                        <option value="{{ $selectedPet->id }}" selected>{{ $selectedPet->name }} ({{ $selectedPet->client->name ?? 'Без владельца' }})</option>
+                                        <option value="{{ $selectedPet->id }}" selected data-client="{{ $selectedPet->client_id }}">{{ $selectedPet->name }} ({{ $selectedPet->client->name ?? 'Без владельца' }})</option>
                                     @endif
                                 @endif
                             </select>
@@ -67,6 +67,13 @@
                                     @endphp
                                     @if($selectedStatus)
                                         <option value="{{ $selectedStatus->id }}" selected>{{ $selectedStatus->name }}</option>
+                                    @endif
+                                @else
+                                    @php
+                                        $defaultStatus = \App\Models\Status::where('name', 'Новый')->first();
+                                    @endphp
+                                    @if($defaultStatus)
+                                        <option value="{{ $defaultStatus->id }}" selected>{{ $defaultStatus->name }}</option>
                                     @endif
                                 @endif
                             </select>
@@ -215,13 +222,13 @@
         
         <!-- Кнопки -->
         <div class="col-12">
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success">
-                    <i class="bi bi-check-lg"></i> Создать заказ
-                </button>
+            <div class="d-flex justify-content-between gap-2">
                 <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-x-lg"></i> Отмена
                 </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Добавить заказ
+                </button>
             </div>
         </div>
     </div>
@@ -231,24 +238,24 @@
 <template id="serviceItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="service">
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <label class="form-label">Услуга</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.service-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="service">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Количество</label>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Кол-во</label>
                 <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
                 <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
             </div>
             
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                     <i class="bi bi-trash"></i>
@@ -270,24 +277,24 @@
 <template id="drugItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="drug">
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <label class="form-label">Препарат</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.drug-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="drug">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Количество</label>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Кол-во</label>
                 <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
                 <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
             </div>
             
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                     <i class="bi bi-trash"></i>
@@ -309,24 +316,24 @@
 <template id="labTestItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="lab_test">
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <label class="form-label">Анализ</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="lab_test">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Количество</label>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Кол-во</label>
                 <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
                 <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
             </div>
             
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                     <i class="bi bi-trash"></i>
@@ -348,24 +355,24 @@
 <template id="vaccinationItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="vaccination">
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <label class="form-label">Вакцинация</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="vaccination">
             </div>
             
-            <div class="col-md-3">
-                <label class="form-label">Количество</label>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Кол-во</label>
                 <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
                 <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
             </div>
             
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
                     <i class="bi bi-trash"></i>
@@ -396,8 +403,11 @@
     };
 
     document.addEventListener('DOMContentLoaded', function () {
+        const clientSelect = document.getElementById('client_id');
+        const petSelect = document.getElementById('pet_id');
+        
         // TomSelect для основных полей
-        new createTomSelect('#client_id', {
+        const clientTomSelect = new createTomSelect('#client_id', {
             placeholder: 'Выберите клиента...',
             valueField: 'value',
             labelField: 'text',
@@ -419,19 +429,25 @@
             }
         });
 
-        new createTomSelect('#pet_id', {
+        const petTomSelect = new createTomSelect('#pet_id', {
             placeholder: 'Выберите питомца...',
             valueField: 'value',
             labelField: 'text',
             searchField: 'text',
             allowEmptyOption: false,
-            preload: true,
+            preload: false,
             load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                const clientId = clientTomSelect.getValue();
+                if (!clientId) {
+                    callback([]);
+                    return;
+                }
+                
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false&client_id=' + clientId;
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))
-                    .catch(() => callback());
+                    .catch(() => callback([]));
             },
             onItemAdd: function() {
                 setTimeout(() => {
@@ -507,6 +523,47 @@
             }
         });
 
+        // Фильтрация питомцев по клиенту
+        function filterPetsByClient(clientId) {
+            petTomSelect.clear();
+            petTomSelect.clearOptions();
+            
+            if (!clientId) {
+                petTomSelect.disable();
+                return;
+            } else {
+                petTomSelect.enable();
+            }
+            
+            // Загружаем питомцев для выбранного клиента
+            fetch(`{{ route('admin.orders.pet-options') }}?client_id=${clientId}&filter=false`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(option => {
+                        petTomSelect.addOption(option);
+                    });
+                    
+                    // Восстанавливаем выбранное значение питомца только если клиент совпадает
+                    const currentPetId = '{{ old("pet_id") }}';
+                    if (currentPetId && clientId === '{{ old("client_id") }}') {
+                        petTomSelect.setValue(currentPetId);
+                    }
+                })
+                .catch(() => {
+                    petTomSelect.disable();
+                });
+        }
+        
+        // Слушатель изменения клиента
+        clientTomSelect.on('change', function(value) {
+            filterPetsByClient(value);
+        });
+        
+        // Инициализация при загрузке страницы
+        const initialClientId = clientTomSelect.getValue();
+        if (initialClientId) {
+            filterPetsByClient(initialClientId);
+        }
     });
 
     // Базовый метод для добавления элемента заказа
@@ -588,7 +645,7 @@
                 // Устанавливаем цену по умолчанию
                 const itemDiv = this.input.closest('.order-item');
                 const priceInput = itemDiv.querySelector('.item-price');
-                const itemType = itemDiv.querySelector('.item-type').value;
+                const itemType = itemDiv.querySelector('input[name*="[item_type]"]').value;
                 
                 // Получаем цену по умолчанию из выбранного элемента
                 if (value && value.price !== undefined) {

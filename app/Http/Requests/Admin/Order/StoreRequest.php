@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\Order;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\BelongsToClient;
 
 class StoreRequest extends FormRequest
 {
@@ -15,7 +16,7 @@ class StoreRequest extends FormRequest
     {
         return [
             'client_id' => 'required|exists:users,id',
-            'pet_id' => 'required|exists:pets,id',
+            'pet_id' => ['required', 'exists:pets,id', new BelongsToClient],
             'status_id' => 'required|exists:statuses,id',
             'branch_id' => 'required|exists:branches,id',
             'manager_id' => 'required|exists:employees,id',
@@ -36,6 +37,7 @@ class StoreRequest extends FormRequest
             'client_id.exists' => 'Выбранный клиент не найден',
             'pet_id.required' => 'Питомец обязателен для выбора',
             'pet_id.exists' => 'Выбранный питомец не найден',
+            'pet_id.belongs_to_client' => 'Выбранный питомец не принадлежит указанному клиенту',
             'status_id.required' => 'Статус обязателен для выбора',
             'status_id.exists' => 'Выбранный статус не найден',
             'branch_id.required' => 'Филиал обязателен для выбора',

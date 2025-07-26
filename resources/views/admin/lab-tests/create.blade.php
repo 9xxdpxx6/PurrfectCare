@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', 'Создать анализ')
+@section('title', 'Добавить анализ')
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Создать анализ</h1>
+    <h1 class="h2">Добавить анализ</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.lab-tests.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад
@@ -202,7 +202,7 @@
                             <i class="bi bi-x-lg"></i> Отмена
                         </a>
                         <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check-lg"></i> Создать
+                            <i class="bi bi-check-lg"></i> Добавить
                         </button>
                     </div>
                 </form>

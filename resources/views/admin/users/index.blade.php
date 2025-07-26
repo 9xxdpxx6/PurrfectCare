@@ -132,7 +132,7 @@
         <h3 class="mt-3 text-muted">Клиенты не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте нового клиента.</p>
         <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus"></i> Создать клиента
+            <i class="bi bi-plus"></i> Добавить клиента
         </a>
     </div>
 @endif
