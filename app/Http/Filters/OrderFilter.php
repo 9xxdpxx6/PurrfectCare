@@ -55,17 +55,30 @@ class OrderFilter extends AbstractFilter
                         ->orWhere('notes', 'like', "%$value%");
                     });
             } else {
-                // Если не число, ищем только по текстовым полям
-                $query->whereHas('client', function ($q) use ($value) {
-                    $q->where('name', 'like', "%$value%");
-                })
-                ->orWhereHas('pet', function ($q) use ($value) {
-                    $q->where('name', 'like', "%$value%");
-                })
-                ->orWhereHas('manager', function ($q) use ($value) {
-                    $q->where('name', 'like', "%$value%");
-                })
-                ->orWhere('notes', 'like', "%$value%");
+                // Разбиваем поисковый запрос на слова
+                $words = array_filter(explode(' ', trim($value)));
+                
+                if (empty($words)) {
+                    return $query;
+                }
+                
+                // Ищем заказы, где каждое слово найдено в любом из полей
+                $query->where(function ($subQuery) use ($words) {
+                    foreach ($words as $word) {
+                        $subQuery->where(function ($wordQuery) use ($word) {
+                            $wordQuery->whereHas('client', function ($q) use ($word) {
+                                $q->where('name', 'like', "%$word%");
+                            })
+                            ->orWhereHas('pet', function ($q) use ($word) {
+                                $q->where('name', 'like', "%$word%");
+                            })
+                            ->orWhereHas('manager', function ($q) use ($word) {
+                                $q->where('name', 'like', "%$word%");
+                            })
+                            ->orWhere('notes', 'like', "%$word%");
+                        });
+                    }
+                });
             }
         });
     }

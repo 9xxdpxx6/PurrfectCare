@@ -32,14 +32,28 @@ class VaccinationFilter extends AbstractFilter
     public function search(Builder $builder, $value)
     {
         $builder->where(function ($query) use ($value) {
-            $query->whereHas('pet', function ($q) use ($value) {
-                $q->where('name', 'like', "%{$value}%");
-            })
-            ->orWhereHas('veterinarian', function ($q) use ($value) {
-                $q->where('name', 'like', "%{$value}%");
-            })
-            ->orWhereHas('drugs', function ($q) use ($value) {
-                $q->where('name', 'like', "%{$value}%");
+            // Разбиваем поисковый запрос на слова
+            $words = array_filter(explode(' ', trim($value)));
+            
+            if (empty($words)) {
+                return $query;
+            }
+            
+            // Ищем вакцинации, где каждое слово найдено в любом из полей
+            $query->where(function ($subQuery) use ($words) {
+                foreach ($words as $word) {
+                    $subQuery->where(function ($wordQuery) use ($word) {
+                        $wordQuery->whereHas('pet', function ($q) use ($word) {
+                            $q->where('name', 'like', "%{$word}%");
+                        })
+                        ->orWhereHas('veterinarian', function ($q) use ($word) {
+                            $q->where('name', 'like', "%{$word}%");
+                        })
+                        ->orWhereHas('drugs', function ($q) use ($word) {
+                            $q->where('name', 'like', "%{$word}%");
+                        });
+                    });
+                }
             });
         });
     }

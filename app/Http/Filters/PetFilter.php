@@ -23,11 +23,20 @@ class PetFilter extends AbstractFilter
 
     protected function search(Builder $builder, $value)
     {
-        $words = explode(' ', $value);
+        // Разбиваем поисковый запрос на слова
+        $words = array_filter(explode(' ', trim($value)));
+        
+        if (empty($words)) {
+            return $builder;
+        }
+        
         $builder->where(function ($query) use ($words) {
             foreach ($words as $word) {
                 $query->where(function ($q) use ($word) {
                     $q->where('name', 'like', "%{$word}%")
+                      ->orWhereHas('client', function ($q2) use ($word) {
+                          $q2->where('name', 'like', "%{$word}%");
+                      })
                       ->orWhereHas('breed', function ($q2) use ($word) {
                           $q2->where('name', 'like', "%{$word}%")
                              ->orWhereHas('species', function ($q3) use ($word) {

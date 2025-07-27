@@ -70,7 +70,7 @@ class OrderFactory extends Factory
     {
         return $this->afterCreating(function ($order) {
             // Добавляем вакцинации в заказ (30% вероятность)
-            if ($this->faker->optional(0.3)->boolean()) {
+            if ($this->faker->optional(0.7)->boolean()) {
                 $vaccinations = Vaccination::where('pet_id', $order->pet_id)
                     ->with('drugs')
                     ->inRandomOrder()

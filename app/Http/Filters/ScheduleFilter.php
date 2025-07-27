@@ -27,10 +27,34 @@ class ScheduleFilter extends AbstractFilter
 
     protected function search(Builder $builder, $value)
     {
-        $words = explode(' ', $value);
-        $builder->where(function ($query) use ($words) {
+        // Разбиваем поисковый запрос на слова
+        $words = array_filter(explode(' ', trim($value)));
+        
+        if (empty($words)) {
+            return $builder;
+        }
+        
+        // Маппинг русских названий дней недели на английские
+        $dayMapping = [
+            'пн' => 'monday',
+            'понедельник' => 'monday',
+            'вт' => 'tuesday', 
+            'вторник' => 'tuesday',
+            'ср' => 'wednesday',
+            'среда' => 'wednesday',
+            'чт' => 'thursday',
+            'четверг' => 'thursday',
+            'пт' => 'friday',
+            'пятница' => 'friday',
+            'сб' => 'saturday',
+            'суббота' => 'saturday',
+            'вс' => 'sunday',
+            'воскресенье' => 'sunday'
+        ];
+        
+        $builder->where(function ($query) use ($words, $dayMapping) {
             foreach ($words as $word) {
-                $query->where(function ($q) use ($word) {
+                $query->where(function ($q) use ($word, $dayMapping) {
                     $q->whereHas('veterinarian', function ($q2) use ($word) {
                         $q2->where('name', 'like', "%{$word}%")
                            ->orWhereHas('specialties', function ($q3) use ($word) {
@@ -40,6 +64,15 @@ class ScheduleFilter extends AbstractFilter
                     ->orWhereHas('branch', function ($q2) use ($word) {
                         $q2->where('name', 'like', "%{$word}%")
                            ->orWhere('address', 'like', "%{$word}%");
+                    })
+                    ->orWhere(function ($dayQuery) use ($word, $dayMapping) {
+                        // Проверяем русские названия дней недели
+                        if (isset($dayMapping[strtolower($word)])) {
+                            $dayQuery->whereRaw("DAYNAME(shift_starts_at) = ?", [$dayMapping[strtolower($word)]]);
+                        } else {
+                            // Если не русское название, ищем как есть (для английских названий)
+                            $dayQuery->whereRaw("DAYNAME(shift_starts_at) LIKE ?", ["%{$word}%"]);
+                        }
                     });
                 });
             }

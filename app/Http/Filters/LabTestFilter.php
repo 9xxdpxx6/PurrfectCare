@@ -34,19 +34,30 @@ class LabTestFilter extends AbstractFilter
 
     public function search(Builder $builder, $value)
     {
-        return $builder->where(function ($query) use ($value) {
-            $query->whereHas('pet', function ($q) use ($value) {
-                $q->where('name', 'like', "%{$value}%");
-            })
-            ->orWhereHas('pet.client', function ($q) use ($value) {
-                $q->where('name', 'like', "%{$value}%");
-            })
-            ->orWhereHas('veterinarian', function ($q) use ($value) {
-                $q->where('name', 'like', "%{$value}%");
-            })
-            ->orWhereHas('labTestType', function ($q) use ($value) {
-                $q->where('name', 'like', "%{$value}%");
-            });
+        // Разбиваем поисковый запрос на слова
+        $words = array_filter(explode(' ', trim($value)));
+        
+        if (empty($words)) {
+            return $builder;
+        }
+        
+        return $builder->where(function ($query) use ($words) {
+            foreach ($words as $word) {
+                $query->where(function ($q) use ($word) {
+                    $q->whereHas('pet', function ($q2) use ($word) {
+                        $q2->where('name', 'like', "%{$word}%");
+                    })
+                    ->orWhereHas('pet.client', function ($q2) use ($word) {
+                        $q2->where('name', 'like', "%{$word}%");
+                    })
+                    ->orWhereHas('veterinarian', function ($q2) use ($word) {
+                        $q2->where('name', 'like', "%{$word}%");
+                    })
+                    ->orWhereHas('labTestType', function ($q2) use ($word) {
+                        $q2->where('name', 'like', "%{$word}%");
+                    });
+                });
+            }
         });
     }
 

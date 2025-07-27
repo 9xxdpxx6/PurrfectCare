@@ -25,11 +25,22 @@ class DrugFilter extends AbstractFilter
 
     protected function search(Builder $builder, $value)
     {
-        $words = explode(' ', $value);
+        // Разбиваем поисковый запрос на слова
+        $words = array_filter(explode(' ', trim($value)));
+        
+        if (empty($words)) {
+            return $builder;
+        }
+        
         $builder->where(function ($query) use ($words) {
             foreach ($words as $word) {
                 $query->where(function ($q) use ($word) {
-                    $q->where('name', 'like', "%{$word}%");
+                    $q->where('name', 'like', "%{$word}%")
+                      ->orWhereHas('procurements', function ($procQuery) use ($word) {
+                          $procQuery->whereHas('supplier', function ($suppQuery) use ($word) {
+                              $suppQuery->where('name', 'like', "%{$word}%");
+                          });
+                      });
                 });
             }
         });
