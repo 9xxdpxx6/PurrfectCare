@@ -110,6 +110,24 @@
                             @enderror
                         </div>
                         
+                        <div class="col-md-4">
+                            <label class="form-label">Статус заказа</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_paid" id="is_paid" value="1" {{ old('is_paid', $item->is_paid) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_paid">
+                                        Оплачен
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_closed" id="is_closed" value="1" {{ old('is_closed', $item->closed_at) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_closed">
+                                        Выполнен
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="col-12">
                             <label for="notes" class="form-label">Заметки</label>
                             <textarea name="notes" id="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Дополнительная информация о заказе...">{{ old('notes', $item->notes) }}</textarea>
@@ -324,17 +342,12 @@
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
                                                 @if($orderItem->item)
                                                     @php
-                                                        $date = $orderItem->item->vaccination_date ? \Carbon\Carbon::parse($orderItem->item->vaccination_date)->format('d.m.Y') : 'без даты';
+                                                        $date = $orderItem->item->administered_at ? \Carbon\Carbon::parse($orderItem->item->administered_at)->format('d.m.Y') : 'без даты';
                                                     @endphp
                                                     <option value="{{ $orderItem->item_id }}" selected>Вакцинация от {{ $date }} - {{ $orderItem->item->pet->name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="vaccination">
-                                        </div>
-                                        
-                                        <div class="col-6 col-lg-3">
-                                            <label class="form-label">Кол-во</label>
-                                            <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="1" max="9999" required>
                                         </div>
                                         
                                         <div class="col-6 col-lg-3">
@@ -472,16 +485,12 @@
 <template id="labTestItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="lab_test">
         <div class="row g-3">
-            <div class="col-12 col-lg-5">
+            <div class="col-12 col-lg-8">
                 <label class="form-label">Анализ</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="lab_test">
-            </div>
-            
-            <div class="col-6 col-lg-3">
-                <label class="form-label">Кол-во</label>
-                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
+                <input type="hidden" name="items[INDEX][quantity]" value="1">
             </div>
             
             <div class="col-6 col-lg-3">
@@ -511,16 +520,12 @@
 <template id="vaccinationItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="vaccination">
         <div class="row g-3">
-            <div class="col-12 col-lg-5">
+            <div class="col-12 col-lg-8">
                 <label class="form-label">Вакцинация</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="vaccination">
-            </div>
-            
-            <div class="col-6 col-lg-3">
-                <label class="form-label">Кол-во</label>
-                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
+                <input type="hidden" name="items[INDEX][quantity]" value="1">
             </div>
             
             <div class="col-6 col-lg-3">
@@ -795,6 +800,9 @@
         
         // Инициализируем lastValue для petTomSelect
         petTomSelect.lastValue = petTomSelect.getValue();
+        
+        // Инициализируем тоталы для существующих элементов
+        calculateTotal();
 
         // Инициализируем TomSelect для существующих элементов заказа
         const existingItems = document.querySelectorAll('.order-item');
@@ -851,8 +859,21 @@
         const quantityInput = container.querySelector(`[data-item-index="${itemIndex}"] .item-quantity`);
         const priceInput = container.querySelector(`[data-item-index="${itemIndex}"] .item-price`);
         
-        quantityInput.addEventListener('input', calculateItemTotal);
-        priceInput.addEventListener('input', calculateItemTotal);
+        // Для анализов и вакцинаций количество всегда 1, для остальных - обычная обработка
+        if (itemType === 'lab_test' || itemType === 'vaccination') {
+            if (quantityInput) {
+                quantityInput.value = '1';
+                quantityInput.disabled = true;
+            }
+        } else {
+            if (quantityInput) {
+                quantityInput.addEventListener('input', calculateItemTotal);
+            }
+        }
+        
+        if (priceInput) {
+            priceInput.addEventListener('input', calculateItemTotal);
+        }
         
         itemIndex++;
         calculateTotal();
@@ -873,6 +894,42 @@
 
     function addVaccinationItem() {
         addOrderItemBase('vaccinationItemTemplate', 'vaccinationItems', 'vaccination');
+    }
+
+    function addVaccinationDrugs(vaccinationId) {
+        // Получаем препараты из вакцинации
+        fetch(`{{ route('admin.vaccinations.drugs', 'VACCINATION_ID') }}`.replace('VACCINATION_ID', vaccinationId))
+            .then(response => response.json())
+            .then(drugs => {
+                drugs.forEach(drug => {
+                    addDrugItem(); // Добавляем новый элемент препарата
+                    const drugItems = document.getElementById('drugItems');
+                    const lastDrugItem = drugItems.lastElementChild;
+                    if (lastDrugItem) {
+                        const drugSelect = lastDrugItem.querySelector('.item-select');
+                        if (drugSelect && drugSelect.tomselect) {
+                            // Добавляем опцию с названием препарата
+                            drugSelect.tomselect.addOption({
+                                value: drug.id,
+                                text: drug.name
+                            });
+                            drugSelect.tomselect.setValue(drug.id); // Устанавливаем выбранный препарат
+                        }
+                        const quantityInput = lastDrugItem.querySelector('.item-quantity');
+                        if (quantityInput) {
+                            quantityInput.value = drug.dosage; // Устанавливаем дозировку
+                        }
+                        const priceInput = lastDrugItem.querySelector('.item-price');
+                        if (priceInput) {
+                            priceInput.value = drug.price || 0; // Устанавливаем цену
+                        }
+                        calculateItemTotal.call(priceInput); // Обновляем тоталы
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Ошибка при получении препаратов вакцинации:', error);
+            });
     }
 
     function initItemTomSelect(select, type) {
@@ -913,6 +970,8 @@
                 // Получаем цену по умолчанию из выбранного элемента
                 if (value && value.price !== undefined) {
                     priceInput.value = value.price;
+                    // Сразу обновляем тоталы
+                    calculateItemTotal.call(priceInput);
                 } else if (itemType === 'service' || itemType === 'drug') {
                     // Для услуг и препаратов устанавливаем цену по умолчанию
                     fetch(this.input.dataset.url + '?selected=' + value)
@@ -921,11 +980,17 @@
                             const selectedItem = data.find(item => item.value == value);
                             if (selectedItem && selectedItem.price) {
                                 priceInput.value = selectedItem.price;
+                                // Обновляем тоталы после установки цены
+                                calculateItemTotal.call(priceInput);
                             }
                         });
                 }
                 
-                calculateItemTotal.call(priceInput);
+                // Если выбрана вакцинация, добавляем её препараты
+                if (itemType === 'vaccination' && value) {
+                    addVaccinationDrugs(value);
+                }
+                
                 setTimeout(() => {
                     this.close();
                     this.blur();
@@ -942,8 +1007,16 @@
 
     function calculateItemTotal() {
         const itemDiv = this.closest('.order-item');
-        const quantity = parseFloat(itemDiv.querySelector('.item-quantity').value) || 0;
-        const price = parseFloat(itemDiv.querySelector('.item-price').value) || 0;
+        const quantityInput = itemDiv.querySelector('.item-quantity');
+        const priceInput = itemDiv.querySelector('.item-price');
+        
+        // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
+        let quantity = 1;
+        if (quantityInput && !quantityInput.disabled) {
+            quantity = parseFloat(quantityInput.value) || 0;
+        }
+        
+        const price = parseFloat(priceInput.value) || 0;
         const total = quantity * price;
         
         itemDiv.querySelector('.item-total').textContent = total.toFixed(2) + ' ₽';
@@ -955,8 +1028,16 @@
         let total = 0;
         
         items.forEach(item => {
-            const quantity = parseFloat(item.querySelector('.item-quantity').value) || 0;
-            const price = parseFloat(item.querySelector('.item-price').value) || 0;
+            const quantityInput = item.querySelector('.item-quantity');
+            const priceInput = item.querySelector('.item-price');
+            
+            // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
+            let quantity = 1;
+            if (quantityInput && !quantityInput.disabled) {
+                quantity = parseFloat(quantityInput.value) || 0;
+            }
+            
+            const price = parseFloat(priceInput.value) || 0;
             total += quantity * price;
         });
         

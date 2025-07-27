@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('lab_test_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->decimal('price', 10, 2)->default(0);
             $table->string('description');
             $table->timestamps();
         });

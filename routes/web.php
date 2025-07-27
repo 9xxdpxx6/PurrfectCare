@@ -110,6 +110,8 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('schedules', ScheduleController::class);
     Route::get('schedules-week/create', [ScheduleController::class, 'createWeek'])->name('schedules.create-week');
     Route::post('schedules-week', [ScheduleController::class, 'storeWeek'])->name('schedules.store-week');
+    
+    Route::get('vaccinations/{vaccination}/drugs', [VaccinationController::class, 'getDrugs'])->name('vaccinations.drugs');
 });
 
 //Route::middleware('auth')->group(function() {

@@ -12,7 +12,12 @@ class LabTestType extends Model
 
     protected $fillable = [
         'name',
+        'price',
         'description'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
     ];
 
     public function params()

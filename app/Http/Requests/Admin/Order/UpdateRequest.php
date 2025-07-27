@@ -23,6 +23,8 @@ class UpdateRequest extends FormRequest
             'manager_id' => 'required|exists:employees,id',
             'notes' => 'nullable|string|max:1000',
             'total' => 'required|numeric|min:0|max:999999.99',
+            'is_paid' => 'boolean',
+            'is_closed' => 'boolean',
             'items' => 'required|array|min:1',
             'items.*.item_type' => 'required|in:service,drug,lab_test,vaccination',
             'items.*.item_id' => 'required|integer',

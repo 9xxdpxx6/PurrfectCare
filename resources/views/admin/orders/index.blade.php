@@ -156,7 +156,23 @@
                 <div class="card-body h-100 flex-grow-1 d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
                     <div class="d-flex flex-column h-100 flex-lg-row w-100 gap-3 align-items-lg-center">
                         <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
-                            <h5 class="card-title mb-1">Заказ #{{ $order->id }}</h5>
+                            <h5 class="card-title mb-1">
+                                @if($order->is_paid)
+                                    <span class="text-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Оплачен">
+                                        <i class="bi bi-check-all"></i>
+                                    </span>
+                                @else
+                                    <span class="text-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Не оплачен">
+                                        <i class="bi bi-cash"></i>
+                                    </span>
+                                @endif
+                                Заказ #{{ $order->id }}
+                                @if($order->closed_at)
+                                    <span class="text-muted fs-6 ms-2">закрыт {{ $order->closed_at->format('d.m.Y H:i') }}</span>
+                                @else
+                                    <span class="text-muted fs-6 ms-2">в работе</span>
+                                @endif
+                            </h5>
                             <h6 class="card-subtitle mb-2 text-muted">
                                 Клиент: {{ $order->client->name }} | Питомец: {{ $order->pet->name }}
                             </h6>
@@ -353,6 +369,12 @@
         // Datepickers для дат
         createDatepicker('#created_at_from');
         createDatepicker('#created_at_to');
+        
+        // Инициализация тултипов
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
 </script>
 @endpush 

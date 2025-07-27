@@ -70,9 +70,25 @@
                             <span class="text-muted fw-bold me-2">Создан:</span>
                             <span>{{ $item->created_at->format('d.m.Y H:i') }}</span>
                         </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="text-muted fw-bold me-2">Статус заказа:</span>
+                            <div class="d-flex gap-2">
+                                @if($item->is_paid)
+                                    <span class="badge bg-success">Оплачен</span>
+                                @else
+                                    <span class="badge bg-warning">Не оплачен</span>
+                                @endif
+                                
+                                @if($item->closed_at)
+                                    <span class="badge bg-info">Выполнен</span>
+                                    <small class="text-muted">({{ $item->closed_at->format('d.m.Y H:i') }})</small>
+                                @else
+                                    <span class="badge bg-secondary">В работе</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-6">
-                      
                         <div class="d-flex align-items-center mb-2">
                             <span class="text-muted fw-bold me-2">Сумма:</span>
                             <span class="h5 mb-0">{{ number_format($item->total, 2, ',', ' ') }} ₽</span>

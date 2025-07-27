@@ -88,6 +88,12 @@ class OrderController extends AdminController
     {
         $validated = $request->validated();
         
+        // Определяем дату закрытия если заказ выполнен
+        $closedAt = null;
+        if ($request->has('is_closed') && $request->input('is_closed')) {
+            $closedAt = now();
+        }
+        
         $order = $this->model::create([
             'client_id' => $validated['client_id'],
             'pet_id' => $validated['pet_id'],
@@ -95,7 +101,9 @@ class OrderController extends AdminController
             'branch_id' => $validated['branch_id'],
             'manager_id' => $validated['manager_id'],
             'notes' => $validated['notes'] ?? null,
-            'total' => $validated['total']
+            'total' => $validated['total'],
+            'is_paid' => $request->has('is_paid') && $request->input('is_paid'),
+            'closed_at' => $closedAt
         ]);
 
         foreach ($validated['items'] as $item) {
@@ -105,14 +113,11 @@ class OrderController extends AdminController
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price']
             ]);
-            
-            // Списание препаратов со склада
-            if ($item['item_type'] === 'drug') {
-                $drug = Drug::find($item['item_id']);
-                if ($drug) {
-                    $drug->decrement('quantity', $item['quantity']);
-                }
-            }
+        }
+        
+        // Списание со склада только если заказ закрыт
+        if ($closedAt) {
+            $this->processInventoryReduction($order);
         }
         
         return redirect()
@@ -126,14 +131,17 @@ class OrderController extends AdminController
         
         $order = $this->model::with('items')->findOrFail($id);
         
-        // Возвращаем препараты на склад из старого заказа
-        foreach ($order->items as $item) {
-            if ($item->item_type === 'App\Models\Drug') {
-                $drug = Drug::find($item->item_id);
-                if ($drug) {
-                    $drug->increment('quantity', $item->quantity);
-                }
-            }
+        // Определяем дату закрытия если заказ выполнен
+        $closedAt = $order->closed_at;
+        if ($request->has('is_closed') && $request->input('is_closed') && !$closedAt) {
+            $closedAt = now();
+        } elseif (!$request->has('is_closed') || !$request->input('is_closed')) {
+            $closedAt = null;
+        }
+        
+        // Возвращаем препараты на склад из старого заказа если он был закрыт
+        if ($order->closed_at) {
+            $this->processInventoryReturn($order);
         }
         
         $order->update([
@@ -143,7 +151,9 @@ class OrderController extends AdminController
             'branch_id' => $validated['branch_id'],
             'manager_id' => $validated['manager_id'],
             'notes' => $validated['notes'] ?? null,
-            'total' => $validated['total']
+            'total' => $validated['total'],
+            'is_paid' => $request->has('is_paid') && $request->input('is_paid'),
+            'closed_at' => $closedAt
         ]);
 
         $order->items()->delete();
@@ -154,14 +164,11 @@ class OrderController extends AdminController
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price']
             ]);
-            
-            // Списание препаратов со склада
-            if ($item['item_type'] === 'drug') {
-                $drug = Drug::find($item['item_id']);
-                if ($drug) {
-                    $drug->decrement('quantity', $item['quantity']);
-                }
-            }
+        }
+        
+        // Списание со склада только если заказ закрыт
+        if ($closedAt) {
+            $this->processInventoryReduction($order);
         }
         
         return redirect()
@@ -184,14 +191,9 @@ class OrderController extends AdminController
     {
         $order = $this->model::with('items')->findOrFail($id);
         
-        // Возвращаем препараты на склад
-        foreach ($order->items as $item) {
-            if ($item->item_type === 'App\Models\Drug') {
-                $drug = Drug::find($item->item_id);
-                if ($drug) {
-                    $drug->increment('quantity', $item->quantity);
-                }
-            }
+        // Возвращаем препараты на склад если заказ был закрыт
+        if ($order->closed_at) {
+            $this->processInventoryReturn($order);
         }
         
         // Удаляем элементы заказа
@@ -203,6 +205,38 @@ class OrderController extends AdminController
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Заказ успешно удален');
+    }
+    
+    /**
+     * Обработка списания препаратов со склада
+     */
+    protected function processInventoryReduction($order)
+    {
+        foreach ($order->items as $item) {
+            if ($item->item_type === 'App\Models\Drug') {
+                // Списание препаратов из заказа
+                $drug = Drug::find($item->item_id);
+                if ($drug) {
+                    $drug->decrement('quantity', $item->quantity);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Обработка возврата препаратов на склад
+     */
+    protected function processInventoryReturn($order)
+    {
+        foreach ($order->items as $item) {
+            if ($item->item_type === 'App\Models\Drug') {
+                // Возврат препаратов из заказа
+                $drug = Drug::find($item->item_id);
+                if ($drug) {
+                    $drug->increment('quantity', $item->quantity);
+                }
+            }
+        }
     }
 
     // TomSelect опции

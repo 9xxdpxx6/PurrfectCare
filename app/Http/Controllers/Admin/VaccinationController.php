@@ -152,4 +152,28 @@ class VaccinationController extends AdminController
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Вакцинация успешно удалена');
     }
+
+    public function vaccinationOptions(Request $request)
+    {
+        $trait = new class {
+            use \App\Http\Traits\HasSelectOptions;
+        };
+        return $trait->vaccinationOptions($request);
+    }
+    
+    public function getDrugs($id)
+    {
+        $vaccination = Vaccination::with('drugs')->findOrFail($id);
+        
+        $drugs = $vaccination->drugs->map(function($drug) {
+            return [
+                'id' => $drug->id,
+                'name' => $drug->name,
+                'dosage' => $drug->pivot->dosage,
+                'price' => $drug->price ?? 0
+            ];
+        });
+        
+        return response()->json($drugs);
+    }
 } 

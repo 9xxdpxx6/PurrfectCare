@@ -17,11 +17,15 @@ class Order extends Model
         'branch_id',
         'manager_id',
         'notes',
-        'total'
+        'total',
+        'is_paid',
+        'closed_at'
     ];
 
     protected $casts = [
-        'total' => 'decimal:2'
+        'total' => 'decimal:2',
+        'is_paid' => 'boolean',
+        'closed_at' => 'datetime'
     ];
 
     public function client()

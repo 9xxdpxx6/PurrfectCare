@@ -944,7 +944,7 @@ trait HasSelectOptions
         if ($selectedId && is_numeric($selectedId)) {
             $selectedVaccination = \App\Models\Vaccination::with(['pet', 'veterinarian'])->find($selectedId);
             if ($selectedVaccination) {
-                $date = $selectedVaccination->vaccination_date ? \Carbon\Carbon::parse($selectedVaccination->vaccination_date)->format('d.m.Y') : 'без даты';
+                $date = $selectedVaccination->administered_at ? \Carbon\Carbon::parse($selectedVaccination->administered_at)->format('d.m.Y') : 'без даты';
                 $options[] = [
                     'value' => $selectedVaccination->id,
                     'text' => "Вакцинация от {$date} - {$selectedVaccination->pet->name}",
@@ -969,7 +969,7 @@ trait HasSelectOptions
         $vaccinations = $query->limit(20)->get();
         
         foreach ($vaccinations as $vaccination) {
-            $date = $vaccination->vaccination_date ? \Carbon\Carbon::parse($vaccination->vaccination_date)->format('d.m.Y') : 'без даты';
+            $date = $vaccination->administered_at ? \Carbon\Carbon::parse($vaccination->administered_at)->format('d.m.Y') : 'без даты';
             $options[] = [
                 'value' => $vaccination->id,
                 'text' => "Вакцинация от {$date} - {$vaccination->pet->name}",
