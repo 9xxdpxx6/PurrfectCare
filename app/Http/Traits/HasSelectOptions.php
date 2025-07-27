@@ -861,7 +861,7 @@ trait HasSelectOptions
      */
     public function labTestOptions(Request $request)
     {
-        $query = \App\Models\LabTest::with(['pet', 'veterinarian']);
+        $query = \App\Models\LabTest::with(['pet', 'veterinarian', 'labTestType']);
         $search = $request->input('q');
         $selectedId = $request->input('selected');
         $isFilter = $request->input('filter', false);
@@ -880,13 +880,13 @@ trait HasSelectOptions
         }
         
         if ($selectedId && is_numeric($selectedId)) {
-            $selectedLabTest = \App\Models\LabTest::with(['pet', 'veterinarian'])->find($selectedId);
+            $selectedLabTest = \App\Models\LabTest::with(['pet', 'veterinarian', 'labTestType'])->find($selectedId);
             if ($selectedLabTest) {
                 $date = $selectedLabTest->received_at ? \Carbon\Carbon::parse($selectedLabTest->received_at)->format('d.m.Y') : 'без даты';
                 $options[] = [
                     'value' => $selectedLabTest->id,
                     'text' => "Анализ от {$date} - {$selectedLabTest->pet->name}",
-                    'price' => 0
+                    'price' => $selectedLabTest->labTestType->price ?? 0
                 ];
                 $query->where('id', '!=', $selectedId);
             }
@@ -911,7 +911,7 @@ trait HasSelectOptions
             $options[] = [
                 'value' => $labTest->id,
                 'text' => "Анализ от {$date} - {$labTest->pet->name}",
-                'price' => 0
+                'price' => $labTest->labTestType->price ?? 0
             ];
         }
         

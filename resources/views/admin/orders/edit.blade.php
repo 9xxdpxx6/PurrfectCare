@@ -277,7 +277,7 @@
                             @foreach($item->items->where('item_type', 'App\Models\LabTest') as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="lab_test">
                                     <div class="row g-3">
-                                        <div class="col-12 col-lg-5">
+                                        <div class="col-12 col-lg-8">
                                             <label class="form-label">Анализ</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}" required>
                                                 @if($orderItem->item)
@@ -288,16 +288,8 @@
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="lab_test">
-                                        </div>
-                                        
-                                        <div class="col-6 col-lg-3">
-                                            <label class="form-label">Кол-во</label>
-                                            <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="1" max="9999" required>
-                                        </div>
-                                        
-                                        <div class="col-6 col-lg-3">
-                                            <label class="form-label">Цена</label>
-                                            <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $orderItem->unit_price }}" min="0" max="999999.99" step="0.01" required>
+                                            <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $orderItem->quantity }}">
+                                            <input type="hidden" name="items[{{ $index }}][unit_price]" value="{{ $orderItem->unit_price }}">
                                         </div>
                                         
                                         <div class="col-lg-1">
@@ -337,7 +329,7 @@
                             @foreach($item->items->where('item_type', 'App\Models\Vaccination') as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="vaccination">
                                     <div class="row g-3">
-                                        <div class="col-12 col-lg-5">
+                                        <div class="col-12 col-lg-11">
                                             <label class="form-label">Вакцинация</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
                                                 @if($orderItem->item)
@@ -348,11 +340,8 @@
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="vaccination">
-                                        </div>
-                                        
-                                        <div class="col-6 col-lg-3">
-                                            <label class="form-label">Цена</label>
-                                            <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $orderItem->unit_price }}" min="0" max="999999.99" step="0.01" required>
+                                            <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $orderItem->quantity }}">
+                                            <input type="hidden" name="items[{{ $index }}][unit_price]" value="{{ $orderItem->unit_price }}">
                                         </div>
                                         
                                         <div class="col-lg-1">
@@ -364,11 +353,17 @@
                                     </div>
                                     
                                     <div class="row mt-2">
-                                        <div class="col-md-6 offset-md-6">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span>Сумма:</span>
-                                                <span class="item-total fw-bold">{{ number_format($orderItem->quantity * $orderItem->unit_price, 2) }} ₽</span>
-                                            </div>
+                                        <div class="col-12">
+                                            <small class="text-muted">Препараты в вакцинации:</small>
+                                            <ul class="vaccination-drugs-list mt-1 mb-0" style="list-style: none; padding-left: 0;">
+                                                @if($orderItem->item)
+                                                    @foreach($orderItem->item->drugs as $drug)
+                                                        <li class="mb-1">
+                                                            <small class="text-muted">• {{ $drug->name }} - {{ $drug->pivot->dosage }} шт.</small>
+                                                        </li>
+                                                    @endforeach
+                                                @endif
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
@@ -493,11 +488,6 @@
                 <input type="hidden" name="items[INDEX][quantity]" value="1">
             </div>
             
-            <div class="col-6 col-lg-3">
-                <label class="form-label">Цена</label>
-                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
-            </div>
-            
             <div class="col-lg-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
@@ -520,17 +510,13 @@
 <template id="vaccinationItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="vaccination">
         <div class="row g-3">
-            <div class="col-12 col-lg-8">
+            <div class="col-12 col-lg-11">
                 <label class="form-label">Вакцинация</label>
-                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
+                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}">
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="vaccination">
                 <input type="hidden" name="items[INDEX][quantity]" value="1">
-            </div>
-            
-            <div class="col-6 col-lg-3">
-                <label class="form-label">Цена</label>
-                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
+                <input type="hidden" name="items[INDEX][unit_price]" value="0">
             </div>
             
             <div class="col-lg-1">
@@ -542,11 +528,11 @@
         </div>
         
         <div class="row mt-2">
-            <div class="col-md-6 offset-md-6">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Сумма:</span>
-                    <span class="item-total fw-bold">0.00 ₽</span>
-                </div>
+            <div class="col-12">
+                <small class="text-muted">Препараты в вакцинации:</small>
+                <ul class="vaccination-drugs-list mt-1 mb-0" style="list-style: none; padding-left: 0;">
+                    <!-- Список препаратов будет добавляться сюда -->
+                </ul>
             </div>
         </div>
     </div>
@@ -819,8 +805,12 @@
             const quantityInput = item.querySelector('.item-quantity');
             const priceInput = item.querySelector('.item-price');
             
-            quantityInput.addEventListener('input', calculateItemTotal);
-            priceInput.addEventListener('input', calculateItemTotal);
+            if (quantityInput) {
+                quantityInput.addEventListener('input', calculateItemTotal);
+            }
+            if (priceInput) {
+                priceInput.addEventListener('input', calculateItemTotal);
+            }
         });
         
         calculateTotal();
@@ -865,14 +855,17 @@
                 quantityInput.value = '1';
                 quantityInput.disabled = true;
             }
+            if (priceInput) {
+                priceInput.value = '0'; // Устанавливаем цену по умолчанию для анализов/вакцинаций
+                priceInput.disabled = true;
+            }
         } else {
             if (quantityInput) {
                 quantityInput.addEventListener('input', calculateItemTotal);
             }
-        }
-        
-        if (priceInput) {
-            priceInput.addEventListener('input', calculateItemTotal);
+            if (priceInput) {
+                priceInput.addEventListener('input', calculateItemTotal);
+            }
         }
         
         itemIndex++;
@@ -896,11 +889,25 @@
         addOrderItemBase('vaccinationItemTemplate', 'vaccinationItems', 'vaccination');
     }
 
-    function addVaccinationDrugs(vaccinationId) {
+    function addVaccinationDrugs(vaccinationId, vaccinationItemDiv = null) {
         // Получаем препараты из вакцинации
         fetch(`{{ route('admin.vaccinations.drugs', 'VACCINATION_ID') }}`.replace('VACCINATION_ID', vaccinationId))
             .then(response => response.json())
             .then(drugs => {
+                // Обновляем список препаратов в вакцинации
+                if (vaccinationItemDiv) {
+                    const drugsList = vaccinationItemDiv.querySelector('.vaccination-drugs-list');
+                    if (drugsList) {
+                        drugsList.innerHTML = '';
+                        drugs.forEach(drug => {
+                            const li = document.createElement('li');
+                            li.className = 'mb-1';
+                            li.innerHTML = `<small class="text-muted">• ${drug.name} - ${drug.dosage} шт.</small>`;
+                            drugsList.appendChild(li);
+                        });
+                    }
+                }
+                
                 drugs.forEach(drug => {
                     addDrugItem(); // Добавляем новый элемент препарата
                     const drugItems = document.getElementById('drugItems');
@@ -918,6 +925,8 @@
                         const quantityInput = lastDrugItem.querySelector('.item-quantity');
                         if (quantityInput) {
                             quantityInput.value = drug.dosage; // Устанавливаем дозировку
+                            quantityInput.disabled = true; // Отключаем поле количества
+                            quantityInput.setAttribute('data-vaccination-drug', 'true'); // Помечаем как препарат из вакцинации
                         }
                         const priceInput = lastDrugItem.querySelector('.item-price');
                         if (priceInput) {
@@ -962,33 +971,41 @@
                     .catch(() => callback());
             },
             onItemAdd: function(value) {
-                // Устанавливаем цену по умолчанию
                 const itemDiv = this.input.closest('.order-item');
-                const priceInput = itemDiv.querySelector('.item-price');
                 const itemType = itemDiv.querySelector('input[name*="[item_type]"]').value;
                 
-                // Получаем цену по умолчанию из выбранного элемента
-                if (value && value.price !== undefined) {
-                    priceInput.value = value.price;
-                    // Сразу обновляем тоталы
-                    calculateItemTotal.call(priceInput);
-                } else if (itemType === 'service' || itemType === 'drug') {
-                    // Для услуг и препаратов устанавливаем цену по умолчанию
+                if (itemType === 'lab_test') {
+                    // Для анализов получаем цену из типа анализа
                     fetch(this.input.dataset.url + '?selected=' + value)
                         .then(response => response.json())
                         .then(data => {
                             const selectedItem = data.find(item => item.value == value);
                             if (selectedItem && selectedItem.price) {
+                                const priceInput = itemDiv.querySelector('input[name*="[unit_price]"]');
                                 priceInput.value = selectedItem.price;
-                                // Обновляем тоталы после установки цены
                                 calculateItemTotal.call(priceInput);
                             }
                         });
-                }
-                
-                // Если выбрана вакцинация, добавляем её препараты
-                if (itemType === 'vaccination' && value) {
-                    addVaccinationDrugs(value);
+                } else if (itemType === 'vaccination') {
+                    // Для вакцинаций добавляем препараты и рассчитываем общую стоимость
+                    addVaccinationDrugs(value, itemDiv);
+                } else {
+                    // Для услуг и препаратов устанавливаем цену по умолчанию
+                    const priceInput = itemDiv.querySelector('.item-price');
+                    if (value && value.price !== undefined) {
+                        priceInput.value = value.price;
+                        calculateItemTotal.call(priceInput);
+                    } else {
+                        fetch(this.input.dataset.url + '?selected=' + value)
+                            .then(response => response.json())
+                            .then(data => {
+                                const selectedItem = data.find(item => item.value == value);
+                                if (selectedItem && selectedItem.price) {
+                                    priceInput.value = selectedItem.price;
+                                    calculateItemTotal.call(priceInput);
+                                }
+                            });
+                    }
                 }
                 
                 setTimeout(() => {
@@ -1007,8 +1024,17 @@
 
     function calculateItemTotal() {
         const itemDiv = this.closest('.order-item');
+        const itemType = itemDiv.getAttribute('data-item-type');
+        
+        // Для вакцинаций не рассчитываем сабтотал, так как он не отображается
+        if (itemType === 'vaccination') {
+            calculateTotal();
+            return;
+        }
+        
         const quantityInput = itemDiv.querySelector('.item-quantity');
         const priceInput = itemDiv.querySelector('.item-price');
+        const hiddenPriceInput = itemDiv.querySelector('input[name*="[unit_price]"]');
         
         // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
         let quantity = 1;
@@ -1016,10 +1042,20 @@
             quantity = parseFloat(quantityInput.value) || 0;
         }
         
-        const price = parseFloat(priceInput.value) || 0;
+        // Для вакцинаций цена берется из скрытого поля
+        let price = 0;
+        if (priceInput && !priceInput.disabled) {
+            price = parseFloat(priceInput.value) || 0;
+        } else if (hiddenPriceInput) {
+            price = parseFloat(hiddenPriceInput.value) || 0;
+        }
+        
         const total = quantity * price;
         
-        itemDiv.querySelector('.item-total').textContent = total.toFixed(2) + ' ₽';
+        const totalElement = itemDiv.querySelector('.item-total');
+        if (totalElement) {
+            totalElement.textContent = total.toFixed(2) + ' ₽';
+        }
         calculateTotal();
     }
 
@@ -1030,6 +1066,7 @@
         items.forEach(item => {
             const quantityInput = item.querySelector('.item-quantity');
             const priceInput = item.querySelector('.item-price');
+            const hiddenPriceInput = item.querySelector('input[name*="[unit_price]"]');
             
             // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
             let quantity = 1;
@@ -1037,12 +1074,41 @@
                 quantity = parseFloat(quantityInput.value) || 0;
             }
             
-            const price = parseFloat(priceInput.value) || 0;
+            // Для вакцинаций цена берется из скрытого поля
+            let price = 0;
+            if (priceInput && !priceInput.disabled) {
+                price = parseFloat(priceInput.value) || 0;
+            } else if (hiddenPriceInput) {
+                price = parseFloat(hiddenPriceInput.value) || 0;
+            }
+            
             total += quantity * price;
         });
         
         document.getElementById('totalAmount').textContent = total.toFixed(2) + ' ₽';
         document.getElementById('total').value = total.toFixed(2);
+    }
+
+    // Функция для пересчета стоимости вакцинации
+    function recalculateVaccinationCost(vaccinationId, vaccinationItem) {
+        fetch(`{{ route('admin.vaccinations.drugs', 'VACCINATION_ID') }}`.replace('VACCINATION_ID', vaccinationId))
+            .then(response => response.json())
+            .then(drugs => {
+                // Обновляем список препаратов в вакцинации
+                const drugsList = vaccinationItem.querySelector('.vaccination-drugs-list');
+                if (drugsList) {
+                    drugsList.innerHTML = '';
+                    drugs.forEach(drug => {
+                        const li = document.createElement('li');
+                        li.className = 'mb-1';
+                        li.innerHTML = `<small class="text-muted">• ${drug.name} - ${drug.dosage} шт.</small>`;
+                        drugsList.appendChild(li);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при получении препаратов вакцинации:', error);
+            });
     }
 </script>
 @endpush 
