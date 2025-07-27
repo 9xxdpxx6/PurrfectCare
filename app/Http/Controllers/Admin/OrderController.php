@@ -105,6 +105,14 @@ class OrderController extends AdminController
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price']
             ]);
+            
+            // Списание препаратов со склада
+            if ($item['item_type'] === 'drug') {
+                $drug = Drug::find($item['item_id']);
+                if ($drug) {
+                    $drug->decrement('quantity', $item['quantity']);
+                }
+            }
         }
         
         return redirect()
@@ -116,7 +124,18 @@ class OrderController extends AdminController
     {
         $validated = $request->validated();
         
-        $order = $this->model::findOrFail($id);
+        $order = $this->model::with('items')->findOrFail($id);
+        
+        // Возвращаем препараты на склад из старого заказа
+        foreach ($order->items as $item) {
+            if ($item->item_type === 'App\Models\Drug') {
+                $drug = Drug::find($item->item_id);
+                if ($drug) {
+                    $drug->increment('quantity', $item->quantity);
+                }
+            }
+        }
+        
         $order->update([
             'client_id' => $validated['client_id'],
             'pet_id' => $validated['pet_id'],
@@ -135,6 +154,14 @@ class OrderController extends AdminController
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price']
             ]);
+            
+            // Списание препаратов со склада
+            if ($item['item_type'] === 'drug') {
+                $drug = Drug::find($item['item_id']);
+                if ($drug) {
+                    $drug->decrement('quantity', $item['quantity']);
+                }
+            }
         }
         
         return redirect()
@@ -155,7 +182,17 @@ class OrderController extends AdminController
 
     public function destroy($id): RedirectResponse
     {
-        $order = $this->model::findOrFail($id);
+        $order = $this->model::with('items')->findOrFail($id);
+        
+        // Возвращаем препараты на склад
+        foreach ($order->items as $item) {
+            if ($item->item_type === 'App\Models\Drug') {
+                $drug = Drug::find($item->item_id);
+                if ($drug) {
+                    $drug->increment('quantity', $item->quantity);
+                }
+            }
+        }
         
         // Удаляем элементы заказа
         $order->items()->delete();
@@ -229,6 +266,7 @@ class OrderController extends AdminController
 
     public function labTestOptions(Request $request)
     {
+        $request->merge(['include_price' => true]);
         $trait = new class {
             use \App\Http\Traits\HasSelectOptions;
         };
@@ -237,6 +275,7 @@ class OrderController extends AdminController
 
     public function vaccinationOptions(Request $request)
     {
+        $request->merge(['include_price' => true]);
         $trait = new class {
             use \App\Http\Traits\HasSelectOptions;
         };

@@ -865,6 +865,7 @@ trait HasSelectOptions
         $search = $request->input('q');
         $selectedId = $request->input('selected');
         $isFilter = $request->input('filter', false);
+        $petId = $request->input('pet_id');
         
         $options = [];
         
@@ -873,12 +874,18 @@ trait HasSelectOptions
             $options[] = ['value' => '', 'text' => 'Все анализы'];
         }
         
+        // Фильтруем по питомцу если указан
+        if ($petId) {
+            $query->where('pet_id', $petId);
+        }
+        
         if ($selectedId && is_numeric($selectedId)) {
             $selectedLabTest = \App\Models\LabTest::with(['pet', 'veterinarian'])->find($selectedId);
             if ($selectedLabTest) {
+                $date = $selectedLabTest->received_at ? \Carbon\Carbon::parse($selectedLabTest->received_at)->format('d.m.Y') : 'без даты';
                 $options[] = [
                     'value' => $selectedLabTest->id,
-                    'text' => "Анализ #{$selectedLabTest->id} - {$selectedLabTest->pet->name}",
+                    'text' => "Анализ от {$date} - {$selectedLabTest->pet->name}",
                     'price' => 0
                 ];
                 $query->where('id', '!=', $selectedId);
@@ -900,9 +907,10 @@ trait HasSelectOptions
         $labTests = $query->limit(20)->get();
         
         foreach ($labTests as $labTest) {
+            $date = $labTest->received_at ? \Carbon\Carbon::parse($labTest->received_at)->format('d.m.Y') : 'без даты';
             $options[] = [
                 'value' => $labTest->id,
-                'text' => "Анализ #{$labTest->id} - {$labTest->pet->name}",
+                'text' => "Анализ от {$date} - {$labTest->pet->name}",
                 'price' => 0
             ];
         }
@@ -919,6 +927,7 @@ trait HasSelectOptions
         $search = $request->input('q');
         $selectedId = $request->input('selected');
         $isFilter = $request->input('filter', false);
+        $petId = $request->input('pet_id');
         
         $options = [];
         
@@ -927,12 +936,18 @@ trait HasSelectOptions
             $options[] = ['value' => '', 'text' => 'Все вакцинации'];
         }
         
+        // Фильтруем по питомцу если указан
+        if ($petId) {
+            $query->where('pet_id', $petId);
+        }
+        
         if ($selectedId && is_numeric($selectedId)) {
             $selectedVaccination = \App\Models\Vaccination::with(['pet', 'veterinarian'])->find($selectedId);
             if ($selectedVaccination) {
+                $date = $selectedVaccination->vaccination_date ? \Carbon\Carbon::parse($selectedVaccination->vaccination_date)->format('d.m.Y') : 'без даты';
                 $options[] = [
                     'value' => $selectedVaccination->id,
-                    'text' => "Вакцинация #{$selectedVaccination->id} - {$selectedVaccination->pet->name}",
+                    'text' => "Вакцинация от {$date} - {$selectedVaccination->pet->name}",
                     'price' => 0
                 ];
                 $query->where('id', '!=', $selectedId);
@@ -954,9 +969,10 @@ trait HasSelectOptions
         $vaccinations = $query->limit(20)->get();
         
         foreach ($vaccinations as $vaccination) {
+            $date = $vaccination->vaccination_date ? \Carbon\Carbon::parse($vaccination->vaccination_date)->format('d.m.Y') : 'без даты';
             $options[] = [
                 'value' => $vaccination->id,
-                'text' => "Вакцинация #{$vaccination->id} - {$vaccination->pet->name}",
+                'text' => "Вакцинация от {$date} - {$vaccination->pet->name}",
                 'price' => 0
             ];
         }

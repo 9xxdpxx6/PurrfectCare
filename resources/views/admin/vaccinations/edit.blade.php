@@ -174,7 +174,7 @@
                                         <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
                                             <label class="form-label">Дозировка</label>
                                             <div class="input-group">
-                                                <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[0][dosage]" class="form-control">
+                                                <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[0][dosage]" class="form-control" value="1">
                                                 <span class="input-group-text dosage-unit" data-drug-index="0">у.е.</span>
                                             </div>
                                             <input type="hidden" name="drugs[0][batch_number]" value="">
@@ -334,7 +334,7 @@
                     <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
                         <label class="form-label">Дозировка</label>
                         <div class="input-group">
-                            <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[${drugIndex}][dosage]" class="form-control">
+                            <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[${drugIndex}][dosage]" class="form-control" value="1">
                             <span class="input-group-text dosage-unit" data-drug-index="${drugIndex}">у.е.</span>
                         </div>
                         <input type="hidden" name="drugs[${drugIndex}][batch_number]" value="">

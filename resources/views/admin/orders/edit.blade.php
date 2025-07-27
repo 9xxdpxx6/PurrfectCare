@@ -250,7 +250,7 @@
                                 <h6 class="mb-0">Анализы</h6>
                             </div>
                             <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mt-md-0">
-                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addLabTestItem()">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="addLabTestBtn" onclick="addLabTestItem()" disabled>
                                     <i class="bi bi-plus-lg"></i> Добавить анализ
                                 </button>
                             </div>
@@ -263,7 +263,10 @@
                                             <label class="form-label">Анализ</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}" required>
                                                 @if($orderItem->item)
-                                                    <option value="{{ $orderItem->item_id }}" selected>Анализ #{{ $orderItem->item->id }}</option>
+                                                    @php
+                                                        $date = $orderItem->item->received_at ? \Carbon\Carbon::parse($orderItem->item->received_at)->format('d.m.Y') : 'без даты';
+                                                    @endphp
+                                                    <option value="{{ $orderItem->item_id }}" selected>Анализ от {{ $date }} - {{ $orderItem->item->pet->name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="lab_test">
@@ -307,7 +310,7 @@
                                 <h6 class="mb-0">Вакцинации</h6>
                             </div>
                             <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mt-md-0">
-                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addVaccinationItem()">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="addVaccinationBtn" onclick="addVaccinationItem()" disabled>
                                     <i class="bi bi-plus-lg"></i> Добавить вакцинацию
                                 </button>
                             </div>
@@ -320,7 +323,10 @@
                                             <label class="form-label">Вакцинация</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
                                                 @if($orderItem->item)
-                                                    <option value="{{ $orderItem->item_id }}" selected>Вакцинация #{{ $orderItem->item->id }}</option>
+                                                    @php
+                                                        $date = $orderItem->item->vaccination_date ? \Carbon\Carbon::parse($orderItem->item->vaccination_date)->format('d.m.Y') : 'без даты';
+                                                    @endphp
+                                                    <option value="{{ $orderItem->item_id }}" selected>Вакцинация от {{ $date }} - {{ $orderItem->item->pet->name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="vaccination">
@@ -548,6 +554,8 @@
 @push('scripts')
 <script>
     let itemIndex = {{ $itemCount }};
+    let petTomSelect; // Глобальная переменная для доступа из других функций
+    
     const itemUrls = {
         service: '{{ route("admin.orders.service-options") }}',
         drug: '{{ route("admin.orders.drug-options") }}',
@@ -582,7 +590,7 @@
             }
         });
 
-        const petTomSelect = new createTomSelect('#pet_id', {
+        petTomSelect = new createTomSelect('#pet_id', {
             placeholder: 'Выберите питомца...',
             valueField: 'value',
             labelField: 'text',
@@ -718,6 +726,75 @@
         if (initialClientId) {
             filterPetsByClient(initialClientId);
         }
+        
+        // Управление кнопками анализов и вакцинаций
+        function updatePetDependentButtons() {
+            const petId = petTomSelect.getValue();
+            const addLabTestBtn = document.getElementById('addLabTestBtn');
+            const addVaccinationBtn = document.getElementById('addVaccinationBtn');
+            
+            if (petId) {
+                addLabTestBtn.disabled = false;
+                addVaccinationBtn.disabled = false;
+            } else {
+                addLabTestBtn.disabled = true;
+                addVaccinationBtn.disabled = true;
+            }
+        }
+        
+        // Слушатель изменения питомца
+        petTomSelect.on('change', function(value) {
+            updatePetDependentButtons();
+            
+            const currentPetId = '{{ $item->pet_id }}';
+            
+            // Проверяем, есть ли анализы или вакцинации и изменился ли питомец
+            const labTestItems = document.getElementById('labTestItems');
+            const vaccinationItems = document.getElementById('vaccinationItems');
+            
+            if ((labTestItems.children.length > 0 || vaccinationItems.children.length > 0) && value !== currentPetId) {
+                if (!confirm('Внимание! При смене питомца все добавленные анализы и вакцинации будут удалены. Продолжить?')) {
+                    // Если пользователь отменил, возвращаем предыдущее значение
+                    const previousValue = this.lastValue || currentPetId;
+                    // Временно отключаем слушатель события
+                    petTomSelect.off('change');
+                    this.setValue(previousValue);
+                    // Включаем обратно слушатель события
+                    setTimeout(() => {
+                        petTomSelect.on('change', arguments.callee);
+                    }, 100);
+                    return;
+                }
+            }
+            
+            // Сохраняем текущее значение для следующей проверки
+            this.lastValue = value;
+            updatePetDependentItems();
+        });
+        
+        // Инициализация состояния кнопок
+        updatePetDependentButtons();
+        
+        // Функция для обновления элементов анализов и вакцинаций при смене питомца
+        function updatePetDependentItems() {
+            const petId = petTomSelect.getValue();
+            const currentPetId = '{{ $item->pet_id }}';
+            
+            // Если питомец изменился, очищаем анализы и вакцинации
+            if (petId !== currentPetId) {
+                const labTestItems = document.getElementById('labTestItems');
+                const vaccinationItems = document.getElementById('vaccinationItems');
+                
+                labTestItems.innerHTML = '';
+                vaccinationItems.innerHTML = '';
+                
+                // Пересчитываем общую сумму
+                calculateTotal();
+            }
+        }
+        
+        // Инициализируем lastValue для petTomSelect
+        petTomSelect.lastValue = petTomSelect.getValue();
 
         // Инициализируем TomSelect для существующих элементов заказа
         const existingItems = document.querySelectorAll('.order-item');
@@ -811,6 +888,17 @@
             preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                // Добавляем pet_id для анализов и вакцинаций
+                if (type === 'lab_test' || type === 'vaccination') {
+                    if (petTomSelect && petTomSelect.getValue) {
+                        const petId = petTomSelect.getValue();
+                        if (petId) {
+                            url += '&pet_id=' + petId;
+                        }
+                    }
+                }
+                
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))

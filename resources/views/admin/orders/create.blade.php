@@ -26,7 +26,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="client_id" class="form-label">Клиент</label>
-                            <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror" data-url="{{ route('admin.orders.client-options') }}" required>
+                            <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror" data-url="{{ route('admin.orders.client-options') }}">
                                 @if(old('client_id'))
                                     @php
                                         $selectedClient = \App\Models\User::find(old('client_id'));
@@ -43,7 +43,7 @@
                         
                         <div class="col-md-6">
                             <label for="pet_id" class="form-label">Питомец</label>
-                            <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.orders.pet-options') }}" required>
+                            <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.orders.pet-options') }}">
                                 @if(old('pet_id'))
                                     @php
                                         $selectedPet = \App\Models\Pet::with('client')->find(old('pet_id'));
@@ -60,7 +60,7 @@
                         
                         <div class="col-md-4">
                             <label for="status_id" class="form-label">Статус</label>
-                            <select name="status_id" id="status_id" class="form-select @error('status_id') is-invalid @enderror" data-url="{{ route('admin.orders.status-options') }}" required>
+                            <select name="status_id" id="status_id" class="form-select @error('status_id') is-invalid @enderror" data-url="{{ route('admin.orders.status-options') }}">
                                 @if(old('status_id'))
                                     @php
                                         $selectedStatus = \App\Models\Status::find(old('status_id'));
@@ -84,7 +84,7 @@
                         
                         <div class="col-md-4">
                             <label for="branch_id" class="form-label">Филиал</label>
-                            <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror" data-url="{{ route('admin.orders.branch-options') }}" required>
+                            <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror" data-url="{{ route('admin.orders.branch-options') }}">
                                 @if(old('branch_id'))
                                     @php
                                         $selectedBranch = \App\Models\Branch::find(old('branch_id'));
@@ -101,7 +101,7 @@
                         
                         <div class="col-md-4">
                             <label for="manager_id" class="form-label">Менеджер</label>
-                            <select name="manager_id" id="manager_id" class="form-select @error('manager_id') is-invalid @enderror" data-url="{{ route('admin.orders.manager-options') }}" required>
+                            <select name="manager_id" id="manager_id" class="form-select @error('manager_id') is-invalid @enderror" data-url="{{ route('admin.orders.manager-options') }}">
                                 @if(old('manager_id'))
                                     @php
                                         $selectedManager = \App\Models\Employee::find(old('manager_id'));
@@ -178,7 +178,7 @@
                                 <h6 class="mb-0">Анализы</h6>
                             </div>
                             <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mt-md-0">
-                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addLabTestItem()">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="addLabTestBtn" onclick="addLabTestItem()" disabled>
                                     <i class="bi bi-plus-lg"></i> Добавить анализ
                                 </button>
                             </div>
@@ -196,7 +196,7 @@
                                 <h6 class="mb-0">Вакцинации</h6>
                             </div>
                             <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mt-md-0">
-                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addVaccinationItem()">
+                                <button type="button" class="btn btn-success btn-sm w-100" id="addVaccinationBtn" onclick="addVaccinationItem()" disabled>
                                     <i class="bi bi-plus-lg"></i> Добавить вакцинацию
                                 </button>
                             </div>
@@ -213,7 +213,7 @@
                                 <h5>Итого:</h5>
                                 <h4 class="mb-0" id="totalAmount">0.00 ₽</h4>
                             </div>
-                            <input type="hidden" name="total" id="total" value="0" required>
+                            <input type="hidden" name="total" id="total" value="0">
                         </div>
                     </div>
                 </div>
@@ -240,19 +240,19 @@
         <div class="row g-3">
             <div class="col-12 col-lg-5">
                 <label class="form-label">Услуга</label>
-                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.service-options') }}" required>
+                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.service-options') }}">
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="service">
             </div>
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Кол-во</label>
-                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
+                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999">
             </div>
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
-                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
+                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01">
             </div>
             
             <div class="col-lg-1">
@@ -279,19 +279,19 @@
         <div class="row g-3">
             <div class="col-12 col-lg-5">
                 <label class="form-label">Препарат</label>
-                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.drug-options') }}" required>
+                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.drug-options') }}">
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="drug">
             </div>
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Кол-во</label>
-                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
+                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999">
             </div>
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
-                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
+                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01">
             </div>
             
             <div class="col-lg-1">
@@ -318,19 +318,19 @@
         <div class="row g-3">
             <div class="col-12 col-lg-5">
                 <label class="form-label">Анализ</label>
-                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}" required>
+                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}">
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="lab_test">
             </div>
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Кол-во</label>
-                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
+                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999">
             </div>
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
-                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
+                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01">
             </div>
             
             <div class="col-lg-1">
@@ -357,19 +357,19 @@
         <div class="row g-3">
             <div class="col-12 col-lg-5">
                 <label class="form-label">Вакцинация</label>
-                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}" required>
+                <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}">
                 </select>
                 <input type="hidden" name="items[INDEX][item_type]" value="vaccination">
             </div>
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Кол-во</label>
-                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999" required>
+                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999">
             </div>
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Цена</label>
-                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01" required>
+                <input type="number" name="items[INDEX][unit_price]" class="form-control item-price" value="0" min="0" max="999999.99" step="0.01">
             </div>
             
             <div class="col-lg-1">
@@ -395,13 +395,15 @@
 @push('scripts')
 <script>
     let itemIndex = 0;
+    let petTomSelect; // Глобальная переменная для доступа из других функций
+    
     const itemUrls = {
         service: '{{ route("admin.orders.service-options") }}',
         drug: '{{ route("admin.orders.drug-options") }}',
         lab_test: '{{ route("admin.orders.lab-test-options") }}',
         vaccination: '{{ route("admin.orders.vaccination-options") }}'
     };
-
+    
     document.addEventListener('DOMContentLoaded', function () {
         const clientSelect = document.getElementById('client_id');
         const petSelect = document.getElementById('pet_id');
@@ -429,7 +431,7 @@
             }
         });
 
-        const petTomSelect = new createTomSelect('#pet_id', {
+        petTomSelect = new createTomSelect('#pet_id', {
             placeholder: 'Выберите питомца...',
             valueField: 'value',
             labelField: 'text',
@@ -564,6 +566,70 @@
         if (initialClientId) {
             filterPetsByClient(initialClientId);
         }
+        
+        // Управление кнопками анализов и вакцинаций
+        function updatePetDependentButtons() {
+            const petId = petTomSelect.getValue();
+            const addLabTestBtn = document.getElementById('addLabTestBtn');
+            const addVaccinationBtn = document.getElementById('addVaccinationBtn');
+            
+            if (petId) {
+                addLabTestBtn.disabled = false;
+                addVaccinationBtn.disabled = false;
+            } else {
+                addLabTestBtn.disabled = true;
+                addVaccinationBtn.disabled = true;
+            }
+        }
+        
+        // Слушатель изменения питомца
+        petTomSelect.on('change', function(value) {
+            updatePetDependentButtons();
+            
+            // Проверяем, есть ли анализы или вакцинации
+            const labTestItems = document.getElementById('labTestItems');
+            const vaccinationItems = document.getElementById('vaccinationItems');
+            
+            if ((labTestItems.children.length > 0 || vaccinationItems.children.length > 0) && value) {
+                if (!confirm('Внимание! При смене питомца все добавленные анализы и вакцинации будут удалены. Продолжить?')) {
+                    // Если пользователь отменил, возвращаем предыдущее значение
+                    const previousValue = this.lastValue || '';
+                    // Временно отключаем слушатель события
+                    petTomSelect.off('change');
+                    this.setValue(previousValue);
+                    // Включаем обратно слушатель события
+                    setTimeout(() => {
+                        petTomSelect.on('change', arguments.callee);
+                    }, 100);
+                    return;
+                }
+            }
+            
+            // Сохраняем текущее значение для следующей проверки
+            this.lastValue = value;
+            updatePetDependentItems();
+        });
+        
+        // Инициализация состояния кнопок
+        updatePetDependentButtons();
+        
+        // Функция для обновления элементов анализов и вакцинаций при смене питомца
+        function updatePetDependentItems() {
+            const petId = petTomSelect.getValue();
+            
+            // Очищаем все существующие элементы анализов и вакцинаций
+            const labTestItems = document.getElementById('labTestItems');
+            const vaccinationItems = document.getElementById('vaccinationItems');
+            
+            labTestItems.innerHTML = '';
+            vaccinationItems.innerHTML = '';
+            
+            // Пересчитываем общую сумму
+            calculateTotal();
+        }
+        
+        // Инициализируем lastValue для petTomSelect
+        petTomSelect.lastValue = petTomSelect.getValue();
     });
 
     // Базовый метод для добавления элемента заказа
@@ -636,6 +702,17 @@
             preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                // Добавляем pet_id для анализов и вакцинаций
+                if (type === 'lab_test' || type === 'vaccination') {
+                    if (petTomSelect && petTomSelect.getValue) {
+                        const petId = petTomSelect.getValue();
+                        if (petId) {
+                            url += '&pet_id=' + petId;
+                        }
+                    }
+                }
+                
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))

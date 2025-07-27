@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Order;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\BelongsToClient;
+use App\Rules\CheckDrugQuantity;
 
 class StoreRequest extends FormRequest
 {
@@ -25,7 +26,7 @@ class StoreRequest extends FormRequest
             'items' => 'required|array|min:1',
             'items.*.item_type' => 'required|in:service,drug,lab_test,vaccination',
             'items.*.item_id' => 'required|integer',
-            'items.*.quantity' => 'required|integer|min:1|max:9999',
+            'items.*.quantity' => ['required', 'integer', 'min:1', 'max:9999', new CheckDrugQuantity],
             'items.*.unit_price' => 'required|numeric|min:0|max:999999.99',
         ];
     }
@@ -59,6 +60,7 @@ class StoreRequest extends FormRequest
             'items.*.quantity.integer' => 'Количество должно быть целым числом',
             'items.*.quantity.min' => 'Количество должно быть не менее 1',
             'items.*.quantity.max' => 'Количество не может превышать 9999',
+            'items.*.quantity.check_drug_quantity' => 'Недостаточно препарата на складе',
             'items.*.unit_price.required' => 'Цена за единицу обязательна',
             'items.*.unit_price.numeric' => 'Цена за единицу должна быть числом',
             'items.*.unit_price.min' => 'Цена за единицу не может быть отрицательной',

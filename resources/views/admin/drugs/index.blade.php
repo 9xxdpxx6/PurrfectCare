@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Препараты</h1>
+    <h1 class="h2">Препараты - {{ $items->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.drugs.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить препарат</span>

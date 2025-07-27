@@ -157,14 +157,14 @@
                                             <select name="drugs[0][drug_id]" class="form-select drug-select w-100" data-url="{{ route('admin.vaccinations.drug-options') }}">
                                             </select>
                                         </div>
-                                        <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
-                                            <label class="form-label">Дозировка</label>
-                                            <div class="input-group">
-                                                <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[0][dosage]" class="form-control">
-                                                <span class="input-group-text dosage-unit" data-drug-index="0">у.е.</span>
+                                                                                    <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
+                                                <label class="form-label">Дозировка</label>
+                                                <div class="input-group">
+                                                    <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[0][dosage]" class="form-control" value="1">
+                                                    <span class="input-group-text dosage-unit" data-drug-index="0">у.е.</span>
+                                                </div>
+                                                <input type="hidden" name="drugs[0][batch_number]" value="">
                                             </div>
-                                            <input type="hidden" name="drugs[0][batch_number]" value="">
-                                        </div>
                                         <div class="col-4 col-md-6 col-lg-auto d-flex justify-content-end align-items-center" style="min-width:48px;">
                                             <button type="button" class="btn btn-outline-danger remove-drug ms-md-2">
                                                 <i class="bi bi-trash"></i>
@@ -324,7 +324,7 @@
                     <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
                         <label class="form-label">Дозировка</label>
                         <div class="input-group">
-                            <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[${drugIndex}][dosage]" class="form-control">
+                            <input type="number" step="0.01" min="0.01" max="9999.99" name="drugs[${drugIndex}][dosage]" class="form-control" value="1">
                             <span class="input-group-text dosage-unit" data-drug-index="${drugIndex}">у.е.</span>
                         </div>
                         <input type="hidden" name="drugs[${drugIndex}][batch_number]" value="">
