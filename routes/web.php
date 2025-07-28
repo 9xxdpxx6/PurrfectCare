@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\DrugProcurementController;
+use App\Http\Controllers\Admin\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -112,6 +113,77 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     Route::post('schedules-week', [ScheduleController::class, 'storeWeek'])->name('schedules.store-week');
     
     Route::get('vaccinations/{vaccination}/drugs', [VaccinationController::class, 'getDrugs'])->name('vaccinations.drugs');
+    
+    // Настройки
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        
+        // Lab Test Types
+        Route::get('/lab-test-types', [SettingsController::class, 'labTestTypes'])->name('lab-test-types');
+        Route::post('/lab-test-types', [SettingsController::class, 'storeLabTestType'])->name('lab-test-types.store');
+        Route::put('/lab-test-types/{labTestType}', [SettingsController::class, 'updateLabTestType'])->name('lab-test-types.update');
+        Route::delete('/lab-test-types/{labTestType}', [SettingsController::class, 'destroyLabTestType'])->name('lab-test-types.destroy');
+        
+        // Lab Test Params
+        Route::get('/lab-test-params', [SettingsController::class, 'labTestParams'])->name('lab-test-params');
+        Route::post('/lab-test-params', [SettingsController::class, 'storeLabTestParam'])->name('lab-test-params.store');
+        Route::put('/lab-test-params/{labTestParam}', [SettingsController::class, 'updateLabTestParam'])->name('lab-test-params.update');
+        Route::delete('/lab-test-params/{labTestParam}', [SettingsController::class, 'destroyLabTestParam'])->name('lab-test-params.destroy');
+        
+        // Statuses
+        Route::get('/statuses', [SettingsController::class, 'statuses'])->name('statuses');
+        Route::post('/statuses', [SettingsController::class, 'storeStatus'])->name('statuses.store');
+        Route::put('/statuses/{status}', [SettingsController::class, 'updateStatus'])->name('statuses.update');
+        Route::delete('/statuses/{status}', [SettingsController::class, 'destroyStatus'])->name('statuses.destroy');
+        
+        // Units
+        Route::get('/units', [SettingsController::class, 'units'])->name('units');
+        Route::post('/units', [SettingsController::class, 'storeUnit'])->name('units.store');
+        Route::put('/units/{unit}', [SettingsController::class, 'updateUnit'])->name('units.update');
+        Route::delete('/units/{unit}', [SettingsController::class, 'destroyUnit'])->name('units.destroy');
+        
+        // Branches
+        Route::get('/branches', [SettingsController::class, 'branches'])->name('branches');
+        Route::post('/branches', [SettingsController::class, 'storeBranch'])->name('branches.store');
+        Route::put('/branches/{branch}', [SettingsController::class, 'updateBranch'])->name('branches.update');
+        Route::delete('/branches/{branch}', [SettingsController::class, 'destroyBranch'])->name('branches.destroy');
+        
+        // Specialties
+        Route::get('/specialties', [SettingsController::class, 'specialties'])->name('specialties');
+        Route::post('/specialties', [SettingsController::class, 'storeSpecialty'])->name('specialties.store');
+        Route::put('/specialties/{specialty}', [SettingsController::class, 'updateSpecialty'])->name('specialties.update');
+        Route::delete('/specialties/{specialty}', [SettingsController::class, 'destroySpecialty'])->name('specialties.destroy');
+        
+        // Species
+        Route::get('/species', [SettingsController::class, 'species'])->name('species');
+        Route::post('/species', [SettingsController::class, 'storeSpecies'])->name('species.store');
+        Route::put('/species/{species}', [SettingsController::class, 'updateSpecies'])->name('species.update');
+        Route::delete('/species/{species}', [SettingsController::class, 'destroySpecies'])->name('species.destroy');
+        
+        // Breeds
+        Route::get('/breeds', [SettingsController::class, 'breeds'])->name('breeds');
+        Route::post('/breeds', [SettingsController::class, 'storeBreed'])->name('breeds.store');
+        Route::put('/breeds/{breed}', [SettingsController::class, 'updateBreed'])->name('breeds.update');
+        Route::delete('/breeds/{breed}', [SettingsController::class, 'destroyBreed'])->name('breeds.destroy');
+        
+        // Suppliers
+        Route::get('/suppliers', [SettingsController::class, 'suppliers'])->name('suppliers');
+        Route::post('/suppliers', [SettingsController::class, 'storeSupplier'])->name('suppliers.store');
+        Route::put('/suppliers/{supplier}', [SettingsController::class, 'updateSupplier'])->name('suppliers.update');
+        Route::delete('/suppliers/{supplier}', [SettingsController::class, 'destroySupplier'])->name('suppliers.destroy');
+        
+        // Dictionary Diagnoses
+        Route::get('/dictionary-diagnoses', [SettingsController::class, 'dictionaryDiagnoses'])->name('dictionary-diagnoses');
+        Route::post('/dictionary-diagnoses', [SettingsController::class, 'storeDictionaryDiagnosis'])->name('dictionary-diagnoses.store');
+        Route::put('/dictionary-diagnoses/{dictionaryDiagnosis}', [SettingsController::class, 'updateDictionaryDiagnosis'])->name('dictionary-diagnoses.update');
+        Route::delete('/dictionary-diagnoses/{dictionaryDiagnosis}', [SettingsController::class, 'destroyDictionaryDiagnosis'])->name('dictionary-diagnoses.destroy');
+        
+        // Dictionary Symptoms
+        Route::get('/dictionary-symptoms', [SettingsController::class, 'dictionarySymptoms'])->name('dictionary-symptoms');
+        Route::post('/dictionary-symptoms', [SettingsController::class, 'storeDictionarySymptom'])->name('dictionary-symptoms.store');
+        Route::put('/dictionary-symptoms/{dictionarySymptom}', [SettingsController::class, 'updateDictionarySymptom'])->name('dictionary-symptoms.update');
+        Route::delete('/dictionary-symptoms/{dictionarySymptom}', [SettingsController::class, 'destroyDictionarySymptom'])->name('dictionary-symptoms.destroy');
+    });
 });
 
 //Route::middleware('auth')->group(function() {
