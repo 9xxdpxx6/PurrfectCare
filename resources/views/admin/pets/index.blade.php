@@ -82,11 +82,11 @@
                             <div class="text-muted">
                                 <span>Пол:</span>
                                 @if($pet->gender === 'male')
-                                    Самец <i class="bi bi-gender-male"></i>
+                                    Самец <i class="bi bi-gender-male text-muted"></i>
                                 @elseif($pet->gender === 'female')
-                                    Самка <i class="bi bi-gender-female"></i>
+                                    Самка <i class="bi bi-gender-female text-muted"></i>
                                 @else
-                                    Неизвестно
+                                    Неизвестно <i class="bi bi-gender-ambiguous text-muted"></i>
                                 @endif
                             </div>
                         </div>

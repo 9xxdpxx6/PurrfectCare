@@ -52,14 +52,90 @@
 
         <!-- Аккордеон активности -->
         <div class="accordion mb-4" id="activityAccordion">
+            <!-- Приёмы -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#visitsCollapse" aria-expanded="true" aria-controls="visitsCollapse">
+                        <i class="bi bi-calendar-check me-2"></i> Приёмы ({{ $visitsTotal }})
+                    </button>
+                </h2>
+                <div id="visitsCollapse" class="accordion-collapse collapse show">
+                    <div class="accordion-body">
+                        @if($visits->count() > 0)
+                            <div class="d-flex flex-column gap-3">
+                                @foreach($visits as $visit)
+                                    <div class="border rounded p-3 bg-body-tertiary">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex flex-column flex-md-row align-items-md-center gap-md-3">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1">Приём #{{ $visit->id }}</h6>
+                                                        <p class="text-muted small mb-2">
+                                                            @if($visit->schedule && $visit->schedule->shift_starts_at)
+                                                                {{ $visit->schedule->shift_starts_at->format('d.m.Y H:i') }}
+                                                            @else
+                                                                {{ $visit->created_at->format('d.m.Y H:i') }}
+                                                            @endif
+                                                        </p>
+                                                        
+                                                        @if($visit->pet)
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="bi bi-paw"></i> {{ $visit->pet->name }}
+                                                            </p>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    <div class="d-flex flex-column gap-1">
+                                                        @if($visit->schedule && $visit->schedule->employee)
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="bi bi-person"></i> {{ $visit->schedule->employee->name }}
+                                                                @if($visit->schedule->employee->specialties->count() > 0)
+                                                                    <span class="text-muted">({{ $visit->schedule->employee->specialties->first()->name }})</span>
+                                                                @endif
+                                                            </p>
+                                                        @endif
+                                                        
+                                                        @if($visit->status)
+                                                            <div class="d-flex h-100 align-items-center">
+                                                                <span class="badge" style="background-color: {{ $visit->status->color }}; color: white;">
+                                                                    {{ $visit->status->name }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="align-self-center d-none d-md-block ms-3">
+                                                <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <!-- Кнопка на всю ширину для маленьких экранов -->
+                                        <div class="d-md-none mt-2">
+                                            <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-eye"></i> Подробнее
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted mb-0">Приёмы не найдены</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
             <!-- Питомцы -->
             <div class="accordion-item">
                 <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#petsCollapse" aria-expanded="true" aria-controls="petsCollapse">
-                        <i class="bi bi-paw me-2"></i> Питомцы ({{ $petsTotal }})
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#petsCollapse" aria-expanded="false" aria-controls="petsCollapse">
+                        <i class="bi bi-heart me-2"></i> Питомцы ({{ $petsTotal }})
                     </button>
                 </h2>
-                <div id="petsCollapse" class="accordion-collapse collapse show">
+                <div id="petsCollapse" class="accordion-collapse collapse">
                     <div class="accordion-body">
                         @if($pets->count() > 0)
                             <div class="d-flex flex-column gap-3">
@@ -67,20 +143,45 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <h6 class="mb-1">{{ $pet->name }}</h6>
-                                                <p class="text-muted small mb-0">
-                                                    {{ $pet->breed->name ?? '—' }}
-                                                    @if($pet->breed && $pet->breed->species)
-                                                        ({{ $pet->breed->species->name }})
-                                                    @endif
-                                                </p>
+                                                <div class="d-flex flex-column flex-md-row align-items-md-center gap-md-3">
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <h6 class="mb-0">{{ $pet->name }}</h6>
+                                                            @if($pet->gender === 'male')
+                                                                <i class="bi bi-gender-male text-muted"></i>
+                                                            @elseif($pet->gender === 'female')
+                                                                <i class="bi bi-gender-female text-muted"></i>
+                                                            @else
+                                                                <i class="bi bi-gender-ambiguous text-muted"></i>
+                                                            @endif
+                                                        </div>
+                                                        <p class="text-muted small mb-2">
+                                                            {{ $pet->birthdate ? $pet->birthdate->format('d.m.Y') : '—' }}
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex flex-column gap-1">
+                                                        <p class="text-muted small mb-0">
+                                                            {{ $pet->breed->name ?? '—' }}
+                                                            @if($pet->breed && $pet->breed->species)
+                                                                <span class="text-muted">({{ $pet->breed->species->name }})</span>
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                             
-                                            <div class="align-self-center">
+                                            <div class="align-self-center d-none d-md-block ms-3">
                                                 <a href="{{ route('admin.pets.show', $pet) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
+                                        </div>
+                                        <!-- Кнопка на всю ширину для маленьких экранов -->
+                                        <div class="d-md-none mt-2">
+                                            <a href="{{ route('admin.pets.show', $pet) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-eye"></i> Подробнее
+                                            </a>
                                         </div>
                                     </div>
                                 @endforeach
@@ -107,85 +208,60 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <h6 class="mb-1">Заказ #{{ $order->id }}</h6>
-                                                <p class="text-muted small mb-2">{{ $order->created_at->format('d.m.Y') }}</p>
-                                                
-                                                @if($order->pet)
-                                                    <div class="mb-2">
-                                                        <small class="text-muted">Питомец:</small>
-                                                        <span>{{ $order->pet->name }}</span>
+                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <h6 class="mb-0">Заказ #{{ $order->id }}</h6>
+                                                            @if($order->is_paid)
+                                                                <i class="bi bi-check-all text-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Оплачен"></i>
+                                                            @else
+                                                                <i class="bi bi-cash text-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Не оплачен"></i>
+                                                            @endif
+                                                        </div>
+                                                        <p class="text-muted small mb-0">{{ $order->created_at->format('d.m.Y') }}</p>
+                                                        
+                                                        @if($order->branch)
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="bi bi-building"></i> {{ $order->branch->name }}
+                                                            </p>
+                                                        @endif
                                                     </div>
-                                                @endif
-                                                
-                                                @if($order->total_amount)
-                                                    <div>
-                                                        <span class="badge bg-success">
-                                                            {{ number_format($order->total_amount, 2, ',', ' ') }} ₽
-                                                        </span>
+                                                    
+                                                    <div class="d-flex flex-column gap-1">
+                                                        @if($order->total)
+                                                            <div>
+                                                                <strong>{{ number_format($order->total, 2, ',', ' ') }} ₽</strong>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if($order->status)
+                                                            <div>
+                                                                <span class="badge" style="background-color: {{ $order->status->color }}; color: white;">
+                                                                    {{ $order->status->name }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
                                                     </div>
-                                                @endif
+                                                </div>
                                             </div>
                                             
-                                            <div class="align-self-center">
+                                            <div class="align-self-center d-none d-md-block ms-3">
                                                 <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
+                                        </div>
+                                        <!-- Кнопка на всю ширину для маленьких экранов -->
+                                        <div class="d-md-none mt-2">
+                                            <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-eye"></i> Подробнее
+                                            </a>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                         @else
                             <p class="text-muted mb-0">Заказы не найдены</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Приёмы -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#visitsCollapse" aria-expanded="false" aria-controls="visitsCollapse">
-                        <i class="bi bi-calendar-check me-2"></i> Приёмы ({{ $visitsTotal }})
-                    </button>
-                </h2>
-                <div id="visitsCollapse" class="accordion-collapse collapse">
-                    <div class="accordion-body">
-                        @if($visits->count() > 0)
-                            <div class="d-flex flex-column gap-3">
-                                @foreach($visits as $visit)
-                                    <div class="border rounded p-3 bg-body-tertiary">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1">Приём #{{ $visit->id }}</h6>
-                                                <p class="text-muted small mb-2">{{ $visit->created_at->format('d.m.Y') }}</p>
-                                                
-                                                @if($visit->pet)
-                                                    <div class="mb-2">
-                                                        <small class="text-muted">Питомец:</small>
-                                                        <span>{{ $visit->pet->name }}</span>
-                                                    </div>
-                                                @endif
-                                                
-                                                @if($visit->schedule && $visit->schedule->employee)
-                                                    <div>
-                                                        <small class="text-muted">Ветеринар:</small>
-                                                        <span>{{ $visit->schedule->employee->name }}</span>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            
-                                            <div class="align-self-center">
-                                                <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm">
-                                                    <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="text-muted mb-0">Приёмы не найдены</p>
                         @endif
                     </div>
                 </div>
@@ -217,7 +293,7 @@
                 @if($orders->count() > 0)
                     <div class="d-flex justify-content-between mb-2">
                         <span>Общая сумма заказов:</span>
-                        <strong>{{ number_format($orders->sum('total_amount'), 2, ',', ' ') }} ₽</strong>
+                        <strong>{{ number_format($orders->sum('total'), 2, ',', ' ') }} ₽</strong>
                     </div>
                 @endif
                 @if($visits->count() > 0 || $orders->count() > 0)
@@ -273,4 +349,16 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script>
+    // Инициализация Bootstrap tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+@endpush 

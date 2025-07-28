@@ -102,17 +102,40 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <h6 class="mb-1">Приём #{{ $visit->id }}</h6>
-                                                <p class="text-muted small mb-2">{{ $visit->created_at->format('d.m.Y') }}</p>
-                                                
-                                                @if($visit->schedule && $visit->schedule->employee)
-                                                    <p class="text-muted small mb-0">
-                                                        Ветеринар: {{ $visit->schedule->employee->name }}
-                                                    </p>
-                                                @endif
+                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1">Приём #{{ $visit->id }}</h6>
+                                                        <p class="text-muted small mb-2">
+                                                            @if($visit->schedule && $visit->schedule->shift_starts_at)
+                                                                {{ $visit->schedule->shift_starts_at->format('d.m.Y H:i') }}
+                                                            @else
+                                                                {{ $visit->created_at->format('d.m.Y H:i') }}
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex flex-column gap-1">
+                                                        @if($visit->schedule && $visit->schedule->employee)
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="bi bi-person"></i> {{ $visit->schedule->employee->name }}
+                                                                @if($visit->schedule->employee->specialties->count() > 0)
+                                                                    <span class="text-muted">({{ $visit->schedule->employee->specialties->first()->name }})</span>
+                                                                @endif
+                                                            </p>
+                                                        @endif
+                                                        
+                                                        @if($visit->status)
+                                                            <div>
+                                                                <span class="badge" style="background-color: {{ $visit->status->color }}; color: white;">
+                                                                    {{ $visit->status->name }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
                                             
-                                            <div class="align-self-center d-none d-md-block">
+                                            <div class="align-self-center d-none d-md-block ms-3">
                                                 <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
@@ -149,17 +172,26 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <h6 class="mb-1">Вакцинация #{{ $vaccination->id }}</h6>
-                                                <p class="text-muted small mb-2">{{ $vaccination->administered_at->format('d.m.Y') }}</p>
-                                                
-                                                @if($vaccination->veterinarian)
-                                                    <p class="text-muted small mb-2">
-                                                        Ветеринар: {{ $vaccination->veterinarian->name }}
-                                                    </p>
-                                                @endif
+                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1">Вакцинация #{{ $vaccination->id }}</h6>
+                                                        <p class="text-muted small mb-2">{{ $vaccination->administered_at->format('d.m.Y') }}</p>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex flex-column gap-1">
+                                                        @if($vaccination->veterinarian)
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="bi bi-person"></i> {{ $vaccination->veterinarian->name }}
+                                                                @if($vaccination->veterinarian->specialties->count() > 0)
+                                                                    <span class="text-muted">({{ $vaccination->veterinarian->specialties->first()->name }})</span>
+                                                                @endif
+                                                            </p>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
                                             
-                                            <div class="align-self-center d-none d-md-block">
+                                            <div class="align-self-center d-none d-md-block ms-3">
                                                 <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
@@ -196,22 +228,36 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <h6 class="mb-1">Анализ #{{ $labTest->id }}</h6>
-                                                <p class="text-muted small mb-2">{{ $labTest->created_at->format('d.m.Y') }}</p>
-                                                
-                                                @if($labTest->veterinarian)
-                                                    <p class="text-muted small mb-2">
-                                                        Ветеринар: {{ $labTest->veterinarian->name }}
-                                                    </p>
-                                                @endif
-                                                
-                                                <div>
-                                                    <small class="text-muted">Тип:</small>
-                                                    <span class="fw-bold">{{ $labTest->labTestType->name ?? 'Не указан' }}</span>
+                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1">Анализ #{{ $labTest->id }}</h6>
+                                                        <p class="text-muted small mb-2">
+                                                            Получен: {{ $labTest->created_at->format('d.m.Y') }}
+                                                            @if($labTest->completed_at)
+                                                                <br><span class="text-success">Завершён: {{ $labTest->completed_at->format('d.m.Y') }}</span>
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex flex-column gap-1">
+                                                        @if($labTest->veterinarian)
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="bi bi-person"></i> {{ $labTest->veterinarian->name }}
+                                                                @if($labTest->veterinarian->specialties->count() > 0)
+                                                                    <span class="text-muted">({{ $labTest->veterinarian->specialties->first()->name }})</span>
+                                                                @endif
+                                                            </p>
+                                                        @endif
+                                                        
+                                                        <div>
+                                                            <small class="text-muted">Тип:</small>
+                                                            <span class="fw-bold">{{ $labTest->labTestType->name ?? 'Не указан' }}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             
-                                            <div class="align-self-center d-none d-md-block">
+                                            <div class="align-self-center d-none d-md-block ms-3">
                                                 <a href="{{ route('admin.lab-tests.show', $labTest) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
@@ -248,19 +294,44 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <h6 class="mb-1">Заказ #{{ $order->id }}</h6>
-                                                <p class="text-muted small mb-2">{{ $order->created_at->format('d.m.Y') }}</p>
-                                                
-                                                @if($order->total_amount)
-                                                    <div>
-                                                        <span class="badge bg-success">
-                                                            {{ number_format($order->total_amount, 2, ',', ' ') }} ₽
-                                                        </span>
+                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <h6 class="mb-0">Заказ #{{ $order->id }}</h6>
+                                                            @if($order->is_paid)
+                                                                <i class="bi bi-check-all text-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Оплачен"></i>
+                                                            @else
+                                                                <i class="bi bi-cash text-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Не оплачен"></i>
+                                                            @endif
+                                                        </div>
+                                                        <p class="text-muted small mb-0">{{ $order->created_at->format('d.m.Y') }}</p>
+                                                        
+                                                        @if($order->branch)
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="bi bi-building"></i> {{ $order->branch->name }}
+                                                            </p>
+                                                        @endif
                                                     </div>
-                                                @endif
+                                                    
+                                                    <div class="d-flex flex-column gap-1">
+                                                        @if($order->total)
+                                                            <div>
+                                                                <strong>{{ number_format($order->total, 2, ',', ' ') }} ₽</strong>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if($order->status)
+                                                            <div>
+                                                                <span class="badge" style="background-color: {{ $order->status->color }}; color: white;">
+                                                                    {{ $order->status->name }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
                                             
-                                            <div class="align-self-center d-none d-md-block">
+                                            <div class="align-self-center d-none d-md-block ms-3">
                                                 <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
@@ -312,8 +383,8 @@
                 @if($orders->count() > 0)
                     <div class="d-flex justify-content-between mb-2">
                         <span>Общая сумма заказов:</span>
-                        <strong>{{ number_format($orders->sum('total_amount'), 2, ',', ' ') }} ₽</strong>
-            </div>
+                        <strong>{{ number_format($orders->sum('total'), 2, ',', ' ') }} ₽</strong>
+                    </div>
                 @endif
                                 @if($pet->birthdate)
                     <div class="d-flex justify-content-between mb-2">
@@ -391,4 +462,16 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script>
+    // Инициализация Bootstrap tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+@endpush 

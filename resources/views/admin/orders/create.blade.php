@@ -116,9 +116,8 @@
                             @enderror
                         </div>
                         
-                        <div class="col-md-4">
-                            <label class="form-label">Статус заказа</label>
-                            <div class="d-flex gap-3">
+                        <div class="col-lg-8">
+                            <div class="d-flex justify-content-between gap-3">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="is_paid" id="is_paid" value="1" {{ old('is_paid') ? 'checked' : '' }}>
                                     <label class="form-check-label" for="is_paid">
