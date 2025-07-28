@@ -65,15 +65,14 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label small text-muted">Описание</label>
-                                    <input type="text" class="form-control" value="{{ $labTestType->description }}" 
-                                           data-field="description" onchange="markAsChanged(this)">
+                                    <textarea class="form-control" rows="4" data-field="description" onchange="markAsChanged(this)">{{ $labTestType->description }}</textarea>
                                 </div>
                                 <div class="col-6">
                                     <label class="form-label small text-muted">Цена</label>
                                     <input type="number" step="0.01" class="form-control" value="{{ $labTestType->price }}" 
                                            data-field="price" onchange="markAsChanged(this)">
                                 </div>
-                                <div class="col-6 d-flex align-items-end">
+                                <div class="col-6 d-flex align-items-end text-nowrap">
                                     <button type="button" class="btn btn-outline-danger w-100" onclick="deleteRow({{ $labTestType->id }})">
                                         <i class="bi bi-trash"></i> Удалить
                                     </button>
