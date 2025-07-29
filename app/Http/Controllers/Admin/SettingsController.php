@@ -14,6 +14,17 @@ use App\Models\Breed;
 use App\Models\Supplier;
 use App\Models\DictionaryDiagnosis;
 use App\Models\DictionarySymptom;
+use App\Http\Filters\Settings\LabTestTypeFilter;
+use App\Http\Filters\Settings\LabTestParamFilter;
+use App\Http\Filters\Settings\StatusFilter;
+use App\Http\Filters\Settings\UnitFilter;
+use App\Http\Filters\Settings\BranchFilter;
+use App\Http\Filters\Settings\SpecialtyFilter;
+use App\Http\Filters\Settings\SpeciesFilter;
+use App\Http\Filters\Settings\BreedFilter;
+use App\Http\Filters\Settings\SupplierFilter;
+use App\Http\Filters\Settings\DictionaryDiagnosisFilter;
+use App\Http\Filters\Settings\DictionarySymptomFilter;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -27,7 +38,7 @@ class SettingsController extends Controller
     // Lab Test Types
     public function labTestTypes()
     {
-        $labTestTypes = LabTestType::orderBy('name')->get();
+        $labTestTypes = LabTestType::filter(new LabTestTypeFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.lab-test-types', compact('labTestTypes'));
     }
 
@@ -41,7 +52,7 @@ class SettingsController extends Controller
 
         $labTestType->update($request->only(['name', 'description', 'price']));
 
-        return response()->json(['success' => true, 'message' => 'Тип анализа обновлен']);
+        return response()->json(['success' => true]);
     }
 
     public function storeLabTestType(Request $request)
@@ -55,7 +66,7 @@ class SettingsController extends Controller
 
             LabTestType::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Тип анализа создан']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -73,13 +84,13 @@ class SettingsController extends Controller
     public function destroyLabTestType(LabTestType $labTestType)
     {
         $labTestType->delete();
-        return response()->json(['success' => true, 'message' => 'Тип анализа удален']);
+        return response()->json(['success' => true]);
     }
 
     // Lab Test Params
     public function labTestParams()
     {
-        $labTestParams = LabTestParam::with(['labTestType', 'unit'])->orderBy('name')->get();
+        $labTestParams = LabTestParam::with(['labTestType', 'unit'])->filter(new LabTestParamFilter(request()->all()))->orderByDesc('id')->paginate(20);
         $labTestTypes = LabTestType::orderBy('name')->get();
         $units = Unit::orderBy('name')->get();
         return view('admin.settings.lab-test-params', compact('labTestParams', 'labTestTypes', 'units'));
@@ -97,7 +108,7 @@ class SettingsController extends Controller
 
             $labTestParam->update($validated);
 
-            return response()->json(['success' => true, 'message' => 'Параметр анализа обновлен']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -116,7 +127,7 @@ class SettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
+                'name' => 'required|string|max:255|unique:lab_test_params',
                 'description' => 'nullable|string',
                 'lab_test_type_id' => 'required|exists:lab_test_types,id',
                 'unit_id' => 'nullable|exists:units,id',
@@ -124,7 +135,7 @@ class SettingsController extends Controller
 
             LabTestParam::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Параметр анализа создан']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -142,13 +153,13 @@ class SettingsController extends Controller
     public function destroyLabTestParam(LabTestParam $labTestParam)
     {
         $labTestParam->delete();
-        return response()->json(['success' => true, 'message' => 'Параметр анализа удален']);
+        return response()->json(['success' => true]);
     }
 
     // Statuses
     public function statuses()
     {
-        $statuses = Status::orderBy('name')->get();
+        $statuses = Status::filter(new StatusFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.statuses', compact('statuses'));
     }
 
@@ -161,7 +172,7 @@ class SettingsController extends Controller
 
         $status->update($request->only(['name', 'color']));
 
-        return response()->json(['success' => true, 'message' => 'Статус обновлен']);
+        return response()->json(['success' => true]);
     }
 
     public function storeStatus(Request $request)
@@ -174,7 +185,7 @@ class SettingsController extends Controller
 
             Status::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Статус создан']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -192,13 +203,13 @@ class SettingsController extends Controller
     public function destroyStatus(Status $status)
     {
         $status->delete();
-        return response()->json(['success' => true, 'message' => 'Статус удален']);
+        return response()->json(['success' => true]);
     }
 
     // Units
     public function units()
     {
-        $units = Unit::orderBy('name')->get();
+        $units = Unit::filter(new UnitFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.units', compact('units'));
     }
 
@@ -206,13 +217,13 @@ class SettingsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:units,name,' . $unit->id,
-                'short_name' => 'required|string|max:10|unique:units,short_name,' . $unit->id,
+                'name' => 'required|string|max:255',
+                'short_name' => 'required|string|max:10',
             ]);
 
             $unit->update($validated);
 
-            return response()->json(['success' => true, 'message' => 'Единица измерения обновлена']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -237,7 +248,7 @@ class SettingsController extends Controller
 
             Unit::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Единица измерения создана']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -255,13 +266,13 @@ class SettingsController extends Controller
     public function destroyUnit(Unit $unit)
     {
         $unit->delete();
-        return response()->json(['success' => true, 'message' => 'Единица измерения удалена']);
+        return response()->json(['success' => true]);
     }
 
     // Branches
     public function branches()
     {
-        $branches = Branch::orderBy('name')->get();
+        $branches = Branch::filter(new BranchFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.branches', compact('branches'));
     }
 
@@ -270,12 +281,12 @@ class SettingsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:500',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'required|string|max:20',
         ]);
 
         $branch->update($request->only(['name', 'address', 'phone']));
 
-        return response()->json(['success' => true, 'message' => 'Филиал обновлен']);
+        return response()->json(['success' => true]);
     }
 
     public function storeBranch(Request $request)
@@ -284,12 +295,12 @@ class SettingsController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:branches',
                 'address' => 'required|string|max:500',
-                'phone' => 'nullable|string|max:20',
+                'phone' => 'required|string|max:20',
             ]);
 
             Branch::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Филиал создан']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -307,13 +318,13 @@ class SettingsController extends Controller
     public function destroyBranch(Branch $branch)
     {
         $branch->delete();
-        return response()->json(['success' => true, 'message' => 'Филиал удален']);
+        return response()->json(['success' => true]);
     }
 
     // Specialties
     public function specialties()
     {
-        $specialties = Specialty::orderBy('name')->get();
+        $specialties = Specialty::filter(new SpecialtyFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.specialties', compact('specialties'));
     }
 
@@ -326,7 +337,7 @@ class SettingsController extends Controller
 
         $specialty->update($request->only(['name', 'description']));
 
-        return response()->json(['success' => true, 'message' => 'Специальность обновлена']);
+        return response()->json(['success' => true]);
     }
 
     public function storeSpecialty(Request $request)
@@ -339,7 +350,7 @@ class SettingsController extends Controller
 
             Specialty::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Специальность создана']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -357,13 +368,13 @@ class SettingsController extends Controller
     public function destroySpecialty(Specialty $specialty)
     {
         $specialty->delete();
-        return response()->json(['success' => true, 'message' => 'Специальность удалена']);
+        return response()->json(['success' => true]);
     }
 
     // Species
     public function species()
     {
-        $species = Species::orderBy('name')->get();
+        $species = Species::filter(new SpeciesFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.species', compact('species'));
     }
 
@@ -376,7 +387,7 @@ class SettingsController extends Controller
 
         $species->update($request->only(['name', 'description']));
 
-        return response()->json(['success' => true, 'message' => 'Вид животного обновлен']);
+        return response()->json(['success' => true]);
     }
 
     public function storeSpecies(Request $request)
@@ -389,7 +400,7 @@ class SettingsController extends Controller
 
             Species::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Вид животного создан']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -407,13 +418,13 @@ class SettingsController extends Controller
     public function destroySpecies(Species $species)
     {
         $species->delete();
-        return response()->json(['success' => true, 'message' => 'Вид животного удален']);
+        return response()->json(['success' => true]);
     }
 
     // Breeds
     public function breeds()
     {
-        $breeds = Breed::with('species')->orderBy('name')->get();
+        $breeds = Breed::with('species')->filter(new BreedFilter(request()->all()))->orderByDesc('id')->paginate(20);
         $species = Species::orderBy('name')->get();
         return view('admin.settings.breeds', compact('breeds', 'species'));
     }
@@ -422,13 +433,13 @@ class SettingsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'species_id' => 'required|exists:species,id',
             'description' => 'nullable|string',
+            'species_id' => 'required|exists:species,id',
         ]);
 
-        $breed->update($request->only(['name', 'species_id', 'description']));
+        $breed->update($request->only(['name', 'description', 'species_id']));
 
-        return response()->json(['success' => true, 'message' => 'Порода обновлена']);
+        return response()->json(['success' => true]);
     }
 
     public function storeBreed(Request $request)
@@ -442,7 +453,7 @@ class SettingsController extends Controller
 
             Breed::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Порода создана']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -460,13 +471,13 @@ class SettingsController extends Controller
     public function destroyBreed(Breed $breed)
     {
         $breed->delete();
-        return response()->json(['success' => true, 'message' => 'Порода удалена']);
+        return response()->json(['success' => true]);
     }
 
     // Suppliers
     public function suppliers()
     {
-        $suppliers = Supplier::orderBy('name')->get();
+        $suppliers = Supplier::filter(new SupplierFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.suppliers', compact('suppliers'));
     }
 
@@ -482,7 +493,7 @@ class SettingsController extends Controller
 
         $supplier->update($request->only(['name', 'contact_person', 'phone', 'email', 'address']));
 
-        return response()->json(['success' => true, 'message' => 'Поставщик обновлен']);
+        return response()->json(['success' => true]);
     }
 
     public function storeSupplier(Request $request)
@@ -498,7 +509,7 @@ class SettingsController extends Controller
 
             Supplier::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Поставщик создан']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -516,13 +527,13 @@ class SettingsController extends Controller
     public function destroySupplier(Supplier $supplier)
     {
         $supplier->delete();
-        return response()->json(['success' => true, 'message' => 'Поставщик удален']);
+        return response()->json(['success' => true]);
     }
 
     // Dictionary Diagnoses
     public function dictionaryDiagnoses()
     {
-        $dictionaryDiagnoses = DictionaryDiagnosis::orderBy('name')->get();
+        $dictionaryDiagnoses = DictionaryDiagnosis::filter(new DictionaryDiagnosisFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.dictionary-diagnoses', compact('dictionaryDiagnoses'));
     }
 
@@ -535,7 +546,7 @@ class SettingsController extends Controller
 
         $dictionaryDiagnosis->update($request->only(['name', 'description']));
 
-        return response()->json(['success' => true, 'message' => 'Диагноз обновлен']);
+        return response()->json(['success' => true]);
     }
 
     public function storeDictionaryDiagnosis(Request $request)
@@ -548,7 +559,7 @@ class SettingsController extends Controller
 
             DictionaryDiagnosis::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Диагноз создан']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -566,13 +577,13 @@ class SettingsController extends Controller
     public function destroyDictionaryDiagnosis(DictionaryDiagnosis $dictionaryDiagnosis)
     {
         $dictionaryDiagnosis->delete();
-        return response()->json(['success' => true, 'message' => 'Диагноз удален']);
+        return response()->json(['success' => true]);
     }
 
     // Dictionary Symptoms
     public function dictionarySymptoms()
     {
-        $dictionarySymptoms = DictionarySymptom::orderBy('name')->get();
+        $dictionarySymptoms = DictionarySymptom::filter(new DictionarySymptomFilter(request()->all()))->orderByDesc('id')->paginate(20);
         return view('admin.settings.dictionary-symptoms', compact('dictionarySymptoms'));
     }
 
@@ -585,7 +596,7 @@ class SettingsController extends Controller
 
         $dictionarySymptom->update($request->only(['name', 'description']));
 
-        return response()->json(['success' => true, 'message' => 'Симптом обновлен']);
+        return response()->json(['success' => true]);
     }
 
     public function storeDictionarySymptom(Request $request)
@@ -598,7 +609,7 @@ class SettingsController extends Controller
 
             DictionarySymptom::create($validated);
 
-            return response()->json(['success' => true, 'message' => 'Симптом создан']);
+            return response()->json(['success' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -616,6 +627,6 @@ class SettingsController extends Controller
     public function destroyDictionarySymptom(DictionarySymptom $dictionarySymptom)
     {
         $dictionarySymptom->delete();
-        return response()->json(['success' => true, 'message' => 'Симптом удален']);
+        return response()->json(['success' => true]);
     }
 } 

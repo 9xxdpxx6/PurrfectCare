@@ -3,234 +3,262 @@
 @section('title', 'Статусы')
 
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Статусы</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Статусы</h1>
         <button type="button" class="btn btn-primary" onclick="addNewRow()">
             <i class="bi bi-plus"></i> Добавить статус
         </button>
     </div>
-</div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover" id="statusesTable">
-                <thead>
-                    <tr>
-                        <th>Название</th>
-                        <th>Цвет</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($statuses as $status)
-                        <tr data-id="{{ $status->id }}" data-original="{{ json_encode($status->toArray()) }}">
-                            <td>
-                                <input type="text" class="form-control form-control-sm" value="{{ $status->name }}" 
-                                       data-field="name" onchange="markAsChanged(this)">
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <input type="color" class="form-control form-control-color" value="{{ $status->color }}" 
-                                           data-field="color" onchange="markAsChanged(this)" style="width: 50px;">
-                                    <span class="badge" style="background-color: {{ $status->color }}; color: white;">
-                                        {{ $status->name }}
-                                    </span>
-                                </div>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteRow({{ $status->id }})">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+    <!-- Search Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.settings.statuses') }}" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="search" placeholder="Поиск по названию..." value="{{ request('search') }}">
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Найти</button>
+                        <a href="{{ route('admin.settings.statuses') }}" class="btn btn-secondary">Сбросить</a>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<!-- Save Changes Button -->
-<div id="saveChangesBtn" class="position-fixed bottom-0 end-0 m-3" style="display: none;">
-    <button type="button" class="btn btn-success btn-lg" onclick="saveChanges()">
-        <i class="bi bi-check-circle"></i> Сохранить изменения
-    </button>
-</div>
+    <!-- Statuses List -->
+    <div class="row">
+        @foreach($statuses as $status)
+        <div class="col-12 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-lg-4">
+                            <div class="d-flex flex-column">
+                                <strong class="mb-1">Название</strong>
+                                <span class="status-name">{{ $status->name }}</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="d-flex flex-column">
+                                <strong class="mb-1">Цвет</strong>
+                                <div class="d-flex align-items-center">
+                                    <div class="color-preview me-2" style="background-color: {{ $status->color }}; width: 20px; height: 20px; border-radius: 4px;"></div>
+                                    <span class="status-color">{{ $status->color }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleEdit({{ $status->id }})">
+                                    <i class="bi bi-pencil"></i> Редактировать
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteStatus({{ $status->id }})">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-@endsection
-
-@push('scripts')
-<script>
-    let hasChanges = false;
-    let changedRows = new Set();
-
-    function markAsChanged(input) {
-        const row = input.closest('tr');
-        const rowId = row.dataset.id;
-        
-        if (rowId) {
-            changedRows.add(rowId);
-            // Update badge preview
-            const nameInput = row.querySelector('input[data-field="name"]');
-            const colorInput = row.querySelector('input[data-field="color"]');
-            const badge = row.querySelector('.badge');
-            if (nameInput && colorInput && badge) {
-                badge.textContent = nameInput.value;
-                badge.style.backgroundColor = colorInput.value;
-            }
-        } else {
-            // New row
-            hasChanges = true;
-        }
-        
-        hasChanges = true;
-        updateSaveButton();
-    }
-
-    function updateSaveButton() {
-        const saveBtn = document.getElementById('saveChangesBtn');
-        if (hasChanges) {
-            saveBtn.style.display = 'block';
-        } else {
-            saveBtn.style.display = 'none';
-        }
-    }
-
-    function addNewRow() {
-        const tbody = document.querySelector('#statusesTable tbody');
-        const newRow = document.createElement('tr');
-        newRow.innerHTML = `
-            <td>
-                <input type="text" class="form-control form-control-sm" value="" 
-                       data-field="name" onchange="markAsChanged(this)">
-            </td>
-            <td>
-                <div class="d-flex align-items-center gap-2">
-                    <input type="color" class="form-control form-control-color" value="#6c757d" 
-                           data-field="color" onchange="markAsChanged(this)" style="width: 50px;">
-                    <span class="badge" style="background-color: #6c757d; color: white;">
-                        Новый статус
-                    </span>
+                    <!-- Edit Form (Hidden by default) -->
+                    <div class="edit-form mt-3" id="edit-form-{{ $status->id }}" style="display: none;">
+                        <hr>
+                        <form onsubmit="updateStatus(event, {{ $status->id }})">
+                            <div class="row">
+                                <div class="col-lg-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Название</label>
+                                        <input type="text" class="form-control" name="name" value="{{ $status->name }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Цвет</label>
+                                        <input type="color" class="form-control form-control-color" name="color" value="{{ $status->color }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-check"></i> Сохранить
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit({{ $status->id }})">
+                                            <i class="bi bi-x"></i> Отмена
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </td>
-            <td>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeNewRow(this)">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(newRow);
-        hasChanges = true;
-        updateSaveButton();
-    }
+            </div>
+        </div>
+        @endforeach
+    </div>
 
-    function removeNewRow(button) {
-        button.closest('tr').remove();
-        updateSaveButton();
-    }
+    <!-- New Status Form (Hidden by default) -->
+    <div class="row" id="new-status-form" style="display: none;">
+        <div class="col-12 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Новый статус</h5>
+                    <form onsubmit="createStatus(event)">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Название</label>
+                                    <input type="text" class="form-control" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Цвет</label>
+                                    <input type="color" class="form-control form-control-color" name="color" value="#000000" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check"></i> Сохранить
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="removeNewRow()">
+                                        <i class="bi bi-x"></i> Отмена
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function deleteRow(id) {
-        if (confirm('Вы уверены, что хотите удалить этот статус?')) {
-            fetch(`{{ route('admin.settings.statuses.destroy', '') }}/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const row = document.querySelector(`tr[data-id="${id}"]`);
-                    row.remove();
-                    changedRows.delete(id.toString());
-                    showNotification(data.message, 'success');
-                } else {
-                    showNotification('Ошибка при удалении', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Ошибка при удалении', 'error');
-            });
+    <!-- Pagination -->
+    @if($statuses->hasPages())
+    <div class="d-flex justify-content-center mt-4">
+        {{ $statuses->links('vendor.pagination.custom') }}
+    </div>
+    @endif
+</div>
+
+<script>
+function toggleEdit(id) {
+    closeAllEditCards();
+    const form = document.getElementById(`edit-form-${id}`);
+    if (form) {
+        form.style.display = 'block';
+    }
+}
+
+function cancelEdit(id) {
+    const form = document.getElementById(`edit-form-${id}`);
+    if (form) {
+        form.style.display = 'none';
+    }
+}
+
+function closeAllEditCards() {
+    const editForms = document.querySelectorAll('.edit-form');
+    editForms.forEach(form => {
+        form.style.display = 'none';
+    });
+}
+
+function addNewRow() {
+    closeAllEditCards();
+    document.getElementById('new-status-form').style.display = 'block';
+}
+
+function removeNewRow() {
+    document.getElementById('new-status-form').style.display = 'none';
+    // Clear form inputs
+    const form = document.getElementById('new-status-form').querySelector('form');
+    form.reset();
+}
+
+function updateStatus(event, id) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    fetch(`/admin/settings/statuses/${id}`, {
+        method: 'PUT',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: formData.get('name'),
+            color: formData.get('color')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Ошибка при обновлении статуса');
         }
-    }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при обновлении статуса');
+    });
+}
 
-    function saveChanges() {
-        const updates = [];
-        const creates = [];
+function createStatus(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    fetch('/admin/settings/statuses', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: formData.get('name'),
+            color: formData.get('color')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Ошибка при создании статуса');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при создании статуса');
+    });
+}
 
-        // Collect updates
-        changedRows.forEach(rowId => {
-            const row = document.querySelector(`tr[data-id="${rowId}"]`);
-            if (row) {
-                const data = {};
-                row.querySelectorAll('input[data-field]').forEach(input => {
-                    data[input.dataset.field] = input.value;
-                });
-                updates.push({ id: rowId, data: data });
+function deleteStatus(id) {
+    if (confirm('Вы уверены, что хотите удалить этот статус?')) {
+        fetch(`/admin/settings/statuses/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             }
-        });
-
-        // Collect creates
-        document.querySelectorAll('#statusesTable tbody tr').forEach(row => {
-            if (!row.dataset.id) {
-                const data = {};
-                row.querySelectorAll('input[data-field]').forEach(input => {
-                    data[input.dataset.field] = input.value;
-                });
-                creates.push(data);
-            }
-        });
-
-        // Send updates
-        Promise.all([
-            ...updates.map(update => 
-                fetch(`{{ route('admin.settings.statuses.update', '') }}/${update.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(update.data)
-                })
-            ),
-            ...creates.map(create => 
-                fetch('{{ route('admin.settings.statuses.store') }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(create)
-                })
-            )
-        ])
-        .then(responses => Promise.all(responses.map(r => r.json())))
-        .then(results => {
-            const allSuccess = results.every(result => result.success);
-            if (allSuccess) {
-                hasChanges = false;
-                changedRows.clear();
-                updateSaveButton();
-                showNotification('Изменения сохранены', 'success');
-                // Reload page to get updated data
-                setTimeout(() => window.location.reload(), 1000);
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
             } else {
-                showNotification('Ошибка при сохранении', 'error');
+                alert(data.message || 'Ошибка при удалении статуса');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('Ошибка при сохранении', 'error');
+            alert('Произошла ошибка при удалении статуса');
         });
     }
-
-    function showNotification(message, type) {
-        // Simple notification - you can replace with your preferred notification system
-        alert(message);
-    }
+}
 </script>
-@endpush 
+@endsection 

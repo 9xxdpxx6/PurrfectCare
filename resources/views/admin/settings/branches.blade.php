@@ -137,14 +137,13 @@
                     const row = document.querySelector(`tr[data-id="${id}"]`);
                     row.remove();
                     changedRows.delete(id.toString());
-                    showNotification(data.message, 'success');
                 } else {
-                    showNotification('Ошибка при удалении', 'error');
+                    alert('Ошибка при удалении филиала');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showNotification('Ошибка при удалении', 'error');
+                alert('Произошла ошибка при удалении филиала');
             });
         }
     }
@@ -206,22 +205,23 @@
                 hasChanges = false;
                 changedRows.clear();
                 updateSaveButton();
-                showNotification('Изменения сохранены', 'success');
                 // Reload page to get updated data
                 setTimeout(() => window.location.reload(), 1000);
             } else {
-                showNotification('Ошибка при сохранении', 'error');
+                alert('Ошибка при сохранении изменений');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('Ошибка при сохранении', 'error');
+            alert('Произошла ошибка при сохранении изменений');
         });
     }
 
     function showNotification(message, type) {
-        // Simple notification - you can replace with your preferred notification system
-        alert(message);
+        // Only show error notifications
+        if (type === 'error') {
+            alert(message);
+        }
     }
 </script>
 @endpush 

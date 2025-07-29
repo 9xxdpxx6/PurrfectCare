@@ -12,6 +12,23 @@
     </div>
 </div>
 
+<form method="GET" class="mb-4">
+    <div class="d-flex flex-wrap align-items-end gap-2">
+        <div class="flex-grow-1" style="min-width:200px;">
+            <label for="search" class="form-label mb-1">Поиск</label>
+            <input type="text" name="search" id="search" class="form-control" placeholder="Поиск по названию или типу анализа..." value="{{ request('search') }}">
+        </div>
+        <div class="d-flex gap-2 ms-auto w-auto">
+            <a href="{{ route('admin.settings.lab-test-params') }}" class="btn btn-outline-secondary">
+                <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
+            </a>
+            <button type="submit" class="btn btn-outline-primary">
+                <span class="d-none d-lg-inline">Найти</span> <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </div>
+</form>
+
 <div class="row g-3">
     @foreach($labTestParams as $param)
         <div class="col-12">
@@ -92,7 +109,7 @@
                             <span class="d-none d-lg-inline-block">Отменить</span>
                             <i class="bi bi-x"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick="deleteRow({{ $param->id }})">
+                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick='deleteRow({{ $param->id }})'>
                             <span class="d-none d-lg-inline-block">Удалить</span>
                             <i class="bi bi-trash"></i>
                         </button>
@@ -111,6 +128,12 @@
         <button type="button" class="btn btn-primary" onclick="addNewRow()">
             <i class="bi bi-plus"></i> Добавить параметр
         </button>
+    </div>
+@endif
+
+@if($labTestParams->hasPages())
+    <div class="mt-4">
+        {{ $labTestParams->links() }}
     </div>
 @endif
 
@@ -224,7 +247,7 @@
             <div class="card h-100 border-0 border-bottom shadow-sm bg-body-tertiary">
                 <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
                     <!-- Основная информация -->
-                    <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
+                    <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start d-none">
                         <h5 class="card-title">Новый параметр</h5>
                         <div class="mt-auto w-100">
                             <div class="text-muted mb-2">
@@ -286,7 +309,14 @@
                 </div>
             </div>
         `;
-        container.appendChild(newCard);
+        
+        // Добавляем карточку в начало списка
+        const firstCard = container.querySelector('.col-12');
+        if (firstCard) {
+            container.insertBefore(newCard, firstCard);
+        } else {
+            container.appendChild(newCard);
+        }
         
         hasChanges = true;
     }
@@ -311,12 +341,12 @@
             if (data.success) {
                 window.location.reload();
             } else {
-                showNotification('Ошибка при создании', 'error');
+                alert('Ошибка при создании параметра анализа');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('Ошибка при создании', 'error');
+            alert('Произошла ошибка при создании параметра анализа');
         });
     }
 
@@ -340,21 +370,22 @@
                     const card = document.querySelector(`[data-id="${id}"]`);
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
-                    showNotification(data.message, 'success');
                 } else {
-                    showNotification('Ошибка при удалении', 'error');
+                    alert('Ошибка при удалении параметра анализа');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showNotification('Ошибка при удалении', 'error');
+                alert('Произошла ошибка при удалении параметра анализа');
             });
         }
     }
 
     function showNotification(message, type) {
-        // Simple notification - you can replace with your preferred notification system
-        alert(message);
+        // Only show error notifications
+        if (type === 'error') {
+            alert(message);
+        }
     }
 </script>
 @endpush 
