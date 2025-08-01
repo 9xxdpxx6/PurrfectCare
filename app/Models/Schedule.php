@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class Schedule extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'veterinarian_id',
@@ -20,6 +21,10 @@ class Schedule extends Model
     protected $casts = [
         'shift_starts_at' => 'datetime',
         'shift_ends_at' => 'datetime'
+    ];
+
+    protected $deleteDependencies = [
+        'visits' => 'Невозможно удалить расписание, так как с ним связаны приёмы',
     ];
 
     public function veterinarian()

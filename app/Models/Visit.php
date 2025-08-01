@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class Visit extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'client_id',
@@ -22,6 +23,11 @@ class Visit extends Model
 
     protected $casts = [
         'starts_at' => 'datetime'
+    ];
+
+    protected $deleteDependencies = [
+        'diagnoses' => 'Невозможно удалить приём, так как с ним связаны диагнозы',
+        'symptoms' => 'Невозможно удалить приём, так как с ним связаны симптомы',
     ];
 
     public function client()

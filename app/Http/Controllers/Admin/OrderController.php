@@ -191,6 +191,13 @@ class OrderController extends AdminController
     {
         $order = $this->model::with('items')->findOrFail($id);
         
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $order->hasDependencies()) {
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('error', $errorMessage);
+        }
+        
         // Возвращаем препараты на склад если заказ был закрыт
         if ($order->closed_at) {
             $this->processInventoryReturn($order);

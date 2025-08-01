@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class Pet extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'name',
@@ -24,6 +25,13 @@ class Pet extends Model
         'birthdate' => 'date',
         'temperature' => 'decimal:2',
         'weight' => 'decimal:2'
+    ];
+
+    protected $deleteDependencies = [
+        'visits' => 'Невозможно удалить питомца, так как с ним связаны приёмы',
+        'vaccinations' => 'Невозможно удалить питомца, так как с ним связаны вакцинации',
+        'labTests' => 'Невозможно удалить питомца, так как с ним связаны лабораторные исследования',
+        'orders' => 'Невозможно удалить питомца, так как с ним связаны заказы',
     ];
 
     public function breed()

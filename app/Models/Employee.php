@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class Employee extends Model
 {
-    use HasFactory, HasRoles, Filterable;
+    use HasFactory, HasRoles, Filterable, HasDeleteDependenciesCheck;
 
     protected $guard_name = 'admin';
 
@@ -23,6 +24,13 @@ class Employee extends Model
     protected $hidden = [
         'password',
         'remember_token'
+    ];
+
+    protected $deleteDependencies = [
+        'visits' => 'Невозможно удалить сотрудника, так как с ним связаны приёмы',
+        'labTests' => 'Невозможно удалить сотрудника, так как с ним связаны лабораторные исследования',
+        'vaccinations' => 'Невозможно удалить сотрудника, так как с ним связаны вакцинации',
+        'orders' => 'Невозможно удалить сотрудника, так как с ним связаны заказы',
     ];
 
     public function specialties()

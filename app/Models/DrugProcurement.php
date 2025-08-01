@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class DrugProcurement extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'supplier_id',
@@ -28,6 +29,11 @@ class DrugProcurement extends Model
         'expiry_date' => 'date',
         'manufacture_date' => 'date',
         'packaging_date' => 'date',
+    ];
+
+    protected $deleteDependencies = [
+        'drug' => 'Невозможно удалить закупку, так как с ней связан препарат',
+        'supplier' => 'Невозможно удалить закупку, так как с ней связан поставщик',
     ];
 
     public function supplier()

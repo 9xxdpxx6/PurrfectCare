@@ -146,6 +146,14 @@ class VaccinationController extends AdminController
     public function destroy($id): RedirectResponse
     {
         $vaccination = $this->model::findOrFail($id);
+        
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $vaccination->hasDependencies()) {
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('error', $errorMessage);
+        }
+        
         $vaccination->delete();
         
         return redirect()

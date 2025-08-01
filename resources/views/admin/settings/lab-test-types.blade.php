@@ -72,7 +72,7 @@
                     </div>
 
                     <!-- Кнопки действий -->
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
                         <button type="button" class="btn btn-outline-warning edit-btn" title="Редактировать" onclick="toggleEdit(this)">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
@@ -85,7 +85,7 @@
                             <span class="d-none d-lg-inline-block">Отменить</span>
                             <i class="bi bi-x"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick="deleteRow({{ $type->id }})">
+                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick='deleteRow({{ $type->id }})'>
                             <span class="d-none d-lg-inline-block">Удалить</span>
                             <i class="bi bi-trash"></i>
                         </button>
@@ -100,7 +100,7 @@
     <div class="text-center py-5">
         <i class="bi bi-clipboard-data display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Типы анализов не найдены</h3>
-        <p class="text-muted">Создайте первый тип анализа.</p>
+        <p class="text-muted">Добавьте новый тип анализа.</p>
         <button type="button" class="btn btn-primary" onclick="addNewRow()">
             <i class="bi bi-plus"></i> Добавить тип анализа
         </button>
@@ -121,8 +121,8 @@
     let changedRows = new Set();
 
     function markAsChanged(input) {
-        const card = input.closest('[data-id]');
-        const rowId = card.dataset.id;
+        const card = input.closest('.card');
+        const rowId = card ? card.dataset.id : null;
         
         if (rowId) {
             changedRows.add(rowId);
@@ -223,7 +223,7 @@
             <div class="card h-100 border-0 border-bottom shadow-sm bg-body-tertiary">
                 <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
                     <!-- Основная информация -->
-                    <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
+                    <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start d-none">
                         <h5 class="card-title">Новый тип анализа</h5>
                         <div class="mt-auto w-100">
                             <div class="text-muted mb-2">
@@ -256,7 +256,7 @@
                     </div>
 
                     <!-- Кнопки действий -->
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
                         <button type="button" class="btn btn-outline-success save-btn" title="Сохранить" onclick="saveNewRow(this)">
                             <span class="d-none d-lg-inline-block">Сохранить</span>
                             <i class="bi bi-check"></i>
@@ -269,7 +269,14 @@
                 </div>
             </div>
         `;
-        container.appendChild(newCard);
+        
+        // Добавляем карточку в начало списка
+        const firstCard = container.querySelector('.col-12');
+        if (firstCard) {
+            container.insertBefore(newCard, firstCard);
+        } else {
+            container.appendChild(newCard);
+        }
         
         hasChanges = true;
     }

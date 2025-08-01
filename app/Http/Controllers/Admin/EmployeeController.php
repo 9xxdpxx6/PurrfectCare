@@ -93,6 +93,14 @@ class EmployeeController extends AdminController
     public function destroy($id) : RedirectResponse
     {
         $employee = Employee::findOrFail($id);
+        
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $employee->hasDependencies()) {
+            return redirect()
+                ->route('admin.employees.index')
+                ->with('error', $errorMessage);
+        }
+        
         $employee->specialties()->detach();
         $employee->branches()->detach();
         $employee->delete();

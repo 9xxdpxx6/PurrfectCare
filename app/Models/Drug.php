@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class Drug extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'name',
@@ -22,6 +23,12 @@ class Drug extends Model
         'price' => 'decimal:2',
         'quantity' => 'integer',
         'prescription_required' => 'boolean',
+    ];
+
+    protected $deleteDependencies = [
+        'orders' => 'Невозможно удалить препарат, так как он используется в заказах',
+        'procurements' => 'Невозможно удалить препарат, так как есть закупки',
+        'unit' => 'Невозможно удалить препарат, так как он связан с единицей измерения',
     ];
 
     public function procurements()

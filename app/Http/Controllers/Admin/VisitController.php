@@ -174,46 +174,56 @@ class VisitController extends AdminController
         $validated = $request->validated();
         $visit = $this->model::create($validated);
         
-        if ($request->has('symptoms')) {
+        // Обрабатываем симптомы
+        if ($request->has('symptoms') && is_array($request->symptoms)) {
             foreach ($request->symptoms as $symptomData) {
-                if (is_numeric($symptomData)) {
-                    // Создаем симптом из словаря
-                    Symptom::create([
-                        'visit_id' => $visit->id,
-                        'dictionary_symptom_id' => $symptomData,
-                        'custom_symptom' => null,
-                        'notes' => null
-                    ]);
-                } else {
-                    // Создаем кастомный симптом
-                    Symptom::create([
-                        'visit_id' => $visit->id,
-                        'dictionary_symptom_id' => null,
-                        'custom_symptom' => $symptomData,
-                        'notes' => null
-                    ]);
+                if (!empty(trim($symptomData))) {
+                    if (is_numeric($symptomData)) {
+                        // Проверяем существование симптома в словаре
+                        $dictionarySymptom = \App\Models\DictionarySymptom::find($symptomData);
+                        if ($dictionarySymptom) {
+                            Symptom::create([
+                                'visit_id' => $visit->id,
+                                'dictionary_symptom_id' => $symptomData,
+                                'custom_symptom' => null,
+                                'notes' => null
+                            ]);
+                        }
+                    } else {
+                        Symptom::create([
+                            'visit_id' => $visit->id,
+                            'dictionary_symptom_id' => null,
+                            'custom_symptom' => $symptomData,
+                            'notes' => null
+                        ]);
+                    }
                 }
             }
         }
 
-        if ($request->has('diagnoses')) {
+        // Обрабатываем диагнозы
+        if ($request->has('diagnoses') && is_array($request->diagnoses)) {
             foreach ($request->diagnoses as $diagnosisData) {
-                if (is_numeric($diagnosisData)) {
-                    // Создаем диагноз из словаря
-                    Diagnosis::create([
-                        'visit_id' => $visit->id,
-                        'dictionary_diagnosis_id' => $diagnosisData,
-                        'custom_diagnosis' => null,
-                        'treatment_plan' => null
-                    ]);
-                } else {
-                    // Создаем кастомный диагноз
-                    Diagnosis::create([
-                        'visit_id' => $visit->id,
-                        'dictionary_diagnosis_id' => null,
-                        'custom_diagnosis' => $diagnosisData,
-                        'treatment_plan' => null
-                    ]);
+                if (!empty(trim($diagnosisData))) {
+                    if (is_numeric($diagnosisData)) {
+                        // Проверяем существование диагноза в словаре
+                        $dictionaryDiagnosis = \App\Models\DictionaryDiagnosis::find($diagnosisData);
+                        if ($dictionaryDiagnosis) {
+                            Diagnosis::create([
+                                'visit_id' => $visit->id,
+                                'dictionary_diagnosis_id' => $diagnosisData,
+                                'custom_diagnosis' => null,
+                                'treatment_plan' => null
+                            ]);
+                        }
+                    } else {
+                        Diagnosis::create([
+                            'visit_id' => $visit->id,
+                            'dictionary_diagnosis_id' => null,
+                            'custom_diagnosis' => $diagnosisData,
+                            'treatment_plan' => null
+                        ]);
+                    }
                 }
             }
         }
@@ -289,6 +299,14 @@ class VisitController extends AdminController
     public function destroy($id) : RedirectResponse
     {
         $visit = $this->model::findOrFail($id);
+        
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $visit->hasDependencies()) {
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('error', $errorMessage);
+        }
+        
         $visit->delete();
         return redirect()->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Запись на приём успешно удалена');

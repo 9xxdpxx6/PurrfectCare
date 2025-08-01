@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class VaccinationDrug extends Pivot
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $table = 'vaccination_drugs';
 
@@ -21,6 +22,11 @@ class VaccinationDrug extends Pivot
 
     protected $casts = [
         'dosage' => 'decimal:2'
+    ];
+
+    protected $deleteDependencies = [
+        'vaccination' => 'Невозможно удалить связь вакцинации с препаратом, так как с ней связана вакцинация',
+        'drug' => 'Невозможно удалить связь вакцинации с препаратом, так как с ней связан препарат',
     ];
 
     public function vaccination()

@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class Order extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'client_id',
@@ -26,6 +27,10 @@ class Order extends Model
         'total' => 'decimal:2',
         'is_paid' => 'boolean',
         'closed_at' => 'datetime'
+    ];
+
+    protected $deleteDependencies = [
+        'items' => 'Невозможно удалить заказ, так как с ним связаны элементы заказа',
     ];
 
     public function client()

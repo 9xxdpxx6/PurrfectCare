@@ -83,6 +83,14 @@ class SettingsController extends Controller
 
     public function destroyLabTestType(LabTestType $labTestType)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $labTestType->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $labTestType->delete();
         return response()->json(['success' => true]);
     }
@@ -152,6 +160,14 @@ class SettingsController extends Controller
 
     public function destroyLabTestParam(LabTestParam $labTestParam)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $labTestParam->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $labTestParam->delete();
         return response()->json(['success' => true]);
     }
@@ -202,6 +218,14 @@ class SettingsController extends Controller
 
     public function destroyStatus(Status $status)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $status->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $status->delete();
         return response()->json(['success' => true]);
     }
@@ -218,7 +242,7 @@ class SettingsController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'short_name' => 'required|string|max:10',
+                'symbol' => 'required|string|max:10',
             ]);
 
             $unit->update($validated);
@@ -243,7 +267,7 @@ class SettingsController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:units',
-                'short_name' => 'required|string|max:10|unique:units',
+                'symbol' => 'required|string|max:10|unique:units',
             ]);
 
             Unit::create($validated);
@@ -265,6 +289,14 @@ class SettingsController extends Controller
 
     public function destroyUnit(Unit $unit)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $unit->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $unit->delete();
         return response()->json(['success' => true]);
     }
@@ -282,9 +314,11 @@ class SettingsController extends Controller
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:500',
             'phone' => 'required|string|max:20',
+            'opens_at' => 'nullable|date_format:H:i',
+            'closes_at' => 'nullable|date_format:H:i',
         ]);
 
-        $branch->update($request->only(['name', 'address', 'phone']));
+        $branch->update($request->only(['name', 'address', 'phone', 'opens_at', 'closes_at']));
 
         return response()->json(['success' => true]);
     }
@@ -296,6 +330,8 @@ class SettingsController extends Controller
                 'name' => 'required|string|max:255|unique:branches',
                 'address' => 'required|string|max:500',
                 'phone' => 'required|string|max:20',
+                'opens_at' => 'nullable|date_format:H:i',
+                'closes_at' => 'nullable|date_format:H:i',
             ]);
 
             Branch::create($validated);
@@ -317,6 +353,14 @@ class SettingsController extends Controller
 
     public function destroyBranch(Branch $branch)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $branch->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $branch->delete();
         return response()->json(['success' => true]);
     }
@@ -332,10 +376,10 @@ class SettingsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'is_veterinarian' => 'boolean',
         ]);
 
-        $specialty->update($request->only(['name', 'description']));
+        $specialty->update($request->only(['name', 'is_veterinarian']));
 
         return response()->json(['success' => true]);
     }
@@ -345,7 +389,7 @@ class SettingsController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:specialties',
-                'description' => 'nullable|string',
+                'is_veterinarian' => 'boolean',
             ]);
 
             Specialty::create($validated);
@@ -367,6 +411,14 @@ class SettingsController extends Controller
 
     public function destroySpecialty(Specialty $specialty)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $specialty->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $specialty->delete();
         return response()->json(['success' => true]);
     }
@@ -382,10 +434,9 @@ class SettingsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
         ]);
 
-        $species->update($request->only(['name', 'description']));
+        $species->update($request->only(['name']));
 
         return response()->json(['success' => true]);
     }
@@ -395,7 +446,6 @@ class SettingsController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:species',
-                'description' => 'nullable|string',
             ]);
 
             Species::create($validated);
@@ -417,6 +467,14 @@ class SettingsController extends Controller
 
     public function destroySpecies(Species $species)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $species->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $species->delete();
         return response()->json(['success' => true]);
     }
@@ -433,11 +491,10 @@ class SettingsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
             'species_id' => 'required|exists:species,id',
         ]);
 
-        $breed->update($request->only(['name', 'description', 'species_id']));
+        $breed->update($request->only(['name', 'species_id']));
 
         return response()->json(['success' => true]);
     }
@@ -447,7 +504,6 @@ class SettingsController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
                 'species_id' => 'required|exists:species,id',
             ]);
 
@@ -470,6 +526,14 @@ class SettingsController extends Controller
 
     public function destroyBreed(Breed $breed)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $breed->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $breed->delete();
         return response()->json(['success' => true]);
     }
@@ -485,13 +549,9 @@ class SettingsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'contact_person' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|string|max:500',
         ]);
 
-        $supplier->update($request->only(['name', 'contact_person', 'phone', 'email', 'address']));
+        $supplier->update($request->only(['name']));
 
         return response()->json(['success' => true]);
     }
@@ -501,10 +561,6 @@ class SettingsController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:suppliers',
-                'contact_person' => 'nullable|string|max:255',
-                'phone' => 'nullable|string|max:20',
-                'email' => 'nullable|email|max:255',
-                'address' => 'nullable|string|max:500',
             ]);
 
             Supplier::create($validated);
@@ -526,6 +582,14 @@ class SettingsController extends Controller
 
     public function destroySupplier(Supplier $supplier)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $supplier->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $supplier->delete();
         return response()->json(['success' => true]);
     }
@@ -576,6 +640,14 @@ class SettingsController extends Controller
 
     public function destroyDictionaryDiagnosis(DictionaryDiagnosis $dictionaryDiagnosis)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $dictionaryDiagnosis->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $dictionaryDiagnosis->delete();
         return response()->json(['success' => true]);
     }
@@ -626,6 +698,14 @@ class SettingsController extends Controller
 
     public function destroyDictionarySymptom(DictionarySymptom $dictionarySymptom)
     {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $dictionarySymptom->hasDependencies()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 422);
+        }
+        
         $dictionarySymptom->delete();
         return response()->json(['success' => true]);
     }

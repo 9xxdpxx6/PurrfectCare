@@ -31,7 +31,7 @@ class UnitFilter extends AbstractFilter
             foreach ($words as $word) {
                 $query->where(function ($wordQuery) use ($word) {
                     $wordQuery->where('name', 'like', "%$word%")
-                        ->orWhere('short_name', 'like', "%$word%");
+                        ->orWhere('symbol', 'like', "%$word%");
                 });
             }
         });

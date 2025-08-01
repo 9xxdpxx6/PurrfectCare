@@ -14,6 +14,9 @@
 
 <div class="row">
     <div class="col-12">
+
+        
+
         <div class="card">
             <div class="card-body">
                 <form action="{{ route('admin.visits.store') }}" method="POST">
@@ -120,17 +123,29 @@
                     <!-- Симптомы -->
                     <div class="mb-3">
                         <label for="symptoms" class="form-label">Симптомы</label>
-                        <select name="symptoms[]" id="symptoms" class="form-select" multiple data-url="{{ route('admin.visits.symptom-options') }}">
+                        <select name="symptoms[]" id="symptoms" class="form-select @error('symptoms') is-invalid @enderror" multiple data-url="{{ route('admin.visits.symptom-options') }}">
                         </select>
                         <div class="form-text">Удерживайте Ctrl для выбора нескольких симптомов</div>
+                        @error('symptoms')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        @error('symptoms.*')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Диагнозы -->
                     <div class="mb-3">
                         <label for="diagnoses" class="form-label">Диагнозы</label>
-                        <select name="diagnoses[]" id="diagnoses" class="form-select" multiple data-url="{{ route('admin.visits.diagnosis-options') }}">
+                        <select name="diagnoses[]" id="diagnoses" class="form-select @error('diagnoses') is-invalid @enderror" multiple data-url="{{ route('admin.visits.diagnosis-options') }}">
                         </select>
                         <div class="form-text">Удерживайте Ctrl для выбора нескольких диагнозов</div>
+                        @error('diagnoses')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        @error('diagnoses.*')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="d-flex justify-content-between gap-2">
@@ -195,7 +210,7 @@
             }
         });
         
-        new createTomSelect('#symptoms', {
+        const symptomsSelect = new createTomSelect('#symptoms', {
             placeholder: 'Выберите симптомы...',
             create: true,
             valueField: 'value',
@@ -204,6 +219,13 @@
             preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Добавляем уже выбранные значения к запросу
+                const selectedValues = this.getValue();
+                if (selectedValues.length > 0) {
+                    url += '&selected=' + encodeURIComponent(selectedValues.join(','));
+                }
+                
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))
@@ -217,7 +239,15 @@
             }
         });
         
-        new createTomSelect('#diagnoses', {
+        // Восстанавливаем старые значения симптомов при ошибке валидации
+        @if(old('symptoms'))
+            const oldSymptoms = @json(old('symptoms'));
+            if (oldSymptoms && oldSymptoms.length > 0) {
+                symptomsSelect.setValue(oldSymptoms);
+            }
+        @endif
+        
+        const diagnosesSelect = new createTomSelect('#diagnoses', {
             placeholder: 'Выберите диагнозы...',
             create: true,
             valueField: 'value',
@@ -226,6 +256,13 @@
             preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Добавляем уже выбранные значения к запросу
+                const selectedValues = this.getValue();
+                if (selectedValues.length > 0) {
+                    url += '&selected=' + encodeURIComponent(selectedValues.join(','));
+                }
+                
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))
@@ -238,6 +275,14 @@
                 }, 50);
             }
         });
+        
+        // Восстанавливаем старые значения диагнозов при ошибке валидации
+        @if(old('diagnoses'))
+            const oldDiagnoses = @json(old('diagnoses'));
+            if (oldDiagnoses && oldDiagnoses.length > 0) {
+                diagnosesSelect.setValue(oldDiagnoses);
+            }
+        @endif
         
         // Фильтрация питомцев по клиенту
         function filterPetsByClient(clientId) {
@@ -282,6 +327,41 @@
         createDatepicker('#starts_at', {
             timepicker: true
         });
+        
+        // Добавляем обработчик отправки формы
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Добавляем значения TomSelect в форму перед отправкой
+            const symptomsValues = symptomsSelect.getValue();
+            const diagnosesValues = diagnosesSelect.getValue();
+            
+            // Очищаем оригинальные select поля
+            const symptomsSelect = document.getElementById('symptoms');
+            const diagnosesSelect = document.getElementById('diagnoses');
+            
+            // Удаляем все option из select полей
+            while (symptomsSelect.firstChild) {
+                symptomsSelect.removeChild(symptomsSelect.firstChild);
+            }
+            while (diagnosesSelect.firstChild) {
+                diagnosesSelect.removeChild(diagnosesSelect.firstChild);
+            }
+            
+            // Добавляем новые значения как option в select поля
+            symptomsValues.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.selected = true;
+                symptomsSelect.appendChild(option);
+            });
+            
+            diagnosesValues.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.selected = true;
+                diagnosesSelect.appendChild(option);
+            });
+        });
+
     });
 </script>
 @endpush 

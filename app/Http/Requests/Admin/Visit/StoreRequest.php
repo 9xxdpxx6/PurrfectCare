@@ -11,7 +11,7 @@ class StoreRequest extends FormRequest
     {
         return true;
     }
-
+    
     public function rules()
     {
         return [
@@ -25,33 +25,9 @@ class StoreRequest extends FormRequest
             'services' => 'nullable|array',
             'services.*' => 'exists:services,id',
             'symptoms' => 'nullable|array',
-            'symptoms.*' => ['required', function ($attribute, $value, $fail) {
-                // Если число - проверяем существование в справочнике
-                if (is_numeric($value)) {
-                    if (!\App\Models\DictionarySymptom::where('id', $value)->exists()) {
-                        $fail('Выбранный симптом не найден в справочнике');
-                    }
-                } else {
-                    // Если строка - проверяем что не пустая
-                    if (empty(trim($value))) {
-                        $fail('Симптом не может быть пустым');
-                    }
-                }
-            }],
+            'symptoms.*' => 'nullable|string',
             'diagnoses' => 'nullable|array',
-            'diagnoses.*' => ['required', function ($attribute, $value, $fail) {
-                // Если число - проверяем существование в справочнике
-                if (is_numeric($value)) {
-                    if (!\App\Models\DictionaryDiagnosis::where('id', $value)->exists()) {
-                        $fail('Выбранный диагноз не найден в справочнике');
-                    }
-                } else {
-                    // Если строка - проверяем что не пустая
-                    if (empty(trim($value))) {
-                        $fail('Диагноз не может быть пустым');
-                    }
-                }
-            }],
+            'diagnoses.*' => 'nullable|string',
         ];
     }
 

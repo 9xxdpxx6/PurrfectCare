@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
-@section('title', 'Специальности')
+@section('title', 'Диагнозы (словарь)')
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Специальности</h1>
+    <h1 class="h2">Диагнозы (словарь)</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <button type="button" class="btn btn-primary" onclick="addNewRow()">
-            <i class="bi bi-plus"></i> Добавить специальность
+            <i class="bi bi-plus"></i> Добавить диагноз
         </button>
     </div>
 </div>
@@ -16,10 +16,10 @@
     <div class="d-flex flex-wrap align-items-end gap-2">
         <div class="flex-grow-1" style="min-width:200px;">
             <label for="search" class="form-label mb-1">Поиск</label>
-            <input type="text" name="search" id="search" class="form-control" placeholder="Поиск по названию..." value="{{ request('search') }}">
+            <input type="text" name="search" id="search" class="form-control" placeholder="Поиск по названию или описанию..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-            <a href="{{ route('admin.settings.specialties') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('admin.settings.dictionary-diagnoses') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
             <button type="submit" class="btn btn-outline-primary">
@@ -30,24 +30,21 @@
 </form>
 
 <div class="row g-3">
-    @foreach($specialties as $specialty)
+    @foreach($dictionaryDiagnoses as $diagnosis)
         <div class="col-12">
             <div class="card h-100 border-0 border-bottom shadow-sm
-        @if($loop->iteration % 2 == 1) bg-body-tertiary @endif" data-id="{{ $specialty->id }}" data-original="{{ json_encode(['name' => $specialty->name, 'is_veterinarian' => $specialty->is_veterinarian]) }}">
+        @if($loop->iteration % 2 == 1) bg-body-tertiary @endif" data-id="{{ $diagnosis->id }}" data-original="{{ json_encode(['name' => $diagnosis->name, 'description' => $diagnosis->description]) }}">
 
                 <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
                     <!-- Основная информация -->
                     <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
-                        <h5 class="card-title">{{ $specialty->name }}</h5>
+                        <h5 class="card-title">{{ $diagnosis->name }}</h5>
                         <div class="mt-auto w-100">
-                            <div class="text-muted">
-                                <span>Тип:</span> 
-                                @if($specialty->is_veterinarian)
-                                    <span class="badge bg-success">Ветеринар</span>
-                                @else
-                                    <span class="badge bg-secondary">Административный</span>
-                                @endif
-                            </div>
+                            @if($diagnosis->description)
+                                <div class="text-muted">
+                                    <span>Описание:</span> {{ $diagnosis->description }}
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -56,15 +53,12 @@
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $specialty->name }}" 
+                                <input type="text" class="form-control form-control-sm" value="{{ $diagnosis->name }}" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
-                                <label class="form-label small text-muted">Тип специальности</label>
-                                <select class="form-control" data-field="is_veterinarian" onchange="markAsChanged(this)">
-                                    <option value="1" {{ $specialty->is_veterinarian ? 'selected' : '' }}>Ветеринар</option>
-                                    <option value="0" {{ !$specialty->is_veterinarian ? 'selected' : '' }}>Административный</option>
-                                </select>
+                                <label class="form-label small text-muted">Описание</label>
+                                <textarea class="form-control" rows="3" data-field="description" onchange="markAsChanged(this)">{{ $diagnosis->description }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -83,7 +77,7 @@
                             <span class="d-none d-lg-inline-block">Отменить</span>
                             <i class="bi bi-x"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick='deleteRow({{ $specialty->id }})'>
+                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick='deleteRow({{ $diagnosis->id }})'>
                             <span class="d-none d-lg-inline-block">Удалить</span>
                             <i class="bi bi-trash"></i>
                         </button>
@@ -94,20 +88,20 @@
     @endforeach
 </div>
 
-@if($specialties->isEmpty())
+@if($dictionaryDiagnoses->isEmpty())
     <div class="text-center py-5">
-        <i class="bi bi-person-badge display-1 text-muted"></i>
-        <h3 class="mt-3 text-muted">Специальности не найдены</h3>
-        <p class="text-muted">Добавьте новую специальность.</p>
+        <i class="bi bi-clipboard-pulse display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">Диагнозы не найдены</h3>
+        <p class="text-muted">Добавьте новый диагноз.</p>
         <button type="button" class="btn btn-primary" onclick="addNewRow()">
-            <i class="bi bi-plus"></i> Добавить специальность
+            <i class="bi bi-plus"></i> Добавить диагноз
         </button>
     </div>
 @endif
 
-@if($specialties->hasPages())
+@if($dictionaryDiagnoses->hasPages())
     <div class="mt-4">
-        {{ $specialties->links() }}
+        {{ $dictionaryDiagnoses->links() }}
     </div>
 @endif
 
@@ -174,7 +168,7 @@
                 data[input.dataset.field] = input.value;
             });
             
-            fetch(`{{ route('admin.settings.specialties.update', '') }}/${rowId}`, {
+            fetch(`{{ route('admin.settings.dictionary-diagnoses.update', '') }}/${rowId}`, {
                 method: 'PUT',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -222,10 +216,10 @@
                 <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
                     <!-- Основная информация -->
                     <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start d-none">
-                        <h5 class="card-title">Новая специальность</h5>
+                        <h5 class="card-title">Новый диагноз</h5>
                         <div class="mt-auto w-100">
                             <div class="text-muted">
-                                <span>Тип:</span> <span class="type-display">Не указано</span>
+                                <span>Описание:</span> <span class="description-display">Не указано</span>
                             </div>
                         </div>
                     </div>
@@ -239,11 +233,8 @@
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
-                                <label class="form-label small text-muted">Тип специальности</label>
-                                <select class="form-control" data-field="is_veterinarian" onchange="markAsChanged(this)">
-                                    <option value="1">Ветеринар</option>
-                                    <option value="0">Административный</option>
-                                </select>
+                                <label class="form-label small text-muted">Описание</label>
+                                <textarea class="form-control" rows="3" data-field="description" onchange="markAsChanged(this)"></textarea>
                             </div>
                         </div>
                     </div>
@@ -281,7 +272,7 @@
             data[input.dataset.field] = input.value;
         });
         
-        fetch('{{ route('admin.settings.specialties.store') }}', {
+        fetch('{{ route('admin.settings.dictionary-diagnoses.store') }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -294,12 +285,12 @@
             if (data.success) {
                 window.location.reload();
             } else {
-                alert('Ошибка при создании специальности');
+                alert('Ошибка при создании диагноза');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Произошла ошибка при создании специальности');
+            alert('Произошла ошибка при создании диагноза');
         });
     }
 
@@ -309,8 +300,8 @@
     }
 
     function deleteRow(id) {
-        if (confirm('Вы уверены, что хотите удалить эту специальность?')) {
-            fetch(`{{ route('admin.settings.specialties.destroy', '') }}/${id}`, {
+        if (confirm('Вы уверены, что хотите удалить этот диагноз?')) {
+            fetch(`{{ route('admin.settings.dictionary-diagnoses.destroy', '') }}/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -324,12 +315,12 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении специальности');
+                    alert('Ошибка при удалении диагноза');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Произошла ошибка при удалении специальности');
+                alert('Произошла ошибка при удалении диагноза');
             });
         }
     }

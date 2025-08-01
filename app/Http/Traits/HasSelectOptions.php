@@ -584,17 +584,29 @@ trait HasSelectOptions
     {
         $query = \App\Models\DictionarySymptom::query();
         $search = $request->input('q');
-        $selectedId = $request->input('selected');
+        $selectedIds = $request->input('selected');
         $options = [];
         
-        if ($selectedId && is_numeric($selectedId)) {
-            $selected = \App\Models\DictionarySymptom::find($selectedId);
-            if ($selected) {
-                $options[] = [
-                    'value' => $selected->id,
-                    'text' => $selected->name
-                ];
-                $query->where('id', '!=', $selectedId);
+        // Обрабатываем выбранные значения
+        if ($selectedIds) {
+            $selectedArray = is_array($selectedIds) ? $selectedIds : explode(',', $selectedIds);
+            foreach ($selectedArray as $selectedId) {
+                if (is_numeric($selectedId)) {
+                    $selected = \App\Models\DictionarySymptom::find($selectedId);
+                    if ($selected) {
+                        $options[] = [
+                            'value' => $selected->id,
+                            'text' => $selected->name
+                        ];
+                        $query->where('id', '!=', $selectedId);
+                    }
+                } else {
+                    // Кастомный симптом
+                    $options[] = [
+                        'value' => $selectedId,
+                        'text' => $selectedId
+                    ];
+                }
             }
         }
         
@@ -611,7 +623,7 @@ trait HasSelectOptions
         }
         
         // Если есть поиск и не найдено точного совпадения, добавляем возможность создать кастомный
-        if ($search && !$symptoms->where('name', $search)->count()) {
+        if ($search && !$symptoms->where('name', $search)->count() && !empty(trim($search))) {
             $options[] = [
                 'value' => $search,
                 'text' => "Добавить: {$search}"
@@ -625,17 +637,29 @@ trait HasSelectOptions
     {
         $query = \App\Models\DictionaryDiagnosis::query();
         $search = $request->input('q');
-        $selectedId = $request->input('selected');
+        $selectedIds = $request->input('selected');
         $options = [];
         
-        if ($selectedId && is_numeric($selectedId)) {
-            $selected = \App\Models\DictionaryDiagnosis::find($selectedId);
-            if ($selected) {
-                $options[] = [
-                    'value' => $selected->id,
-                    'text' => $selected->name
-                ];
-                $query->where('id', '!=', $selectedId);
+        // Обрабатываем выбранные значения
+        if ($selectedIds) {
+            $selectedArray = is_array($selectedIds) ? $selectedIds : explode(',', $selectedIds);
+            foreach ($selectedArray as $selectedId) {
+                if (is_numeric($selectedId)) {
+                    $selected = \App\Models\DictionaryDiagnosis::find($selectedId);
+                    if ($selected) {
+                        $options[] = [
+                            'value' => $selected->id,
+                            'text' => $selected->name
+                        ];
+                        $query->where('id', '!=', $selectedId);
+                    }
+                } else {
+                    // Кастомный диагноз
+                    $options[] = [
+                        'value' => $selectedId,
+                        'text' => $selectedId
+                    ];
+                }
             }
         }
         
@@ -652,7 +676,7 @@ trait HasSelectOptions
         }
         
         // Если есть поиск и не найдено точного совпадения, добавляем возможность создать кастомный
-        if ($search && !$diagnoses->where('name', $search)->count()) {
+        if ($search && !$diagnoses->where('name', $search)->count() && !empty(trim($search))) {
             $options[] = [
                 'value' => $search,
                 'text' => "Добавить: {$search}"

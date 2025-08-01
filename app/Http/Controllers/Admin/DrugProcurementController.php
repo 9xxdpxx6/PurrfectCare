@@ -113,9 +113,16 @@ class DrugProcurementController extends AdminController
 
     public function destroy($id): RedirectResponse
     {
-        DB::transaction(function () use ($id) {
-            // Получаем поставку
-            $procurement = $this->model::findOrFail($id);
+        $procurement = $this->model::findOrFail($id);
+        
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $procurement->hasDependencies()) {
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('error', $errorMessage);
+        }
+        
+        DB::transaction(function () use ($procurement) {
             $quantity = $procurement->quantity;
             $drugId = $procurement->drug_id;
             

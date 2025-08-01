@@ -34,6 +34,14 @@ abstract class AdminController extends Controller
     public function destroy($id): RedirectResponse
     {
         $item = $this->model::findOrFail($id);
+        
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $item->hasDependencies()) {
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('error', $errorMessage);
+        }
+        
         $item->delete();
 
         return redirect()

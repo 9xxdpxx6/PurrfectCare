@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class Branch extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'name',
@@ -21,6 +22,11 @@ class Branch extends Model
     protected $casts = [
         'opens_at' => 'datetime',
         'closes_at' => 'datetime'
+    ];
+
+    protected $deleteDependencies = [
+        'veterinarians' => 'Невозможно удалить филиал, так как с ним связаны сотрудники',
+        'services' => 'Невозможно удалить филиал, так как с ним связаны услуги',
     ];
 
     public function veterinarians() {

@@ -8,10 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, Filterable;
+    use HasApiTokens, HasFactory, Notifiable, Filterable, HasDeleteDependenciesCheck;
 
     /**
      * The attributes that are mass assignable.
@@ -44,6 +45,12 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+    ];
+
+    protected $deleteDependencies = [
+        'pets' => 'Невозможно удалить клиента, так как у него есть питомцы',
+        'orders' => 'Невозможно удалить клиента, так как с ним связаны заказы',
+        'visits' => 'Невозможно удалить клиента, так как с ним связаны приёмы',
     ];
 
     public function pets() {

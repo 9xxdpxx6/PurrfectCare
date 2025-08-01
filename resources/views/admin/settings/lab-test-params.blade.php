@@ -96,7 +96,7 @@
                     </div>
 
                     <!-- Кнопки действий -->
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
                         <button type="button" class="btn btn-outline-warning edit-btn" title="Редактировать" onclick="toggleEdit(this)">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
@@ -124,7 +124,7 @@
     <div class="text-center py-5">
         <i class="bi bi-clipboard-data display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Параметры анализов не найдены</h3>
-        <p class="text-muted">Создайте первый параметр анализа.</p>
+        <p class="text-muted">Добавьте новый параметр анализа.</p>
         <button type="button" class="btn btn-primary" onclick="addNewRow()">
             <i class="bi bi-plus"></i> Добавить параметр
         </button>
@@ -145,8 +145,8 @@
     let changedRows = new Set();
 
     function markAsChanged(input) {
-        const card = input.closest('[data-id]');
-        const rowId = card.dataset.id;
+        const card = input.closest('.card');
+        const rowId = card ? card.dataset.id : null;
         
         if (rowId) {
             changedRows.add(rowId);
@@ -296,7 +296,7 @@
                     </div>
 
                     <!-- Кнопки действий -->
-                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
+                    <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
                         <button type="button" class="btn btn-outline-success save-btn" title="Сохранить" onclick="saveNewRow(this)">
                             <span class="d-none d-lg-inline-block">Сохранить</span>
                             <i class="bi bi-check"></i>

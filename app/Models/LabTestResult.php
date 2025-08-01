@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class LabTestResult extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'lab_test_id',
@@ -19,6 +20,11 @@ class LabTestResult extends Model
 
     protected $casts = [
         'value' => 'decimal:2'
+    ];
+
+    protected $deleteDependencies = [
+        'labTest' => 'Невозможно удалить результат лабораторного исследования, так как с ним связано исследование',
+        'labTestParam' => 'Невозможно удалить результат лабораторного исследования, так как с ним связан параметр',
     ];
 
     public function labTest()

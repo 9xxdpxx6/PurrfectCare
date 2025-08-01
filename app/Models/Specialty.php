@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class Specialty extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'name',
@@ -17,6 +18,10 @@ class Specialty extends Model
 
     protected $casts = [
         'is_veterinarian' => 'boolean'
+    ];
+
+    protected $deleteDependencies = [
+        'employees' => 'Невозможно удалить специальность, так как с ней связаны сотрудники',
     ];
 
     public function employees()

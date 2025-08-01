@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Filterable;
+use App\Models\Traits\HasDeleteDependenciesCheck;
 
 class LabTest extends Model
 {
-    use HasFactory, Filterable;
+    use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
         'pet_id',
@@ -21,6 +22,11 @@ class LabTest extends Model
     protected $casts = [
         'received_at' => 'datetime',
         'completed_at' => 'datetime'
+    ];
+
+    protected $deleteDependencies = [
+        'results' => 'Невозможно удалить лабораторное исследование, так как с ним связаны результаты',
+        'orders' => 'Невозможно удалить лабораторное исследование, так как оно используется в заказах',
     ];
 
     public function pet()

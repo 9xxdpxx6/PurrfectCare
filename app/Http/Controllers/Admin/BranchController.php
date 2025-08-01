@@ -91,11 +91,11 @@ class BranchController extends Controller
      */
     public function destroy(Branch $branch)
     {
-        // Проверяем, есть ли связанные записи
-        if ($branch->employees()->exists() || $branch->services()->exists()) {
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $branch->hasDependencies()) {
             return redirect()
                 ->route('admin.branches.index')
-                ->with('error', 'Невозможно удалить филиал, так как с ним связаны сотрудники или услуги');
+                ->with('error', $errorMessage);
         }
 
         $branch->delete();

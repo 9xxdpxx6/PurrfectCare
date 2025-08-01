@@ -161,6 +161,13 @@ class LabTestController extends AdminController
     {
         $labTest = $this->model::findOrFail($id);
         
+        // Проверяем наличие зависимых записей
+        if ($errorMessage = $labTest->hasDependencies()) {
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('error', $errorMessage);
+        }
+        
         // Удаляем результаты анализов
         $labTest->results()->delete();
         
