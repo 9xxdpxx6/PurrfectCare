@@ -317,7 +317,7 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении единицы измерения');
+                    alert(data.message || 'Ошибка при удалении единицы измерения');
                 }
             })
             .catch(error => {

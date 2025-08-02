@@ -315,7 +315,7 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении диагноза');
+                    alert(data.message || 'Ошибка при удалении диагноза');
                 }
             })
             .catch(error => {

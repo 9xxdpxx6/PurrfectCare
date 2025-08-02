@@ -323,7 +323,7 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении статуса');
+                    alert(data.message || 'Ошибка при удалении статуса');
                 }
             })
             .catch(error => {

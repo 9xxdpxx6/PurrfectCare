@@ -297,7 +297,7 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении вида животного');
+                    alert(data.message || 'Ошибка при удалении вида животного');
                 }
             })
             .catch(error => {

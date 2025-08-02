@@ -329,7 +329,7 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении породы');
+                    alert(data.message || 'Ошибка при удалении породы');
                 }
             })
             .catch(error => {

@@ -297,7 +297,7 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении поставщика');
+                    alert(data.message || 'Ошибка при удалении поставщика');
                 }
             })
             .catch(error => {

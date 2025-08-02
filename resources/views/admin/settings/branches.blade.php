@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении филиала');
+                    alert(data.message || 'Ошибка при удалении филиала');
                 }
             })
             .catch(error => {

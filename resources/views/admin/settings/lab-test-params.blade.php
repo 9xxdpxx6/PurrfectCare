@@ -371,7 +371,7 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении параметра анализа');
+                    alert(data.message || 'Ошибка при удалении параметра анализа');
                 }
             })
             .catch(error => {

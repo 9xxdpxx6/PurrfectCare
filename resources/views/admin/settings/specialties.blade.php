@@ -324,7 +324,7 @@
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                 } else {
-                    alert('Ошибка при удалении специальности');
+                    alert(data.message || 'Ошибка при удалении специальности');
                 }
             })
             .catch(error => {
