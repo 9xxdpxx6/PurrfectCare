@@ -43,16 +43,19 @@ class DatabaseSeeder extends Seeder
         $this->call(BranchSeeder::class);
         $this->call(UnitSeeder::class);
         $this->call(StatusSeeder::class);
+        $this->call(SpeciesSeeder::class);
+        $this->call(BreedSeeder::class);
         $this->call(LabTestTypeSeeder::class);
+        $this->call(LabTestParamSeeder::class);
         $this->call(DictionarySymptomSeeder::class);
         $this->call(DictionaryDiagnosisSeeder::class);
+        $this->call(ServiceSeeder::class);
 
         // Создаем базовые данные
-        Species::factory(6)->create();
-        Breed::factory(20)->create();
+        // Species и Breed создаются через сидеры
         User::factory(50)->create();
         Pet::factory(100)->create();
-        Specialty::factory(8)->create();
+        $this->call(SpecialtySeeder::class);
 
         // Создаем сотрудников с привязкой к специальностям и филиалам
         Employee::factory(30)->create()->each(function ($employee) {
@@ -63,14 +66,11 @@ class DatabaseSeeder extends Seeder
         });
 
         // Создаем поставщиков
-        Supplier::factory(30)->create();
+        $this->call(SupplierSeeder::class);
 
         // Создаем препараты и поставки
         Drug::factory(100)->create();
         DrugProcurement::factory(150)->create();
-
-        // Создаем услуги
-        Service::factory(25)->create();
 
         // Создаем связи между филиалами и услугами
         Service::all()->each(function ($service) {
@@ -86,7 +86,7 @@ class DatabaseSeeder extends Seeder
 
         // Создаем лабораторные анализы
         LabTest::factory(100)->create();
-        LabTestParam::factory(50)->create();
+        // LabTestParam создается через LabTestParamSeeder
         LabTestResult::factory(300)->create();
 
         // Создаем расписание
