@@ -4,6 +4,8 @@ namespace App\Http\Requests\Admin\Visit;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\BelongsToClient;
+use App\Rules\VisitTimeWithinSchedule;
+use App\Rules\NoVisitConflict;
 
 class UpdateRequest extends FormRequest
 {
@@ -18,7 +20,8 @@ class UpdateRequest extends FormRequest
             'client_id' => 'required|exists:users,id',
             'pet_id' => ['required', 'exists:pets,id', new BelongsToClient],
             'schedule_id' => 'required|exists:schedules,id',
-            'starts_at' => 'required|date',
+            'visit_time' => 'required|date_format:H:i',
+            'starts_at' => ['required', 'date', new VisitTimeWithinSchedule, new NoVisitConflict($this->route('visit'))],
             'status_id' => 'required|exists:statuses,id',
             'complaints' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -65,8 +68,12 @@ class UpdateRequest extends FormRequest
             'pet_id.belongs_to_client' => 'Выбранный питомец не принадлежит указанному клиенту',
             'schedule_id.required' => 'Необходимо выбрать расписание',
             'schedule_id.exists' => 'Расписание не найдено',
+            'visit_time.required' => 'Необходимо указать время приёма',
+            'visit_time.date_format' => 'Неверный формат времени (должно быть чч:мм)',
             'starts_at.required' => 'Необходимо указать дату и время',
             'starts_at.date' => 'Неверный формат даты и времени',
+            'starts_at.visit_time_within_schedule' => 'Время приема должно находиться в рамках выбранного расписания.',
+            'starts_at.no_visit_conflict' => 'На это время уже записан другой приём к данному врачу',
             'status_id.required' => 'Необходимо выбрать статус',
             'status_id.exists' => 'Статус не найден',
             'complaints.string' => 'Жалобы должны быть строкой',
@@ -84,6 +91,7 @@ class UpdateRequest extends FormRequest
             'client_id' => 'клиент',
             'pet_id' => 'питомец',
             'schedule_id' => 'расписание',
+            'visit_time' => 'время приёма',
             'starts_at' => 'дата и время',
             'status_id' => 'статус',
             'complaints' => 'жалобы',
@@ -102,6 +110,14 @@ class UpdateRequest extends FormRequest
         if ($this->has('starts_at') && $this->starts_at) {
             try {
                 $dt = \Carbon\Carbon::createFromFormat('d.m.Y H:i', $this->starts_at);
+                
+                $minutes = $dt->minute;
+                if ($minutes >= 30) {
+                    $dt->setMinute(30)->setSecond(0);
+                } else {
+                    $dt->setMinute(0)->setSecond(0);
+                }
+
                 $this->merge([
                     'starts_at' => $dt->format('Y-m-d H:i:s'),
                 ]);

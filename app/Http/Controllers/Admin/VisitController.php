@@ -42,10 +42,9 @@ class VisitController extends AdminController
         $diagnoses = DictionaryDiagnosis::all();
         $default_status = Status::where('name', 'Новый')->first();
         $default_status_id = $default_status ? $default_status->id : null;
-        $default_starts_at = now()->format('d.m.Y H:i');
         return view("admin.{$this->viewPath}.create", compact(
             'clients', 'pets', 'schedules', 'statuses',
-            'symptoms', 'diagnoses', 'default_status_id', 'default_starts_at'
+            'symptoms', 'diagnoses', 'default_status_id'
         ));
     }
 
@@ -60,7 +59,6 @@ class VisitController extends AdminController
         $statuses = Status::all();
         $symptoms = DictionarySymptom::all();
         $diagnoses = DictionaryDiagnosis::all();
-        $edit_starts_at = $item->starts_at ? $item->starts_at->format('d.m.Y H:i') : null;
         
         // Подготавливаем выбранные симптомы
         $selectedSymptoms = $item->symptoms->map(function($symptom) {
@@ -94,7 +92,7 @@ class VisitController extends AdminController
         
         return view("admin.{$this->viewPath}.edit", compact(
             'item', 'clients', 'pets', 'schedules', 'statuses',
-            'symptoms', 'diagnoses', 'edit_starts_at', 'selectedSymptoms', 'selectedDiagnoses'
+            'symptoms', 'diagnoses', 'selectedSymptoms', 'selectedDiagnoses'
         ));
     }
 
@@ -171,6 +169,8 @@ class VisitController extends AdminController
 
     public function store(StoreRequest $request) : RedirectResponse
     {
+        // Обработка полей даты и времени
+        $this->processDateTimeFields($request);
         $validated = $request->validated();
         $visit = $this->model::create($validated);
         
@@ -235,6 +235,8 @@ class VisitController extends AdminController
 
     public function update(UpdateRequest $request, $id) : RedirectResponse
     {
+        // Обработка полей даты и времени
+        $this->processDateTimeFields($request);
         $validated = $request->validated();
         $visit = $this->model::findOrFail($id);
         $visit->update($validated);
@@ -312,4 +314,136 @@ class VisitController extends AdminController
             ->with('success', 'Запись на приём успешно удалена');
     }
 
+    /**
+     * Получить доступное время для выбранного расписания
+     */
+    public function getAvailableTime(Request $request)
+    {
+        $scheduleId = $request->input('schedule_id');
+        
+        if (!$scheduleId) {
+            return response()->json(['error' => 'Не выбрано расписание']);
+        }
+        
+        $schedule = Schedule::with('veterinarian')->find($scheduleId);
+        if (!$schedule) {
+            return response()->json(['error' => 'Расписание не найдено']);
+        }
+        
+        // Получаем все занятые времена для этого расписания
+        $occupiedTimes = Visit::where('schedule_id', $scheduleId)
+            ->pluck('starts_at')
+            ->map(function($time) {
+                return \Carbon\Carbon::parse($time)->format('H:i');
+            })
+            ->toArray();
+        
+        // Генерируем доступные времена (кратно получасу: 00 и 30 минут)
+        $availableTimes = [];
+        $startTime = \Carbon\Carbon::parse($schedule->shift_starts_at);
+        $endTime = \Carbon\Carbon::parse($schedule->shift_ends_at);
+        
+        // Начинаем с ближайшего получаса после начала смены
+        $currentTime = $startTime->copy();
+        
+        // Если время не кратно получасу, округляем вверх до следующего получаса
+        $minutes = $currentTime->minute;
+        if ($minutes > 0 && $minutes < 30) {
+            $currentTime->setMinute(30);
+            $currentTime->setSecond(0);
+        } elseif ($minutes > 30) {
+            $currentTime->addHour();
+            $currentTime->setMinute(0);
+            $currentTime->setSecond(0);
+        } else {
+            // Если уже кратно получасу (0 или 30), оставляем как есть
+            $currentTime->setSecond(0);
+        }
+        
+        // Генерируем времена с интервалом 30 минут
+        while ($currentTime < $endTime) {
+            $timeString = $currentTime->format('H:i');
+            if (!in_array($timeString, $occupiedTimes)) {
+                $availableTimes[] = [
+                    'time' => $timeString,
+                    'formatted' => $currentTime->format('d.m.Y H:i')
+                ];
+            }
+            $currentTime->addMinutes(30);
+        }
+        
+        $nextAvailableTime = null;
+        if (!empty($availableTimes)) {
+            $nextAvailableTime = $availableTimes[0]['formatted'];
+        }
+
+        return response()->json([
+            'schedule' => [
+                'veterinarian' => $schedule->veterinarian ? $schedule->veterinarian->name : 'Не указан',
+                'shift_start' => $startTime->format('d.m.Y H:i'),
+                'shift_end' => $endTime->format('d.m.Y H:i'),
+                'shift_starts_at' => $schedule->shift_starts_at
+            ],
+            'available_times' => $availableTimes,
+            'occupied_times' => $occupiedTimes,
+            'next_available_time' => $nextAvailableTime
+        ]);
+    }
+
+    /**
+     * Обработка полей даты и времени для создания datetime полей
+     */
+    private function processDateTimeFields(Request $request)
+    {
+        if ($request->has('schedule_id') && $request->has('visit_time')) {
+            try {
+                $schedule = Schedule::find($request->schedule_id);
+                if ($schedule) {
+                    $scheduleDate = \Carbon\Carbon::parse($schedule->shift_starts_at);
+                    $visitTime = $request->visit_time;
+                    
+                    // Парсим время и округляем до начала получасового интервала
+                    $timeParts = explode(':', $visitTime);
+                    if (count($timeParts) === 2) {
+                        $hour = (int)$timeParts[0];
+                        $minute = (int)$timeParts[1];
+                        
+                        // Округляем до начала получасового интервала
+                        if ($minute >= 30) {
+                            $roundedMinute = 30;
+                        } else {
+                            $roundedMinute = 0;
+                        }
+                        
+                        // Форматируем округленное время
+                        $roundedTime = sprintf('%02d:%02d', $hour, $roundedMinute);
+                        
+                        // Объединяем дату из расписания с округленным временем приёма
+                        $fullDateTime = $scheduleDate->format('Y-m-d') . ' ' . $roundedTime;
+                        
+                        // Отладочная информация
+                        \Log::info('Processing datetime fields', [
+                            'original_visit_time' => $visitTime,
+                            'rounded_time' => $roundedTime,
+                            'schedule_date' => $scheduleDate->format('Y-m-d'),
+                            'full_datetime' => $fullDateTime,
+                            'schedule_shift_start' => $schedule->shift_starts_at,
+                            'schedule_shift_end' => $schedule->shift_ends_at
+                        ]);
+                        
+                        $request->merge([
+                            'starts_at' => $fullDateTime
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Игнорируем ошибки парсинга, валидация их поймает
+                \Log::error('Error processing datetime fields', [
+                    'error' => $e->getMessage(),
+                    'visit_time' => $request->visit_time ?? 'not set',
+                    'schedule_id' => $request->schedule_id ?? 'not set'
+                ]);
+            }
+        }
+    }
 } 

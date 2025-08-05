@@ -54,6 +54,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     Route::get('visits/status-options', [VisitController::class, 'statusOptions'])->name('visits.status-options');
     Route::get('visits/symptom-options', [VisitController::class, 'symptomOptions'])->name('visits.symptom-options');
     Route::get('visits/diagnosis-options', [VisitController::class, 'diagnosisOptions'])->name('visits.diagnosis-options');
+    Route::get('visits/available-time', [VisitController::class, 'getAvailableTime'])->name('visits.available-time');
     Route::resource('visits', VisitController::class);
 
     // Заказы

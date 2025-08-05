@@ -22,6 +22,17 @@
                 <form action="{{ route('admin.visits.store') }}" method="POST">
                     @csrf
 
+                    @if($errors->any())
+                        <div class="alert alert-danger">
+                            <h6 class="alert-heading">Ошибки валидации:</h6>
+                            <ul class="mb-0">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="client_id" class="form-label">Клиент</label>
@@ -75,15 +86,29 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="starts_at" class="form-label">Время начала</label>
-                            <input type="text" name="starts_at" id="starts_at" 
-                                class="form-control @error('starts_at') is-invalid @enderror" 
-                                value="{{ old('starts_at', $default_starts_at ?? '') }}" readonly placeholder="дд.мм.гггг чч:мм">
+                            <label for="visit_time" class="form-label">
+                                Время приёма <span id="time-interval" class="text-muted"></span>
+                            </label>
+                            <input type="text" name="visit_time" id="visit_time" 
+                                class="form-control @error('visit_time') is-invalid @enderror" 
+                                value="{{ old('visit_time', '10:00') }}" placeholder="чч:мм">
+                            @error('visit_time')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                             @error('starts_at')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <div class="invalid-feedback" id="visit_time_error" style="display: none;">
+                                Неверный формат времени. Используйте формат чч:мм
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Скрытое поле для отправки полной даты и времени -->
+                    <input type="hidden" name="starts_at" id="starts_at">
+
+                    <!-- Информация о расписании -->
+                    <div id="schedule-info" class="mb-3"></div>
 
                     <div class="mb-3">
                         <label for="status_id" class="form-label">Статус</label>
@@ -164,6 +189,11 @@
 @endsection
 
 @push('scripts')
+@php
+    $oldSymptoms = old('symptoms');
+    $oldDiagnoses = old('diagnoses');
+    $oldPetId = old('pet_id');
+@endphp
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const clientSelect = document.getElementById('client_id');
@@ -240,8 +270,8 @@
         });
         
         // Восстанавливаем старые значения симптомов при ошибке валидации
-        @if(old('symptoms'))
-            const oldSymptoms = @json(old('symptoms'));
+        @if($oldSymptoms)
+            const oldSymptoms = @json($oldSymptoms);
             if (oldSymptoms && oldSymptoms.length > 0) {
                 symptomsSelect.setValue(oldSymptoms);
             }
@@ -277,8 +307,8 @@
         });
         
         // Восстанавливаем старые значения диагнозов при ошибке валидации
-        @if(old('diagnoses'))
-            const oldDiagnoses = @json(old('diagnoses'));
+        @if($oldDiagnoses)
+            const oldDiagnoses = @json($oldDiagnoses);
             if (oldDiagnoses && oldDiagnoses.length > 0) {
                 diagnosesSelect.setValue(oldDiagnoses);
             }
@@ -308,7 +338,7 @@
             });
             
             // Восстанавливаем выбранное значение питомца
-            const currentPetId = '{{ old("pet_id") }}';
+            const currentPetId = '{{ $oldPetId }}';
             if (currentPetId) {
                 petTomSelect.setValue(currentPetId);
             }
@@ -324,12 +354,218 @@
         const initialClientId = clientSelect.value;
             filterPetsByClient(initialClientId);
 
-        createDatepicker('#starts_at', {
-            timepicker: true
+        const visitTimeInput = document.getElementById('visit_time');
+        const timeIntervalSpan = document.getElementById('time-interval');
+        const scheduleSelect = document.getElementById('schedule_id');
+        let selectedSchedule = null;
+
+        // Инициализация таймпикера
+        createDatepicker('#visit_time', {
+            timepicker: true,
+            onlyTimepicker: true,
+            startDate: new Date(new Date().setHours(10, 0, 0, 0)),
+            timeFormat: 'HH:mm',
+            onSelect: function() {
+                updateVisitTimeInterval();
+            }
         });
+
+        // Слушатель изменения времени
+        visitTimeInput.addEventListener('change', function() {
+            updateVisitTimeInterval();
+        });
+        
+        // Слушатель ввода времени
+        visitTimeInput.addEventListener('input', function() {
+            updateVisitTimeInterval();
+            
+            // Валидация в реальном времени
+            const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+            if (this.value && !timeRegex.test(this.value)) {
+                this.classList.add('is-invalid');
+                document.getElementById('visit_time_error').style.display = 'block';
+            } else {
+                this.classList.remove('is-invalid');
+                document.getElementById('visit_time_error').style.display = 'none';
+            }
+        });
+
+        function updateVisitTimeInterval() {
+            const visitTimeValue = visitTimeInput.value;
+            if (!visitTimeValue || !selectedSchedule) {
+                timeIntervalSpan.textContent = '';
+                return;
+            }
+
+            // Парсим время
+            const timeParts = visitTimeValue.split(':');
+            if (timeParts.length < 2) {
+                timeIntervalSpan.textContent = '';
+                return;
+            }
+
+            let hour = parseInt(timeParts[0], 10);
+            let minute = parseInt(timeParts[1], 10);
+
+            if (isNaN(hour) || isNaN(minute)) {
+                timeIntervalSpan.textContent = '';
+                return;
+            }
+
+            // Округляем до начала получасового интервала
+            let startMinute, endMinute, endHour;
+            if (minute >= 30) {
+                startMinute = 30;
+                endMinute = 0;
+                endHour = hour + 1;
+            } else {
+                startMinute = 0;
+                endMinute = 30;
+                endHour = hour;
+            }
+            
+            const startTime = `${String(hour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+            const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
+            
+            // Форматируем дату из расписания
+            const scheduleDate = new Date(selectedSchedule.shift_starts_at);
+            const formattedDate = scheduleDate.toLocaleDateString('ru-RU');
+            
+            timeIntervalSpan.textContent = `(${formattedDate} с ${startTime} до ${endTime})`;
+        }
+
+        // Функция для получения доступного времени
+        function getAvailableTime(scheduleId) {
+            if (!scheduleId) return;
+            
+            fetch(`{{ route('admin.visits.available-time') }}?schedule_id=${scheduleId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+                    
+                    // Сохраняем информацию о расписании
+                    selectedSchedule = data.schedule;
+                    
+                    // Показываем информацию о расписании
+                    const scheduleInfo = document.getElementById('schedule-info');
+                    if (scheduleInfo) {
+                        scheduleInfo.innerHTML = `
+                            <div class="alert alert-info">
+                                <strong>Врач:</strong> ${data.schedule.veterinarian}<br>
+                                <strong>Смена:</strong> ${data.schedule.shift_start} - ${data.schedule.shift_end}<br>
+                                <strong>Доступное время:</strong> ${data.available_times.length > 0 ? 
+                                    data.available_times.map(t => t.time).join(', ') : 'Нет свободного времени'}
+                            </div>
+                        `;
+                    }
+
+                    // Устанавливаем ближайшее доступное время
+                    if (data.next_available_time) {
+                        const timeOnly = data.next_available_time.split(' ')[1]; // Берем только время
+                        visitTimeInput.value = timeOnly;
+                        updateVisitTimeInterval(); // Обновляем отображение интервала
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при получении доступного времени:', error);
+                });
+        }
+        
+        // Слушатель изменения расписания
+        scheduleSelect.addEventListener('change', function() {
+            if (this.value) {
+                getAvailableTime(this.value);
+            } else {
+                // Очищаем информацию о расписании
+                selectedSchedule = null;
+                const scheduleInfo = document.getElementById('schedule-info');
+                if (scheduleInfo) {
+                    scheduleInfo.innerHTML = '';
+                }
+                updateVisitTimeInterval();
+            }
+        });
+        
+        // Обновляем интервал при загрузке
+        updateVisitTimeInterval();
+        
+        // Инициализируем расписание при загрузке, если оно уже выбрано
+        const initialScheduleId = scheduleSelect.value;
+        if (initialScheduleId) {
+            getAvailableTime(initialScheduleId);
+        } else {
+            // Если расписание не выбрано, очищаем информацию
+            selectedSchedule = null;
+            const scheduleInfo = document.getElementById('schedule-info');
+            if (scheduleInfo) {
+                scheduleInfo.innerHTML = '';
+            }
+        }
+        
+        // Устанавливаем время по умолчанию, если оно не выбрано
+        if (!visitTimeInput.value) {
+            visitTimeInput.value = '10:00';
+        }
         
         // Добавляем обработчик отправки формы
         document.querySelector('form').addEventListener('submit', function(e) {
+            // Проверяем, что выбрано расписание и время
+            if (!selectedSchedule) {
+                e.preventDefault();
+                alert('Необходимо выбрать расписание');
+                return;
+            }
+            
+            if (!visitTimeInput.value) {
+                e.preventDefault();
+                alert('Необходимо указать время приёма');
+                return;
+            }
+            
+            // Проверяем формат времени
+            const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+            if (!timeRegex.test(visitTimeInput.value)) {
+                e.preventDefault();
+                alert('Неверный формат времени. Используйте формат чч:мм');
+                return;
+            }
+            
+            // Объединяем дату из расписания с временем приёма
+            if (selectedSchedule && visitTimeInput.value) {
+                const scheduleDate = new Date(selectedSchedule.shift_starts_at);
+                const visitTime = visitTimeInput.value;
+                
+                // Парсим время и округляем до начала получасового интервала
+                const timeParts = visitTime.split(':');
+                if (timeParts.length === 2) {
+                    const hour = parseInt(timeParts[0], 10);
+                    const minute = parseInt(timeParts[1], 10);
+                    
+                    // Округляем до начала получасового интервала
+                    let roundedMinute;
+                    if (minute >= 30) {
+                        roundedMinute = 30;
+                    } else {
+                        roundedMinute = 0;
+                    }
+                    
+                    // Форматируем округленное время
+                    const roundedTime = `${String(hour).padStart(2, '0')}:${String(roundedMinute).padStart(2, '0')}`;
+                    
+                    // Форматируем дату в Y-m-d формат
+                    const year = scheduleDate.getFullYear();
+                    const month = String(scheduleDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(scheduleDate.getDate()).padStart(2, '0');
+                    
+                    // Создаем полную дату и время с округленным временем
+                    const fullDateTime = `${year}-${month}-${day} ${roundedTime}`;
+                    document.getElementById('starts_at').value = fullDateTime;
+                }
+            }
+            
             // Добавляем значения TomSelect в форму перед отправкой
             const symptomsValues = symptomsSelect.getValue();
             const diagnosesValues = diagnosesSelect.getValue();
