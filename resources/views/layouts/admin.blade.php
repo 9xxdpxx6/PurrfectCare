@@ -230,57 +230,57 @@
                     <div class="collapse show" id="settingsMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.lab-test-types') ? 'active' : '' }}" href="{{ route('admin.settings.lab-test-types') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.lab-tests.types.*') ? 'active' : '' }}" href="{{ route('admin.settings.lab-tests.types.index') }}">
                                     Типы анализов
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.lab-test-params') ? 'active' : '' }}" href="{{ route('admin.settings.lab-test-params') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.lab-tests.params.*') ? 'active' : '' }}" href="{{ route('admin.settings.lab-tests.params.index') }}">
                                     Параметры анализов
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.statuses') ? 'active' : '' }}" href="{{ route('admin.settings.statuses') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.system.statuses.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.statuses.index') }}">
                                     Статусы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.units') ? 'active' : '' }}" href="{{ route('admin.settings.units') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.system.units.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.units.index') }}">
                                     Единицы измерений
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.branches') ? 'active' : '' }}" href="{{ route('admin.settings.branches') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.system.branches.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.branches.index') }}">
                                     Филиалы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.specialties') ? 'active' : '' }}" href="{{ route('admin.settings.specialties') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.system.specialties.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.specialties.index') }}">
                                     Специальности
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.species') ? 'active' : '' }}" href="{{ route('admin.settings.species') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.animals.species.*') ? 'active' : '' }}" href="{{ route('admin.settings.animals.species.index') }}">
                                     Виды животных
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.breeds') ? 'active' : '' }}" href="{{ route('admin.settings.breeds') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.animals.breeds.*') ? 'active' : '' }}" href="{{ route('admin.settings.animals.breeds.index') }}">
                                     Породы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.suppliers') ? 'active' : '' }}" href="{{ route('admin.settings.suppliers') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.suppliers.*') ? 'active' : '' }}" href="{{ route('admin.settings.suppliers.index') }}">
                                     Поставщики
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.dictionary-diagnoses') ? 'active' : '' }}" href="{{ route('admin.settings.dictionary-diagnoses') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.dictionary.diagnoses.*') ? 'active' : '' }}" href="{{ route('admin.settings.dictionary.diagnoses.index') }}">
                                     Диагнозы (словарь)
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.dictionary-symptoms') ? 'active' : '' }}" href="{{ route('admin.settings.dictionary-symptoms') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.dictionary.symptoms.*') ? 'active' : '' }}" href="{{ route('admin.settings.dictionary.symptoms.index') }}">
                                     Симптомы (словарь)
                                 </a>
                             </li>

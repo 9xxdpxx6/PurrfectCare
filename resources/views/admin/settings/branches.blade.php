@@ -19,7 +19,7 @@
             <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-            <a href="{{ route('admin.settings.branches') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('admin.settings.system.branches.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
             <button type="submit" class="btn btn-outline-primary">
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 data[input.dataset.field] = input.value;
             });
             
-            fetch(`{{ route('admin.settings.branches.update', '') }}/${rowId}`, {
+                            fetch(`{{ route('admin.settings.system.branches.update', '') }}/${rowId}`, {
                 method: 'PUT',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function () {
             data[input.dataset.field] = input.value;
         });
         
-        fetch("{{ route('admin.settings.branches.store') }}", {
+                    fetch("{{ route('admin.settings.system.branches.store') }}", {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -394,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.deleteRow = function(id) {
         if (confirm('Вы уверены, что хотите удалить этот филиал?')) {
-            fetch(`{{ route('admin.settings.branches.destroy', '') }}/${id}`, {
+                            fetch(`{{ route('admin.settings.system.branches.destroy', '') }}/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',

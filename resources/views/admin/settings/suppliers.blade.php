@@ -19,7 +19,7 @@
             <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-            <a href="{{ route('admin.settings.suppliers') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('admin.settings.suppliers.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
             <button type="submit" class="btn btn-outline-primary">

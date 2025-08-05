@@ -19,7 +19,7 @@
             <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-            <a href="{{ route('admin.settings.breeds') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('admin.settings.animals.breeds.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
             <button type="submit" class="btn btn-outline-primary">
@@ -172,7 +172,7 @@
                 data[input.dataset.field] = input.value;
             });
             
-            fetch(`{{ route('admin.settings.breeds.update', '') }}/${rowId}`, {
+                            fetch(`{{ route('admin.settings.animals.breeds.update', '') }}/${rowId}`, {
                 method: 'PUT',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -286,7 +286,7 @@
             data[input.dataset.field] = input.value;
         });
         
-        fetch('{{ route('admin.settings.breeds.store') }}', {
+                    fetch('{{ route('admin.settings.animals.breeds.store') }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -315,7 +315,7 @@
 
     function deleteRow(id) {
         if (confirm('Вы уверены, что хотите удалить эту породу?')) {
-            fetch(`{{ route('admin.settings.breeds.destroy', '') }}/${id}`, {
+                            fetch(`{{ route('admin.settings.animals.breeds.destroy', '') }}/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',

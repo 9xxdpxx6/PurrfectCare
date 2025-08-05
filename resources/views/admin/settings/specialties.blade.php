@@ -19,7 +19,7 @@
             <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-            <a href="{{ route('admin.settings.specialties') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('admin.settings.system.specialties.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
             <button type="submit" class="btn btn-outline-primary">
@@ -174,7 +174,7 @@
                 data[input.dataset.field] = input.value;
             });
             
-            fetch(`{{ route('admin.settings.specialties.update', '') }}/${rowId}`, {
+                            fetch(`{{ route('admin.settings.system.specialties.update', '') }}/${rowId}`, {
                 method: 'PUT',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -281,7 +281,7 @@
             data[input.dataset.field] = input.value;
         });
         
-        fetch('{{ route('admin.settings.specialties.store') }}', {
+                    fetch('{{ route('admin.settings.system.specialties.store') }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -310,7 +310,7 @@
 
     function deleteRow(id) {
         if (confirm('Вы уверены, что хотите удалить эту специальность?')) {
-            fetch(`{{ route('admin.settings.specialties.destroy', '') }}/${id}`, {
+                            fetch(`{{ route('admin.settings.system.specialties.destroy', '') }}/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
