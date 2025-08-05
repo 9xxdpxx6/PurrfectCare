@@ -61,17 +61,28 @@ class VisitFactory extends Factory
         $schedule = Schedule::inRandomOrder()->first();
         
         // Генерируем время приёма в пределах рабочего времени ветеринара
-        $shiftStart = $schedule->shift_starts_at;
-        $shiftEnd = $schedule->shift_ends_at;
+        $shiftStart = \Carbon\Carbon::parse($schedule->shift_starts_at);
         
         // Создаем случайное время между началом и концом смены
-        $visitTime = $this->faker->dateTimeBetween($shiftStart, $shiftEnd);
+        $visitTime = $this->faker->dateTimeBetween($shiftStart, $schedule->shift_ends_at);
+        
+        // Округляем время до начала получасового интервала
+        $visitTimeCarbon = \Carbon\Carbon::parse($visitTime);
+        $minute = $visitTimeCarbon->minute;
+        
+        if ($minute >= 30) {
+            $visitTimeCarbon->setMinute(30);
+        } else {
+            $visitTimeCarbon->setMinute(0);
+        }
+        $visitTimeCarbon->setSecond(0);
+        $visitTimeCarbon->setMicro(0);
 
         return [
             'client_id' => $client->id,
             'pet_id' => $pet ? $pet->id : null,
             'schedule_id' => $schedule->id,
-            'starts_at' => $visitTime,
+            'starts_at' => $visitTimeCarbon,
             'status_id' => Status::inRandomOrder()->first()->id,
             'complaints' => $this->faker->randomElement($complaints),
             'notes' => $this->faker->optional(0.7)->randomElement($notes),
