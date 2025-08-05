@@ -13,11 +13,11 @@ use App\Models\Drug;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use App\Http\Traits\HasSelectOptions;
+use App\Http\Traits\HasOptionsMethods;
 
 class VaccinationController extends AdminController
 {
-    use HasSelectOptions;
+    use HasOptionsMethods;
 
     public function __construct()
     {
@@ -163,10 +163,7 @@ class VaccinationController extends AdminController
 
     public function vaccinationOptions(Request $request)
     {
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->vaccinationOptions($request);
+        return app(\App\Services\Options\VaccinationOptionsService::class)->getOptions($request);
     }
     
     public function getDrugs($id)

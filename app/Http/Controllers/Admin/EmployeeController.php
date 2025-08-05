@@ -11,7 +11,7 @@ use App\Models\LabTest;
 use App\Http\Requests\Admin\Employee\StoreRequest;
 use App\Http\Requests\Admin\Employee\UpdateRequest;
 use App\Http\Filters\EmployeeFilter;
-use App\Http\Traits\HasSelectOptions;
+use App\Http\Traits\HasOptionsMethods;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -20,7 +20,7 @@ use Illuminate\Http\RedirectResponse;
 
 class EmployeeController extends AdminController
 {
-    use HasSelectOptions;
+    use HasOptionsMethods;
 
     public function __construct()
     {
@@ -147,5 +147,10 @@ class EmployeeController extends AdminController
             ->get();
         
         return view('admin.employees.show', compact('employee', 'orders', 'vaccinations', 'labTests', 'ordersTotal', 'vaccinationsTotal', 'labTestsTotal'));
+    }
+
+    public function specialtyOptions(Request $request)
+    {
+        return app(\App\Services\Options\SpecialtyOptionsService::class)->getOptions($request);
     }
 }

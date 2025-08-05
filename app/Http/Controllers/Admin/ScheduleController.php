@@ -6,7 +6,7 @@ use App\Models\Schedule;
 use App\Models\Employee;
 use App\Models\Branch;
 use App\Http\Filters\ScheduleFilter;
-use App\Http\Traits\HasSelectOptions;
+use App\Http\Traits\HasOptionsMethods;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -18,7 +18,7 @@ use App\Http\Requests\Admin\Schedule\UpdateRequest;
 
 class ScheduleController extends AdminController
 {
-    use HasSelectOptions;
+    use HasOptionsMethods;
 
     public function __construct()
     {

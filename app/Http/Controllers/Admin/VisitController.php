@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Traits\HasSelectOptions;
+use App\Http\Traits\HasOptionsMethods;
 use App\Models\Visit;
 use App\Models\User;
 use App\Models\Pet;
@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
 
 class VisitController extends AdminController
 {
-    use HasSelectOptions;
+    use HasOptionsMethods;
 
     public function __construct()
     {

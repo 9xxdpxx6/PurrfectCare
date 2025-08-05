@@ -14,11 +14,11 @@ use App\Models\LabTestParam;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use App\Http\Traits\HasSelectOptions;
+use App\Http\Traits\HasOptionsMethods;
 
 class LabTestController extends AdminController
 {
-    use HasSelectOptions;
+    use HasOptionsMethods;
 
     public function __construct()
     {

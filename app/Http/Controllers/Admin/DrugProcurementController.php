@@ -8,7 +8,7 @@ use App\Models\Supplier;
 use App\Http\Requests\Admin\DrugProcurement\StoreRequest;
 use App\Http\Requests\Admin\DrugProcurement\UpdateRequest;
 use App\Http\Filters\DrugProcurementFilter;
-use App\Http\Traits\HasSelectOptions;
+use App\Http\Traits\HasOptionsMethods;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class DrugProcurementController extends AdminController
 {
-    use HasSelectOptions;
+    use HasOptionsMethods;
 
     public function __construct()
     {

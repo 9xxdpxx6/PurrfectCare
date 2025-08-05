@@ -15,12 +15,14 @@ use App\Models\Vaccination;
 use App\Http\Requests\Admin\Order\StoreRequest;
 use App\Http\Requests\Admin\Order\UpdateRequest;
 use App\Http\Filters\OrderFilter;
+use App\Http\Traits\HasOptionsMethods;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class OrderController extends AdminController
 {
+    use HasOptionsMethods;
     public function __construct()
     {
         $this->model = Order::class;
@@ -247,79 +249,27 @@ class OrderController extends AdminController
     }
 
     // TomSelect опции
-    public function clientOptions(Request $request)
-    {
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->clientOptions($request);
-    }
-
-    public function petOptions(Request $request)
-    {
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->petOptions($request);
-    }
-
-    public function statusOptions(Request $request)
-    {
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->statusOptions($request);
-    }
-
-    public function branchOptions(Request $request)
-    {
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->branchOptions($request);
-    }
-
-    public function managerOptions(Request $request)
-    {
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->managerOptions($request);
-    }
-
     public function orderServiceOptions(Request $request)
     {
         $request->merge(['include_price' => true]);
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->serviceOptions($request);
+        return app(\App\Services\Options\ServiceOptionsService::class)->getOptions($request);
     }
 
     public function orderDrugOptions(Request $request)
     {
         $request->merge(['include_price' => true]);
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->drugOptions($request);
+        return app(\App\Services\Options\DrugOptionsService::class)->getOptions($request);
     }
 
-    public function labTestOptions(Request $request)
+    public function orderLabTestOptions(Request $request)
     {
         $request->merge(['include_price' => true]);
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->labTestOptions($request);
+        return app(\App\Services\Options\LabTestOptionsService::class)->getLabTestOptions($request);
     }
 
-    public function vaccinationOptions(Request $request)
+    public function orderVaccinationOptions(Request $request)
     {
         $request->merge(['include_price' => true]);
-        $trait = new class {
-            use \App\Http\Traits\HasSelectOptions;
-        };
-        return $trait->vaccinationOptions($request);
+        return app(\App\Services\Options\VaccinationOptionsService::class)->getOptions($request);
     }
 } 

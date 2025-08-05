@@ -7,14 +7,14 @@ use App\Models\Branch;
 use App\Http\Requests\Admin\Service\StoreRequest;
 use App\Http\Requests\Admin\Service\UpdateRequest;
 use App\Http\Filters\ServiceFilter;
-use App\Http\Traits\HasSelectOptions;
+use App\Http\Traits\HasOptionsMethods;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class ServiceController extends AdminController
 {
-    use HasSelectOptions;
+    use HasOptionsMethods;
 
     public function __construct()
     {
