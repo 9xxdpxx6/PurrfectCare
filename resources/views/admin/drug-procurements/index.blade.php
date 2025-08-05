@@ -16,7 +16,7 @@
     <div class="d-flex flex-wrap align-items-end gap-2">
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="search" class="form-label mb-1">Поиск</label>
-            <input type="text" name="search" id="search" class="form-control" placeholder="Препарат или поставщик..." value="{{ request('search') }}">
+            <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="supplier" class="form-label mb-1">Поставщик</label>

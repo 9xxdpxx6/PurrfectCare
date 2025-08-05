@@ -16,7 +16,7 @@
     <div class="d-flex flex-wrap align-items-end gap-2">
         <div class="flex-grow-1" style="min-width:200px;">
             <label for="search" class="form-label mb-1">Поиск</label>
-            <input type="text" name="search" id="search" class="form-control" placeholder="Поиск по названию или описанию..." value="{{ request('search') }}">
+            <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
             <a href="{{ route('admin.settings.dictionary-diagnoses') }}" class="btn btn-outline-secondary">
