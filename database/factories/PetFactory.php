@@ -34,6 +34,8 @@ class PetFactory extends Factory
                 'id' => $this->faker->randomElement($existingPets)->id,
                 'breed_id' => $breed->id,
                 'client_id' => $user->id,
+                'created_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
+                'updated_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
             ];
         }
 
@@ -57,6 +59,8 @@ class PetFactory extends Factory
                 array_fill(0, 45, 'female'), // 45% female
                 array_fill(0, 10, 'unknown') // 10% unknown
             )),
+            'created_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
         ];
     }
 }

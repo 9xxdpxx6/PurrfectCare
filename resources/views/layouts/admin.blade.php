@@ -84,6 +84,115 @@
                 display: block;
             }
         }
+        
+        /* Адаптивные стили для таблиц */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        @media (max-width: 576px) {
+            .table-responsive table {
+                font-size: 0.875rem;
+            }
+            
+            .table-responsive th,
+            .table-responsive td {
+                padding: 0.5rem 0.25rem;
+                white-space: nowrap;
+            }
+            
+            .table-responsive .table-sm th,
+            .table-responsive .table-sm td {
+                padding: 0.25rem 0.125rem;
+            }
+            
+            /* Скрываем менее важные колонки на мобильных */
+            .table-responsive .d-none-mobile {
+                display: none !important;
+            }
+            
+            /* Уменьшаем размеры карточек на мобильных */
+            .card-body {
+                padding: 1rem 0.75rem;
+            }
+            
+            .card-header {
+                padding: 0.75rem;
+            }
+            
+            /* Адаптируем кнопки на мобильных */
+            .btn-toolbar .btn-group {
+                flex-wrap: wrap;
+                gap: 0.25rem;
+            }
+            
+            .btn-toolbar .btn {
+                font-size: 0.875rem;
+                padding: 0.375rem 0.75rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            /* Скрываем некоторые колонки на планшетах */
+            .table-responsive .d-none-tablet {
+                display: none !important;
+            }
+            
+            /* Улучшение отображения графиков на планшетах */
+            canvas {
+                max-width: 100%;
+                height: auto !important;
+            }
+            
+            /* Адаптация метрик на планшетах */
+            .col-md-3 {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Декоративные карточки навигации и KPI */
+        .nav-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+            border-radius: 12px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .nav-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+
+        .kpi-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            border-radius: 12px;
+        }
+        
+        /* Дополнительные стили для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .h2 {
+                font-size: 1.25rem;
+            }
+            
+            .card-title {
+                font-size: 0.875rem;
+            }
+            
+            .card-body h3 {
+                font-size: 1rem;
+            }
+            
+            .card-body h4 {
+                font-size: 0.875rem;
+            }
+            
+            /* Уменьшение отступов на очень маленьких экранах */
+            .main-content {
+                padding: 10px;
+            }
+            
+            .card-body {
+                padding: 0.75rem;
+            }
+        }
+
+                 /* Перенесено в resources/sass/app.scss */
     </style>
 </head>
 <body>
@@ -134,6 +243,43 @@
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}" href="{{ route('admin.services.index') }}">
                                     Услуги
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Статистика -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#statisticsMenu" aria-expanded="true">
+                        <span><i class="bi bi-graph-up me-2"></i>Статистика</span>
+                        <i class="bi bi-chevron-down collapse-arrow"></i>
+                    </a>
+                    <div class="collapse show" id="statisticsMenu">
+                        <ul class="nav flex-column ms-3">
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.dashboard') ? 'active' : '' }}" href="{{ route('admin.statistics.dashboard') }}">
+                                    Общая статистика
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.financial') ? 'active' : '' }}" href="{{ route('admin.statistics.financial') }}">
+                                    Финансы
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.operational') ? 'active' : '' }}" href="{{ route('admin.statistics.operational') }}">
+                                    Операции
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.clients') ? 'active' : '' }}" href="{{ route('admin.statistics.clients') }}">
+                                    Клиенты
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.medical') ? 'active' : '' }}" href="{{ route('admin.statistics.medical') }}">
+                                    Медицина
                                 </a>
                             </li>
                         </ul>
@@ -315,6 +461,7 @@
     </div>
 
     @stack('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.4.0/air-datepicker.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -374,7 +521,6 @@
                     
                     // Load saved state from localStorage
                     const savedState = localStorage.getItem(`menu_${targetId}`);
-                    console.log(`Loading state for ${targetId}:`, savedState); // Debug
                     if (savedState === 'collapsed') {
                         target.classList.remove('show');
                         link.setAttribute('aria-expanded', 'false');
@@ -441,7 +587,6 @@
                     // Save state to localStorage only if not loading
                     if (!window.isLoadingMenuState) {
                         localStorage.setItem(`menu_${targetId}`, 'expanded');
-                        console.log(`Saved expanded state for ${targetId}`); // Debug
                     }
                 });
                 
@@ -450,7 +595,6 @@
                     // Save state to localStorage only if not loading
                     if (!window.isLoadingMenuState) {
                         localStorage.setItem(`menu_${targetId}`, 'collapsed');
-                        console.log(`Saved collapsed state for ${targetId}`); // Debug
                     }
                 });
                 
@@ -461,7 +605,6 @@
                             const isExpanded = target.classList.contains('show');
                             const state = isExpanded ? 'expanded' : 'collapsed';
                             localStorage.setItem(`menu_${targetId}`, state);
-                            console.log(`MutationObserver: ${targetId} is now ${state}`); // Debug
                         }
                     });
                 });
@@ -479,7 +622,6 @@
                             const isExpanded = target.classList.contains('show');
                             const state = isExpanded ? 'expanded' : 'collapsed';
                             localStorage.setItem(`menu_${targetId}`, state);
-                            console.log(`Manual save: ${targetId} is now ${state}`); // Debug
                         }
                     }, 100);
                 });
@@ -490,19 +632,16 @@
             if (sidebarElement) {
                 // Restore scroll position on page load with a small delay
                 const savedScrollTop = localStorage.getItem('sidebar_scroll_top');
-                console.log('Loading scroll position:', savedScrollTop); // Debug
                 if (savedScrollTop) {
                     // Use setTimeout to ensure DOM is fully loaded
                     setTimeout(() => {
                         sidebarElement.scrollTop = parseInt(savedScrollTop);
-                        console.log('Restored scroll position to:', sidebarElement.scrollTop); // Debug
                     }, 100);
                 }
                 
                 // Save scroll position when scrolling
                 sidebarElement.addEventListener('scroll', function() {
                     localStorage.setItem('sidebar_scroll_top', sidebarElement.scrollTop);
-                    console.log('Saved scroll position:', sidebarElement.scrollTop); // Debug
                 });
             }
 
@@ -541,6 +680,46 @@
                         sidebar.classList.remove('show');
                     }
                 }
+            });
+            
+            // Дополнительные улучшения для мобильных устройств
+            // Улучшение отображения таблиц на мобильных
+            const tables = document.querySelectorAll('.table-responsive table');
+            tables.forEach(table => {
+                // Добавляем класс для лучшего отображения на мобильных
+                if (window.innerWidth <= 768) {
+                    table.classList.add('table-sm');
+                }
+            });
+            
+            // Адаптация графиков на мобильных устройствах
+            const canvases = document.querySelectorAll('canvas');
+            canvases.forEach(canvas => {
+                if (window.innerWidth <= 768) {
+                    canvas.style.maxHeight = '200px';
+                }
+            });
+            
+            // Обработка изменения размера окна
+            window.addEventListener('resize', function() {
+                const isMobile = window.innerWidth <= 768;
+                const isSmallMobile = window.innerWidth <= 480;
+                
+                tables.forEach(table => {
+                    if (isMobile) {
+                        table.classList.add('table-sm');
+                    } else {
+                        table.classList.remove('table-sm');
+                    }
+                });
+                
+                canvases.forEach(canvas => {
+                    if (isMobile) {
+                        canvas.style.maxHeight = '200px';
+                    } else {
+                        canvas.style.maxHeight = '';
+                    }
+                });
             });
         });
     </script>

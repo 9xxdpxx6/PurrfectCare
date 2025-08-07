@@ -16,8 +16,9 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\DrugProcurementController;
+use App\Http\Controllers\Admin\StatisticsController;
 
-use App\Http\Controllers\Admin\Settings\SettingsController as SettingsSettingsController;
+use App\Http\Controllers\Admin\Settings\MainSettingsController as SettingsSettingsController;
 use App\Http\Controllers\Admin\Settings\LabTestTypeController;
 use App\Http\Controllers\Admin\Settings\LabTestParamController;
 use App\Http\Controllers\Admin\Settings\StatusController;
@@ -127,6 +128,15 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     
     Route::get('vaccinations/{vaccination}/drugs', [VaccinationController::class, 'getDrugs'])->name('vaccinations.drugs');
     
+    // Статистика
+    Route::prefix('statistics')->name('statistics.')->group(function () {
+        Route::get('/', [StatisticsController::class, 'dashboard'])->name('dashboard');
+        Route::get('/financial', [StatisticsController::class, 'financial'])->name('financial');
+        Route::get('/operational', [StatisticsController::class, 'operational'])->name('operational');
+        Route::get('/clients', [StatisticsController::class, 'clients'])->name('clients');
+        Route::get('/medical', [StatisticsController::class, 'medical'])->name('medical');
+    });
+
     // Настройки
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsSettingsController::class, 'index'])->name('index');

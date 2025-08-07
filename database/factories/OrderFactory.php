@@ -58,6 +58,8 @@ class OrderFactory extends Factory
             'total' => $this->faker->randomFloat(2, 500, 15000),
             'is_paid' => $isPaid,
             'closed_at' => $closedAt,
+            'created_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
         ];
     }
 
