@@ -30,9 +30,8 @@
                     <button type="button" class="btn btn-outline-secondary @if($period==='all') active @endif" onclick="setPeriod('all')">За всё время</button>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <input type="text" id="date_range" class="form-control" placeholder="С по" style="max-width: 260px;" readonly>
+                    <input type="text" id="date_range" class="form-control" placeholder="Интервал" style="max-width: 260px;" readonly value="{{ isset($startDate) && isset($endDate) ? $startDate->format('d.m.Y') . ' по ' . $endDate->format('d.m.Y') : '' }}">
                 </div>
-                <span class="text-muted">Период: с {{ isset($startDate) ? $startDate->format('d.m.Y') : '' }} по {{ isset($endDate) ? $endDate->format('d.m.Y') : '' }}</span>
             </div>
         </form>
     </div>
@@ -41,49 +40,53 @@
 <!-- Основные операционные метрики -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="card border-primary">
-            <div class="card-body text-center">
+        <div class="card kpi-outline primary h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-calendar-check text-primary fs-1 me-2"></i>
+                    <i class="bi bi-calendar-check fs-1"></i>
                 </div>
-                <h3 class="card-title text-primary">{{ number_format($visitsData['total']) }}</h3>
-                <p class="card-text text-muted">Всего приёмов</p>
+                <h3>{{ number_format($visitsData['total']) }}</h3>
+                <p class="card-text text-muted mb-1">Всего приёмов</p>
+                <small class="text-muted d-block">Количество запланированных приёмов</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-success">
-            <div class="card-body text-center">
+        <div class="card kpi-outline success h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-people text-success fs-1 me-2"></i>
+                    <i class="bi bi-people fs-1"></i>
                 </div>
-                <h3 class="card-title text-success">{{ $employeeLoad->count() }}</h3>
-                <p class="card-text text-muted">Активных ветеринаров</p>
+                <h3>{{ $employeeLoad->count() }}</h3>
+                <p class="card-text text-muted mb-1">Активных ветеринаров</p>
+                <small class="text-muted d-block">Ветеринары с приёмами</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-info">
-            <div class="card-body text-center">
+        <div class="card kpi-outline info h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-building text-info fs-1 me-2"></i>
+                    <i class="bi bi-building fs-1"></i>
                 </div>
-                <h3 class="card-title text-info">{{ $scheduleStats['total_schedules'] }}</h3>
-                <p class="card-text text-muted">Расписаний</p>
+                <h3>{{ $scheduleStats['total_schedules'] }}</h3>
+                <p class="card-text text-muted mb-1">Расписаний</p>
+                <small class="text-muted d-block">Созданных смен</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-warning">
-            <div class="card-body text-center">
+        <div class="card kpi-outline warning h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-calendar-event text-warning fs-1 me-2"></i>
+                    <i class="bi bi-calendar-event fs-1"></i>
                 </div>
-                <h3 class="card-title text-warning">{{ $scheduleStats['schedules_with_visits'] }}</h3>
-                <p class="card-text text-muted">Расписаний с приёмами</p>
+                <h3>{{ $scheduleStats['schedules_with_visits'] }}</h3>
+                <p class="card-text text-muted mb-1">Расписаний с приёмами</p>
+                <small class="text-muted d-block">Смен с записанными пациентами</small>
             </div>
         </div>
     </div>
@@ -107,14 +110,16 @@
     
     <!-- Статистика по статусам -->
     <div class="col-md-4 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-pie-chart"></i> Приёмы по статусам
                 </h5>
             </div>
-            <div class="card-body">
-                <canvas id="statusChart" width="400" height="200"></canvas>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div class="chart-container mx-auto" style="position: relative; width: 100%; max-width: 280px; height: 280px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -136,9 +141,9 @@
                             <thead>
                                 <tr>
                                     <th>Ветеринар</th>
-                                    <th class="d-none-mobile">Количество приёмов</th>
-                                    <th class="d-none-mobile">Процент от общего</th>
-                                    <th>Прогресс</th>
+                                    <th class="d-none-mobile">Приёмов</th>
+                                    <th class="d-none-mobile">Средняя загруженность</th>
+                                    <th>Загруженность</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -146,9 +151,6 @@
                                     $totalVisits = $visitsData['total'];
                                 @endphp
                                 @foreach($employeeLoad as $employee)
-                                    @php
-                                        $percentage = $totalVisits > 0 ? round(($employee['visits_count'] / $totalVisits) * 100, 1) : 0;
-                                    @endphp
                                     <tr>
                                         <td>
                                             <strong>{{ $employee['employee']->name }}</strong>
@@ -159,17 +161,22 @@
                                             @endif
                                         </td>
                                         <td class="d-none-mobile">{{ $employee['visits_count'] }}</td>
-                                        <td class="d-none-mobile">{{ $percentage }}%</td>
+                                        <td class="d-none-mobile">
+                                            <span class="badge bg-{{ $employee['load_color'] }}">{{ $employee['load_level'] }}</span>
+                                            <small class="text-muted d-block">{{ number_format($employee['avg_visits_per_day'], 1) }} приёмов/день</small>
+                                        </td>
                                         <td>
-                                            <div class="progress" style="height: 20px;">
-                                                <div class="progress-bar bg-primary" 
+                                            <div class="progress position-relative" style="height: 20px;">
+                                                <div class="progress-bar bg-{{ $employee['load_color'] }}" 
                                                      role="progressbar" 
-                                                     style="width: {{ $percentage }}%"
-                                                     aria-valuenow="{{ $percentage }}" 
+                                                     style="width: {{ $employee['progress_width'] }}%"
+                                                     aria-valuenow="{{ $employee['avg_visits_per_day'] }}" 
                                                      aria-valuemin="0" 
-                                                     aria-valuemax="100">
-                                                    <span class="d-none-mobile">{{ $percentage }}%</span>
+                                                     aria-valuemax="6">
                                                 </div>
+                                                <span class="position-absolute top-50 start-50 translate-middle text-{{ $employee['progress_width'] > 50 ? 'white' : 'dark' }}" style="font-size: 0.75rem; font-weight: 500;">
+                                                    {{ $employee['progress_percentage'] }}%
+                                                </span>
                                             </div>
                                         </td>
                                     </tr>
@@ -207,17 +214,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $totalStatusVisits = $statusStats->sum();
-                                @endphp
-                                @foreach($statusStats as $status => $count)
-                                    @php
-                                        $percentage = $totalStatusVisits > 0 ? round(($count / $totalStatusVisits) * 100, 1) : 0;
-                                    @endphp
+
+                                @foreach($statusStats as $status => $data)
                                     <tr>
                                         <td>{{ $status }}</td>
-                                        <td class="d-none-mobile">{{ $count }}</td>
-                                        <td>{{ $percentage }}%</td>
+                                        <td class="d-none-mobile">{{ $data['count'] }}</td>
+                                        <td>{{ $data['percentage'] }}%</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -316,10 +318,10 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(visitsCtx, {
         type: 'bar',
         data: {
-            labels: Object.keys(visitsData.by_day),
+            labels: visitsData.by_day ? Object.keys(visitsData.by_day) : [],
             datasets: [{
                 label: 'Количество приёмов',
-                data: Object.values(visitsData.by_day),
+                data: visitsData.by_day ? Object.values(visitsData.by_day) : [],
                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 borderColor: 'rgb(75, 192, 192)',
                 borderWidth: 1
@@ -354,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: Object.keys(statusStats),
             datasets: [{
-                data: Object.values(statusStats),
+                data: Object.values(statusStats).map(item => item.count),
                 backgroundColor: [
                     '#FF6384',
                     '#36A2EB',

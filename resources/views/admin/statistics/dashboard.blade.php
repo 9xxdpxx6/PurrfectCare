@@ -27,7 +27,6 @@
                 <div class="d-flex align-items-center gap-2">
                     <input type="text" id="date_range" class="form-control" placeholder="Интервал" style="max-width: 260px;" readonly value="{{ isset($startDate) && isset($endDate) ? $startDate->format('d.m.Y') . ' по ' . $endDate->format('d.m.Y') : '' }}">
                 </div>
-                <span class="text-muted">Период: с {{ isset($startDate) ? $startDate->format('d.m.Y') : '' }} по {{ isset($endDate) ? $endDate->format('d.m.Y') : '' }}</span>
             </div>
         </form>
     </div>
@@ -86,7 +85,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-calendar-check text-primary fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title gradient-text gradient-text-primary">{{ number_format($metrics['total_visits']) }}</h3>
+                <h3 class="card-title text-primary">{{ number_format($metrics['total_visits']) }}</h3>
                 <p class="card-text text-muted">Приёмов</p>
             </div>
         </div>
@@ -98,7 +97,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-cart-check text-success fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title gradient-text gradient-text-success">{{ number_format($metrics['total_orders']) }}</h3>
+                <h3 class="card-title text-success">{{ number_format($metrics['total_orders']) }}</h3>
                 <p class="card-text text-muted">Заказов</p>
             </div>
         </div>
@@ -110,7 +109,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-cash-stack text-info fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title gradient-text gradient-text-info">{{ number_format($metrics['total_revenue'], 0, ',', ' ') }} ₽</h3>
+                <h3 class="card-title text-info">{{ number_format($metrics['total_revenue'], 0, ',', ' ') }} ₽</h3>
                 <p class="card-text text-muted">Выручка</p>
             </div>
         </div>
@@ -122,7 +121,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-people text-warning fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title gradient-text gradient-text-warning">{{ number_format($metrics['total_clients']) }}</h3>
+                <h3 class="card-title text-warning">{{ number_format($metrics['total_clients']) }}</h3>
                 <p class="card-text text-muted">Новых клиентов</p>
             </div>
         </div>
@@ -135,7 +134,7 @@
         <div class="card kpi-outline success">
             <div class="card-body text-center">
                 <h5 class="card-title">Средний чек</h5>
-                <h3 class="gradient-text gradient-text-success">{{ number_format($metrics['average_order'], 0, ',', ' ') }} ₽</h3>
+                <h3 class="text-success">{{ number_format($metrics['average_order'], 0, ',', ' ') }} ₽</h3>
             </div>
         </div>
     </div>
@@ -144,7 +143,7 @@
         <div class="card kpi-outline info">
             <div class="card-body text-center">
                 <h5 class="card-title">Конверсия приёмов в заказы</h5>
-                <h3 class="gradient-text gradient-text-info">{{ $metrics['conversion_rate'] }}%</h3>
+                <h3 class="text-info">{{ $metrics['conversion_rate'] }}%</h3>
             </div>
         </div>
     </div>
@@ -153,7 +152,7 @@
         <div class="card kpi-outline primary">
             <div class="card-body text-center">
                 <h5 class="card-title">Питомцев</h5>
-                <h3 class="gradient-text gradient-text-primary">{{ number_format($metrics['total_pets']) }}</h3>
+                <h3 class="text-primary">{{ number_format($metrics['total_pets']) }}</h3>
             </div>
         </div>
     </div>
@@ -161,12 +160,17 @@
 
 <!-- Графики -->
 <div class="row">
-    <!-- График выручки за последние 7 дней -->
+    <!-- График выручки за выбранный период -->
     <div class="col-md-8 mb-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-graph-up"></i> Статистика за последние 7 дней
+                    <i class="bi bi-graph-up"></i> 
+                    @if($period === 'custom')
+                        Статистика за интервал {{ $dateRange }}
+                    @else
+                        Статистика за {{ $period === 'week' ? 'неделю' : ($period === 'month' ? 'месяц' : ($period === 'quarter' ? 'квартал' : ($period === 'year' ? 'год' : 'всё время'))) }}
+                    @endif
                 </h5>
             </div>
             <div class="card-body">
@@ -246,7 +250,12 @@
         <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-pie-chart"></i> Распределение по дням недели
+                    <i class="bi bi-pie-chart"></i> 
+                    @if($period === 'custom')
+                        Распределение приёмов по датам
+                    @else
+                        Распределение приёмов по {{ $period === 'week' ? 'дням недели' : ($period === 'month' ? 'дням месяца' : ($period === 'quarter' ? 'дням квартала' : ($period === 'year' ? 'месяцам' : 'периоду'))) }}
+                    @endif
                 </h5>
             </div>
             <div class="card-body d-flex flex-column justify-content-center">
@@ -292,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Данные для графика за неделю
     const weeklyData = @json($weeklyStats);
     
-    // График статистики за неделю
+    // График статистики за выбранный период
     const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
     new Chart(weeklyCtx, {
         type: 'line',
@@ -330,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     display: true,
                     title: {
                         display: true,
-                        text: 'День недели'
+                        text: 'Дата'
                     }
                 },
                 y: {
@@ -358,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // График по дням недели - оптимизированный
+    // График распределения приёмов по датам
     const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
     const weekdayChart = new Chart(weekdayCtx, {
         type: 'doughnut',

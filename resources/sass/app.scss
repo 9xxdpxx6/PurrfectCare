@@ -89,8 +89,12 @@
     // Усиленная контрастность для цифр
     h3 {
         color: #ffffff !important;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         font-weight: 700;
+    }
+    
+    // В светлой теме - темный цвет
+    [data-bs-theme="light"] & h3 {
+        color: #212529 !important;
     }
 
     &.primary {
@@ -98,11 +102,12 @@
                    linear-gradient(135deg, #0d6efd, rgba(66, 165, 245, 0.6)) border-box;
                    
         h3 {
-            background: linear-gradient(135deg, #ffffff, #e3f2fd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(13, 110, 253, 0.3));
+            color: #ffffff !important;
+        }
+        
+        // В светлой теме - темный цвет
+        [data-bs-theme="light"] & h3 {
+            color: #212529 !important;
         }
     }
 
@@ -111,11 +116,12 @@
                    linear-gradient(135deg, #198754, rgba(129, 199, 132, 0.6)) border-box;
                    
         h3 {
-            background: linear-gradient(135deg, #ffffff, #e8f5e8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(25, 135, 84, 0.3));
+            color: #ffffff !important;
+        }
+        
+        // В светлой теме - темный цвет
+        [data-bs-theme="light"] & h3 {
+            color: #212529 !important;
         }
     }
 
@@ -124,11 +130,12 @@
                    linear-gradient(135deg, #0dcaf0, rgba(77, 208, 225, 0.6)) border-box;
                    
         h3 {
-            background: linear-gradient(135deg, #ffffff, #e5f6fd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(13, 202, 240, 0.3));
+            color: #ffffff !important;
+        }
+        
+        // В светлой теме - темный цвет
+        [data-bs-theme="light"] & h3 {
+            color: #212529 !important;
         }
     }
 
@@ -137,11 +144,12 @@
                    linear-gradient(135deg, #ffc107, rgba(255, 183, 77, 0.6)) border-box;
                    
         h3 {
-            background: linear-gradient(135deg, #ffffff, #fff8e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.3));
+            color: #ffffff !important;
+        }
+        
+        // В светлой теме - темный цвет
+        [data-bs-theme="light"] & h3 {
+            color: #212529 !important;
         }
     }
 
@@ -160,19 +168,27 @@
 }
 
 .gradient-text-primary {
-    background-image: linear-gradient(45deg, var(--bs-primary), #66b2ff);
+    color: #ffffff !important;
 }
 
 .gradient-text-success {
-    background-image: linear-gradient(45deg, var(--bs-success), #8fd7b5);
+    color: #ffffff !important;
 }
 
 .gradient-text-info {
-    background-image: linear-gradient(45deg, var(--bs-info), #8edfff);
+    color: #ffffff !important;
 }
 
 .gradient-text-warning {
-    background-image: linear-gradient(45deg, var(--bs-warning), #ffd480);
+    color: #ffffff !important;
+}
+
+// В светлой теме - темный цвет
+[data-bs-theme="light"] .gradient-text-primary,
+[data-bs-theme="light"] .gradient-text-success,
+[data-bs-theme="light"] .gradient-text-info,
+[data-bs-theme="light"] .gradient-text-warning {
+    color: #212529 !important;
 }
 
 // Кнопки периодов - обычный Bootstrap стиль без эффектов
@@ -328,4 +344,22 @@
 .ts-wrapper.form-select,
 .ts-control.form-select {
     width: 100% !important;
+}
+
+// Адаптивная легенда для вакцинаций
+.vaccinations-legend {
+    @media (max-width: 991.98px) {
+        margin-top: 1rem;
+        text-align: center;
+        
+        .d-flex {
+            justify-content: center;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        padding-left: 0.5rem;
+        max-height: 280px;
+        overflow-y: auto;
+    }
 }

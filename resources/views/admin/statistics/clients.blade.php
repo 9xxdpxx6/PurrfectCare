@@ -30,9 +30,8 @@
                     <button type="button" class="btn btn-outline-secondary @if($period==='all') active @endif" onclick="setPeriod('all')">За всё время</button>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <input type="text" id="date_range" class="form-control" placeholder="С по" style="max-width: 260px;" readonly>
+                    <input type="text" id="date_range" class="form-control" placeholder="Интервал" style="max-width: 260px;" readonly value="{{ isset($startDate) && isset($endDate) ? $startDate->format('d.m.Y') . ' по ' . $endDate->format('d.m.Y') : '' }}">
                 </div>
-                <span class="text-muted">Период: с {{ isset($startDate) ? $startDate->format('d.m.Y') : '' }} по {{ isset($endDate) ? $endDate->format('d.m.Y') : '' }}</span>
             </div>
         </form>
     </div>
@@ -41,49 +40,53 @@
 <!-- Основные клиентские метрики -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="card border-primary">
-            <div class="card-body text-center">
+        <div class="card kpi-outline primary h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-person-plus text-primary fs-1 me-2"></i>
+                    <i class="bi bi-person-plus fs-1"></i>
                 </div>
-                <h3 class="card-title text-primary">{{ number_format($clientsData['new_clients']) }}</h3>
-                <p class="card-text text-muted">Новых клиентов</p>
+                <h3>{{ number_format($clientsData['new_clients']) }}</h3>
+                <p class="card-text text-muted mb-1">Новых клиентов</p>
+                <small class="text-muted d-block">Клиенты, зарегистрированные впервые</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-success">
-            <div class="card-body text-center">
+        <div class="card kpi-outline success h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-people text-success fs-1 me-2"></i>
+                    <i class="bi bi-people fs-1"></i>
                 </div>
-                <h3 class="card-title text-success">{{ number_format($clientsData['repeat_clients']) }}</h3>
-                <p class="card-text text-muted">Повторных клиентов</p>
+                <h3>{{ number_format($clientsData['repeat_clients']) }}</h3>
+                <p class="card-text text-muted mb-1">Повторных клиентов</p>
+                <small class="text-muted d-block">Клиенты с повторными обращениями</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-info">
-            <div class="card-body text-center">
+        <div class="card kpi-outline info h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-heart text-info fs-1 me-2"></i>
+                    <i class="bi bi-heart fs-1"></i>
                 </div>
-                <h3 class="card-title text-info">{{ number_format($petsData['total_pets']) }}</h3>
-                <p class="card-text text-muted">Питомцев</p>
+                <h3>{{ number_format($petsData['total_pets']) }}</h3>
+                <p class="card-text text-muted mb-1">Питомцев</p>
+                <small class="text-muted d-block">Общее количество питомцев</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-warning">
-            <div class="card-body text-center">
+        <div class="card kpi-outline warning h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-star text-warning fs-1 me-2"></i>
+                    <i class="bi bi-star fs-1"></i>
                 </div>
-                <h3 class="card-title text-warning">{{ $topClients->count() }}</h3>
-                <p class="card-text text-muted">Топ клиентов</p>
+                <h3>{{ $topClients->count() }}</h3>
+                <p class="card-text text-muted mb-1">Топ клиентов</p>
+                <small class="text-muted d-block">Клиенты с наибольшими заказами</small>
             </div>
         </div>
     </div>
@@ -93,21 +96,23 @@
 <div class="row">
     <!-- Статистика клиентов -->
     <div class="col-md-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-pie-chart"></i> Распределение клиентов
                 </h5>
             </div>
-            <div class="card-body">
-                <canvas id="clientsChart" width="400" height="200"></canvas>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div class="chart-container mx-auto" style="position: relative; width: 100%; max-width: 280px; height: 280px;">
+                    <canvas id="clientsChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
     
     <!-- Статистика питомцев по породам -->
     <div class="col-md-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-bar-chart"></i> Питомцы по породам
@@ -146,21 +151,16 @@
                             </thead>
                             <tbody>
                                 @foreach($topClients as $index => $client)
-                                    @php
-                                        $averageOrder = $client['orders_count'] > 0 
-                                            ? round($client['total_spent'] / $client['orders_count'], 0) 
-                                            : 0;
-                                    @endphp
                                     <tr>
                                         <td>
-                                            @if($index == 0)
-                                                <span class="badge bg-warning">🥇</span>
-                                            @elseif($index == 1)
-                                                <span class="badge bg-secondary">🥈</span>
-                                            @elseif($index == 2)
-                                                <span class="badge bg-warning">🥉</span>
+                                            @if($loop->index == 0)
+                                                <i class="bi bi-trophy text-warning"></i>
+                                            @elseif($loop->index == 1)
+                                                <i class="bi bi-trophy text-secondary"></i>
+                                            @elseif($loop->index == 2)
+                                                <i class="bi bi-trophy text-danger"></i>
                                             @else
-                                                <span class="text-muted">{{ $index + 1 }}</span>
+                                                <span class="text-muted">{{ $loop->index + 1 }}</span>
                                             @endif
                                         </td>
                                         <td>
@@ -178,7 +178,7 @@
                                             <strong>{{ number_format($client['total_spent'], 0, ',', ' ') }} ₽</strong>
                                         </td>
                                         <td class="text-info d-none-mobile">
-                                            {{ number_format($averageOrder, 0, ',', ' ') }} ₽
+                                            {{ number_format($client['average_order'], 0, ',', ' ') }} ₽
                                         </td>
                                     </tr>
                                 @endforeach
@@ -221,12 +221,6 @@
                 
                 @php
                     $totalClients = $clientsData['new_clients'] + $clientsData['repeat_clients'];
-                    $newClientsPercentage = $totalClients > 0 
-                        ? round(($clientsData['new_clients'] / $totalClients) * 100, 1) 
-                        : 0;
-                    $repeatClientsPercentage = $totalClients > 0 
-                        ? round(($clientsData['repeat_clients'] / $totalClients) * 100, 1) 
-                        : 0;
                 @endphp
                 
                 <div class="mt-3">
@@ -234,21 +228,21 @@
                     <div class="progress mb-2" style="height: 25px;">
                         <div class="progress-bar bg-primary" 
                              role="progressbar" 
-                             style="width: {{ $newClientsPercentage }}%"
-                             aria-valuenow="{{ $newClientsPercentage }}" 
+                             style="width: {{ $clientsData['new_clients_percentage'] }}%"
+                             aria-valuenow="{{ $clientsData['new_clients_percentage'] }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            Новые: {{ $newClientsPercentage }}%
+                            Новые: {{ $clientsData['new_clients_percentage'] }}%
                         </div>
                     </div>
                     <div class="progress" style="height: 25px;">
                         <div class="progress-bar bg-success" 
                              role="progressbar" 
-                             style="width: {{ $repeatClientsPercentage }}%"
-                             aria-valuenow="{{ $repeatClientsPercentage }}" 
+                             style="width: {{ $clientsData['repeat_clients_percentage'] }}%"
+                             aria-valuenow="{{ $clientsData['repeat_clients_percentage'] }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            Повторные: {{ $repeatClientsPercentage }}%
+                            Повторные: {{ $clientsData['repeat_clients_percentage'] }}%
                         </div>
                     </div>
                 </div>
@@ -333,6 +327,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('period-form').submit();
         }
     });
+    
+    // Устанавливаем значение в датапикер если период custom
+    if (hiddenPeriod.value === 'custom' && hiddenStart.value && hiddenEnd.value) {
+        rangePicker.selectDate([hiddenStart.value, hiddenEnd.value]);
+    }
     // Данные для графиков
     const clientsData = @json($clientsData);
     const petsData = @json($petsData);

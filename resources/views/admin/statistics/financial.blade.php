@@ -30,9 +30,8 @@
                     <button type="button" class="btn btn-outline-secondary @if($period==='all') active @endif" onclick="setPeriod('all')">За всё время</button>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <input type="text" id="date_range" class="form-control" placeholder="С по" style="max-width: 260px;" readonly>
+                    <input type="text" id="date_range" class="form-control" placeholder="Интервал" style="max-width: 260px;" readonly value="{{ isset($startDate) && isset($endDate) ? $startDate->format('d.m.Y') . ' по ' . $endDate->format('d.m.Y') : '' }}">
                 </div>
-                <span class="text-muted">Период: с {{ isset($startDate) ? $startDate->format('d.m.Y') : '' }} по {{ isset($endDate) ? $endDate->format('d.m.Y') : '' }}</span>
             </div>
         </form>
     </div>
@@ -47,49 +46,86 @@
     @endphp
     
     <div class="col-md-3 mb-3">
-        <div class="card border-success">
-            <div class="card-body text-center">
+        <div class="card kpi-outline success h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-cash-stack text-success fs-1 me-2"></i>
+                    <i class="bi bi-cash-stack fs-1"></i>
                 </div>
-                <h3 class="card-title text-success">{{ number_format($totalRevenue, 0, ',', ' ') }} ₽</h3>
-                <p class="card-text text-muted">Общая выручка</p>
+                <h3>{{ number_format($totalRevenue, 0, ',', ' ') }} ₽</h3>
+                <p class="card-text text-muted mb-1">Общая выручка</p>
+                <small class="text-muted d-block">Сумма всех оплаченных заказов</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-info">
-            <div class="card-body text-center">
+        <div class="card kpi-outline info h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-cart-check text-info fs-1 me-2"></i>
+                    <i class="bi bi-cart-check fs-1"></i>
                 </div>
-                <h3 class="card-title text-info">{{ number_format($totalOrders) }}</h3>
-                <p class="card-text text-muted">Заказов</p>
+                <h3>{{ number_format($totalOrders) }}</h3>
+                <p class="card-text text-muted mb-1">
+                    @php
+                        $lastDigit = $totalOrders % 10;
+                        $lastTwoDigits = $totalOrders % 100;
+                        
+                        if ($lastTwoDigits >= 11 && $lastTwoDigits <= 14) {
+                            $orderText = 'Заказов';
+                        } elseif ($lastDigit == 1) {
+                            $orderText = 'Заказ';
+                        } elseif ($lastDigit >= 2 && $lastDigit <= 4) {
+                            $orderText = 'Заказа';
+                        } else {
+                            $orderText = 'Заказов';
+                        }
+                    @endphp
+                    {{ $orderText }}
+                </p>
+                <small class="text-muted d-block">Количество созданных заказов</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-primary">
-            <div class="card-body text-center">
+        <div class="card kpi-outline primary h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-graph-up text-primary fs-1 me-2"></i>
+                    <i class="bi bi-graph-up fs-1"></i>
                 </div>
-                <h3 class="card-title text-primary">{{ number_format($averageRevenue, 0, ',', ' ') }} ₽</h3>
-                <p class="card-text text-muted">Средний чек</p>
+                <h3>{{ number_format($averageRevenue, 0, ',', ' ') }} ₽</h3>
+                <p class="card-text text-muted mb-1">Средний чек</p>
+                <small class="text-muted d-block">Средняя сумма заказа</small>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card border-warning">
-            <div class="card-body text-center">
+        <div class="card kpi-outline warning h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-building text-warning fs-1 me-2"></i>
+                    <i class="bi bi-building fs-1"></i>
                 </div>
-                <h3 class="card-title text-warning">{{ $branchRevenue->count() }}</h3>
-                <p class="card-text text-muted">Активных филиалов</p>
+                <h3>{{ $branchRevenue->count() }}</h3>
+                <p class="card-text text-muted mb-1">
+                    @php
+                        $branchCount = $branchRevenue->count();
+                        $lastDigit = $branchCount % 10;
+                        $lastTwoDigits = $branchCount % 100;
+                        
+                        if ($lastTwoDigits >= 11 && $lastTwoDigits <= 14) {
+                            $branchText = 'Активных филиалов';
+                        } elseif ($lastDigit == 1) {
+                            $branchText = 'Активный филиал';
+                        } elseif ($lastDigit >= 2 && $lastDigit <= 4) {
+                            $branchText = 'Активных филиала';
+                        } else {
+                            $branchText = 'Активных филиалов';
+                        }
+                    @endphp
+                    {{ $branchText }}
+                </p>
+                <small class="text-muted d-block">Филиалы с заказами</small>
             </div>
         </div>
     </div>
@@ -113,14 +149,16 @@
     
     <!-- Выручка по категориям -->
     <div class="col-md-4 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-pie-chart"></i> Выручка по категориям
                 </h5>
             </div>
-            <div class="card-body">
-                <canvas id="categoryChart" width="400" height="200"></canvas>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div class="chart-container mx-auto" style="position: relative; width: 100%; max-width: 280px; height: 280px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -150,7 +188,11 @@
                             <tbody>
                                 @foreach($topServices as $service)
                                     <tr>
-                                        <td>{{ $service['service']->name }}</td>
+                                        <td>
+                                            <a href="{{ route('admin.services.show', $service['service']->id) }}" class="text-decoration-underline text-body">
+                                                {{ $service['service']->name }}
+                                            </a>
+                                        </td>
                                         <td class="d-none-mobile">{{ $service['count'] }}</td>
                                         <td class="text-success">{{ number_format($service['revenue'], 0, ',', ' ') }} ₽</td>
                                     </tr>
@@ -217,25 +259,29 @@
                     <div class="col-md-3">
                         <div class="text-center">
                             <h4 class="text-primary">{{ number_format($categoryRevenue['services'], 0, ',', ' ') }} ₽</h4>
-                            <p class="text-muted">Услуги</p>
+                            <p class="text-muted mb-1">Услуги</p>
+                            <small class="text-muted">Выручка от медицинских услуг (консультации, операции, процедуры)</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
                             <h4 class="text-success">{{ number_format($categoryRevenue['drugs'], 0, ',', ' ') }} ₽</h4>
-                            <p class="text-muted">Лекарства</p>
+                            <p class="text-muted mb-1">Лекарства</p>
+                            <small class="text-muted">Выручка от продажи препаратов и медикаментов</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
                             <h4 class="text-info">{{ number_format($categoryRevenue['lab_tests'], 0, ',', ' ') }} ₽</h4>
-                            <p class="text-muted">Анализы</p>
+                            <p class="text-muted mb-1">Анализы</p>
+                            <small class="text-muted">Выручка от лабораторных исследований</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
                             <h4 class="text-warning">{{ number_format($categoryRevenue['vaccinations'], 0, ',', ' ') }} ₽</h4>
-                            <p class="text-muted">Вакцинации</p>
+                            <p class="text-muted mb-1">Вакцинации</p>
+                            <small class="text-muted">Выручка от прививок и вакцинаций</small>
                         </div>
                     </div>
                 </div>
@@ -273,6 +319,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('period-form').submit();
         }
     });
+    
+    // Устанавливаем значение в датапикер если период custom
+    if (hiddenPeriod.value === 'custom' && hiddenStart.value && hiddenEnd.value) {
+        rangePicker.selectDate([hiddenStart.value, hiddenEnd.value]);
+    }
     // Данные для графиков
     const revenueData = @json($revenueData);
     const categoryRevenue = @json($categoryRevenue);
