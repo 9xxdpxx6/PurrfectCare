@@ -258,29 +258,29 @@
                 <div class="row">
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-primary">{{ number_format($categoryRevenue['services'], 0, ',', ' ') }} ₽</h4>
-                            <p class="text-muted mb-1">Услуги</p>
+                            <h4 class="text-primary mb-2">{{ number_format($categoryRevenue['services'], 0, ',', ' ') }} ₽</h4>
+                            <h6 class="text-white mb-2">Услуги</h6>
                             <small class="text-muted">Выручка от медицинских услуг (консультации, операции, процедуры)</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-success">{{ number_format($categoryRevenue['drugs'], 0, ',', ' ') }} ₽</h4>
-                            <p class="text-muted mb-1">Лекарства</p>
+                            <h4 class="text-success mb-2">{{ number_format($categoryRevenue['drugs'], 0, ',', ' ') }} ₽</h4>
+                            <h6 class="text-white mb-2">Лекарства</h6>
                             <small class="text-muted">Выручка от продажи препаратов и медикаментов</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-info">{{ number_format($categoryRevenue['lab_tests'], 0, ',', ' ') }} ₽</h4>
-                            <p class="text-muted mb-1">Анализы</p>
+                            <h4 class="text-info mb-2">{{ number_format($categoryRevenue['lab_tests'], 0, ',', ' ') }} ₽</h4>
+                            <h6 class="text-white mb-2">Анализы</h6>
                             <small class="text-muted">Выручка от лабораторных исследований</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-warning">{{ number_format($categoryRevenue['vaccinations'], 0, ',', ' ') }} ₽</h4>
-                            <p class="text-muted mb-1">Вакцинации</p>
+                            <h4 class="text-warning mb-2">{{ number_format($categoryRevenue['vaccinations'], 0, ',', ' ') }} ₽</h4>
+                            <h6 class="text-white mb-2">Вакцинации</h6>
                             <small class="text-muted">Выручка от прививок и вакцинаций</small>
                         </div>
                     </div>
@@ -330,10 +330,67 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // График выручки по дням
     const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    
+    // Обрабатываем даты для умного отображения
+    const dates = Object.keys(revenueData);
+    
+    // Определяем тип периода и создаем соответствующие метки
+    let periodTitle = 'Дата';
+    let dateLabels = [];
+    
+    if (dates.length > 0) {
+        const firstDate = new Date(dates[0]);
+        const lastDate = new Date(dates[dates.length - 1]);
+        
+        // Определяем длительность периода
+        const diffTime = Math.abs(lastDate - firstDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const isMoreThanMonth = diffDays > 31;
+        const isMoreThanYear = diffDays > 365;
+        
+        // Создаем метки в зависимости от периода
+        dateLabels = dates.map((dateStr, index) => {
+            const date = new Date(dateStr);
+            const day = date.getDate();
+            const month = date.getMonth() + 1; // getMonth() возвращает 0-11
+            const year = date.getFullYear();
+            
+            if (!isMoreThanMonth) {
+                // Период ≤ месяца: только день
+                return day.toString();
+            } else if (!isMoreThanYear) {
+                // Период > месяца, но ≤ года: дд.мм
+                return `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}`;
+            } else {
+                // Период > года: дд.мм.гггг только для начала года, остальные дд.мм
+                const isFirstDayOfYear = (month === 1 && day === 1);
+                if (isFirstDayOfYear) {
+                    return `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year}`;
+                } else {
+                    return `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}`;
+                }
+            }
+        });
+        
+        // Определяем заголовок для оси
+        if (firstDate.getFullYear() === lastDate.getFullYear()) {
+            if (firstDate.getMonth() === lastDate.getMonth()) {
+                // Один месяц
+                periodTitle = firstDate.toLocaleDateString('ru', { month: 'long', year: 'numeric' });
+            } else {
+                // Разные месяцы одного года
+                periodTitle = `${firstDate.toLocaleDateString('ru', { month: 'short' })} - ${lastDate.toLocaleDateString('ru', { month: 'short' })} ${firstDate.getFullYear()}`;
+            }
+        } else {
+            // Разные годы
+            periodTitle = `${firstDate.toLocaleDateString('ru', { month: 'short', year: 'numeric' })} - ${lastDate.toLocaleDateString('ru', { month: 'short', year: 'numeric' })}`;
+        }
+    }
+    
     new Chart(revenueCtx, {
         type: 'line',
         data: {
-            labels: Object.keys(revenueData),
+            labels: dateLabels,
             datasets: [{
                 label: 'Выручка (₽)',
                 data: Object.values(revenueData),
@@ -350,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     display: true,
                     title: {
                         display: true,
-                        text: 'Дата'
+                        text: periodTitle
                     }
                 },
                 y: {
@@ -358,6 +415,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: {
                         display: true,
                         text: 'Выручка (₽)'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            // Показываем полную дату в тултипе
+                            const originalDate = dates[context[0].dataIndex];
+                            return new Date(originalDate).toLocaleDateString('ru-RU');
+                        }
                     }
                 }
             }

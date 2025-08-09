@@ -217,6 +217,10 @@ class StatisticsController extends Controller
         // Статистика диагнозов
         $diagnosesData = $this->medicalService->getDiagnosesData($startDate, $endDate);
         
+        // Дополнительные данные для диагнозов
+        $diagnosesCount = $this->medicalService->getDiagnosesCount($startDate, $endDate);
+        $totalDiagnosesCount = $this->medicalService->getTotalDiagnosesCount($startDate, $endDate);
+        
         // Статистика вакцинаций
         $vaccinationsData = $this->medicalService->getVaccinationsData($startDate, $endDate);
         
@@ -224,7 +228,7 @@ class StatisticsController extends Controller
         $labTestsData = $this->medicalService->getLabTestsData($startDate, $endDate);
         
         $dateRange = $startDate->format('d.m.Y') . ' — ' . $endDate->format('d.m.Y');
-        return view('admin.statistics.medical', compact('diagnosesData', 'vaccinationsData', 'labTestsData', 'period', 'startDate', 'endDate', 'dateRange'));
+        return view('admin.statistics.medical', compact('diagnosesData', 'diagnosesCount', 'totalDiagnosesCount', 'vaccinationsData', 'labTestsData', 'period', 'startDate', 'endDate', 'dateRange'));
     }
     
     private function getStartDate($period)

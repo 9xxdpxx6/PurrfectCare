@@ -45,7 +45,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-clipboard2-pulse fs-1"></i>
                 </div>
-                <h3>{{ number_format($diagnosesData->count()) }}</h3>
+                <h3>{{ number_format($diagnosesCount) }}</h3>
                 <p class="card-text text-muted mb-1">Уникальных диагнозов</p>
                 <small class="text-muted d-block">Количество различных диагнозов</small>
             </div>
@@ -84,7 +84,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-exclamation-triangle fs-1"></i>
                 </div>
-                <h3>{{ number_format($diagnosesData->sum()) }}</h3>
+                <h3>{{ number_format($totalDiagnosesCount) }}</h3>
                 <p class="card-text text-muted mb-1">Всего диагнозов</p>
                 <small class="text-muted d-block">Общее количество поставленных диагнозов</small>
             </div>
@@ -324,7 +324,7 @@
                 <div class="row">
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-primary">{{ $diagnosesData->count() }}</h4>
+                            <h4 class="text-primary">{{ $diagnosesCount }}</h4>
                             <p class="text-muted">Уникальных диагнозов</p>
                         </div>
                     </div>
@@ -342,7 +342,7 @@
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-warning">{{ $diagnosesData->sum() + $vaccinationsData->sum() + $labTestsData->sum() }}</h4>
+                            <h4 class="text-warning">{{ $totalDiagnosesCount + $vaccinationsData->sum() + $labTestsData->sum() }}</h4>
                             <p class="text-muted">Всего медицинских процедур</p>
                         </div>
                     </div>
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: Object.keys(diagnosesData).slice(0, 10),
             datasets: [{
                 label: 'Количество диагнозов',
-                data: Object.values(diagnosesData).slice(0, 10),
+                data: Object.values(diagnosesData).slice(0, 10).map(item => item.count),
                 backgroundColor: 'rgba(255, 99, 132, 0.6)',
                 borderColor: 'rgb(255, 99, 132)',
                 borderWidth: 1

@@ -85,8 +85,8 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-calendar-check text-primary fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title text-primary">{{ number_format($metrics['total_visits']) }}</h3>
-                <p class="card-text text-muted">Приёмов</p>
+                <h3 class="card-title text-primary mb-2">{{ number_format($metrics['total_visits']) }}</h3>
+                <h6 class="text-white mb-0">Приёмов</h6>
             </div>
         </div>
     </div>
@@ -97,8 +97,8 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-cart-check text-success fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title text-success">{{ number_format($metrics['total_orders']) }}</h3>
-                <p class="card-text text-muted">Заказов</p>
+                <h3 class="card-title text-success mb-2">{{ number_format($metrics['total_orders']) }}</h3>
+                <h6 class="text-white mb-0">Заказов</h6>
             </div>
         </div>
     </div>
@@ -109,8 +109,8 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-cash-stack text-info fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title text-info">{{ number_format($metrics['total_revenue'], 0, ',', ' ') }} ₽</h3>
-                <p class="card-text text-muted">Выручка</p>
+                <h3 class="card-title text-info mb-2">{{ number_format($metrics['total_revenue'], 0, ',', ' ') }} ₽</h3>
+                <h6 class="text-white mb-0">Выручка</h6>
             </div>
         </div>
     </div>
@@ -121,8 +121,8 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-people text-warning fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title text-warning">{{ number_format($metrics['total_clients']) }}</h3>
-                <p class="card-text text-muted">Новых клиентов</p>
+                <h3 class="card-title text-warning mb-2">{{ number_format($metrics['total_clients']) }}</h3>
+                <h6 class="text-white mb-0">Новых клиентов</h6>
             </div>
         </div>
     </div>
@@ -133,8 +133,8 @@
     <div class="col-md-4 mb-3">
         <div class="card kpi-outline success">
             <div class="card-body text-center">
-                <h5 class="card-title">Средний чек</h5>
-                <h3 class="text-success">{{ number_format($metrics['average_order'], 0, ',', ' ') }} ₽</h3>
+                <h5 class="card-title mb-2">Средний чек</h5>
+                <h3 class="text-success mb-0">{{ number_format($metrics['average_order'], 0, ',', ' ') }} ₽</h3>
             </div>
         </div>
     </div>
@@ -142,8 +142,8 @@
     <div class="col-md-4 mb-3">
         <div class="card kpi-outline info">
             <div class="card-body text-center">
-                <h5 class="card-title">Конверсия приёмов в заказы</h5>
-                <h3 class="text-info">{{ $metrics['conversion_rate'] }}%</h3>
+                <h5 class="card-title mb-2">Конверсия приёмов в заказы</h5>
+                <h3 class="text-info mb-0">{{ $metrics['conversion_rate'] }}%</h3>
             </div>
         </div>
     </div>
@@ -151,8 +151,8 @@
     <div class="col-md-4 mb-3">
         <div class="card kpi-outline primary">
             <div class="card-body text-center">
-                <h5 class="card-title">Питомцев</h5>
-                <h3 class="text-primary">{{ number_format($metrics['total_pets']) }}</h3>
+                <h5 class="card-title mb-2">Питомцев</h5>
+                <h3 class="text-primary mb-0">{{ number_format($metrics['total_pets']) }}</h3>
             </div>
         </div>
     </div>
@@ -226,20 +226,20 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-6">
-                        <p class="mb-1"><strong>Филиалов:</strong></p>
-                        <h4 class="text-primary">{{ $metrics['total_branches'] }}</h4>
+                        <h6 class="text-white mb-1">Филиалов</h6>
+                        <h4 class="text-primary mb-0">{{ $metrics['total_branches'] }}</h4>
                     </div>
                     <div class="col-6">
-                        <p class="mb-1"><strong>Всего сотрудников:</strong></p>
-                        <h4 class="text-success">{{ $metrics['total_employees'] }}</h4>
+                        <h6 class="text-white mb-1">Всего сотрудников</h6>
+                        <h4 class="text-success mb-0">{{ $metrics['total_employees'] }}</h4>
                     </div>
                     <div class="col-6 mt-2">
-                        <p class="mb-1"><strong>Услуг:</strong></p>
-                        <h4 class="text-info">{{ $metrics['total_services'] }}</h4>
+                        <h6 class="text-white mb-1">Услуг</h6>
+                        <h4 class="text-info mb-0">{{ $metrics['total_services'] }}</h4>
                     </div>
                     <div class="col-6 mt-2">
-                        <p class="mb-1"><strong>Ветеринаров:</strong></p>
-                        <h4 class="text-warning">{{ $metrics['total_veterinarians'] }}</h4>
+                        <h6 class="text-white mb-1">Ветеринаров</h6>
+                        <h4 class="text-warning mb-0">{{ $metrics['total_veterinarians'] }}</h4>
                     </div>
                 </div>
             </div>
@@ -258,9 +258,18 @@
                     @endif
                 </h5>
             </div>
-            <div class="card-body d-flex flex-column justify-content-center">
-                <div class="chart-container mx-auto" style="position: relative; width: 100%; max-width: 280px; height: 280px;">
-                    <canvas id="weekdayChart"></canvas>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-lg-7 col-md-12 mb-3 mb-lg-0">
+                        <div class="chart-container mx-auto" style="position: relative; width: 100%; max-width: 280px; height: 280px;">
+                            <canvas id="weekdayChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 col-md-12">
+                        <div class="weekday-legend">
+                            <!-- Легенда будет добавлена через JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -383,46 +392,40 @@ document.addEventListener('DOMContentLoaded', function() {
                     '#9966FF',
                     '#FF9F40',
                     '#FF6B9D'
-                ],
-                borderWidth: 2
+                ]
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 12,
-                        usePointStyle: true,
-                        font: {
-                            size: 10
-                        },
-                        // Убираем кастомную функцию, пусть Chart.js сам генерирует легенду
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.parsed;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            },
-            cutout: '50%',
-            layout: {
-                padding: {
-                    top: 5,
-                    bottom: 5
+                    display: false // Отключаем встроенную легенду
                 }
             }
         }
     });
+    
+    // Создаем кастомную легенду
+    const legendContainer = document.querySelector('.weekday-legend');
+    const legendItems = Object.keys(weeklyData).map((label, index) => {
+        const color = weekdayChart.data.datasets[0].backgroundColor[index % weekdayChart.data.datasets[0].backgroundColor.length];
+        const value = weeklyData[label].visits;
+        const total = Object.values(weeklyData).reduce((sum, day) => sum + day.visits, 0);
+        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+        
+        return `
+            <div class="d-flex align-items-center mb-1">
+                <div class="legend-color me-2" style="width: 10px; height: 10px; background-color: ${color}; border-radius: 2px;"></div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold" style="font-size: 0.8rem;">${label}</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">${value} (${percentage}%)</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    legendContainer.innerHTML = legendItems;
 });
 </script>
 @endpush 

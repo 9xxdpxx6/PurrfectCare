@@ -363,3 +363,21 @@
         overflow-y: auto;
     }
 }
+
+// Адаптивная легенда для распределения приёмов
+.weekday-legend {
+    @media (max-width: 991.98px) {
+        margin-top: 1rem;
+        text-align: center;
+        
+        .d-flex {
+            justify-content: center;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        padding-left: 0.5rem;
+        max-height: 280px;
+        overflow-y: auto;
+    }
+}

@@ -67,4 +67,29 @@ class MedicalStatisticsService
             })
             ->take(10);
     }
+
+    public function getDiagnosesCount($startDate, $endDate)
+    {
+        return Visit::whereBetween('starts_at', [$startDate, $endDate])
+            ->with('diagnoses.dictionaryDiagnosis')
+            ->get()
+            ->flatMap(function($visit) {
+                return $visit->diagnoses;
+            })
+            ->groupBy(function($diagnosis) {
+                return $diagnosis->getName() ?: 'Неизвестный диагноз';
+            })
+            ->count();
+    }
+
+    public function getTotalDiagnosesCount($startDate, $endDate)
+    {
+        return Visit::whereBetween('starts_at', [$startDate, $endDate])
+            ->with('diagnoses')
+            ->get()
+            ->flatMap(function($visit) {
+                return $visit->diagnoses;
+            })
+            ->count();
+    }
 }
