@@ -155,9 +155,9 @@
                         <p class="mb-1"><strong>Вид:</strong> {{ $item->pet->breed->species->name ?? 'Не указан' }}</p>
                         <p class="mb-1"><strong>Порода:</strong> {{ $item->pet->breed->name ?? 'Не указана' }}</p>
                     @endif
-                    @if($item->pet->birth_date)
-                        <p class="mb-1"><strong>Дата рождения:</strong> {{ $item->pet->birth_date->format('d.m.Y') }}</p>
-                        <p class="mb-1"><strong>Возраст:</strong> {{ $item->pet->birth_date->age }} лет</p>
+                    @if($item->pet->birthdate)
+                        <p class="mb-1"><strong>Дата рождения:</strong> {{ $item->pet->birthdate->format('d.m.Y') }}</p>
+                        <p class="mb-1"><strong>Возраст:</strong> {{ $item->pet->birthdate->age }} лет</p>
                     @endif
                     @if($item->pet->gender)
                         <p class="mb-1"><strong>Пол:</strong> {{ $item->pet->gender == 'male' ? 'Самец' : 'Самка' }}</p>

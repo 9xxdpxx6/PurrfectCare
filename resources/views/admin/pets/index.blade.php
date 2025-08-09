@@ -77,7 +77,7 @@
                             </div>
                             <div class="text-muted mb-1">
                                 <span>Дата рождения:</span>
-                                {{ \Carbon\Carbon::parse($pet->birth_date)->format('d.m.Y') }}
+                                {{ $pet->birthdate ? $pet->birthdate->format('d.m.Y') : '—' }}
                             </div>
                             <div class="text-muted">
                                 <span>Пол:</span>

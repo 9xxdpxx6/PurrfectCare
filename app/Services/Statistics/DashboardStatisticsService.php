@@ -28,8 +28,12 @@ class DashboardStatisticsService
         $current = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
         
+        // Определяем формат даты в зависимости от периода
+        $period = $end->diffInDays($current);
+        $dateFormat = $period > 180 ? 'd.m.Y' : 'd.m';
+        
         while ($current <= $end) {
-            $dateKey = $current->format('d.m');
+            $dateKey = $current->format($dateFormat);
             
             $stats[$dateKey] = [
                 'visits' => Visit::whereDate('starts_at', $current)->count(),

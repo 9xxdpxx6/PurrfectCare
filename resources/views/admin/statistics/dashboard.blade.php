@@ -131,8 +131,8 @@
 <!-- Дополнительные метрики -->
 <div class="row mb-4">
     <div class="col-md-4 mb-3">
-        <div class="card kpi-outline success">
-            <div class="card-body text-center">
+        <div class="card kpi-outline success h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <h5 class="card-title mb-2">Средний чек</h5>
                 <h3 class="text-success mb-0">{{ number_format($metrics['average_order'], 0, ',', ' ') }} ₽</h3>
             </div>
@@ -140,8 +140,8 @@
     </div>
     
     <div class="col-md-4 mb-3">
-        <div class="card kpi-outline info">
-            <div class="card-body text-center">
+        <div class="card kpi-outline info h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <h5 class="card-title mb-2">Конверсия приёмов в заказы</h5>
                 <h3 class="text-info mb-0">{{ $metrics['conversion_rate'] }}%</h3>
             </div>
@@ -149,9 +149,9 @@
     </div>
     
     <div class="col-md-4 mb-3">
-        <div class="card kpi-outline primary">
-            <div class="card-body text-center">
-                <h5 class="card-title mb-2">Питомцев</h5>
+        <div class="card kpi-outline primary h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h5 class="card-title mb-2">Новых питомцев</h5>
                 <h3 class="text-primary mb-0">{{ number_format($metrics['total_pets']) }}</h3>
             </div>
         </div>

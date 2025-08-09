@@ -25,21 +25,7 @@ class PetFactory extends Factory
         // Получаем случайного пользователя (client)
         $user = User::inRandomOrder()->first() ?? User::factory()->create();
 
-        // Проверяем, есть ли уже записи в таблице pets
-        $existingPets = Pet::where('breed_id', $breed->id)->get();
-
-        if ($existingPets->count() > 0) {
-            // Если записи есть, выбираем случайного питомца
-            return [
-                'id' => $this->faker->randomElement($existingPets)->id,
-                'breed_id' => $breed->id,
-                'client_id' => $user->id,
-                'created_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
-                'updated_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
-            ];
-        }
-
-        // Если записей нет, создаем нового питомца
+        // Создаем нового питомца (убираем логику с существующими питомцами)
         return [
             'name' => $this->faker->randomElement([
                 'Бобик', 'Рекс', 'Шарик', 'Рыжик', 'Персик', 'Мурзик', 'Тузик', 'Барсик',
@@ -50,10 +36,10 @@ class PetFactory extends Factory
                 ' Рыжий', ' Маленький', ' Большой', ' Пушистый', ' Храбрый', ' Умный'
             ]),
             'breed_id' => $breed->id,
-            'birthdate' => $this->faker->optional()->dateTimeBetween('-10 years', '-1 year'),
+            'birthdate' => $this->faker->optional(0.8)->dateTimeBetween('-10 years', '-1 year'),
             'client_id' => $user->id,
-            'temperature' => $this->faker->optional()->randomFloat(2, 35.0, 40.0),
-            'weight' => $this->faker->optional()->randomFloat(2, 1.0, 50.0),
+            'temperature' => $this->faker->optional(0.3)->randomFloat(2, 35.0, 40.0),
+            'weight' => $this->faker->optional(0.7)->randomFloat(2, 1.0, 50.0),
             'gender' => $this->faker->randomElement(array_merge(
                 array_fill(0, 45, 'male'),   // 45% male
                 array_fill(0, 45, 'female'), // 45% female
