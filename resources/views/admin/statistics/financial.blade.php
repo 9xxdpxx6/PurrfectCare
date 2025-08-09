@@ -295,6 +295,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Функция для получения цвета сетки, видимого в обеих темах
+    function getGridColor() {
+        // Используем полупрозрачный серый цвет, который хорошо виден в обеих темах
+        return 'rgba(128, 128, 128, 0.3)';
+    }
     const hiddenPeriod = document.getElementById('hidden-period');
     const hiddenStart = document.getElementById('hidden-start');
     const hiddenEnd = document.getElementById('hidden-end');
@@ -408,6 +413,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: {
                         display: true,
                         text: periodTitle
+                    },
+                    grid: {
+                        color: getGridColor()
                     }
                 },
                 y: {
@@ -415,6 +423,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: {
                         display: true,
                         text: 'Выручка (₽)'
+                    },
+                    grid: {
+                        color: getGridColor()
                     }
                 }
             },
