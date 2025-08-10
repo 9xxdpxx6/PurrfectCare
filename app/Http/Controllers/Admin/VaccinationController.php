@@ -61,7 +61,7 @@ class VaccinationController extends AdminController
         
         $filter = app(VaccinationFilter::class, ['queryParams' => $queryParams]);
         $query = $this->model::with([
-            'pet.client', 'veterinarian', 'drugs'
+            'pet.client', 'veterinarian', 'vaccinationType.drugs'
         ])->filter($filter);
         $items = $query->paginate(25)->withQueryString();
         
@@ -70,7 +70,7 @@ class VaccinationController extends AdminController
 
     public function create(): View
     {
-        $default_administered_at = now()->format('Y-m-d');
+        $default_administered_at = now()->format('d.m.Y');
         
         return view("admin.{$this->viewPath}.create", compact('default_administered_at'));
     }
@@ -80,19 +80,12 @@ class VaccinationController extends AdminController
         $validated = $request->validated();
         
         $vaccination = $this->model::create([
+            'vaccination_type_id' => $validated['vaccination_type_id'],
             'pet_id' => $validated['pet_id'],
             'veterinarian_id' => $validated['veterinarian_id'],
             'administered_at' => $validated['administered_at'],
             'next_due' => $validated['next_due'] ?? null,
         ]);
-
-        // Прикрепляем препараты к вакцинации
-        foreach ($validated['drugs'] as $drugData) {
-            $vaccination->drugs()->attach($drugData['drug_id'], [
-                'batch_number' => 'BATCH' . $drugData['drug_id'],
-                'dosage' => $drugData['dosage']
-            ]);
-        }
 
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
@@ -102,7 +95,7 @@ class VaccinationController extends AdminController
     public function show($id): View
     {
         $item = $this->model::with([
-            'pet.client', 'pet.breed.species', 'veterinarian', 'drugs'
+            'pet.client', 'pet.breed.species', 'veterinarian', 'vaccinationType.drugs'
         ])->findOrFail($id);
         
         return view("admin.{$this->viewPath}.show", compact('item'));
@@ -110,7 +103,7 @@ class VaccinationController extends AdminController
 
     public function edit($id): View
     {
-        $item = $this->model::with(['drugs'])->findOrFail($id);
+        $item = $this->model::with(['vaccinationType'])->findOrFail($id);
         
         return view("admin.{$this->viewPath}.edit", compact('item'));
     }
@@ -121,22 +114,12 @@ class VaccinationController extends AdminController
         $vaccination = $this->model::findOrFail($id);
         
         $vaccination->update([
+            'vaccination_type_id' => $validated['vaccination_type_id'],
             'pet_id' => $validated['pet_id'],
             'veterinarian_id' => $validated['veterinarian_id'],
             'administered_at' => $validated['administered_at'],
             'next_due' => $validated['next_due'] ?? null,
         ]);
-
-        // Удаляем старые связи с препаратами
-        $vaccination->drugs()->detach();
-        
-        // Прикрепляем новые препараты
-        foreach ($validated['drugs'] as $drugData) {
-            $vaccination->drugs()->attach($drugData['drug_id'], [
-                'batch_number' => 'BATCH' . $drugData['drug_id'],
-                'dosage' => $drugData['dosage']
-            ]);
-        }
 
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
@@ -166,9 +149,14 @@ class VaccinationController extends AdminController
         return app(\App\Services\Options\VaccinationOptionsService::class)->getOptions($request);
     }
     
+    public function vaccinationTypeOptions(Request $request)
+    {
+        return app(\App\Services\Options\VaccinationTypeOptionsService::class)->getOptions($request);
+    }
+    
     public function getDrugs($id)
     {
-        $vaccination = Vaccination::with('drugs')->findOrFail($id);
+        $vaccination = Vaccination::with('vaccinationType.drugs')->findOrFail($id);
         
         $drugs = $vaccination->drugs->map(function($drug) {
             return [

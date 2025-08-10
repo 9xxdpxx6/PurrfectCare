@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
         $this->call(DictionarySymptomSeeder::class);
         $this->call(DictionaryDiagnosisSeeder::class);
         $this->call(ServiceSeeder::class);
+        $this->call(VaccinationTypeSeeder::class);
 
         // Создаем базовые данные
         // Species и Breed создаются через сидеры

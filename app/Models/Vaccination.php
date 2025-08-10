@@ -12,6 +12,7 @@ class Vaccination extends Model
     use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
     protected $fillable = [
+        'vaccination_type_id',
         'pet_id',
         'veterinarian_id',
         'administered_at',
@@ -24,9 +25,13 @@ class Vaccination extends Model
     ];
 
     protected $deleteDependencies = [
-        'drugs' => 'Невозможно удалить вакцинацию, так как с ней связаны препараты',
         'orders' => 'Невозможно удалить вакцинацию, так как она используется в заказах',
     ];
+
+    public function vaccinationType()
+    {
+        return $this->belongsTo(VaccinationType::class);
+    }
 
     public function pet()
     {
@@ -38,8 +43,14 @@ class Vaccination extends Model
         return $this->belongsTo(Employee::class, 'veterinarian_id');
     }
 
+    // Убираем прямую связь с препаратами, теперь через тип вакцинации
     public function drugs()
     {
+        if ($this->vaccinationType) {
+            return $this->vaccinationType->drugs();
+        }
+        
+        // Обратная совместимость для старых записей
         return $this->belongsToMany(Drug::class, 'vaccination_drugs')
             ->using(VaccinationDrug::class)
             ->withPivot('batch_number', 'dosage')

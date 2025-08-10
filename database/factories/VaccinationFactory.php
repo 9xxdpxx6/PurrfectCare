@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Pet;
 use App\Models\Employee;
+use App\Models\VaccinationType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,6 +28,7 @@ class VaccinationFactory extends Factory
         }
 
         return [
+            'vaccination_type_id' => VaccinationType::inRandomOrder()->first()?->id,
             'pet_id' => Pet::inRandomOrder()->first()->id,
             'veterinarian_id' => Employee::inRandomOrder()->first()->id,
             'administered_at' => $administeredAt,

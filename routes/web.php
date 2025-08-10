@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\Settings\BreedController;
 use App\Http\Controllers\Admin\Settings\SupplierController as SettingsSupplierController;
 use App\Http\Controllers\Admin\Settings\DictionaryDiagnosisController;
 use App\Http\Controllers\Admin\Settings\DictionarySymptomController;
+use App\Http\Controllers\Admin\Settings\VaccinationTypeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +95,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     // Вакцинации
     Route::get('vaccinations/pet-options', [VaccinationController::class, 'petOptions'])->name('vaccinations.pet-options');
     Route::get('vaccinations/veterinarian-options', [VaccinationController::class, 'veterinarianOptions'])->name('vaccinations.veterinarian-options');
+    Route::get('vaccinations/vaccination-type-options', [VaccinationController::class, 'vaccinationTypeOptions'])->name('vaccinations.vaccination-type-options');
     Route::get('vaccinations/drug-options', [VaccinationController::class, 'drugOptions'])->name('vaccinations.drug-options');
     Route::resource('vaccinations', VaccinationController::class);
 
@@ -146,6 +148,8 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
             Route::resource('types', LabTestTypeController::class);
             Route::resource('params', LabTestParamController::class);
         });
+        
+        Route::resource('vaccination-types', VaccinationTypeController::class);
         
         Route::prefix('system')->name('system.')->group(function () {
             Route::resource('statuses', StatusController::class);

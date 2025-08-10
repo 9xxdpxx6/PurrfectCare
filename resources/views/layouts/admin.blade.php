@@ -386,6 +386,11 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.vaccination-types.*') ? 'active' : '' }}" href="{{ route('admin.settings.vaccination-types.index') }}">
+                                    Типы вакцинаций
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('admin.settings.system.statuses.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.statuses.index') }}">
                                     Статусы
                                 </a>
