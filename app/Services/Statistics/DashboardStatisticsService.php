@@ -16,7 +16,9 @@ class DashboardStatisticsService
         return [
             'total_visits' => Visit::whereBetween('starts_at', [$startDate, $endDate])->count(),
             'total_orders' => Order::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'total_revenue' => Order::whereBetween('created_at', [$startDate, $endDate])->sum('total'),
+            'total_revenue' => Order::whereBetween('created_at', [$startDate, $endDate])
+                ->where('is_paid', true) // Только оплаченные заказы
+                ->sum('total'),
             'total_services' => Service::count(),
             'total_veterinarians' => Employee::count(),
         ];
@@ -38,7 +40,9 @@ class DashboardStatisticsService
             $stats[$dateKey] = [
                 'visits' => Visit::whereDate('starts_at', $current)->count(),
                 'orders' => Order::whereDate('created_at', $current)->count(),
-                'revenue' => Order::whereDate('created_at', $current)->sum('total'),
+                'revenue' => Order::whereDate('created_at', $current)
+                    ->where('is_paid', true) // Только оплаченные заказы
+                    ->sum('total'),
             ];
             
             $current->addDay();
@@ -50,6 +54,7 @@ class DashboardStatisticsService
     public function getTopServices($startDate)
     {
         return Order::where('created_at', '>=', $startDate)
+            ->where('is_paid', true) // Только оплаченные заказы
             ->with(['items' => function($query) {
                 $query->where('item_type', Service::class);
             }])
@@ -78,7 +83,9 @@ class DashboardStatisticsService
         $end = Carbon::now();
         
         while ($current <= $end) {
-            $data[$current->format('Y-m-d')] = Order::whereDate('created_at', $current)->sum('total');
+            $data[$current->format('Y-m-d')] = Order::whereDate('created_at', $current)
+                ->where('is_paid', true) // Только оплаченные заказы
+                ->sum('total');
             $current->addDay();
         }
         

@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Операционная статистика')
+@section('title', 'Статистика эффективности')
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">
-        <i class="bi bi-calendar-check"></i> Операционная статистика
+        <i class="bi bi-calendar-check"></i> Статистика эффективности
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.statistics.dashboard') }}" class="btn btn-outline-secondary">
@@ -153,7 +153,7 @@
                                 @foreach($employeeLoad as $employee)
                                     <tr>
                                         <td>
-                                            <strong>{{ $employee['employee']->name }}</strong>
+                                            <strong><a href="{{ route('admin.employees.show', $employee['employee']) }}" class="text-decoration-none">{{ $employee['employee']->name }}</a></strong>
                                             @if($employee['employee']->specialties->count() > 0)
                                                 <br><small class="text-muted d-none-mobile">
                                                     {{ $employee['employee']->specialties->pluck('name')->join(', ') }}
@@ -174,7 +174,7 @@
                                                      aria-valuemin="0" 
                                                      aria-valuemax="6">
                                                 </div>
-                                                <span class="position-absolute top-50 start-50 translate-middle text-{{ $employee['progress_width'] > 50 ? 'white' : 'dark' }}" style="font-size: 0.75rem; font-weight: 500;">
+                                                <span class="position-absolute top-50 start-50 translate-middle" style="font-size: 0.75rem; font-weight: 500; color: {{ $employee['progress_width'] > 50 ? 'white' : 'var(--bs-body-color)' }};">
                                                     {{ $employee['progress_percentage'] }}%
                                                 </span>
                                             </div>
@@ -260,19 +260,36 @@
                     $utilizationRate = $scheduleStats['total_schedules'] > 0 
                         ? round(($scheduleStats['schedules_with_visits'] / $scheduleStats['total_schedules']) * 100, 1) 
                         : 0;
+
+                    // Определяем цвет в зависимости от эффективности
+                    if ($utilizationRate >= 70) {
+                        $utilizationColor = 'success';
+                        $utilizationLabel = 'Высокая';
+                    } elseif ($utilizationRate >= 40) {
+                        $utilizationColor = 'warning';
+                        $utilizationLabel = 'Средняя';
+                    } else {
+                        $utilizationColor = 'danger';
+                        $utilizationLabel = 'Низкая';
+                    }
                 @endphp
                 
                 <div class="mt-3">
-                    <h6>Использование расписания</h6>
-                    <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-success" 
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Эффективность расписания</h6>
+                        <span class="badge bg-{{ $utilizationColor }}">{{ $utilizationLabel }}</span>
+                    </div>
+                    <div class="progress position-relative" style="height: 25px;">
+                        <div class="progress-bar bg-{{ $utilizationColor }}" 
                              role="progressbar" 
                              style="width: {{ $utilizationRate }}%"
                              aria-valuenow="{{ $utilizationRate }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            {{ $utilizationRate }}%
                         </div>
+                        <span class="position-absolute top-50 start-50 translate-middle" style="font-size: 0.875rem; font-weight: 500; color: {{ $utilizationRate > 50 ? 'white' : 'var(--bs-body-color)' }};">
+                            {{ $utilizationRate }}%
+                        </span>
                     </div>
                 </div>
             </div>

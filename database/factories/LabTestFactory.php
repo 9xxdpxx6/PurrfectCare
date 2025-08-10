@@ -33,6 +33,8 @@ class LabTestFactory extends Factory
             'veterinarian_id' => Employee::inRandomOrder()->first()->id,
             'received_at' => $receivedAt,
             'completed_at' => $completedAt,
+            'created_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
         ];
     }
 } 

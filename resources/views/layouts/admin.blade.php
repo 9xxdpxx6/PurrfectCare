@@ -269,7 +269,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('admin.statistics.operational') ? 'active' : '' }}" href="{{ route('admin.statistics.operational') }}">
-                                    Операции
+                                    Эффективность
                                 </a>
                             </li>
                             <li class="nav-item">

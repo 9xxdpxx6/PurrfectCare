@@ -80,6 +80,12 @@ class UserFilter extends AbstractFilter
             case 'email_desc':
                 $builder->orderBy('email', 'desc');
                 break;
+            case 'orders_desc':
+                $builder->withCount('orders')->orderBy('orders_count', 'desc');
+                break;
+            case 'orders_asc':
+                $builder->withCount('orders')->orderBy('orders_count', 'asc');
+                break;
             case 'created_asc':
                 $builder->orderBy('created_at');
                 break;

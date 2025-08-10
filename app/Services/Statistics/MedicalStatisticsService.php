@@ -59,13 +59,29 @@ class MedicalStatisticsService
             ->with('labTestType')
             ->get()
             ->groupBy(function($labTest) {
-                return $labTest->labTestType ? $labTest->labTestType->name : 'Неизвестный анализ';
+                return $labTest->labTestType ? $labTest->labTestType->id : 'unknown';
             })
-            ->map->count()
-            ->sortByDesc(function($count) {
-                return $count;
+            ->map(function($labTests, $labTestTypeId) {
+                $labTestType = $labTests->first()->labTestType;
+                return [
+                    'labTestType' => $labTestType,
+                    'name' => $labTestType ? $labTestType->name : 'Неизвестный анализ',
+                    'count' => $labTests->count()
+                ];
             })
+            ->sortByDesc('count')
             ->take(10);
+    }
+
+    public function getLabTestsTypesCount($startDate, $endDate)
+    {
+        return LabTest::whereBetween('created_at', [$startDate, $endDate])
+            ->with('labTestType')
+            ->get()
+            ->groupBy(function($labTest) {
+                return $labTest->labTestType ? $labTest->labTestType->id : 'unknown';
+            })
+            ->count();
     }
 
     public function getDiagnosesCount($startDate, $endDate)

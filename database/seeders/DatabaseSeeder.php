@@ -53,8 +53,8 @@ class DatabaseSeeder extends Seeder
 
         // Создаем базовые данные
         // Species и Breed создаются через сидеры
-        User::factory(50)->create();
-        Pet::factory(100)->create();
+        User::factory(120)->create();
+        Pet::factory(200)->create();
         $this->call(SpecialtySeeder::class);
 
         // Создаем сотрудников с привязкой к специальностям и филиалам
@@ -95,9 +95,8 @@ class DatabaseSeeder extends Seeder
         // Создаем визиты
         Visit::factory(300)->create();
 
-        // Создаем заказы и элементы заказов
-        Order::factory(200)->create();
-        OrderItem::factory(400)->create();
+        // Создаем заказы с правильным распределением по клиентам
+        Order::factory()->createWithDistribution();
 
         // Создаем вакцинации и препараты вакцинации
         Vaccination::factory(150)->create();

@@ -226,9 +226,15 @@ class StatisticsController extends Controller
         
         // Статистика анализов
         $labTestsData = $this->medicalService->getLabTestsData($startDate, $endDate);
+        $labTestsTypesCount = $this->medicalService->getLabTestsTypesCount($startDate, $endDate);
+        
+        // Подготавливаем данные для отображения
+        $labTestsDataForDisplay = $labTestsData->mapWithKeys(function($item) {
+            return [$item['name'] => $item['count']];
+        });
         
         $dateRange = $startDate->format('d.m.Y') . ' — ' . $endDate->format('d.m.Y');
-        return view('admin.statistics.medical', compact('diagnosesData', 'diagnosesCount', 'totalDiagnosesCount', 'vaccinationsData', 'labTestsData', 'period', 'startDate', 'endDate', 'dateRange'));
+        return view('admin.statistics.medical', compact('diagnosesData', 'diagnosesCount', 'totalDiagnosesCount', 'vaccinationsData', 'labTestsData', 'labTestsDataForDisplay', 'labTestsTypesCount', 'period', 'startDate', 'endDate', 'dateRange'));
     }
     
     private function getStartDate($period)

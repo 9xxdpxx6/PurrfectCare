@@ -14,7 +14,9 @@ class FinancialStatisticsService
 {
     public function getCategoryRevenue($startDate, $endDate)
     {
-        $orders = Order::whereBetween('created_at', [$startDate, $endDate])->with('items.item')->get();
+        $orders = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('is_paid', true) // Только оплаченные заказы
+            ->with('items.item')->get();
         
         $categories = [
             'services' => 0,
@@ -49,6 +51,7 @@ class FinancialStatisticsService
     public function getBranchRevenue($startDate, $endDate)
     {
         return Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('is_paid', true) // Только оплаченные заказы
             ->with('branch')
             ->get()
             ->groupBy('branch_id')
@@ -70,7 +73,9 @@ class FinancialStatisticsService
         $end = Carbon::parse($endDate);
         
         while ($current <= $end) {
-            $data[$current->format('Y-m-d')] = Order::whereDate('created_at', $current)->sum('total');
+            $data[$current->format('Y-m-d')] = Order::whereDate('created_at', $current)
+                ->where('is_paid', true) // Только оплаченные заказы
+                ->sum('total');
             $current->addDay();
         }
         
@@ -80,6 +85,7 @@ class FinancialStatisticsService
     public function getTopServices($startDate, $endDate)
     {
         return Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('is_paid', true) // Только оплаченные заказы
             ->with(['items' => function($query) {
                 $query->where('item_type', Service::class);
             }])

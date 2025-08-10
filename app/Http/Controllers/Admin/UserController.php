@@ -32,7 +32,8 @@ class UserController extends AdminController
         
         foreach ($items as $user) {
             $user->pets_count = $user->pets->count();
-            $user->orders_count = $user->orders->count();
+            // Если уже есть orders_count от withCount, используем его, иначе считаем
+            $user->orders_count = $user->orders_count ?? $user->orders->count();
             $user->visits_count = $user->visits->count();
         }
         

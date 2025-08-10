@@ -50,6 +50,8 @@
                 <option value="name_desc" @if(request('sort') == 'name_desc') selected @endif>По имени (Я-А)</option>
                 <option value="email_asc" @if(request('sort') == 'email_asc') selected @endif>По email (А-Я)</option>
                 <option value="email_desc" @if(request('sort') == 'email_desc') selected @endif>По email (Я-А)</option>
+                <option value="orders_desc" @if(request('sort') == 'orders_desc') selected @endif>Заказы (больше)</option>
+                <option value="orders_asc" @if(request('sort') == 'orders_asc') selected @endif>Заказы (меньше)</option>
                 <option value="created_desc" @if(request('sort') == 'created_desc') selected @endif>Регистрация (новые)</option>
                 <option value="created_asc" @if(request('sort') == 'created_asc') selected @endif>Регистрация (старые)</option>
             </select>

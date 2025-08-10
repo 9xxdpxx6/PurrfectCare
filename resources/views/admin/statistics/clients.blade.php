@@ -92,6 +92,39 @@
     </div>
 </div>
 
+<!-- Питомцы по видам животных -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-pie-chart"></i> Питомцы по видам животных
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach($petsData['by_species'] as $speciesName => $breeds)
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted mb-3">{{ $speciesName }}</h6>
+                                    <div class="chart-container mx-auto mb-3" style="position: relative; width: 100%; max-width: 200px; height: 200px;">
+                                        <canvas id="speciesChart{{ $loop->index }}"></canvas>
+                                    </div>
+                                    <div class="species-legend{{ $loop->index }}" style="max-height: 150px; overflow-y: auto;">
+                                        <!-- Легенда будет добавлена через JavaScript -->
+                                    </div>
+                                    <small class="text-muted d-block mt-2">{{ $breeds->sum() }} питомцев</small>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Графики -->
 <div class="row">
     <!-- Статистика клиентов -->
@@ -110,16 +143,18 @@
         </div>
     </div>
     
-    <!-- Статистика питомцев по породам -->
+    <!-- Доходы по типам клиентов -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-bar-chart"></i> Питомцы по породам
+                    <i class="bi bi-cash-stack"></i> Доходы по типам клиентов
                 </h5>
             </div>
-            <div class="card-body">
-                <canvas id="petsChart" width="400" height="200"></canvas>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div class="chart-container mx-auto" style="position: relative; width: 100%; max-width: 280px; height: 280px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -164,7 +199,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <strong>{{ $client['user']->name }}</strong>
+                                            <strong><a href="{{ route('admin.users.show', $client['user']) }}" class="text-decoration-none">{{ $client['user']->name }}</a></strong>
                                             @if($client['user']->address)
                                                 <br><small class="text-muted d-none-mobile">{{ $client['user']->address }}</small>
                                             @endif
@@ -225,24 +260,28 @@
                 
                 <div class="mt-3">
                     <h6>Распределение клиентов</h6>
-                    <div class="progress mb-2" style="height: 25px;">
+                    <div class="progress mb-2" style="height: 25px; position: relative;">
                         <div class="progress-bar bg-primary" 
                              role="progressbar" 
                              style="width: {{ $clientsData['new_clients_percentage'] }}%"
                              aria-valuenow="{{ $clientsData['new_clients_percentage'] }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            Новые: {{ $clientsData['new_clients_percentage'] }}%
+                        </div>
+                        <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="top: 0; left: 0;">
+                            <span class="fw-bold progress-text">Новые: {{ $clientsData['new_clients_percentage'] }}%</span>
                         </div>
                     </div>
-                    <div class="progress" style="height: 25px;">
+                    <div class="progress" style="height: 25px; position: relative;">
                         <div class="progress-bar bg-success" 
                              role="progressbar" 
                              style="width: {{ $clientsData['repeat_clients_percentage'] }}%"
                              aria-valuenow="{{ $clientsData['repeat_clients_percentage'] }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            Повторные: {{ $clientsData['repeat_clients_percentage'] }}%
+                        </div>
+                        <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="top: 0; left: 0;">
+                            <span class="fw-bold progress-text">Повторные: {{ $clientsData['repeat_clients_percentage'] }}%</span>
                         </div>
                     </div>
                 </div>
@@ -299,10 +338,33 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+/* Стили для текста в прогресс-барах */
+.progress-text {
+    color: #000;
+}
+
+/* Для темной темы */
+[data-bs-theme="dark"] .progress-text {
+    color: #fff;
+}
+
+/* Альтернативный способ определения темной темы через класс body */
+body[data-bs-theme="dark"] .progress-text {
+    color: #fff;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Регистрируем плагин для отображения данных на диаграммах
+    Chart.register(ChartDataLabels);
+    
     // Функция для получения цвета сетки, видимого в обеих темах
     function getGridColor() {
         // Используем полупрозрачный серый цвет, который хорошо виден в обеих темах
@@ -360,51 +422,151 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: {
                     position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                            return `${context.label}: ${context.parsed} (${percentage}%)`;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 12
+                    },
+                    formatter: function(value, context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return percentage + '%';
+                    }
                 }
             }
         }
     });
     
-    // График питомцев по породам
-    const petsCtx = document.getElementById('petsChart').getContext('2d');
-    new Chart(petsCtx, {
-        type: 'bar',
+    // График доходов по типам клиентов
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'doughnut',
         data: {
-            labels: Object.keys(petsData.by_breed).slice(0, 10),
+            labels: ['Новые клиенты', 'Постоянные клиенты'],
             datasets: [{
-                label: 'Количество питомцев',
-                data: Object.values(petsData.by_breed).slice(0, 10),
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgb(75, 192, 192)',
-                borderWidth: 1
+                data: [clientsData.new_clients_revenue, clientsData.repeat_clients_revenue],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB'
+                ]
             }]
         },
         options: {
             responsive: true,
-            scales: {
-                x: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Порода'
-                    },
-                    grid: {
-                        color: getGridColor()
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                            return `${context.label}: ${context.parsed.toLocaleString()} ₽ (${percentage}%)`;
+                        }
                     }
                 },
-                y: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Количество питомцев'
+                datalabels: {
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 12
                     },
-                    beginAtZero: true,
-                    grid: {
-                        color: getGridColor()
+                    formatter: function(value, context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return percentage + '%';
                     }
                 }
             }
         }
+    });
+    
+    // Графики питомцев по видам животных
+    const speciesColors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+        '#FF9F40', '#FF6B9D', '#6BCF7F', '#4D79A4', '#E8C547'
+    ];
+    
+    Object.keys(petsData.by_species).forEach((speciesName, index) => {
+        const breeds = petsData.by_species[speciesName];
+        const breedNames = Object.keys(breeds).slice(0, 10); // Топ-10 пород
+        const breedCounts = Object.values(breeds).slice(0, 10);
+        
+        const ctx = document.getElementById(`speciesChart${index}`).getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: breedNames,
+                datasets: [{
+                    data: breedCounts,
+                    backgroundColor: speciesColors.slice(0, breedNames.length),
+                    borderWidth: 1,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false // Отключаем встроенную легенду
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed} (${percentage}%)`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: {
+                            weight: 'bold',
+                            size: 12
+                        },
+                        formatter: function(value, context) {
+                            return value;
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Создаем кастомную легенду
+        const legendContainer = document.querySelector(`.species-legend${index}`);
+        const total = breedCounts.reduce((a, b) => a + b, 0);
+        
+        const legendItems = breedNames.map((label, i) => {
+            const color = speciesColors[i];
+            const value = breedCounts[i];
+            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+            
+            return `
+                <div class="d-flex align-items-center mb-1">
+                    <div class="legend-color me-2" style="width: 12px; height: 12px; background-color: ${color}; border-radius: 2px;"></div>
+                    <div class="flex-grow-1 text-start">
+                        <div class="fw-bold" style="font-size: 0.8rem;">${label}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">${value} (${percentage}%)</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        legendContainer.innerHTML = legendItems;
     });
 });
 </script>

@@ -71,7 +71,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-droplet fs-1"></i>
                 </div>
-                <h3>{{ number_format($labTestsData->count()) }}</h3>
+                <h3>{{ number_format($labTestsTypesCount) }}</h3>
                 <p class="card-text text-muted mb-1">Видов анализов</p>
                 <small class="text-muted d-block">Типов лабораторных исследований</small>
             </div>
@@ -256,16 +256,15 @@
                                     <th>Тип анализа</th>
                                     <th class="d-none-mobile">Количество</th>
                                     <th class="d-none-tablet">Процент</th>
-                                    <th>Прогресс</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @php
-                                    $totalLabTests = $labTestsData->sum();
+                                    $totalLabTests = $labTestsDataForDisplay->sum();
                                 @endphp
-                                @foreach($labTestsData->take(10) as $labTestName => $count)
+                                @foreach($labTestsData->take(10) as $item)
                                     @php
-                                        $percentage = $totalLabTests > 0 ? round(($count / $totalLabTests) * 100, 1) : 0;
+                                        $percentage = $totalLabTests > 0 ? round(($item['count'] / $totalLabTests) * 100, 1) : 0;
                                     @endphp
                                     <tr>
                                         <td>
@@ -280,24 +279,16 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <strong>{{ $labTestName }}</strong>
+                                            @if($item['labTestType'])
+                                                <strong><a href="{{ route('admin.settings.lab-tests.types.index') }}" class="text-decoration-none">{{ $item['name'] }}</a></strong>
+                                            @else
+                                                <strong>{{ $item['name'] }}</strong>
+                                            @endif
                                         </td>
                                         <td class="d-none-mobile">
-                                            <span class="badge bg-info">{{ $count }}</span>
+                                            <span class="badge bg-info">{{ $item['count'] }}</span>
                                         </td>
                                         <td class="d-none-tablet">{{ $percentage }}%</td>
-                                        <td>
-                                            <div class="progress" style="height: 20px;">
-                                                <div class="progress-bar bg-info" 
-                                                     role="progressbar" 
-                                                     style="width: {{ $percentage }}%"
-                                                     aria-valuenow="{{ $percentage }}" 
-                                                     aria-valuemin="0" 
-                                                     aria-valuemax="100">
-                                                    <span class="d-none-mobile">{{ $percentage }}%</span>
-                                                </div>
-                                            </div>
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -336,13 +327,13 @@
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-info">{{ $labTestsData->count() }}</h4>
+                            <h4 class="text-info">{{ $labTestsTypesCount }}</h4>
                             <p class="text-muted">Типов анализов</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-warning">{{ $totalDiagnosesCount + $vaccinationsData->sum() + $labTestsData->sum() }}</h4>
+                            <h4 class="text-warning">{{ $totalDiagnosesCount + $vaccinationsData->sum() + $labTestsDataForDisplay->sum() }}</h4>
                             <p class="text-muted">Всего медицинских процедур</p>
                         </div>
                     </div>
@@ -394,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Данные для графиков
     const diagnosesData = @json($diagnosesData);
     const vaccinationsData = @json($vaccinationsData);
-    const labTestsData = @json($labTestsData);
+    const labTestsData = @json($labTestsDataForDisplay);
     
     // График топ диагнозов
     const diagnosesCtx = document.getElementById('diagnosesChart').getContext('2d');
