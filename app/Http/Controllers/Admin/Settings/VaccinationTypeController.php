@@ -27,6 +27,32 @@ class VaccinationTypeController extends SettingsController
     }
 
     /**
+     * Показать информацию о типе вакцинации (для AJAX)
+     */
+    public function show(VaccinationType $vaccinationType)
+    {
+        return response()->json([
+            'id' => $vaccinationType->id,
+            'name' => $vaccinationType->name,
+            'price' => $vaccinationType->price,
+            'description' => $vaccinationType->description,
+            'drugs' => $vaccinationType->drugs->map(function($drug) {
+                return [
+                    'id' => $drug->id,
+                    'name' => $drug->name,
+                    'pivot' => [
+                        'dosage' => $drug->pivot->dosage,
+                    ],
+                    'unit' => $drug->unit ? [
+                        'id' => $drug->unit->id,
+                        'symbol' => $drug->unit->symbol,
+                    ] : null,
+                ];
+            })
+        ]);
+    }
+
+    /**
      * Создать новый тип вакцинации
      */
     public function store(StoreVaccinationTypeRequest $request)

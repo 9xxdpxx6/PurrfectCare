@@ -16,22 +16,49 @@ class StoreRequest extends FormRequest
         $administered_at = null;
         $next_due = null;
 
+        // Логируем входящие данные для отладки
+        \Log::info('StoreRequest prepareForValidation', [
+            'administered_at_raw' => $this->administered_at,
+            'next_due_raw' => $this->next_due,
+        ]);
+
         // Безопасное преобразование дат
         if ($this->administered_at && !empty(trim($this->administered_at))) {
-            try {
-                $administered_at = \Carbon\Carbon::createFromFormat('d.m.Y', trim($this->administered_at))->format('Y-m-d');
-            } catch (\Exception $e) {
-                // Ошибка будет обработана в withValidator
+            $date = trim($this->administered_at);
+            
+            // Если дата уже в формате Y-m-d, оставляем как есть
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                $administered_at = $date;
+            } else {
+                // Иначе преобразуем из d.m.Y в Y-m-d
+                try {
+                    $administered_at = \Carbon\Carbon::createFromFormat('d.m.Y', $date)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Ошибка будет обработана в withValidator
+                }
             }
         }
 
         if ($this->next_due && !empty(trim($this->next_due))) {
-            try {
-                $next_due = \Carbon\Carbon::createFromFormat('d.m.Y', trim($this->next_due))->format('Y-m-d');
-            } catch (\Exception $e) {
-                // Ошибка будет обработана в withValidator
+            $date = trim($this->next_due);
+            
+            // Если дата уже в формате Y-m-d, оставляем как есть
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                $next_due = $date;
+            } else {
+                // Иначе преобразуем из d.m.Y в Y-m-d
+                try {
+                    $next_due = \Carbon\Carbon::createFromFormat('d.m.Y', $date)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Ошибка будет обработана в withValidator
+                }
             }
         }
+
+        \Log::info('StoreRequest prepareForValidation result', [
+            'administered_at_processed' => $administered_at,
+            'next_due_processed' => $next_due,
+        ]);
 
         $this->merge([
             'administered_at' => $administered_at,
@@ -42,17 +69,22 @@ class StoreRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            // Проверяем формат и корректность дат
+            // Проверяем формат и корректность дат только если они не пустые
             if ($this->administered_at && !empty(trim($this->administered_at))) {
                 $date = trim($this->administered_at);
                 
-                // Проверяем формат
-                if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date)) {
-                    $validator->errors()->add('administered_at', 'Неверный формат даты. Используйте формат дд.мм.гггг');
+                // Проверяем формат дд.мм.гггг или Y-m-d
+                if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                    $validator->errors()->add('administered_at', 'Неверный формат даты. Используйте формат дд.мм.гггг. Получено: ' . $date);
                 } else {
                     // Проверяем корректность даты
                     try {
-                        $carbonDate = \Carbon\Carbon::createFromFormat('d.m.Y', $date);
+                        if (preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date)) {
+                            $carbonDate = \Carbon\Carbon::createFromFormat('d.m.Y', $date);
+                        } else {
+                            $carbonDate = \Carbon\Carbon::createFromFormat('Y-m-d', $date);
+                        }
+                        
                         if (!$carbonDate->isValid()) {
                             $validator->errors()->add('administered_at', 'Некорректная дата проведения');
                         }
@@ -65,13 +97,18 @@ class StoreRequest extends FormRequest
             if ($this->next_due && !empty(trim($this->next_due))) {
                 $date = trim($this->next_due);
                 
-                // Проверяем формат
-                if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date)) {
-                    $validator->errors()->add('next_due', 'Неверный формат даты. Используйте формат дд.мм.гггг');
+                // Проверяем формат дд.мм.гггг или Y-m-d
+                if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                    $validator->errors()->add('next_due', 'Неверный формат даты. Используйте формат дд.мм.гггг. Получено: ' . $date);
                 } else {
                     // Проверяем корректность даты
                     try {
-                        $carbonDate = \Carbon\Carbon::createFromFormat('d.m.Y', $date);
+                        if (preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date)) {
+                            $carbonDate = \Carbon\Carbon::createFromFormat('d.m.Y', $date);
+                        } else {
+                            $carbonDate = \Carbon\Carbon::createFromFormat('Y-m-d', $date);
+                        }
+                        
                         if (!$carbonDate->isValid()) {
                             $validator->errors()->add('next_due', 'Некорректная дата следующей вакцинации');
                         }

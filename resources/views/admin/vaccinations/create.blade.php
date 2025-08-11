@@ -128,18 +128,18 @@
                     <!-- Информация о препаратах в выбранном типе вакцинации -->
                     <div class="mb-3" id="vaccination-type-info" style="display: none;">
                         <h6 class="text-muted">Препараты в составе вакцинации:</h6>
-                        <div id="selected-drugs-info" class="bg-light p-3 rounded">
+                        <div id="selected-drugs-info" class="p-3 rounded">
                             <!-- Здесь будет отображаться информация о препаратах -->
                         </div>
                     </div>
 
-                    <div class="d-flex gap-3 pt-3">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check2-circle"></i> Создать вакцинацию
-                        </button>
+                    <div class="d-flex justify-content-between gap-2">
                         <a href="{{ route('admin.vaccinations.index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Отменить
+                            <i class="bi bi-x-lg"></i> Отмена
                         </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i> Сохранить
+                        </button>
                     </div>
                 </form>
             </div>
@@ -208,8 +208,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (typeId) {
             // Получаем информацию о препаратах в типе вакцинации
-            fetch(`{{ route('admin.settings.vaccination-types.index') }}/${typeId}`)
-                .then(response => response.json())
+            fetch(`{{ route('admin.settings.vaccination-types.show', '') }}/${typeId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.drugs && data.drugs.length > 0) {
                         let drugsHtml = '<ul class="mb-0">';
@@ -232,25 +237,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Datepicker для дат
+    // Функция для установки даты следующей вакцинации
+    function setNextDueDate(administeredDate) {
+        const nextDueInput = document.getElementById('next_due');
+        const nextYear = new Date(administeredDate.getTime());
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+        const pad = n => n < 10 ? '0' + n : n;
+        const nextDueStr = pad(nextYear.getDate()) + '.' + pad(nextYear.getMonth() + 1) + '.' + nextYear.getFullYear();
+        nextDueInput.value = nextDueStr;
+    }
+
+    // Datepicker для даты проведения
     createDatepicker('#administered_at', {
         onSelect: function(formattedDate, date, inst) {
             // Автоматически заполняем дату следующей вакцинации (через год)
             if (date) {
-                const nextYear = new Date(date.getTime());
-                nextYear.setFullYear(nextYear.getFullYear() + 1);
-                const pad = n => n < 10 ? '0' + n : n;
-                const nextDueStr = pad(nextYear.getDate()) + '.' + pad(nextYear.getMonth() + 1) + '.' + nextYear.getFullYear();
-                
-                const nextDueInput = document.getElementById('next_due');
-                if (!nextDueInput.value) {
-                    nextDueInput.value = nextDueStr;
-                }
+                setNextDueDate(date);
             }
         }
     });
 
+    // Обработчик изменения даты проведения (для ручного ввода и datepicker)
+    document.getElementById('administered_at').addEventListener('input', function() {
+        updateNextDueDate(this.value);
+    });
+
+    document.getElementById('administered_at').addEventListener('change', function() {
+        updateNextDueDate(this.value);
+    });
+
+    // Функция для обновления даты следующей вакцинации
+    function updateNextDueDate(dateStr) {
+        if (dateStr && dateStr.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+            const dateParts = dateStr.split('.');
+            const date = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+            if (!isNaN(date.getTime())) {
+                setNextDueDate(date);
+            }
+        }
+    }
+
+    // Datepicker для даты следующей вакцинации
     createDatepicker('#next_due');
+
+    // Автоматически устанавливаем дату следующей вакцинации при загрузке страницы
+    const administeredAtInput = document.getElementById('administered_at');
+    if (administeredAtInput && administeredAtInput.value) {
+        // Если дата проведения уже заполнена, устанавливаем следующую
+        const dateParts = administeredAtInput.value.split('.');
+        if (dateParts.length === 3) {
+            const administeredDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+            setNextDueDate(administeredDate);
+        }
+    } else {
+        // Если дата проведения не заполнена, устанавливаем сегодня + год
+        const today = new Date();
+        const nextYear = new Date(today.getTime());
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+        const pad = n => n < 10 ? '0' + n : n;
+        const nextDueStr = pad(nextYear.getDate()) + '.' + pad(nextYear.getMonth() + 1) + '.' + nextYear.getFullYear();
+        
+        const nextDueInput = document.getElementById('next_due');
+        nextDueInput.value = nextDueStr;
+    }
 });
 </script>
 @endpush
