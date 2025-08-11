@@ -30,7 +30,7 @@ class Branch extends Model
     ];
 
     public function veterinarians() {
-        return $this->hasMany(Employee::class, 'veterinarian_id');
+        return $this->belongsToMany(Employee::class, 'branch_employee');
     }
 
     public function services() {

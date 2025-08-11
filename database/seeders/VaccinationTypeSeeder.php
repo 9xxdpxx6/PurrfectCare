@@ -40,7 +40,6 @@ class VaccinationTypeSeeder extends Seeder
                     'dosage' => $drugData['dosage'],
                     // Batch template отключен по требованию клиники
                     // 'batch_template' => 'LOT-' . strtoupper(substr(str_replace([' ', '-'], '', $drug->name), 0, 4)) . '-{DATE}',
-                    'batch_template' => null,
                 ]);
             }
         }

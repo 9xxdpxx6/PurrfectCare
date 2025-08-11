@@ -17,7 +17,6 @@ use App\Models\Visit;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Vaccination;
-use App\Models\VaccinationDrug;
 use App\Models\LabTest;
 use App\Models\LabTestType;
 use App\Models\LabTestParam;
@@ -99,9 +98,8 @@ class DatabaseSeeder extends Seeder
         // Создаем заказы с правильным распределением по клиентам
         Order::factory()->createWithDistribution();
 
-        // Создаем вакцинации и препараты вакцинации
+        // Создаем вакцинации
         Vaccination::factory(150)->create();
-        VaccinationDrug::factory(200)->create();
 
         // Создаем симптомы и диагнозы
         Symptom::factory(400)->create();

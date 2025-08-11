@@ -16,10 +16,7 @@ return new class extends Migration
             $table->foreignId('vaccination_type_id')->constrained()->onDelete('cascade');
             $table->foreignId('drug_id')->constrained()->onDelete('cascade');
             $table->decimal('dosage', 5, 2);
-            $table->string('batch_template')->nullable()->comment('Шаблон серии препарата');
             $table->timestamps();
-
-            $table->unique(['vaccination_type_id', 'drug_id']);
         });
     }
 

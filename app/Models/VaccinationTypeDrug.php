@@ -17,7 +17,6 @@ class VaccinationTypeDrug extends Pivot
         'vaccination_type_id',
         'drug_id',
         'dosage',
-        'batch_template'
     ];
 
     protected $casts = [

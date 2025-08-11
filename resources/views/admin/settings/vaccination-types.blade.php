@@ -213,7 +213,7 @@
     @foreach($vaccinationTypes as $type)
         <div class="col-12">
             <div class="card h-100 border-0 border-bottom shadow-sm
-        @if($loop->iteration % 2 == 1) bg-body-tertiary @endif" data-id="{{ $type->id }}" data-original="{{ json_encode(['name' => $type->name, 'description' => $type->description, 'price' => $type->price, 'drugs' => $type->drugs->map(function($drug) { return ['drug_id' => $drug->id, 'dosage' => $drug->pivot->dosage, 'batch_template' => $drug->pivot->batch_template]; })]) }}">
+        @if($loop->iteration % 2 == 1) bg-body-tertiary @endif" data-id="{{ $type->id }}" data-original="{{ json_encode(['name' => $type->name, 'description' => $type->description, 'price' => $type->price, 'drugs' => $type->drugs->map(function($drug) { return ['drug_id' => $drug->id, 'dosage' => $drug->pivot->dosage]; })]) }}">
 
                 <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
                     <!-- Основная информация -->
@@ -279,22 +279,10 @@
                                              <button type="button" class="btn btn-outline-danger" onclick="removeDrugRow(this)">
                                                  <i class="bi bi-trash"></i>
                                              </button>
-                                                                                            </div>
                                         </div>
-                                        <!-- Batch template скрыт по требованию клиники, но логика сохранена -->
-                                        <!-- 
-                                        <div class="row g-2 mt-1">
-                                            <div class="col-12">
-                                                <input type="text" class="form-control form-control-sm" 
-                                                       placeholder="Шаблон серии (необязательно)" 
-                                                       value="{{ $drug->pivot->batch_template }}"
-                                                       data-field="batch_template" onchange="markAsChanged(this)">
-                                            </div>
-                                        </div>
-                                        -->
-                                        </div>
+                                    </div>
                                     @endforeach
-                                                                     </div>
+                                                                     </div> 
                                      <div class="mt-3">
                                          <button type="button" class="btn btn-outline-primary btn-sm btn-add-drug" onclick="addDrugRow({{ $type->id }})">
                                              <i class="bi bi-plus-circle me-1"></i> Добавить препарат
@@ -399,16 +387,6 @@ function createEditableRow() {
                                             </button>
                                         </div>
                                     </div>
-                                    <!-- Batch template скрыт по требованию клиники -->
-                                    <!-- 
-                                    <div class="row g-2 mt-1">
-                                        <div class="col-12">
-                                            <input type="text" class="form-control form-control-sm" 
-                                                   placeholder="Шаблон серии (необязательно)" 
-                                                   data-field="batch_template" onchange="markAsChanged(this)">
-                                        </div>
-                                    </div>
-                                    -->
                                 </div>
                                                              </div>
                                  <div class="mt-3">
@@ -472,16 +450,6 @@ function createDrugRow() {
                 </button>
             </div>
         </div>
-        <!-- Batch template скрыт по требованию клиники -->
-        <!-- 
-        <div class="row g-2 mt-1">
-            <div class="col-12">
-                <input type="text" class="form-control" 
-                       placeholder="Шаблон серии (необязательно)" 
-                       data-field="batch_template" onchange="markAsChanged(this)">
-            </div>
-        </div>
-        -->
     `;
     return div;
 }

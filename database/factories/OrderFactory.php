@@ -8,6 +8,7 @@ use App\Models\Status;
 use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Vaccination;
+use App\Models\VaccinationType;
 use App\Models\OrderItem;
 use App\Models\Drug;
 use App\Models\Service;
@@ -458,10 +459,18 @@ class OrderFactory extends Factory
      */
     private function addVaccinationItems($order): void
     {
+        // Получаем случайный тип вакцинации
+        $vaccinationType = VaccinationType::inRandomOrder()->first();
+        
+        if (!$vaccinationType) {
+            return; // Если нет типов вакцинации, пропускаем
+        }
+        
         // Создаем вакцинацию для питомца
         $vaccination = Vaccination::create([
             'pet_id' => $order->pet_id,
             'veterinarian_id' => Employee::inRandomOrder()->first()->id,
+            'vaccination_type_id' => $vaccinationType->id,
             'administered_at' => $order->created_at,
             'next_due' => $order->created_at->addYear()
         ]);
@@ -482,28 +491,17 @@ class OrderFactory extends Factory
             ]);
         }
         
-        // Добавляем препараты для вакцинации
-        $vaccineDrugs = Drug::where('name', 'like', '%вакцин%')
-            ->orWhere('name', 'like', '%прививк%')
-            ->orWhere('name', 'like', '%иммун%')
-            ->inRandomOrder()
-            ->limit($this->faker->numberBetween(1, 2))
-            ->get();
-        
-        foreach ($vaccineDrugs as $drug) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'item_type' => Drug::class,
-                'item_id' => $drug->id,
-                'quantity' => $this->faker->numberBetween(1, 3),
-                'unit_price' => $drug->price
-            ]);
-            
-            // Привязываем препарат к вакцинации
-            $vaccination->drugs()->attach($drug->id, [
-                'batch_number' => 'BATCH-' . $this->faker->numberBetween(1000, 9999),
-                'dosage' => $this->faker->numberBetween(1, 3)
-            ]);
+        // Добавляем препараты для вакцинации (через тип вакцинации)
+        if ($vaccinationType->drugs) {
+            foreach ($vaccinationType->drugs as $drug) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'item_type' => Drug::class,
+                    'item_id' => $drug->id,
+                    'quantity' => 1,
+                    'unit_price' => $drug->price
+                ]);
+            }
         }
         
         // Добавляем вакцинацию как элемент заказа

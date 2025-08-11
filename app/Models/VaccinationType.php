@@ -15,6 +15,7 @@ class VaccinationType extends Model
         'name',
         'price',
         'description'
+
     ];
 
     protected $casts = [
@@ -30,7 +31,7 @@ class VaccinationType extends Model
     {
         return $this->belongsToMany(Drug::class, 'vaccination_type_drugs')
             ->using(VaccinationTypeDrug::class)
-            ->withPivot('dosage', 'batch_template')
+            ->withPivot('dosage')
             ->withTimestamps();
     }
 

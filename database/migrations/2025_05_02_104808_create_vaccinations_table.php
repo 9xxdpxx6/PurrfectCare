@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pet_id')->constrained()->onDelete('cascade');
             $table->foreignId('veterinarian_id')->constrained('employees');
+            $table->foreignId('vaccination_type_id')->nullable()->constrained()->onDelete('cascade');
             $table->date('administered_at');
             $table->date('next_due')->nullable();
             $table->timestamps();
