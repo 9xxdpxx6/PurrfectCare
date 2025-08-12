@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\LabTestType;
 use App\Services\Settings\LabTestTypeService;
-use App\Http\Requests\Settings\LabTestType\StoreLabTestTypeRequest;
-use App\Http\Requests\Settings\LabTestType\UpdateLabTestTypeRequest;
+use App\Http\Requests\Settings\LabTestType\StoreRequest;
+use App\Http\Requests\Settings\LabTestType\UpdateRequest;
 use Illuminate\Http\Request;
 
 class LabTestTypeController extends SettingsController
@@ -29,7 +29,7 @@ class LabTestTypeController extends SettingsController
     /**
      * Создать новый тип анализа
      */
-    public function store(StoreLabTestTypeRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class LabTestTypeController extends SettingsController
     /**
      * Обновить тип анализа
      */
-    public function update(UpdateLabTestTypeRequest $request, LabTestType $labTestType)
+    public function update(UpdateRequest $request, LabTestType $labTestType)
     {
         try {
             $this->service->update($labTestType, $request->validated());

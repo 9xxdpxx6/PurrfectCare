@@ -3,8 +3,9 @@
 namespace App\Http\Requests\Settings\LabTestType;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class StoreLabTestTypeRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,8 +20,15 @@ class StoreLabTestTypeRequest extends FormRequest
      */
     public function rules(): array
     {
+        $labTestTypeId = $this->route('labTestType')->id;
+        
         return [
-            'name' => 'required|string|max:255|unique:lab_test_types',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('lab_test_types')->ignore($labTestTypeId)
+            ],
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
         ];
@@ -39,4 +47,4 @@ class StoreLabTestTypeRequest extends FormRequest
             'price.min' => 'Цена не может быть отрицательной',
         ];
     }
-} 
+}

@@ -4,7 +4,7 @@ namespace App\Http\Requests\Settings\Breed;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateBreedRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -36,4 +36,4 @@ class UpdateBreedRequest extends FormRequest
             'species_id.exists' => 'Выбранный вид животного не существует',
         ];
     }
-} 
+}

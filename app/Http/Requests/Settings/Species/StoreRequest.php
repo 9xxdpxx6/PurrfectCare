@@ -3,9 +3,8 @@
 namespace App\Http\Requests\Settings\Species;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class UpdateSpeciesRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -20,15 +19,8 @@ class UpdateSpeciesRequest extends FormRequest
      */
     public function rules(): array
     {
-        $speciesId = $this->route('species')->id;
-        
         return [
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('species')->ignore($speciesId)
-            ],
+            'name' => 'required|string|max:255|unique:species',
         ];
     }
 
@@ -42,4 +34,4 @@ class UpdateSpeciesRequest extends FormRequest
             'name.unique' => 'Вид животного с таким названием уже существует',
         ];
     }
-} 
+}

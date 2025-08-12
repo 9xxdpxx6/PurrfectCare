@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Supplier;
 use App\Services\Settings\SupplierService;
-use App\Http\Requests\Settings\Supplier\StoreSupplierRequest;
-use App\Http\Requests\Settings\Supplier\UpdateSupplierRequest;
+use App\Http\Requests\Settings\Supplier\StoreRequest;
+use App\Http\Requests\Settings\Supplier\UpdateRequest;
 use Illuminate\Http\Request;
 
 class SupplierController extends SettingsController
@@ -29,7 +29,7 @@ class SupplierController extends SettingsController
     /**
      * Создать нового поставщика
      */
-    public function store(StoreSupplierRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class SupplierController extends SettingsController
     /**
      * Обновить поставщика
      */
-    public function update(UpdateSupplierRequest $request, Supplier $supplier)
+    public function update(UpdateRequest $request, Supplier $supplier)
     {
         try {
             $this->service->update($supplier, $request->validated());

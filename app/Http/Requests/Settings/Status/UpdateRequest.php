@@ -3,8 +3,9 @@
 namespace App\Http\Requests\Settings\Status;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class StoreStatusRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,8 +20,15 @@ class StoreStatusRequest extends FormRequest
      */
     public function rules(): array
     {
+        $statusId = $this->route('status')->id;
+        
         return [
-            'name' => 'required|string|max:255|unique:statuses',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('statuses')->ignore($statusId)
+            ],
             'color' => 'required|string|max:7',
         ];
     }
@@ -37,4 +45,4 @@ class StoreStatusRequest extends FormRequest
             'color.max' => 'Цвет должен быть в формате #XXXXXX',
         ];
     }
-} 
+}

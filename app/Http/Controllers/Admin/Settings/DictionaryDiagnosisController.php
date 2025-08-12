@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\DictionaryDiagnosis;
 use App\Services\Settings\DictionaryDiagnosisService;
-use App\Http\Requests\Settings\DictionaryDiagnosis\StoreDictionaryDiagnosisRequest;
-use App\Http\Requests\Settings\DictionaryDiagnosis\UpdateDictionaryDiagnosisRequest;
+use App\Http\Requests\Settings\DictionaryDiagnosis\StoreRequest;
+use App\Http\Requests\Settings\DictionaryDiagnosis\UpdateRequest;
 use Illuminate\Http\Request;
 
 class DictionaryDiagnosisController extends SettingsController
@@ -29,7 +29,7 @@ class DictionaryDiagnosisController extends SettingsController
     /**
      * Создать новый диагноз
      */
-    public function store(StoreDictionaryDiagnosisRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class DictionaryDiagnosisController extends SettingsController
     /**
      * Обновить диагноз
      */
-    public function update(UpdateDictionaryDiagnosisRequest $request, DictionaryDiagnosis $dictionaryDiagnosis)
+    public function update(UpdateRequest $request, DictionaryDiagnosis $dictionaryDiagnosis)
     {
         try {
             $this->service->update($dictionaryDiagnosis, $request->validated());

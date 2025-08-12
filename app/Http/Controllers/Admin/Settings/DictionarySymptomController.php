@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\DictionarySymptom;
 use App\Services\Settings\DictionarySymptomService;
-use App\Http\Requests\Settings\DictionarySymptom\StoreDictionarySymptomRequest;
-use App\Http\Requests\Settings\DictionarySymptom\UpdateDictionarySymptomRequest;
+use App\Http\Requests\Settings\DictionarySymptom\StoreRequest;
+use App\Http\Requests\Settings\DictionarySymptom\UpdateRequest;
 use Illuminate\Http\Request;
 
 class DictionarySymptomController extends SettingsController
@@ -29,7 +29,7 @@ class DictionarySymptomController extends SettingsController
     /**
      * Создать новый симптом
      */
-    public function store(StoreDictionarySymptomRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class DictionarySymptomController extends SettingsController
     /**
      * Обновить симптом
      */
-    public function update(UpdateDictionarySymptomRequest $request, DictionarySymptom $dictionarySymptom)
+    public function update(UpdateRequest $request, DictionarySymptom $dictionarySymptom)
     {
         try {
             $this->service->update($dictionarySymptom, $request->validated());

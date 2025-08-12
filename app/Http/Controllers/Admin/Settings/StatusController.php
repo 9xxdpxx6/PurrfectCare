@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Status;
 use App\Services\Settings\StatusService;
-use App\Http\Requests\Settings\Status\StoreStatusRequest;
-use App\Http\Requests\Settings\Status\UpdateStatusRequest;
+use App\Http\Requests\Settings\Status\StoreRequest;
+use App\Http\Requests\Settings\Status\UpdateRequest;
 use Illuminate\Http\Request;
 
 class StatusController extends SettingsController
@@ -29,7 +29,7 @@ class StatusController extends SettingsController
     /**
      * Создать новый статус
      */
-    public function store(StoreStatusRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class StatusController extends SettingsController
     /**
      * Обновить статус
      */
-    public function update(UpdateStatusRequest $request, Status $status)
+    public function update(UpdateRequest $request, Status $status)
     {
         try {
             $this->service->update($status, $request->validated());

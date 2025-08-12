@@ -5,7 +5,7 @@ namespace App\Http\Requests\Settings\DictionarySymptom;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateDictionarySymptomRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -43,4 +43,4 @@ class UpdateDictionarySymptomRequest extends FormRequest
             'name.unique' => 'Симптом с таким названием уже существует',
         ];
     }
-} 
+}

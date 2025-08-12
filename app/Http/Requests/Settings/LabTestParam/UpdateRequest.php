@@ -5,7 +5,7 @@ namespace App\Http\Requests\Settings\LabTestParam;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateLabTestParamRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -48,4 +48,4 @@ class UpdateLabTestParamRequest extends FormRequest
             'unit_id.exists' => 'Выбранная единица измерения не существует',
         ];
     }
-} 
+}

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Settings\Specialty;
+namespace App\Http\Requests\Settings\DictionaryDiagnosis;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateSpecialtyRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -20,16 +20,16 @@ class UpdateSpecialtyRequest extends FormRequest
      */
     public function rules(): array
     {
-        $specialtyId = $this->route('specialty')->id;
+        $dictionaryDiagnosisId = $this->route('dictionaryDiagnosis')->id;
         
         return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('specialties')->ignore($specialtyId)
+                Rule::unique('dictionary_diagnoses')->ignore($dictionaryDiagnosisId)
             ],
-            'is_veterinarian' => 'boolean',
+            'description' => 'nullable|string',
         ];
     }
 
@@ -39,8 +39,8 @@ class UpdateSpecialtyRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Название специальности обязательно для заполнения',
-            'name.unique' => 'Специальность с таким названием уже существует',
+            'name.required' => 'Название диагноза обязательно для заполнения',
+            'name.unique' => 'Диагноз с таким названием уже существует',
         ];
     }
-} 
+}

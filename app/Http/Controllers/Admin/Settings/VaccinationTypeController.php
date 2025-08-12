@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\VaccinationType;
 use App\Services\Settings\VaccinationTypeService;
-use App\Http\Requests\Settings\VaccinationType\StoreVaccinationTypeRequest;
-use App\Http\Requests\Settings\VaccinationType\UpdateVaccinationTypeRequest;
+use App\Http\Requests\Settings\VaccinationType\StoreRequest;
+use App\Http\Requests\Settings\VaccinationType\UpdateRequest;
 use Illuminate\Http\Request;
 
 class VaccinationTypeController extends SettingsController
@@ -55,7 +55,7 @@ class VaccinationTypeController extends SettingsController
     /**
      * Создать новый тип вакцинации
      */
-    public function store(StoreVaccinationTypeRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -68,7 +68,7 @@ class VaccinationTypeController extends SettingsController
     /**
      * Обновить тип вакцинации
      */
-    public function update(UpdateVaccinationTypeRequest $request, VaccinationType $vaccinationType)
+    public function update(UpdateRequest $request, VaccinationType $vaccinationType)
     {
         try {
             \Log::info('Updating vaccination type', [

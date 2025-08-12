@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Settings\DictionaryDiagnosis;
+namespace App\Http\Requests\Settings\DictionarySymptom;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreDictionaryDiagnosisRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -20,7 +20,7 @@ class StoreDictionaryDiagnosisRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|unique:dictionary_diagnoses',
+            'name' => 'required|string|max:255|unique:dictionary_symptoms',
             'description' => 'nullable|string',
         ];
     }
@@ -31,8 +31,8 @@ class StoreDictionaryDiagnosisRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Название диагноза обязательно для заполнения',
-            'name.unique' => 'Диагноз с таким названием уже существует',
+            'name.required' => 'Название симптома обязательно для заполнения',
+            'name.unique' => 'Симптом с таким названием уже существует',
         ];
     }
-} 
+}

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Species;
 use App\Services\Settings\SpeciesService;
-use App\Http\Requests\Settings\Species\StoreSpeciesRequest;
-use App\Http\Requests\Settings\Species\UpdateSpeciesRequest;
+use App\Http\Requests\Settings\Species\StoreRequest;
+use App\Http\Requests\Settings\Species\UpdateRequest;
 use Illuminate\Http\Request;
 
 class SpeciesController extends SettingsController
@@ -29,7 +29,7 @@ class SpeciesController extends SettingsController
     /**
      * Создать новый вид животного
      */
-    public function store(StoreSpeciesRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class SpeciesController extends SettingsController
     /**
      * Обновить вид животного
      */
-    public function update(UpdateSpeciesRequest $request, Species $species)
+    public function update(UpdateRequest $request, Species $species)
     {
         try {
             $this->service->update($species, $request->validated());

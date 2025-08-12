@@ -4,7 +4,7 @@ namespace App\Http\Requests\Settings\Unit;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreUnitRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -37,4 +37,4 @@ class StoreUnitRequest extends FormRequest
             'symbol.unique' => 'Единица измерения с таким символом уже существует',
         ];
     }
-} 
+}

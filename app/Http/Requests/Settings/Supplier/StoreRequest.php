@@ -4,7 +4,7 @@ namespace App\Http\Requests\Settings\Supplier;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreSupplierRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -34,4 +34,4 @@ class StoreSupplierRequest extends FormRequest
             'name.unique' => 'Поставщик с таким названием уже существует',
         ];
     }
-} 
+}

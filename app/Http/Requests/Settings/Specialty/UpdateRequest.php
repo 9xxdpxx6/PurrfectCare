@@ -3,8 +3,9 @@
 namespace App\Http\Requests\Settings\Specialty;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class StoreSpecialtyRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,8 +20,15 @@ class StoreSpecialtyRequest extends FormRequest
      */
     public function rules(): array
     {
+        $specialtyId = $this->route('specialty')->id;
+        
         return [
-            'name' => 'required|string|max:255|unique:specialties',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('specialties')->ignore($specialtyId)
+            ],
             'is_veterinarian' => 'boolean',
         ];
     }
@@ -35,4 +43,4 @@ class StoreSpecialtyRequest extends FormRequest
             'name.unique' => 'Специальность с таким названием уже существует',
         ];
     }
-} 
+}

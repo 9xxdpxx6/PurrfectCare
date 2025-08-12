@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\LabTestParam;
 use App\Services\Settings\LabTestParamService;
-use App\Http\Requests\Settings\LabTestParam\StoreLabTestParamRequest;
-use App\Http\Requests\Settings\LabTestParam\UpdateLabTestParamRequest;
+use App\Http\Requests\Settings\LabTestParam\StoreRequest;
+use App\Http\Requests\Settings\LabTestParam\UpdateRequest;
 use Illuminate\Http\Request;
 
 class LabTestParamController extends SettingsController
@@ -32,7 +32,7 @@ class LabTestParamController extends SettingsController
     /**
      * Создать новый параметр анализа
      */
-    public function store(StoreLabTestParamRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -45,7 +45,7 @@ class LabTestParamController extends SettingsController
     /**
      * Обновить параметр анализа
      */
-    public function update(UpdateLabTestParamRequest $request, LabTestParam $labTestParam)
+    public function update(UpdateRequest $request, LabTestParam $labTestParam)
     {
         try {
             $this->service->update($labTestParam, $request->validated());

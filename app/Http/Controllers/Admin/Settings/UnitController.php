@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Unit;
 use App\Services\Settings\UnitService;
-use App\Http\Requests\Settings\Unit\StoreUnitRequest;
-use App\Http\Requests\Settings\Unit\UpdateUnitRequest;
+use App\Http\Requests\Settings\Unit\StoreRequest;
+use App\Http\Requests\Settings\Unit\UpdateRequest;
 use Illuminate\Http\Request;
 
 class UnitController extends SettingsController
@@ -29,7 +29,7 @@ class UnitController extends SettingsController
     /**
      * Создать новую единицу измерения
      */
-    public function store(StoreUnitRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class UnitController extends SettingsController
     /**
      * Обновить единицу измерения
      */
-    public function update(UpdateUnitRequest $request, Unit $unit)
+    public function update(UpdateRequest $request, Unit $unit)
     {
         try {
             $this->service->update($unit, $request->validated());

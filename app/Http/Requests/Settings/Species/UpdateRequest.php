@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Settings\Supplier;
+namespace App\Http\Requests\Settings\Species;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateSupplierRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -20,14 +20,14 @@ class UpdateSupplierRequest extends FormRequest
      */
     public function rules(): array
     {
-        $supplierId = $this->route('supplier')->id;
+        $speciesId = $this->route('species')->id;
         
         return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('suppliers')->ignore($supplierId)
+                Rule::unique('species')->ignore($speciesId)
             ],
         ];
     }
@@ -38,8 +38,8 @@ class UpdateSupplierRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Название поставщика обязательно для заполнения',
-            'name.unique' => 'Поставщик с таким названием уже существует',
+            'name.required' => 'Название вида животного обязательно для заполнения',
+            'name.unique' => 'Вид животного с таким названием уже существует',
         ];
     }
-} 
+}

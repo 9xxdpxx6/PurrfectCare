@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Specialty;
 use App\Services\Settings\SpecialtyService;
-use App\Http\Requests\Settings\Specialty\StoreSpecialtyRequest;
-use App\Http\Requests\Settings\Specialty\UpdateSpecialtyRequest;
+use App\Http\Requests\Settings\Specialty\StoreRequest;
+use App\Http\Requests\Settings\Specialty\UpdateRequest;
 use Illuminate\Http\Request;
 
 class SpecialtyController extends SettingsController
@@ -29,7 +29,7 @@ class SpecialtyController extends SettingsController
     /**
      * Создать новую специальность
      */
-    public function store(StoreSpecialtyRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class SpecialtyController extends SettingsController
     /**
      * Обновить специальность
      */
-    public function update(UpdateSpecialtyRequest $request, Specialty $specialty)
+    public function update(UpdateRequest $request, Specialty $specialty)
     {
         try {
             $this->service->update($specialty, $request->validated());

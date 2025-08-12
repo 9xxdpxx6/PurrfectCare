@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Breed;
 use App\Services\Settings\BreedService;
-use App\Http\Requests\Settings\Breed\StoreBreedRequest;
-use App\Http\Requests\Settings\Breed\UpdateBreedRequest;
+use App\Http\Requests\Settings\Breed\StoreRequest;
+use App\Http\Requests\Settings\Breed\UpdateRequest;
 use Illuminate\Http\Request;
 
 class BreedController extends SettingsController
@@ -30,7 +30,7 @@ class BreedController extends SettingsController
     /**
      * Создать новую породу
      */
-    public function store(StoreBreedRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -43,7 +43,7 @@ class BreedController extends SettingsController
     /**
      * Обновить породу
      */
-    public function update(UpdateBreedRequest $request, Breed $breed)
+    public function update(UpdateRequest $request, Breed $breed)
     {
         try {
             $this->service->update($breed, $request->validated());

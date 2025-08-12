@@ -3,8 +3,9 @@
 namespace App\Http\Requests\Settings\Branch;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class StoreBranchRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,8 +20,15 @@ class StoreBranchRequest extends FormRequest
      */
     public function rules(): array
     {
+        $branchId = $this->route('branch')->id;
+        
         return [
-            'name' => 'required|string|max:255|unique:branches',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('branches')->ignore($branchId)
+            ],
             'address' => 'required|string|max:500',
             'phone' => 'required|string|max:20',
             'opens_at' => 'nullable|date_format:H:i',
@@ -42,4 +50,4 @@ class StoreBranchRequest extends FormRequest
             'closes_at.date_format' => 'Время закрытия должно быть в формате ЧЧ:ММ',
         ];
     }
-} 
+}

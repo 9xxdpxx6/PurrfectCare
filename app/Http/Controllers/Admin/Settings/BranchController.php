@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Branch;
 use App\Services\Settings\BranchService;
-use App\Http\Requests\Settings\Branch\StoreBranchRequest;
-use App\Http\Requests\Settings\Branch\UpdateBranchRequest;
+use App\Http\Requests\Settings\Branch\StoreRequest;
+use App\Http\Requests\Settings\Branch\UpdateRequest;
 use Illuminate\Http\Request;
 
 class BranchController extends SettingsController
@@ -29,7 +29,7 @@ class BranchController extends SettingsController
     /**
      * Создать новый филиал
      */
-    public function store(StoreBranchRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             $this->service->create($request->validated());
@@ -42,7 +42,7 @@ class BranchController extends SettingsController
     /**
      * Обновить филиал
      */
-    public function update(UpdateBranchRequest $request, Branch $branch)
+    public function update(UpdateRequest $request, Branch $branch)
     {
         try {
             $this->service->update($branch, $request->validated());
