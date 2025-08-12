@@ -14,7 +14,7 @@
 
 <form action="{{ route('admin.orders.update', $item) }}" method="POST" id="orderForm">
     @csrf
-    @method('PUT')
+    @method('PATCH')
     
     @if ($errors->any())
         <div class="alert alert-danger">

@@ -18,7 +18,7 @@
                 <div class="card-body">
                     <form action="{{ route('admin.branches.update', $branch) }}" method="POST">
                         @csrf
-                        @method('PUT')
+                        @method('PATCH')
                         
                         <div class="row">
                             <div class="col-md-6">

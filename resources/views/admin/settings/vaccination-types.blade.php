@@ -244,51 +244,52 @@
                     <!-- Поля для редактирования -->
                     <div class="d-none edit-fields">
                         <div class="row g-2">
-                                                         <div class="col-12">
-                                 <label class="form-label small text-muted">Название</label>
-                                 <input type="text" class="form-control" value="{{ $type->name }}" 
-                                        data-field="name" onchange="markAsChanged(this)">
-                             </div>
-                             <div class="col-12">
-                                 <label class="form-label small text-muted">Цена</label>
-                                 <input type="number" class="form-control" value="{{ $type->price }}" 
-                                        data-field="price" onchange="markAsChanged(this)">
-                             </div>
-                             <div class="col-12">
-                                 <label class="form-label small text-muted">Описание</label>
-                                 <textarea class="form-control" rows="3" data-field="description" onchange="markAsChanged(this)">{{ $type->description }}</textarea>
-                             </div>
-                                                         <div class="col-12">
-                                 <div class="drugs-section">
-                                     <label class="form-label">Препараты</label>
-                                     <div id="drugs-container-{{ $type->id }}">
-                                    @foreach($type->drugs as $drug)
-                                        <div class="drug-row mb-2">
-                                            <div class="row g-2">
-                                                                                         <div class="col-6">
-                                                                                          <select class="form-select drug-select" data-field="drug_id" onchange="markAsChanged(this)">
-                                                 <option value="{{ $drug->id }}" selected>{{ $drug->name }}</option>
-                                             </select>
-                                         </div>
-                                         <div class="col-4">
-                                             <input type="number" class="form-control" 
-                                                    placeholder="Дозировка" value="{{ $drug->pivot->dosage }}"
-                                                    data-field="dosage" onchange="markAsChanged(this)">
-                                         </div>
-                                         <div class="col-2">
-                                             <button type="button" class="btn btn-outline-danger" onclick="removeDrugRow(this)">
-                                                 <i class="bi bi-trash"></i>
-                                             </button>
-                                        </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Название</label>
+                                <input type="text" class="form-control" value="{{ $type->name }}" 
+                                       data-field="name" onchange="markAsChanged(this)">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Цена</label>
+                                <input type="number" class="form-control" value="{{ $type->price }}" 
+                                       data-field="price" onchange="markAsChanged(this)">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Описание</label>
+                                <textarea class="form-control" rows="3" data-field="description" onchange="markAsChanged(this)">{{ $type->description }}</textarea>
+                            </div>
+                            <div class="col-12">
+                                <div class="drugs-section">
+                                    <label class="form-label">Препараты</label>
+                                    <div id="drugs-container-{{ $type->id }}">
+                                        @foreach($type->drugs as $drug)
+                                            <div class="drug-row mb-2">
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <select class="form-select drug-select" data-field="drug_id" onchange="markAsChanged(this)">
+                                                            <option value="{{ $drug->id }}" selected>{{ $drug->name }}</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <input type="number" class="form-control" 
+                                                               placeholder="Дозировка" value="{{ $drug->pivot->dosage }}"
+                                                               data-field="dosage" onchange="markAsChanged(this)">
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <button type="button" class="btn btn-outline-danger" onclick="removeDrugRow(this)">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div> 
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-outline-primary btn-sm btn-add-drug" onclick="addDrugRow({{ $type->id }})">
+                                            <i class="bi bi-plus-circle me-1"></i> Добавить препарат
+                                        </button>
                                     </div>
-                                    @endforeach
-                                                                     </div> 
-                                     <div class="mt-3">
-                                         <button type="button" class="btn btn-outline-primary btn-sm btn-add-drug" onclick="addDrugRow({{ $type->id }})">
-                                             <i class="bi bi-plus-circle me-1"></i> Добавить препарат
-                                         </button>
-                                     </div>
-                                 </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -351,50 +352,50 @@ function createEditableRow() {
             <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
                 <div class="edit-fields flex-grow-1">
                     <div class="row g-2">
-                                                 <div class="col-12">
-                             <label class="form-label small text-muted">Название</label>
-                             <input type="text" class="form-control" 
-                                    data-field="name" onchange="markAsChanged(this)" required>
-                         </div>
-                         <div class="col-12">
-                             <label class="form-label small text-muted">Цена</label>
-                             <input type="number" class="form-control" 
-                                    data-field="price" onchange="markAsChanged(this)" value="0" required>
-                         </div>
+                        <div class="col-12">
+                            <label class="form-label small text-muted">Название</label>
+                            <input type="text" class="form-control" 
+                                   data-field="name" onchange="markAsChanged(this)" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small text-muted">Цена</label>
+                            <input type="number" class="form-control" 
+                                   data-field="price" onchange="markAsChanged(this)" value="0" required>
+                        </div>
                         <div class="col-12">
                             <label class="form-label small text-muted">Описание</label>
                             <textarea class="form-control" rows="3" data-field="description" onchange="markAsChanged(this)"></textarea>
                         </div>
-                                                 <div class="col-12">
-                             <div class="drugs-section">
-                                 <label class="form-label">Препараты</label>
-                                 <div class="drugs-container">
-                                <div class="drug-row mb-2">
-                                    <div class="row g-2">
-                                        <div class="col-6">
-                                            <select class="form-select drug-select" data-field="drug_id" onchange="markAsChanged(this)" required>
-                                                <option value="">Выберите препарат</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-4">
-                                            <input type="number" class="form-control" 
-                                                   placeholder="Дозировка" data-field="dosage" 
-                                                   onchange="markAsChanged(this)" step="0.01" min="0.01" required>
-                                        </div>
-                                        <div class="col-2">
-                                            <button type="button" class="btn btn-outline-danger" onclick="removeDrugRow(this)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                        <div class="col-12">
+                            <div class="drugs-section">
+                                <label class="form-label">Препараты</label>
+                                <div class="drugs-container">
+                                    <div class="drug-row mb-2">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <select class="form-select drug-select" data-field="drug_id" onchange="markAsChanged(this)" required>
+                                                    <option value="">Выберите препарат</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-4">
+                                                <input type="number" class="form-control" 
+                                                       placeholder="Дозировка" data-field="dosage" 
+                                                       onchange="markAsChanged(this)" step="0.01" min="0.01" required>
+                                            </div>
+                                            <div class="col-2">
+                                                <button type="button" class="btn btn-outline-danger" onclick="removeDrugRow(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                                             </div>
-                                 <div class="mt-3">
-                                     <button type="button" class="btn btn-outline-primary btn-sm btn-add-drug" onclick="addDrugRowToNew(this)">
-                                         <i class="bi bi-plus-circle me-1"></i> Добавить препарат
-                                     </button>
-                                 </div>
-                             </div>
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-add-drug" onclick="addDrugRowToNew(this)">
+                                        <i class="bi bi-plus-circle me-1"></i> Добавить препарат
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -416,17 +417,24 @@ function createEditableRow() {
 
 function addDrugRow(typeId) {
     const container = document.querySelector(`#drugs-container-${typeId}`);
-    const drugRow = createDrugRow();
-    container.appendChild(drugRow);
-    initDrugSelects(drugRow);
+    if (container) {
+        const drugRow = createDrugRow();
+        container.appendChild(drugRow);
+        initDrugSelects(drugRow);
+    }
 }
 
 function addDrugRowToNew(button) {
     // Ищем контейнер препаратов в новой строке
-    const container = button.closest('.drugs-section').querySelector('.drugs-container');
-    const drugRow = createDrugRow();
-    container.appendChild(drugRow);
-    initDrugSelects(drugRow);
+    const drugsSection = button.closest('.drugs-section');
+    if (drugsSection) {
+        const container = drugsSection.querySelector('.drugs-container');
+        if (container) {
+            const drugRow = createDrugRow();
+            container.appendChild(drugRow);
+            initDrugSelects(drugRow);
+        }
+    }
 }
 
 function createDrugRow() {
@@ -456,7 +464,9 @@ function createDrugRow() {
 
 function removeDrugRow(button) {
     const drugRow = button.closest('.drug-row');
-    drugRow.remove();
+    if (drugRow) {
+        drugRow.remove();
+    }
 }
 
 function initDrugSelects(container) {
@@ -662,15 +672,17 @@ function toggleEdit(button) {
     closeAllEditFields();
     
     const card = button.closest('.card');
+    if (!card) return;
+    
     const editFields = card.querySelector('.edit-fields');
     const editBtn = card.querySelector('.edit-btn');
     const saveBtn = card.querySelector('.save-btn');
     const cancelBtn = card.querySelector('.cancel-btn');
     
-    editFields.classList.remove('d-none');
-    editBtn.classList.add('d-none');
-    saveBtn.classList.remove('d-none');
-    cancelBtn.classList.remove('d-none');
+    if (editFields) editFields.classList.remove('d-none');
+    if (editBtn) editBtn.classList.add('d-none');
+    if (saveBtn) saveBtn.classList.remove('d-none');
+    if (cancelBtn) cancelBtn.classList.remove('d-none');
     
     // Инициализируем селекты препаратов БЕЗ автоматического открытия
     initDrugSelectsSilently(card);
@@ -679,38 +691,47 @@ function toggleEdit(button) {
 function closeAllEditFields() {
     // Закрываем все открытые поля редактирования
     document.querySelectorAll('.edit-fields').forEach(editFields => {
-        if (!editFields.classList.contains('d-none')) {
+        if (editFields && !editFields.classList.contains('d-none')) {
             const card = editFields.closest('.card');
-            const editBtn = card.querySelector('.edit-btn');
-            const saveBtn = card.querySelector('.save-btn');
-            const cancelBtn = card.querySelector('.cancel-btn');
-            
-            editFields.classList.add('d-none');
-            editBtn.classList.remove('d-none');
-            saveBtn.classList.add('d-none');
-            cancelBtn.classList.add('d-none');
-            
-            // Убираем предупреждение об изменениях
-            card.classList.remove('border-warning');
+            if (card) {
+                const editBtn = card.querySelector('.edit-btn');
+                const saveBtn = card.querySelector('.save-btn');
+                const cancelBtn = card.querySelector('.cancel-btn');
+                
+                editFields.classList.add('d-none');
+                if (editBtn) editBtn.classList.remove('d-none');
+                if (saveBtn) saveBtn.classList.add('d-none');
+                if (cancelBtn) cancelBtn.classList.add('d-none');
+                
+                // Убираем предупреждение об изменениях
+                card.classList.remove('border-warning');
+            }
         }
     });
 }
 
 function cancelEdit(button) {
     const card = button.closest('.card');
+    if (!card) return;
+    
     const editFields = card.querySelector('.edit-fields');
+    if (!editFields) return;
     
     // Восстанавливаем оригинальные значения
-    const original = JSON.parse(card.dataset.original);
+    const original = JSON.parse(card.dataset.original || '{}');
     
-    editFields.querySelectorAll('[data-field="name"]')[0].value = original.name;
-    editFields.querySelectorAll('[data-field="price"]')[0].value = original.price;
-    editFields.querySelectorAll('[data-field="description"]')[0].value = original.description || '';
+    const nameField = editFields.querySelector('[data-field="name"]');
+    const priceField = editFields.querySelector('[data-field="price"]');
+    const descriptionField = editFields.querySelector('[data-field="description"]');
+    
+    if (nameField && original.name) nameField.value = original.name;
+    if (priceField && original.price) priceField.value = original.price;
+    if (descriptionField) descriptionField.value = original.description || '';
     
     // Восстанавливаем препараты в TomSelect
     const drugSelects = editFields.querySelectorAll('.drug-select');
     drugSelects.forEach((select, index) => {
-        if (select.tomselect && original.drugs[index]) {
+        if (select.tomselect && original.drugs && original.drugs[index]) {
             const drug = original.drugs[index];
             // Очищаем и добавляем оригинальное значение
             select.tomselect.clear();
@@ -727,31 +748,42 @@ function cancelEdit(button) {
 }
 
 function closeEditFields(card) {
+    if (!card) return;
+    
     const editFields = card.querySelector('.edit-fields');
     const editBtn = card.querySelector('.edit-btn');
     const saveBtn = card.querySelector('.save-btn');
     const cancelBtn = card.querySelector('.cancel-btn');
     
-    editFields.classList.add('d-none');
-    editBtn.classList.remove('d-none');
-    saveBtn.classList.add('d-none');
-    cancelBtn.classList.add('d-none');
+    if (editFields) editFields.classList.add('d-none');
+    if (editBtn) editBtn.classList.remove('d-none');
+    if (saveBtn) saveBtn.classList.add('d-none');
+    if (cancelBtn) cancelBtn.classList.add('d-none');
     
     card.classList.remove('border-warning');
 }
 
 function cancelNewRow(button) {
     const card = button.closest('.col-12');
-    card.remove();
+    if (card) {
+        card.remove();
+    }
 }
 
 function markAsChanged(input) {
     const card = input.closest('.card');
-    card.classList.add('border-warning');
+    if (card) {
+        card.classList.add('border-warning');
+    }
 }
 
 function saveRow(button) {
     const card = button.closest('.card');
+    if (!card) {
+        alert('Ошибка: не найдена карточка');
+        return;
+    }
+    
     const id = card.dataset.id;
     
     // Проверяем существование элементов
@@ -864,10 +896,16 @@ function deleteRow(id) {
         return;
     }
     
+    // Получаем CSRF токен с проверкой
+    const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfTokenElement ? csrfTokenElement.getAttribute('content') : 
+                     document.querySelector('input[name="_token"]')?.value ||
+                     '{{ csrf_token() }}';
+    
     fetch(`{{ route("admin.settings.vaccination-types.index") }}/${id}`, {
         method: 'DELETE',
         headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': csrfToken
         }
     })
     .then(response => response.json())

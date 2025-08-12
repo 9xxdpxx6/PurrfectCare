@@ -26,8 +26,7 @@ class Visit extends Model
     ];
 
     protected $deleteDependencies = [
-        'diagnoses' => 'Невозможно удалить приём, так как с ним связаны диагнозы',
-        'symptoms' => 'Невозможно удалить приём, так как с ним связаны симптомы',
+        // Убираем проверки на diagnoses и symptoms - они будут удаляться каскадно
     ];
 
     public function client()

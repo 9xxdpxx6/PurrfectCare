@@ -12,7 +12,7 @@
 
 <form method="POST" action="{{ route('admin.services.update', $item) }}" class="needs-validation" novalidate>
     @csrf
-    @method('PUT')
+    @method('PATCH')
     <div class="row g-3">
         <div class="col-md-6 col-lg-4">
             <label for="name" class="form-label">Название услуги</label>

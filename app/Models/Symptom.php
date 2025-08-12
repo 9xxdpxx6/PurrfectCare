@@ -19,8 +19,7 @@ class Symptom extends Model
     ];
 
     protected $deleteDependencies = [
-        'visit' => 'Невозможно удалить симптом, так как с ним связан приём',
-        'dictionarySymptom' => 'Невозможно удалить симптом, так как с ним связан симптом из словаря',
+        // Убираем все проверки - симптомы удаляются каскадно при удалении приёма
     ];
 
     public function visit()

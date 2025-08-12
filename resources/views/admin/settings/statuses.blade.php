@@ -172,7 +172,7 @@
             });
             
                             fetch(`{{ route('admin.settings.system.statuses.update', '') }}/${rowId}`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',

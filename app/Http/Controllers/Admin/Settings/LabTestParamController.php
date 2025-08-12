@@ -45,10 +45,10 @@ class LabTestParamController extends SettingsController
     /**
      * Обновить параметр анализа
      */
-    public function update(UpdateRequest $request, LabTestParam $labTestParam)
+    public function update(UpdateRequest $request, LabTestParam $param)
     {
         try {
-            $this->service->update($labTestParam, $request->validated());
+            $this->service->update($param, $request->validated());
             return $this->successResponse();
         } catch (\Exception $e) {
             return $this->errorResponse('Произошла ошибка при обновлении параметра анализа');
@@ -58,10 +58,10 @@ class LabTestParamController extends SettingsController
     /**
      * Удалить параметр анализа
      */
-    public function destroy(LabTestParam $labTestParam)
+    public function destroy(LabTestParam $param)
     {
         try {
-            $this->service->delete($labTestParam);
+            $this->service->delete($param);
             return $this->successResponse();
         } catch (\Exception $e) {
             return $this->dependencyErrorResponse($e->getMessage());

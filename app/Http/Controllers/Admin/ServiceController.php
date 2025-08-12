@@ -107,14 +107,9 @@ class ServiceController extends AdminController
     {
         $item = $this->model::findOrFail($id);
         
-        // Проверяем наличие зависимых записей
-        if ($errorMessage = $item->hasDependencies()) {
-            return redirect()
-                ->route("admin.{$this->routePrefix}.index")
-                ->with('error', $errorMessage);
-        }
+        // Убираем проверку зависимостей - связи с филиалами удаляются каскадно
         
-        $item->branches()->detach();
+        // Удаляем услугу (связи удалятся каскадно)
         $item->delete();
 
         return redirect()

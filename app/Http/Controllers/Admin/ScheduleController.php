@@ -172,12 +172,7 @@ class ScheduleController extends AdminController
     {
         $item = $this->model::findOrFail($id);
         
-        // Проверяем наличие зависимых записей
-        if ($errorMessage = $item->hasDependencies()) {
-            return redirect()
-                ->route("admin.{$this->routePrefix}.index")
-                ->with('error', $errorMessage);
-        }
+        // Убираем проверку зависимостей - расписание не имеет зависимостей для проверки
         
         $item->delete();
 

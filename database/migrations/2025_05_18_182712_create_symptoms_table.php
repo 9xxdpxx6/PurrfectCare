@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('symptoms', function (Blueprint $table) {
             $table->id();
             $table->foreignId('visit_id')->constrained()->onDelete('cascade');
-            $table->foreignId('dictionary_symptom_id')->nullable()->constrained();
+            $table->foreignId('dictionary_symptom_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('custom_symptom')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();

@@ -42,10 +42,10 @@ class LabTestTypeController extends SettingsController
     /**
      * Обновить тип анализа
      */
-    public function update(UpdateRequest $request, LabTestType $labTestType)
+    public function update(UpdateRequest $request, LabTestType $type)
     {
         try {
-            $this->service->update($labTestType, $request->validated());
+            $this->service->update($type, $request->validated());
             return $this->successResponse();
         } catch (\Exception $e) {
             return $this->errorResponse('Произошла ошибка при обновлении типа анализа');
@@ -55,10 +55,10 @@ class LabTestTypeController extends SettingsController
     /**
      * Удалить тип анализа
      */
-    public function destroy(LabTestType $labTestType)
+    public function destroy(LabTestType $type)
     {
         try {
-            $this->service->delete($labTestType);
+            $this->service->delete($type);
             return $this->successResponse();
         } catch (\Exception $e) {
             return $this->dependencyErrorResponse($e->getMessage());

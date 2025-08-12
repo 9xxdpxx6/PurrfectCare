@@ -115,12 +115,7 @@ class DrugProcurementController extends AdminController
     {
         $procurement = $this->model::findOrFail($id);
         
-        // Проверяем наличие зависимых записей
-        if ($errorMessage = $procurement->hasDependencies()) {
-            return redirect()
-                ->route("admin.{$this->routePrefix}.index")
-                ->with('error', $errorMessage);
-        }
+        // Убираем проверку зависимостей - поставка не имеет зависимостей для проверки
         
         DB::transaction(function () use ($procurement) {
             $quantity = $procurement->quantity;

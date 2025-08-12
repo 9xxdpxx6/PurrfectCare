@@ -210,22 +210,14 @@ class OrderController extends AdminController
     {
         $order = $this->model::with('items')->findOrFail($id);
         
-        // Проверяем наличие зависимых записей
-        if ($errorMessage = $order->hasDependencies()) {
-            return redirect()
-                ->route("admin.{$this->routePrefix}.index")
-                ->with('error', $errorMessage);
-        }
+        // Убираем проверку зависимостей - элементы заказа удаляются каскадно
         
         // Возвращаем препараты на склад если заказ был закрыт
         if ($order->closed_at) {
             $this->processInventoryReturn($order);
         }
         
-        // Удаляем элементы заказа
-        $order->items()->delete();
-        
-        // Удаляем сам заказ
+        // Удаляем сам заказ (элементы удалятся каскадно)
         $order->delete();
 
         return redirect()

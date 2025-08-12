@@ -96,9 +96,7 @@ class VaccinationTypeService
      */
     public function delete(VaccinationType $vaccinationType)
     {
-        if ($errorMessage = $vaccinationType->hasDependencies()) {
-            throw new \Exception($errorMessage);
-        }
+        // Убираем проверку зависимостей - связи с препаратами удаляются каскадно
         
         return $vaccinationType->delete();
     }

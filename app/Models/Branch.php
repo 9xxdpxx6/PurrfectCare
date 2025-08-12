@@ -26,7 +26,7 @@ class Branch extends Model
 
     protected $deleteDependencies = [
         'veterinarians' => 'Невозможно удалить филиал, так как с ним связаны сотрудники',
-        'services' => 'Невозможно удалить филиал, так как с ним связаны услуги',
+        // Убираем проверку на services - они будут удаляться каскадно через pivot таблицу
     ];
 
     public function veterinarians() {

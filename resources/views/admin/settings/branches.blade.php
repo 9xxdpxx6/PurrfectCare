@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             
                             fetch(`{{ route('admin.settings.system.branches.update', '') }}/${rowId}`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',

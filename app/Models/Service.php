@@ -25,7 +25,7 @@ class Service extends Model
 
     protected $deleteDependencies = [
         'orders' => 'Невозможно удалить услугу, так как она используется в заказах',
-        'branches' => 'Невозможно удалить услугу, так как она привязана к филиалам',
+        // Убираем проверку на branches - они будут удаляться каскадно через pivot таблицу
     ];
 
     public function orders()

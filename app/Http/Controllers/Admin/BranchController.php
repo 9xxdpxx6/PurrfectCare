@@ -91,12 +91,7 @@ class BranchController extends Controller
      */
     public function destroy(Branch $branch)
     {
-        // Проверяем наличие зависимых записей
-        if ($errorMessage = $branch->hasDependencies()) {
-            return redirect()
-                ->route('admin.branches.index')
-                ->with('error', $errorMessage);
-        }
+        // Убираем проверку зависимостей - связи с услугами удаляются каскадно
 
         $branch->delete();
 

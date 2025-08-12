@@ -21,7 +21,7 @@
             <div class="card-body">
                 <form action="{{ route('admin.schedules.update', $item) }}" method="POST">
                     @csrf
-                    @method('PUT')
+                    @method('PATCH')
 
                     @if($errors->has('schedule_conflicts'))
                         <div class="alert alert-danger">

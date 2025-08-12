@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('drug_procurements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->constrained();
-            $table->foreignId('drug_id')->constrained();
+            $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
+            $table->foreignId('drug_id')->constrained()->onDelete('cascade');
             $table->date('delivery_date');
             $table->date('expiry_date');
             $table->date('manufacture_date');

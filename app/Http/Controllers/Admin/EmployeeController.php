@@ -94,15 +94,9 @@ class EmployeeController extends AdminController
     {
         $employee = Employee::findOrFail($id);
         
-        // Проверяем наличие зависимых записей
-        if ($errorMessage = $employee->hasDependencies()) {
-            return redirect()
-                ->route('admin.employees.index')
-                ->with('error', $errorMessage);
-        }
+        // Убираем проверку зависимостей - связи со специализациями удаляются каскадно
         
-        $employee->specialties()->detach();
-        $employee->branches()->detach();
+        // Удаляем сотрудника (связи удалятся каскадно)
         $employee->delete();
         return redirect()->route('admin.employees.index')
             ->with('success', 'Сотрудник успешно удалён');

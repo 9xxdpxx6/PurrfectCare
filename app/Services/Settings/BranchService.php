@@ -38,9 +38,7 @@ class BranchService
      */
     public function delete(Branch $branch)
     {
-        if ($errorMessage = $branch->hasDependencies()) {
-            throw new \Exception($errorMessage);
-        }
+        // Убираем проверку зависимостей - связи с услугами удаляются каскадно
         
         return $branch->delete();
     }

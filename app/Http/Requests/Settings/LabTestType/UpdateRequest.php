@@ -20,7 +20,7 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $labTestTypeId = $this->route('labTestType')->id;
+        $labTestTypeId = $this->route('type')->id;
         
         return [
             'name' => [

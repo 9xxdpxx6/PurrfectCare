@@ -19,8 +19,7 @@ class Diagnosis extends Model
     ];
 
     protected $deleteDependencies = [
-        'visit' => 'Невозможно удалить диагноз, так как с ним связан приём',
-        'dictionaryDiagnosis' => 'Невозможно удалить диагноз, так как с ним связан диагноз из словаря',
+        // Убираем все проверки - диагнозы удаляются каскадно при удалении приёма
     ];
 
     public function visit()

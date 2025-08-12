@@ -24,8 +24,7 @@ class VaccinationTypeDrug extends Pivot
     ];
 
     protected $deleteDependencies = [
-        'vaccinationType' => 'Невозможно удалить связь типа вакцинации с препаратом, так как с ней связан тип вакцинации',
-        'drug' => 'Невозможно удалить связь типа вакцинации с препаратом, так как с ней связан препарат',
+        // Убираем проверки - эта связующая таблица будет удаляться каскадно
     ];
 
     public function vaccinationType()

@@ -30,7 +30,7 @@ class Order extends Model
     ];
 
     protected $deleteDependencies = [
-        'items' => 'Невозможно удалить заказ, так как с ним связаны элементы заказа',
+        // Убираем проверку на items - они будут удаляться каскадно
     ];
 
     public function client()

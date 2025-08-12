@@ -302,12 +302,7 @@ class VisitController extends AdminController
     {
         $visit = $this->model::findOrFail($id);
         
-        // Проверяем наличие зависимых записей
-        if ($errorMessage = $visit->hasDependencies()) {
-            return redirect()
-                ->route("admin.{$this->routePrefix}.index")
-                ->with('error', $errorMessage);
-        }
+        // Убираем проверку зависимостей - диагнозы и симптомы удаляются каскадно
         
         $visit->delete();
         return redirect()->route("admin.{$this->routePrefix}.index")
