@@ -10,7 +10,7 @@
                 <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Просмотр</span>
             </a>
             <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад</span>
+                <i class="bi bi-arrow-left"></i> Назад
             </a>
     </div>
 </div>

@@ -9,7 +9,7 @@
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.statistics.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Назад к дашборду
+            <i class="bi bi-arrow-left"></i> Назад
         </a>
     </div>
 </div>

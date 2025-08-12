@@ -10,7 +10,7 @@
             <i class="bi bi-calendar-week"></i> <span class="d-none d-lg-inline">Расписание на неделю</span>
         </a>
         <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад</span>
+            <i class="bi bi-arrow-left"></i> Назад
         </a>
     </div>
 </div>

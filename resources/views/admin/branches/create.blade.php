@@ -11,7 +11,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h3 class="card-title">Добавить филиал</h3>
                         <a href="{{ route('admin.branches.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Назад к списку
+                            <i class="bi bi-x-lg"></i> Назад к списку
                         </a>
                     </div>
                 </div>

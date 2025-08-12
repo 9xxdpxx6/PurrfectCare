@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Добавить препарат</h1>
     <a href="{{ route('admin.drugs.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> <span class="d-none d-md-inline">Назад</span>
+        <i class="bi bi-arrow-left"></i> Назад
     </a>
 </div>
 
@@ -49,7 +49,9 @@
         </div>
     </div>
     <div class="mt-4 d-flex justify-content-between">
-        <a href="{{ route('admin.drugs.index') }}" class="btn btn-outline-secondary">Отмена</a>
+        <a href="{{ route('admin.drugs.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>
+        </a>
         <button type="submit" class="btn btn-success">
             <i class="bi bi-check-lg"></i> Сохранить
         </button>

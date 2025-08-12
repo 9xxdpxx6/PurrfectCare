@@ -46,7 +46,9 @@
         </div>
     </div>
     <div class="mt-4 d-flex justify-content-between">
-        <a href="{{ route('admin.services.index') }}" class="btn btn-outline-secondary">Отмена</a>
+        <a href="{{ route('admin.services.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>
+        </a>
         <button type="submit" class="btn btn-success">
             <i class="bi bi-check-lg"></i> Сохранить
         </button>

@@ -14,7 +14,7 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\ScheduleController;
-use App\Http\Controllers\Admin\SupplierController;
+
 use App\Http\Controllers\Admin\DrugProcurementController;
 use App\Http\Controllers\Admin\StatisticsController;
 
@@ -118,8 +118,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     // Филиалы
     Route::resource('branches', BranchController::class);
 
-    // Поставщики
-    Route::resource('suppliers', SupplierController::class);
+
 
     // Расписания
     Route::get('schedules/veterinarian-options', [ScheduleController::class, 'veterinarianOptions'])->name('schedules.veterinarian-options');

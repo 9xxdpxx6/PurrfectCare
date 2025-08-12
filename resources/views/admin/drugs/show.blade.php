@@ -84,7 +84,7 @@
                                     <!-- Поставщик и дата -->
                                     <div class="col-12 col-md-6 col-xl-5 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
-                                            <a href="{{ route('admin.suppliers.show', $procurement->supplier) }}" class="text-decoration-none">
+                                            <a href="{{ route('admin.settings.suppliers.show', $procurement->supplier) }}" class="text-decoration-none">
                                                 {{ $procurement->supplier->name }}
                                             </a>
                                         </h6>

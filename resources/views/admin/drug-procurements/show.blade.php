@@ -31,7 +31,7 @@
                 <div class="row mb-2">
                     <div class="col-sm-4 fw-bold">Поставщик:</div>
                     <div class="col-sm-8">
-                        <a href="{{ route('admin.suppliers.show', $item->supplier) }}">{{ $item->supplier->name }}</a>
+                        <a href="{{ route('admin.settings.suppliers.show', $item->supplier) }}">{{ $item->supplier->name }}</a>
                     </div>
                 </div>
                 <div class="row mb-2">

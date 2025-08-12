@@ -9,7 +9,7 @@
     <h1 class="h2">Редактировать вакцинацию</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.vaccinations.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
+            <i class="bi bi-arrow-left"></i> Назад
         </a>
     </div>
 </div>
@@ -141,7 +141,7 @@
 
                     <div class="d-flex justify-content-between gap-2">
                         <a href="{{ route('admin.vaccinations.show', $item) }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-lg"></i> Отмена
+                            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>
                         </a>
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-lg"></i> Сохранить

@@ -7,7 +7,7 @@
     <h1 class="h2">Редактировать заказ #{{ $item->id }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Назад к списку
+            <i class="bi bi-arrow-left"></i> Назад
         </a>
     </div>
 </div>
