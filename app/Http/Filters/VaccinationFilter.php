@@ -43,15 +43,18 @@ class VaccinationFilter extends AbstractFilter
             $query->where(function ($subQuery) use ($words) {
                 foreach ($words as $word) {
                     $subQuery->where(function ($wordQuery) use ($word) {
-                        $wordQuery->whereHas('pet', function ($q) use ($word) {
-                            $q->where('name', 'like', "%{$word}%");
-                        })
-                        ->orWhereHas('veterinarian', function ($q) use ($word) {
-                            $q->where('name', 'like', "%{$word}%");
-                        })
-                        ->orWhereHas('drugs', function ($q) use ($word) {
-                            $q->where('name', 'like', "%{$word}%");
-                        });
+                                            $wordQuery->whereHas('pet', function ($q) use ($word) {
+                        $q->where('name', 'like', "%{$word}%");
+                    })
+                    ->orWhereHas('pet.client', function ($q) use ($word) {
+                        $q->where('name', 'like', "%{$word}%");
+                    })
+                    ->orWhereHas('veterinarian', function ($q) use ($word) {
+                        $q->where('name', 'like', "%{$word}%");
+                    })
+                    ->orWhereHas('vaccinationType.drugs', function ($q) use ($word) {
+                        $q->where('drugs.name', 'like', "%{$word}%");
+                    });
                     });
                 }
             });

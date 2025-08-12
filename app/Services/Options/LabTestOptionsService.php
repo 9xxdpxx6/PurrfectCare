@@ -13,7 +13,8 @@ class LabTestOptionsService extends BaseOptionsService
     {
         $query = LabTestType::query();
         return $this->buildOptions($request, $query, [
-            'model' => LabTestType::class
+            'model' => LabTestType::class,
+            'include_price' => $request->input('include_price', false)
         ]);
     }
 

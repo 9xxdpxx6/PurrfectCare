@@ -15,6 +15,16 @@
 <form action="{{ route('admin.orders.store') }}" method="POST" id="orderForm">
     @csrf
     
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    
     <div class="row g-3">
         <!-- Основная информация -->
         <div class="col-12">
@@ -165,7 +175,54 @@
                             </div>
                         </div>
                         <div id="serviceItems">
-                            <!-- Состав услуг будет добавляться сюда -->
+                            @if(old('items'))
+                                @foreach(old('items') as $index => $item)
+                                    @if($item['item_type'] === 'service')
+                                        <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="service">
+                                            <div class="row g-3">
+                                                <div class="col-12 col-lg-5">
+                                                    <label class="form-label">Услуга</label>
+                                                    <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.service-options') }}">
+                                                        @php
+                                                            $service = \App\Models\Service::find($item['item_id']);
+                                                        @endphp
+                                                        @if($service)
+                                                            <option value="{{ $service->id }}" selected>{{ $service->name }}</option>
+                                                        @endif
+                                                    </select>
+                                                    <input type="hidden" name="items[{{ $index }}][item_type]" value="service">
+                                                </div>
+                                                
+                                                <div class="col-6 col-lg-3">
+                                                    <label class="form-label">Кол-во</label>
+                                                    <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $item['quantity'] ?? 1 }}" min="0.01" max="9999" step="0.01">
+                                                </div>
+                                                
+                                                <div class="col-6 col-lg-3">
+                                                    <label class="form-label">Цена</label>
+                                                    <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $item['unit_price'] ?? 0 }}" min="0" max="999999.99" step="0.01">
+                                                </div>
+                                                
+                                                <div class="col-lg-1">
+                                                    <label class="form-label">&nbsp;</label>
+                                                    <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-2">
+                                                <div class="col-md-6 offset-md-6">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>Сумма:</span>
+                                                        <span class="item-total fw-bold">{{ number_format(($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0), 2) }} ₽</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
                         </div>
                     </div>
                     <hr class="mb-5">
@@ -183,7 +240,54 @@
                             </div>
                         </div>
                         <div id="drugItems">
-                            <!-- Состав препаратов будет добавляться сюда -->
+                            @if(old('items'))
+                                @foreach(old('items') as $index => $item)
+                                    @if($item['item_type'] === 'drug')
+                                        <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="drug">
+                                            <div class="row g-3">
+                                                <div class="col-12 col-lg-5">
+                                                    <label class="form-label">Препарат</label>
+                                                    <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.drug-options') }}">
+                                                        @php
+                                                            $drug = \App\Models\Drug::find($item['item_id']);
+                                                        @endphp
+                                                        @if($drug)
+                                                            <option value="{{ $drug->id }}" selected>{{ $drug->name }}</option>
+                                                        @endif
+                                                    </select>
+                                                    <input type="hidden" name="items[{{ $index }}][item_type]" value="drug">
+                                                </div>
+                                                
+                                                <div class="col-6 col-lg-3">
+                                                    <label class="form-label">Кол-во</label>
+                                                    <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $item['quantity'] ?? 1 }}" min="0.01" max="9999" step="0.01">
+                                                </div>
+                                                
+                                                <div class="col-6 col-lg-3">
+                                                    <label class="form-label">Цена</label>
+                                                    <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $item['unit_price'] ?? 0 }}" min="0" max="999999.99" step="0.01">
+                                                </div>
+                                                
+                                                <div class="col-lg-1">
+                                                    <label class="form-label">&nbsp;</label>
+                                                    <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-2">
+                                                <div class="col-md-6 offset-md-6">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>Сумма:</span>
+                                                        <span class="item-total fw-bold">{{ number_format(($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0), 2) }} ₽</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
                         </div>
                     </div>
                     <hr class="mb-5">
@@ -201,7 +305,46 @@
                             </div>
                         </div>
                         <div id="labTestItems">
-                            <!-- Состав анализов будет добавляться сюда -->
+                            @if(old('items'))
+                                @foreach(old('items') as $index => $item)
+                                    @if($item['item_type'] === 'lab_test')
+                                        <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="lab_test">
+                                            <div class="row g-3">
+                                                <div class="col-12 col-lg-11">
+                                                    <label class="form-label">Анализ</label>
+                                                    <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}">
+                                                        @php
+                                                            $labTestType = \App\Models\LabTestType::find($item['item_id']);
+                                                        @endphp
+                                                        @if($labTestType)
+                                                            <option value="{{ $labTestType->id }}" selected>{{ $labTestType->name }}</option>
+                                                        @endif
+                                                    </select>
+                                                    <input type="hidden" name="items[{{ $index }}][item_type]" value="lab_test">
+                                                    <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $item['quantity'] ?? 1 }}">
+                                                    <input type="hidden" name="items[{{ $index }}][unit_price]" value="{{ $item['unit_price'] ?? 0 }}">
+                                                </div>
+                                                
+                                                <div class="col-lg-1">
+                                                    <label class="form-label">&nbsp;</label>
+                                                    <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-2">
+                                                <div class="col-md-6 offset-md-6">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>Сумма:</span>
+                                                        <span class="item-total fw-bold">{{ number_format(($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0), 2) }} ₽</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
                         </div>
                     </div>
                     <hr class="mb-5">
@@ -219,7 +362,52 @@
                             </div>
                         </div>
                         <div id="vaccinationItems">
-                            <!-- Состав вакцинаций будет добавляться сюда -->
+                            @if(old('items'))
+                                @foreach(old('items') as $index => $item)
+                                    @if($item['item_type'] === 'vaccination')
+                                        <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="vaccination">
+                                            <div class="row g-3">
+                                                <div class="col-12 col-lg-11">
+                                                    <label class="form-label">Вакцинация</label>
+                                                    <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}">
+                                                        @php
+                                                            $vaccinationType = \App\Models\VaccinationType::find($item['item_id']);
+                                                        @endphp
+                                                        @if($vaccinationType)
+                                                            <option value="{{ $vaccinationType->id }}" selected>{{ $vaccinationType->name }}</option>
+                                                        @endif
+                                                    </select>
+                                                    <input type="hidden" name="items[{{ $index }}][item_type]" value="vaccination">
+                                                    <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $item['quantity'] ?? 1 }}">
+                                                    <input type="hidden" name="items[{{ $index }}][unit_price]" value="{{ $item['unit_price'] ?? 0 }}">
+                                                </div>
+                                                
+                                                <div class="col-lg-1">
+                                                    <label class="form-label">&nbsp;</label>
+                                                    <button type="button" class="btn btn-outline-danger w-100" onclick="removeOrderItem(this)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-2">
+                                                <div class="col-12">
+                                                    <small class="text-muted">Препараты в вакцинации:</small>
+                                                    <ul class="vaccination-drugs-list mt-1 mb-0" style="list-style: none; padding-left: 0;">
+                                                        @if($vaccinationType)
+                                                            @foreach($vaccinationType->drugs as $drug)
+                                                                <li class="mb-1">
+                                                                    <small class="text-muted">• {{ $drug->name }} - {{ $drug->pivot->dosage }} шт.</small>
+                                                                </li>
+                                                            @endforeach
+                                                        @endif
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
                         </div>
                     </div>
                     <hr class="mb-4">
@@ -228,9 +416,9 @@
                         <div class="col-md-6 offset-md-6">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5>Итого:</h5>
-                                <h4 class="mb-0" id="totalAmount">0.00 ₽</h4>
+                                <h4 class="mb-0" id="totalAmount">{{ number_format(old('total', 0), 2) }} ₽</h4>
                             </div>
-                            <input type="hidden" name="total" id="total" value="0">
+                            <input type="hidden" name="total" id="total" value="{{ old('total', 0) }}">
                         </div>
                     </div>
                 </div>
@@ -264,7 +452,7 @@
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Кол-во</label>
-                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999">
+                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="0.01" max="9999" step="0.01">
             </div>
             
             <div class="col-6 col-lg-3">
@@ -303,7 +491,7 @@
             
             <div class="col-6 col-lg-3">
                 <label class="form-label">Кол-во</label>
-                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="1" max="9999">
+                <input type="number" name="items[INDEX][quantity]" class="form-control item-quantity" value="1" min="0.01" max="9999" step="0.01">
             </div>
             
             <div class="col-6 col-lg-3">
@@ -333,7 +521,7 @@
 <template id="labTestItemTemplate">
     <div class="order-item border rounded p-3 mb-3" data-item-index="" data-item-type="lab_test">
         <div class="row g-3">
-            <div class="col-12 col-lg-8">
+            <div class="col-12 col-lg-11">
                 <label class="form-label">Анализ</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}">
                 </select>
@@ -402,12 +590,33 @@
         service: '{{ route("admin.orders.service-options") }}',
         drug: '{{ route("admin.orders.drug-options") }}',
         lab_test: '{{ route("admin.orders.lab-test-options") }}',
-        vaccination: '{{ route('admin.orders.vaccination-options') }}'
+        vaccination: '{{ route("admin.orders.vaccination-options") }}'
     };
     
     document.addEventListener('DOMContentLoaded', function () {
         const clientSelect = document.getElementById('client_id');
         const petSelect = document.getElementById('pet_id');
+        
+        // Обработчик отправки формы
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            // Удаляем пустые элементы заказа перед отправкой
+            const items = document.querySelectorAll('.order-item');
+            items.forEach(item => {
+                const itemIdSelect = item.querySelector('select[name*="[item_id]"]');
+                const quantityInput = item.querySelector('input[name*="[quantity]"]');
+                const priceInput = item.querySelector('input[name*="[unit_price]"]');
+                
+                // Проверяем, есть ли выбранный элемент и заполнены ли обязательные поля
+                const hasItemId = itemIdSelect && itemIdSelect.value;
+                const hasQuantity = quantityInput && parseFloat(quantityInput.value) > 0;
+                const hasPrice = priceInput && parseFloat(priceInput.value) > 0;
+                
+                // Если элемент не заполнен полностью, удаляем его
+                if (!hasItemId || !hasQuantity || !hasPrice) {
+                    item.remove();
+                }
+            });
+        });
         
         // TomSelect для основных полей
         const clientTomSelect = new createTomSelect('#client_id', {
@@ -587,50 +796,43 @@
         petTomSelect.on('change', function(value) {
             updatePetDependentButtons();
             
-            // Проверяем, есть ли анализы или вакцинации
-            const labTestItems = document.getElementById('labTestItems');
-            const vaccinationItems = document.getElementById('vaccinationItems');
-            
-            if ((labTestItems.children.length > 0 || vaccinationItems.children.length > 0) && value) {
-                if (!confirm('Внимание! При смене питомца все добавленные анализы и вакцинации будут удалены. Продолжить?')) {
-                    // Если пользователь отменил, возвращаем предыдущее значение
-                    const previousValue = this.lastValue || '';
-                    // Временно отключаем слушатель события
-                    petTomSelect.off('change');
-                    this.setValue(previousValue);
-                    // Включаем обратно слушатель события
-                    setTimeout(() => {
-                        petTomSelect.on('change', arguments.callee);
-                    }, 100);
-                    return;
-                }
-            }
-            
             // Сохраняем текущее значение для следующей проверки
             this.lastValue = value;
-            updatePetDependentItems();
         });
         
         // Инициализация состояния кнопок
         updatePetDependentButtons();
         
-        // Функция для обновления элементов анализов и вакцинаций при смене питомца
-        function updatePetDependentItems() {
-            const petId = petTomSelect.getValue();
-            
-            // Очищаем все существующие элементы анализов и вакцинаций
-            const labTestItems = document.getElementById('labTestItems');
-            const vaccinationItems = document.getElementById('vaccinationItems');
-            
-            labTestItems.innerHTML = '';
-            vaccinationItems.innerHTML = '';
-            
-            // Пересчитываем общую сумму
-            calculateTotal();
-        }
+
         
         // Инициализируем lastValue для petTomSelect
         petTomSelect.lastValue = petTomSelect.getValue();
+        
+        // Инициализируем TomSelect для существующих элементов заказа
+        const existingItems = document.querySelectorAll('.order-item');
+        existingItems.forEach((item, index) => {
+            const itemSelect = item.querySelector('.item-select');
+            const itemType = item.getAttribute('data-item-type');
+            
+            if (itemType && itemUrls[itemType]) {
+                itemSelect.dataset.url = itemUrls[itemType];
+                initItemTomSelect(itemSelect, itemType);
+            }
+            
+            // Обработчики для расчета суммы
+            const quantityInput = item.querySelector('.item-quantity');
+            const priceInput = item.querySelector('.item-price');
+            
+            if (quantityInput) {
+                quantityInput.addEventListener('input', calculateItemTotal);
+            }
+            if (priceInput) {
+                priceInput.addEventListener('input', calculateItemTotal);
+            }
+        });
+        
+        // Обновляем индекс для новых элементов
+        itemIndex = existingItems.length;
         
         // Инициализируем тоталы для существующих элементов
         calculateTotal();
@@ -673,11 +875,11 @@
         if (itemType === 'lab_test' || itemType === 'vaccination') {
             if (quantityInput) {
                 quantityInput.value = '1';
-                quantityInput.disabled = true;
+                quantityInput.readOnly = true;
             }
             if (priceInput) {
                 priceInput.value = '0'; // Устанавливаем цену по умолчанию для анализов/вакцинаций
-                priceInput.disabled = true;
+                priceInput.readOnly = true;
             }
         } else {
             if (quantityInput) {
@@ -709,11 +911,25 @@
         addOrderItemBase('vaccinationItemTemplate', 'vaccinationItems', 'vaccination');
     }
 
-    function addVaccinationDrugs(vaccinationId, vaccinationItemDiv = null) {
-        // Получаем препараты из вакцинации
-        fetch(`{{ route('admin.vaccinations.drugs', 'VACCINATION_ID') }}`.replace('VACCINATION_ID', vaccinationId))
+    function addVaccinationDrugs(vaccinationTypeId, vaccinationItemDiv = null) {
+        // Получаем препараты из типа вакцинации
+        fetch(`{{ route('admin.vaccination-types.drugs', 'VACCINATION_TYPE_ID') }}`.replace('VACCINATION_TYPE_ID', vaccinationTypeId))
             .then(response => response.json())
             .then(drugs => {
+                // Устанавливаем цену вакцинации (сумма всех препаратов)
+                let vaccinationPrice = 0;
+                drugs.forEach(drug => {
+                    vaccinationPrice += (drug.price || 0) * (drug.dosage || 1);
+                });
+                
+                // Обновляем цену в скрытом поле вакцинации
+                if (vaccinationItemDiv) {
+                    const priceInput = vaccinationItemDiv.querySelector('input[name*="[unit_price]"]');
+                    if (priceInput) {
+                        priceInput.value = vaccinationPrice;
+                        calculateTotal(); // Пересчитываем общую сумму
+                    }
+                }
                 // Обновляем список препаратов в вакцинации
                 if (vaccinationItemDiv) {
                     const drugsList = vaccinationItemDiv.querySelector('.vaccination-drugs-list');
@@ -745,7 +961,7 @@
                         const quantityInput = lastDrugItem.querySelector('.item-quantity');
                         if (quantityInput) {
                             quantityInput.value = drug.dosage; // Устанавливаем дозировку
-                            quantityInput.disabled = true; // Отключаем поле количества
+                            quantityInput.readOnly = true; // Делаем поле только для чтения вместо отключения
                             quantityInput.setAttribute('data-vaccination-drug', 'true'); // Помечаем как препарат из вакцинации
                         }
                         const priceInput = lastDrugItem.querySelector('.item-price');
@@ -796,15 +1012,30 @@
                 
                 if (itemType === 'lab_test') {
                     // Для анализов получаем цену из типа анализа
+                    console.log('Выбран анализ с ID:', value);
                     fetch(this.input.dataset.url + '?selected=' + value)
                         .then(response => response.json())
                         .then(data => {
+                            console.log('Полученные данные анализа:', data);
                             const selectedItem = data.find(item => item.value == value);
+                            console.log('Найденный элемент анализа:', selectedItem);
+                            console.log('Цена анализа:', selectedItem ? selectedItem.price : 'не найдена');
+                            
                             if (selectedItem && selectedItem.price) {
                                 const priceInput = itemDiv.querySelector('input[name*="[unit_price]"]');
-                                priceInput.value = selectedItem.price;
-                                calculateItemTotal.call(priceInput);
+                                console.log('Поле цены найдено:', priceInput);
+                                if (priceInput) {
+                                    priceInput.value = selectedItem.price;
+                                    console.log('Установлена цена в поле:', selectedItem.price);
+                                    // Вызываем calculateItemTotal для обновления отображения
+                                    calculateItemTotal.call(itemDiv);
+                                }
+                            } else {
+                                console.log('Цена не найдена или равна 0');
                             }
+                        })
+                        .catch(error => {
+                            console.error('Ошибка при получении цены анализа:', error);
                         });
                 } else if (itemType === 'vaccination') {
                     // Для вакцинаций добавляем препараты и рассчитываем общую стоимость
@@ -824,6 +1055,9 @@
                                     priceInput.value = selectedItem.price;
                                     calculateItemTotal.call(priceInput);
                                 }
+                            })
+                            .catch(error => {
+                                console.error('Ошибка при получении цены элемента:', error);
                             });
                     }
                 }
@@ -843,7 +1077,7 @@
     }
 
     function calculateItemTotal() {
-        const itemDiv = this.closest('.order-item');
+        const itemDiv = this.closest ? this.closest('.order-item') : this;
         const itemType = itemDiv.getAttribute('data-item-type');
         
         // Для вакцинаций не рассчитываем сабтотал, так как он не отображается
@@ -858,13 +1092,23 @@
         
         // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
         let quantity = 1;
-        if (quantityInput && !quantityInput.disabled) {
+        if (quantityInput && !quantityInput.readOnly) {
+            quantity = parseFloat(quantityInput.value) || 0;
+        } else if (quantityInput) {
             quantity = parseFloat(quantityInput.value) || 0;
         }
         
-        // Для вакцинаций цена берется из скрытого поля
+        // Для анализов и вакцинаций цена берется из скрытого поля
         let price = 0;
-        if (priceInput && !priceInput.disabled) {
+        if (itemType === 'lab_test' || itemType === 'vaccination') {
+            if (hiddenPriceInput) {
+                price = parseFloat(hiddenPriceInput.value) || 0;
+                if (itemType === 'lab_test') {
+                    console.log('Анализ - цена из скрытого поля:', price);
+                    console.log('Значение скрытого поля:', hiddenPriceInput.value);
+                }
+            }
+        } else if (priceInput && !priceInput.readOnly) {
             price = parseFloat(priceInput.value) || 0;
         } else if (hiddenPriceInput) {
             price = parseFloat(hiddenPriceInput.value) || 0;
@@ -884,19 +1128,30 @@
         let total = 0;
         
         items.forEach(item => {
+            const itemType = item.getAttribute('data-item-type');
             const quantityInput = item.querySelector('.item-quantity');
             const priceInput = item.querySelector('.item-price');
             const hiddenPriceInput = item.querySelector('input[name*="[unit_price]"]');
             
             // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
             let quantity = 1;
-            if (quantityInput && !quantityInput.disabled) {
+            if (quantityInput && !quantityInput.readOnly) {
+                quantity = parseFloat(quantityInput.value) || 0;
+            } else if (quantityInput) {
                 quantity = parseFloat(quantityInput.value) || 0;
             }
             
-            // Для вакцинаций цена берется из скрытого поля
+            // Для анализов и вакцинаций цена берется из скрытого поля
             let price = 0;
-            if (priceInput && !priceInput.disabled) {
+            if (itemType === 'lab_test' || itemType === 'vaccination') {
+                if (hiddenPriceInput) {
+                    price = parseFloat(hiddenPriceInput.value) || 0;
+                    if (itemType === 'lab_test') {
+                        console.log('calculateTotal - Анализ ID:', item.querySelector('select[name*="[item_id]"]').value);
+                        console.log('calculateTotal - Цена анализа:', price);
+                    }
+                }
+            } else if (priceInput && !priceInput.readOnly) {
                 price = parseFloat(priceInput.value) || 0;
             } else if (hiddenPriceInput) {
                 price = parseFloat(hiddenPriceInput.value) || 0;

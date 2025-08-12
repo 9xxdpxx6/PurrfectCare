@@ -89,6 +89,24 @@ class VaccinationTypeController extends SettingsController
     }
 
     /**
+     * Получить препараты типа вакцинации
+     */
+    public function getDrugs(VaccinationType $vaccinationType)
+    {
+        $drugs = $vaccinationType->drugs->map(function($drug) {
+            return [
+                'id' => $drug->id,
+                'name' => $drug->name,
+                'dosage' => $drug->pivot->dosage,
+                'price' => $drug->price,
+                'unit' => $drug->unit ? $drug->unit->symbol : null,
+            ];
+        });
+        
+        return response()->json($drugs);
+    }
+
+    /**
      * Удалить тип вакцинации
      */
     public function destroy(VaccinationType $vaccinationType)

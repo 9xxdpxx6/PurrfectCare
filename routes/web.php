@@ -129,6 +129,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     Route::post('schedules-week', [ScheduleController::class, 'storeWeek'])->name('schedules.store-week');
     
     Route::get('vaccinations/{vaccination}/drugs', [VaccinationController::class, 'getDrugs'])->name('vaccinations.drugs');
+    Route::get('vaccination-types/{vaccinationType}/drugs', [VaccinationTypeController::class, 'getDrugs'])->name('vaccination-types.drugs');
     
     // Статистика
     Route::prefix('statistics')->name('statistics.')->group(function () {

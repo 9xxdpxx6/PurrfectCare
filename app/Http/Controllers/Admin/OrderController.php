@@ -11,7 +11,9 @@ use App\Models\Employee;
 use App\Models\Service;
 use App\Models\Drug;
 use App\Models\LabTest;
+use App\Models\LabTestType;
 use App\Models\Vaccination;
+use App\Models\VaccinationType;
 use App\Http\Requests\Admin\Order\StoreRequest;
 use App\Http\Requests\Admin\Order\UpdateRequest;
 use App\Http\Filters\OrderFilter;
@@ -88,7 +90,8 @@ class OrderController extends AdminController
 
     public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
         
         // Определяем дату закрытия если заказ выполнен
         $closedAt = null;
@@ -109,12 +112,7 @@ class OrderController extends AdminController
         ]);
 
         foreach ($validated['items'] as $item) {
-            $order->items()->create([
-                'item_type' => $this->getItemType($item['item_type']),
-                'item_id' => $item['item_id'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price']
-            ]);
+            $this->createOrderItem($order, $item, $validated);
         }
         
         // Списание со склада только если заказ закрыт
@@ -125,13 +123,20 @@ class OrderController extends AdminController
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Заказ успешно создан');
+        } catch (\Exception $e) {
+            \Log::error('Order store error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при создании заказа: ' . $e->getMessage()]);
+        }
     }
 
     public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validated();
-        
-        $order = $this->model::with('items')->findOrFail($id);
+        try {
+            $validated = $request->validated();
+            
+            $order = $this->model::with('items')->findOrFail($id);
         
         // Определяем дату закрытия если заказ выполнен
         $closedAt = $order->closed_at;
@@ -160,12 +165,7 @@ class OrderController extends AdminController
 
         $order->items()->delete();
         foreach ($validated['items'] as $item) {
-            $order->items()->create([
-                'item_type' => $this->getItemType($item['item_type']),
-                'item_id' => $item['item_id'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price']
-            ]);
+            $this->createOrderItem($order, $item, $validated);
         }
         
         // Списание со склада только если заказ закрыт
@@ -176,6 +176,12 @@ class OrderController extends AdminController
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Заказ успешно обновлен');
+        } catch (\Exception $e) {
+            \Log::error('Order update error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при обновлении заказа: ' . $e->getMessage()]);
+        }
     }
 
     protected function getItemType($type)
@@ -183,10 +189,21 @@ class OrderController extends AdminController
         return match($type) {
             'service' => Service::class,
             'drug' => Drug::class,
-            'lab_test' => LabTest::class,
-            'vaccination' => Vaccination::class,
+            'lab_test' => LabTestType::class,
+            'vaccination' => VaccinationType::class,
             default => throw new \InvalidArgumentException('Неизвестный тип элемента')
         };
+    }
+
+    protected function createOrderItem($order, $item, $validated)
+    {
+        // Для всех типов элементов создаем OrderItem напрямую
+        return $order->items()->create([
+            'item_type' => $this->getItemType($item['item_type']),
+            'item_id' => $item['item_id'],
+            'quantity' => $item['quantity'],
+            'unit_price' => $item['unit_price']
+        ]);
     }
 
     public function destroy($id): RedirectResponse
@@ -264,12 +281,12 @@ class OrderController extends AdminController
     public function orderLabTestOptions(Request $request)
     {
         $request->merge(['include_price' => true]);
-        return app(\App\Services\Options\LabTestOptionsService::class)->getLabTestOptions($request);
+        return app(\App\Services\Options\LabTestOptionsService::class)->getLabTestTypeOptions($request);
     }
 
     public function orderVaccinationOptions(Request $request)
     {
         $request->merge(['include_price' => true]);
-        return app(\App\Services\Options\VaccinationOptionsService::class)->getOptions($request);
+        return app(\App\Services\Options\VaccinationTypeOptionsService::class)->getOptions($request);
     }
 } 
