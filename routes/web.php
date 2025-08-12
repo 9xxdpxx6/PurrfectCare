@@ -145,30 +145,30 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
         
         // Группировка по функциональности
         Route::prefix('lab-tests')->name('lab-tests.')->group(function () {
-            Route::resource('types', LabTestTypeController::class);
-            Route::resource('params', LabTestParamController::class);
+            Route::resource('types', LabTestTypeController::class)->parameters(['types' => 'type']);
+            Route::resource('params', LabTestParamController::class)->parameters(['params' => 'param']);
         });
         
-        Route::resource('vaccination-types', VaccinationTypeController::class);
+        Route::resource('vaccination-types', VaccinationTypeController::class)->parameters(['vaccination-types' => 'vaccinationType']);
         
         Route::prefix('system')->name('system.')->group(function () {
-            Route::resource('statuses', StatusController::class);
-            Route::resource('units', UnitController::class);
-            Route::resource('branches', SettingsBranchController::class);
-            Route::resource('specialties', SpecialtyController::class);
+            Route::resource('statuses', StatusController::class)->parameters(['statuses' => 'status']);
+            Route::resource('units', UnitController::class)->parameters(['units' => 'unit']);
+            Route::resource('branches', SettingsBranchController::class)->parameters(['branches' => 'branch']);
+            Route::resource('specialties', SpecialtyController::class)->parameters(['specialties' => 'specialty']);
         });
         
         Route::prefix('animals')->name('animals.')->group(function () {
-            Route::resource('species', SpeciesController::class);
-            Route::resource('breeds', BreedController::class);
+            Route::resource('species', SpeciesController::class)->parameters(['species' => 'species']);
+            Route::resource('breeds', BreedController::class)->parameters(['breeds' => 'breed']);
         });
         
         Route::prefix('dictionary')->name('dictionary.')->group(function () {
-            Route::resource('diagnoses', DictionaryDiagnosisController::class);
-            Route::resource('symptoms', DictionarySymptomController::class);
+            Route::resource('diagnoses', DictionaryDiagnosisController::class)->parameters(['diagnoses' => 'dictionaryDiagnosis']);
+            Route::resource('symptoms', DictionarySymptomController::class)->parameters(['symptoms' => 'dictionarySymptom']);
         });
         
-        Route::resource('suppliers', SettingsSupplierController::class);
+        Route::resource('suppliers', SettingsSupplierController::class)->parameters(['suppliers' => 'supplier']);
     });
 });
 
