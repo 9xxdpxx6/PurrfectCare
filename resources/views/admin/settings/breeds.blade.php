@@ -174,7 +174,7 @@
 @push('scripts')
 <script>
 // Функции для работы с Bootstrap уведомлениями
-function showNotification(message, type = 'info', title = null) {
+function createToast(message, type = 'info', title = null) {
     const container = document.getElementById('notifications-container');
     if (!container) return;
     
@@ -243,19 +243,19 @@ function showNotification(message, type = 'info', title = null) {
 }
 
 function showError(message, title = 'Ошибка') {
-    return showNotification(message, 'error', title);
+    return createToast(message, 'error', title);
 }
 
 function showSuccess(message, title = 'Успешно') {
-    return showNotification(message, 'success', title);
+    return createToast(message, 'success', title);
 }
 
 function showWarning(message, title = 'Предупреждение') {
-    return showNotification(message, 'warning', title);
+    return createToast(message, 'warning', title);
 }
 
 function showInfo(message, title = 'Информация') {
-    return showNotification(message, 'info', title);
+    return createToast(message, 'info', title);
 }
 
 let hasChanges = false;
@@ -317,17 +317,37 @@ let changedRows = new Set();
                 data[input.dataset.field] = input.value;
             });
             
-                            fetch(`{{ route('admin.settings.animals.breeds.update', '') }}/${rowId}`, {
+            // Проверяем обязательные поля
+            if (!data.name || !data.name.trim()) {
+                showWarning('Название породы обязательно для заполнения');
+                return;
+            }
+            
+            if (!data.species_id || !data.species_id.trim()) {
+                showWarning('Вид животного обязательно для выбора');
+                return;
+            }
+            
+            fetch(`{{ route('admin.settings.animals.breeds.update', '') }}/${rowId}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({...data, _method: 'PATCH'})
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    // Проверяем, является ли ответ JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                        });
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
                 }
                 return response.json();
             })
@@ -338,12 +358,12 @@ let changedRows = new Set();
                         window.location.reload();
                     }, 1000);
                 } else {
-                    showError(data.message || 'Ошибка при сохранении');
+                    showWarning(data.message || 'Ошибка при сохранении');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError('Ошибка при сохранении: ' + error.message);
+                showWarning('Ошибка при сохранении: ' + error.message);
             });
         }
     }
@@ -439,17 +459,37 @@ let changedRows = new Set();
             data[input.dataset.field] = input.value;
         });
         
-                    fetch('{{ route('admin.settings.animals.breeds.store') }}', {
+        // Проверяем обязательные поля
+        if (!data.name || !data.name.trim()) {
+            showWarning('Название породы обязательно для заполнения');
+            return;
+        }
+        
+        if (!data.species_id || !data.species_id.trim()) {
+            showWarning('Вид животного обязательно для выбора');
+            return;
+        }
+        
+        fetch('{{ route('admin.settings.animals.breeds.store') }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
             body: JSON.stringify(data)
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                // Проверяем, является ли ответ JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                    });
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
             }
             return response.json();
         })
@@ -460,12 +500,12 @@ let changedRows = new Set();
                     window.location.reload();
                 }, 1000);
             } else {
-                showError(data.message || 'Ошибка при создании породы');
+                showWarning(data.message || 'Ошибка при создании породы');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showError('Произошла ошибка при создании породы: ' + error.message);
+            showWarning('Произошла ошибка при создании породы: ' + error.message);
         });
     }
 
@@ -476,17 +516,26 @@ let changedRows = new Set();
 
     function deleteRow(id) {
         if (confirm('Вы уверены, что хотите удалить эту породу?')) {
-                            fetch(`{{ route('admin.settings.animals.breeds.destroy', '') }}/${id}`, {
+            fetch(`{{ route('admin.settings.animals.breeds.destroy', '') }}/${id}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({ _method: 'DELETE' })
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    // Проверяем, является ли ответ JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                        });
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
                 }
                 return response.json();
             })
@@ -497,27 +546,27 @@ let changedRows = new Set();
                     changedRows.delete(id.toString());
                     showSuccess('Порода успешно удалена');
                 } else {
-                    showError(data.message || 'Ошибка при удалении породы');
+                    showWarning(data.message || 'Ошибка при удалении породы');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError('Произошла ошибка при удалении породы: ' + error.message);
+                showWarning('Произошла ошибка при удалении породы: ' + error.message);
             });
         }
     }
 
     // Функция для совместимости с существующим кодом
     function showNotification(message, type) {
-        // Используем новые Bootstrap уведомления
+        // Используем новую функцию createToast напрямую
         if (type === 'error') {
-            showError(message);
+            createToast(message, 'error', 'Ошибка');
         } else if (type === 'success') {
-            showSuccess(message);
+            createToast(message, 'success', 'Успешно');
         } else if (type === 'warning') {
-            showWarning(message);
+            createToast(message, 'warning', 'Предупреждение');
         } else {
-            showInfo(message);
+            createToast(message, 'info', 'Информация');
         }
     }
 </script>
