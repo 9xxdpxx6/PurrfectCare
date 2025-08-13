@@ -32,7 +32,8 @@ class UserFilter extends AbstractFilter
                     $q->where('name', 'like', "%{$word}%")
                       ->orWhere('email', 'like', "%{$word}%")
                       ->orWhere('phone', 'like', "%{$word}%")
-                      ->orWhere('address', 'like', "%{$word}%");
+                      ->orWhere('address', 'like', "%{$word}%")
+                      ->orWhere('telegram', 'like', "%{$word}%");
                 });
             }
         });

@@ -169,6 +169,9 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
         
         Route::resource('suppliers', SettingsSupplierController::class)->parameters(['suppliers' => 'supplier']);
     });
+    
+    // Дополнительные маршруты для вакцинаций
+    Route::get('vaccination-types/{vaccinationType}/drugs', [VaccinationTypeController::class, 'getDrugs'])->name('vaccination-types.drugs');
 });
 
 //Route::middleware('auth')->group(function() {

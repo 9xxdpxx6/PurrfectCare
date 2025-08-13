@@ -39,6 +39,7 @@ class UserFactory extends Factory
             'email' => $this->faker->unique()->safeEmail,
             'phone' => '+7' . $this->faker->numerify('##########'), // Российский формат телефона
             'address' => $this->faker->address,
+            'telegram' => $this->faker->optional(0.7)->userName, // 70% вероятность наличия telegram
             'email_verified_at' => now(),
             'password' => Hash::make('password'), // Установите пароль по умолчанию
             'remember_token' => \Illuminate\Support\Str::random(10),

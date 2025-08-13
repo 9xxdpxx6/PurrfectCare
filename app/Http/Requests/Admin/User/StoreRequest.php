@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\UniqueTelegram;
 
 class StoreRequest extends FormRequest
 {
@@ -18,6 +19,7 @@ class StoreRequest extends FormRequest
             'email' => 'required|email|max:255|unique:users,email',
             'phone' => 'required|string|max:20',
             'address' => 'nullable|string|max:255',
+            'telegram' => ['nullable', 'string', 'max:255', new UniqueTelegram()],
         ];
     }
 
@@ -36,6 +38,8 @@ class StoreRequest extends FormRequest
             'phone.max' => 'Телефон не может быть длиннее 20 символов',
             'address.string' => 'Адрес должен быть строкой',
             'address.max' => 'Адрес не может быть длиннее 255 символов',
+            'telegram.string' => 'Telegram должен быть строкой',
+            'telegram.max' => 'Telegram не может быть длиннее 255 символов',
         ];
     }
 
@@ -46,6 +50,7 @@ class StoreRequest extends FormRequest
             'email' => 'email',
             'phone' => 'телефон',
             'address' => 'адрес',
+            'telegram' => 'telegram',
         ];
     }
 } 

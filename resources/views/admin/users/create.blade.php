@@ -49,6 +49,14 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
+
+                <div class="col-12 col-md-6 mb-3">
+                    <label for="telegram" class="form-label">Telegram</label>
+                    <input type="text" name="telegram" id="telegram" class="form-control @error('telegram') is-invalid @enderror" value="{{ old('telegram') }}" placeholder="@username или ID">
+                    @error('telegram')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
             </div>
 
             <div class="alert alert-info">

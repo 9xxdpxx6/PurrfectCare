@@ -35,6 +35,15 @@
                             <strong><i class="bi bi-telephone"></i> Телефон:</strong>
                             {{ $user->phone }}
                         </p>
+                        @if($user->telegram)
+                        <p class="mb-2">
+                            <strong><i class="bi bi-telegram"></i> Telegram:</strong>
+                            <a href="https://t.me/{{ ltrim($user->telegram, '@') }}" target="_blank" class="text-decoration-none">
+                                {{ $user->telegram }}
+                                <i class="bi bi-box-arrow-up-right text-muted small"></i>
+                            </a>
+                        </p>
+                        @endif
                     </div>
                     <div class="col-md-6">
                         <p class="mb-2">
