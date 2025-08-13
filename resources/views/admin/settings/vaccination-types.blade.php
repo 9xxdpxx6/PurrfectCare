@@ -390,7 +390,7 @@
 
 <script>
 // Функции для работы с Bootstrap уведомлениями
-function showNotification(message, type = 'info', title = null) {
+function createToast(message, type = 'info', title = null) {
     const container = document.getElementById('notifications-container');
     if (!container) return;
     
@@ -458,20 +458,24 @@ function showNotification(message, type = 'info', title = null) {
     return toast;
 }
 
+function showNotification(message, type = 'info', title = null) {
+    return createToast(message, type, title);
+}
+
 function showError(message, title = 'Ошибка') {
-    return showNotification(message, 'error', title);
+    return createToast(message, 'error', title);
 }
 
 function showSuccess(message, title = 'Успешно') {
-    return showNotification(message, 'success', title);
+    return createToast(message, 'success', title);
 }
 
 function showWarning(message, title = 'Предупреждение') {
-    return showNotification(message, 'warning', title);
+    return createToast(message, 'warning', title);
 }
 
 function showInfo(message, title = 'Информация') {
-    return showNotification(message, 'info', title);
+    return createToast(message, 'info', title);
 }
 
 function addNewRow() {
@@ -1093,9 +1097,6 @@ function deleteRow(id) {
         return;
     }
     
-    // Показываем уведомление о начале удаления
-    showInfo('Удаление типа вакцинации...', 'Обработка');
-    
     // Получаем CSRF токен
     const csrfToken = '{{ csrf_token() }}';
     
@@ -1132,12 +1133,22 @@ function deleteRow(id) {
                 location.reload();
             }, 1000);
         } else {
-            showError(data.message || 'Ошибка при удалении');
+            // Проверяем, является ли это ошибкой зависимостей
+            if (data.message && data.message.includes('связаны')) {
+                showWarning(data.message);
+            } else {
+                showError(data.message || 'Ошибка при удалении');
+            }
         }
     })
     .catch(error => {
         console.error('Ошибка:', error);
-        showError('Ошибка при удалении');
+        // Проверяем, является ли это ошибкой зависимостей
+        if (error.message && error.message.includes('связаны')) {
+            showWarning(error.message);
+        } else {
+            showError('Ошибка при удалении');
+        }
     });
 }
 
