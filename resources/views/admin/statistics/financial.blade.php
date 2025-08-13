@@ -258,28 +258,28 @@
                 <div class="row">
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-primary mb-2">{{ number_format($categoryRevenue['services'], 0, ',', ' ') }} ₽</h4>
+                            <h4 class="text-success mb-2">{{ number_format($categoryRevenue['services'], 0, ',', ' ') }} ₽</h4>
                             <h6 class="text-white mb-2">Услуги</h6>
                             <small class="text-muted">Выручка от медицинских услуг (консультации, операции, процедуры)</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-success mb-2">{{ number_format($categoryRevenue['drugs'], 0, ',', ' ') }} ₽</h4>
-                            <h6 class="text-white mb-2">Лекарства</h6>
+                            <h4 class="text-primary mb-2">{{ number_format($categoryRevenue['drugs'], 0, ',', ' ') }} ₽</h4>
+                            <h6 class="text-white mb-2">Препараты</h6>
                             <small class="text-muted">Выручка от продажи препаратов и медикаментов</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-info mb-2">{{ number_format($categoryRevenue['lab_tests'], 0, ',', ' ') }} ₽</h4>
+                            <h4 class="text-warning mb-2">{{ number_format($categoryRevenue['lab_tests'], 0, ',', ' ') }} ₽</h4>
                             <h6 class="text-white mb-2">Анализы</h6>
                             <small class="text-muted">Выручка от лабораторных исследований</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center">
-                            <h4 class="text-warning mb-2">{{ number_format($categoryRevenue['vaccinations'], 0, ',', ' ') }} ₽</h4>
+                            <h4 class="text-info mb-2">{{ number_format($categoryRevenue['vaccinations'], 0, ',', ' ') }} ₽</h4>
                             <h6 class="text-white mb-2">Вакцинации</h6>
                             <small class="text-muted">Выручка от прививок и вакцинаций</small>
                         </div>
@@ -457,10 +457,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     categoryRevenue.vaccinations
                 ],
                 backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0'
+                    '#28a745',
+                    '#007bff',
+                    '#ffc107',
+                    '#17a2b8'
                 ]
             }]
         },
