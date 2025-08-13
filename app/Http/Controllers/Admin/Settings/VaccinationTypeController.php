@@ -60,6 +60,8 @@ class VaccinationTypeController extends SettingsController
         try {
             $this->service->create($request->validated());
             return $this->successResponse();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->validationErrorResponse($e->errors());
         } catch (\Exception $e) {
             return $this->errorResponse('Произошла ошибка при создании типа вакцинации');
         }
@@ -73,11 +75,17 @@ class VaccinationTypeController extends SettingsController
         try {
             \Log::info('Updating vaccination type', [
                 'id' => $vaccinationType->id,
-                'data' => $request->validated()
+                'method' => $request->method(),
+                'content_type' => $request->header('Content-Type'),
+                'all_data' => $request->all(),
+                'validated_data' => $request->validated()
             ]);
             
             $this->service->update($vaccinationType, $request->validated());
             return $this->successResponse();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error in update', ['errors' => $e->errors()]);
+            return $this->validationErrorResponse($e->errors());
         } catch (\Exception $e) {
             \Log::error('Error updating vaccination type', [
                 'id' => $vaccinationType->id,

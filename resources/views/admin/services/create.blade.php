@@ -15,17 +15,17 @@
     <div class="row g-3">
         <div class="col-md-6 col-lg-4">
             <label for="name" class="form-label">Название услуги</label>
-            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
+            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}">
             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="price" class="form-label">Цена (₽)</label>
-            <input type="number" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}" required>
+            <input type="number" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}">
             @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="duration" class="form-label">Продолжительность (минуты)</label>
-            <input type="number" min="1" max="1440" class="form-control @error('duration') is-invalid @enderror" id="duration" name="duration" value="{{ old('duration') }}" required>
+            <input type="number" min="1" max="1440" class="form-control @error('duration') is-invalid @enderror" id="duration" name="duration" value="{{ old('duration') }}">
             @error('duration')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-12">
@@ -36,7 +36,7 @@
         </div>
         <div class="col-12">
             <label for="branches" class="form-label">Филиалы</label>
-            <select multiple class="form-select @error('branches') is-invalid @enderror" id="branches" name="branches[]" required>
+            <select multiple class="form-select @error('branches') is-invalid @enderror" id="branches" name="branches[]">
                 @foreach($branches as $branch)
                     <option value="{{ $branch->id }}" @if(is_array(old('branches')) && in_array($branch->id, old('branches'))) selected @endif>{{ $branch->name }}</option>
                 @endforeach

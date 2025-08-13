@@ -2,9 +2,7 @@
 
 @section('title', 'Типы вакцинаций')
 
-@push('head')
-<meta name="csrf-token" content="{{ csrf_token() }}">
-@endpush
+
 
 @push('styles')
 <style>
@@ -355,12 +353,12 @@ function createEditableRow() {
                         <div class="col-12">
                             <label class="form-label small text-muted">Название</label>
                             <input type="text" class="form-control" 
-                                   data-field="name" onchange="markAsChanged(this)" required>
+                                   data-field="name" onchange="markAsChanged(this)">
                         </div>
                         <div class="col-12">
                             <label class="form-label small text-muted">Цена</label>
                             <input type="number" class="form-control" 
-                                   data-field="price" onchange="markAsChanged(this)" value="0" required>
+                                   data-field="price" onchange="markAsChanged(this)" value="0">
                         </div>
                         <div class="col-12">
                             <label class="form-label small text-muted">Описание</label>
@@ -373,14 +371,14 @@ function createEditableRow() {
                                     <div class="drug-row mb-2">
                                         <div class="row g-2">
                                             <div class="col-6">
-                                                <select class="form-select drug-select" data-field="drug_id" onchange="markAsChanged(this)" required>
+                                                <select class="form-select drug-select" data-field="drug_id" onchange="markAsChanged(this)">
                                                     <option value="">Выберите препарат</option>
                                                 </select>
                                             </div>
                                             <div class="col-4">
                                                 <input type="number" class="form-control" 
                                                        placeholder="Дозировка" data-field="dosage" 
-                                                       onchange="markAsChanged(this)" step="0.01" min="0.01" required>
+                                                       onchange="markAsChanged(this)" step="0.01" min="0.01">
                                             </div>
                                             <div class="col-2">
                                                 <button type="button" class="btn btn-outline-danger" onclick="removeDrugRow(this)">
@@ -443,14 +441,14 @@ function createDrugRow() {
     div.innerHTML = `
         <div class="row g-2">
             <div class="col-6">
-                <select class="form-select drug-select" data-field="drug_id" onchange="markAsChanged(this)" required>
+                <select class="form-select drug-select" data-field="drug_id" onchange="markAsChanged(this)">
                     <option value="">Выберите препарат</option>
                 </select>
             </div>
             <div class="col-4">
                 <input type="number" class="form-control" 
                        placeholder="Дозировка" data-field="dosage" 
-                       onchange="markAsChanged(this)" step="0.01" min="0.01" required>
+                       onchange="markAsChanged(this)" step="0.01" min="0.01">
             </div>
             <div class="col-2">
                 <button type="button" class="btn btn-outline-danger" onclick="removeDrugRow(this)">
@@ -495,14 +493,22 @@ function initDrugSelectsSilently(container) {
     }
     
     const selects = container.querySelectorAll('.drug-select');
-    selects.forEach(select => {
-        // Если селект еще не инициализирован как TomSelect
-        if (select && !select.tomselect) {
+    console.log('Found drug selects:', selects.length);
+    
+    selects.forEach((select, index) => {
+        console.log(`Processing select ${index}:`, select);
+        
+        // Проверяем, что это действительно select элемент и он еще не инициализирован
+        if (select && select.tagName === 'SELECT' && !select.tomselect) {
             try {
                 initTomSelectForDrugSilently(select);
             } catch (error) {
                 console.error('Error initializing TomSelect for drug:', error);
             }
+        } else if (select && select.tagName !== 'SELECT') {
+            console.log(`Skipping non-select element ${index}:`, select.tagName);
+        } else if (select && select.tomselect) {
+            console.log(`Select ${index} already initialized`);
         }
     });
 }
@@ -591,6 +597,12 @@ function initTomSelectForDrugSilently(select) {
     // Проверяем, что селект существует
     if (!select) {
         console.error('Select element is null or undefined');
+        return null;
+    }
+    
+    // Проверяем, что элемент является select
+    if (select.tagName !== 'SELECT') {
+        console.error('Element is not a select:', select);
         return null;
     }
     
@@ -807,6 +819,9 @@ function saveRow(button) {
     
     // Собираем данные о препаратах
     const drugRows = card.querySelectorAll('.drug-row');
+    let hasDrugWithoutDosage = false;
+    let hasDrugWithDosage = false;
+    
     drugRows.forEach(row => {
         const drugSelect = row.querySelector('[data-field="drug_id"]');
         const dosageField = row.querySelector('[data-field="dosage"]');
@@ -823,12 +838,20 @@ function saveRow(button) {
             const dosage = dosageField.value;
             
             console.log('Drug data:', { drugId, dosage, drugSelect: drugSelect.outerHTML });
+            console.log('DrugId type:', typeof drugId, 'DrugId truthy:', !!drugId);
+            console.log('Dosage type:', typeof dosage, 'Dosage truthy:', !!dosage);
             
             if (drugId && dosage) {
+                console.log('Adding drug to array');
                 data.drugs.push({
                     drug_id: parseInt(drugId),
                     dosage: parseFloat(dosage),
                 });
+                hasDrugWithDosage = true;
+            } else if (drugId && !dosage) {
+                hasDrugWithoutDosage = true;
+            } else {
+                console.log('Drug not added - drugId:', drugId, 'dosage:', dosage);
             }
         }
     });
@@ -839,41 +862,71 @@ function saveRow(button) {
     }
     
     if (data.drugs.length === 0) {
-        alert('Необходимо добавить хотя бы один препарат');
+        if (hasDrugWithoutDosage) {
+            alert('Для всех выбранных препаратов необходимо указать дозировку');
+        } else {
+            alert('Необходимо добавить хотя бы один препарат');
+        }
         return;
     }
     
     const url = id === 'new' 
         ? '{{ route("admin.settings.vaccination-types.store") }}'
-        : `{{ route("admin.settings.vaccination-types.index") }}/${id}`;
+        : '{{ url("admin/settings/vaccination-types") }}/' + id;
     
-    const method = id === 'new' ? 'POST' : 'PATCH';
+    const method = id === 'new' ? 'POST' : 'POST';
     
-    // Получаем CSRF токен с проверкой
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-                     document.querySelector('input[name="_token"]')?.value ||
-                     '{{ csrf_token() }}';
+    // Получаем CSRF токен
+    const csrfToken = '{{ csrf_token() }}';
     
+    console.log('Final drugs array:', data.drugs);
     console.log('Sending request to:', url, 'with method:', method);
     console.log('Request data:', data);
+    
+    // Для обновления добавляем _method: PATCH
+    if (id !== 'new') {
+        data._method = 'PATCH';
+    }
     
     fetch(url, {
         method: method,
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': csrfToken
         },
         body: JSON.stringify(data)
     })
     .then(response => {
         console.log('Response status:', response.status);
-        if (!response.ok) {
+        console.log('Response headers:', response.headers);
+        
+        // Проверяем Content-Type
+        const contentType = response.headers.get('content-type');
+        console.log('Content-Type:', contentType);
+        
+        if (contentType && contentType.includes('application/json')) {
+            return response.json().then(data => {
+                if (!response.ok) {
+                    console.error('Error response:', data);
+                    
+                    // Если есть ошибки валидации, показываем их
+                    if (data.errors) {
+                        const errorMessages = Object.values(data.errors).flat().join('\n');
+                        throw new Error(errorMessages);
+                    }
+                    
+                    throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                return data;
+            });
+        } else {
+            // Если ответ не JSON, читаем как текст
             return response.text().then(text => {
-                console.error('Error response:', text);
-                throw new Error(`HTTP ${response.status}: ${response.statusText}. Response: ${text}`);
+                console.error('Non-JSON response:', text.substring(0, 500));
+                throw new Error('Сервер вернул неверный формат ответа');
             });
         }
-        return response.json();
     })
     .then(data => {
         console.log('Response data:', data);
@@ -896,19 +949,35 @@ function deleteRow(id) {
         return;
     }
     
-    // Получаем CSRF токен с проверкой
-    const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
-    const csrfToken = csrfTokenElement ? csrfTokenElement.getAttribute('content') : 
-                     document.querySelector('input[name="_token"]')?.value ||
-                     '{{ csrf_token() }}';
+    // Получаем CSRF токен
+    const csrfToken = '{{ csrf_token() }}';
     
-    fetch(`{{ route("admin.settings.vaccination-types.index") }}/${id}`, {
-        method: 'DELETE',
+    fetch('{{ url("admin/settings/vaccination-types") }}/' + id, {
+        method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
             'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({ _method: 'DELETE' })
+    })
+    .then(response => {
+        console.log('Delete response status:', response.status);
+        
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                return data;
+            });
+        } else {
+            return response.text().then(text => {
+                console.error('Non-JSON delete response:', text.substring(0, 500));
+                throw new Error('Сервер вернул неверный формат ответа');
+            });
         }
     })
-    .then(response => response.json())
     .then(data => {
         if (data.success) {
             location.reload();

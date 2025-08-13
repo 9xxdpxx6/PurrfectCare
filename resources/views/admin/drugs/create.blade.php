@@ -15,17 +15,17 @@
     <div class="row g-3">
         <div class="col-md-6 col-lg-4">
             <label for="name" class="form-label">Название препарата</label>
-            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
+            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}">
             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="price" class="form-label">Цена (₽)</label>
-            <input type="number" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}" required>
+            <input type="number" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}">
             @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="quantity" class="form-label">Количество</label>
-            <input type="number" min="0" class="form-control @error('quantity') is-invalid @enderror" id="quantity" name="quantity" value="{{ old('quantity') }}" required>
+            <input type="number" min="0" class="form-control @error('quantity') is-invalid @enderror" id="quantity" name="quantity" value="{{ old('quantity') }}">
             @error('quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">

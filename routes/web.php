@@ -12,7 +12,7 @@ use App\Http\Controllers\Admin\VaccinationController;
 use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ServiceController;
-use App\Http\Controllers\Admin\BranchController;
+
 use App\Http\Controllers\Admin\ScheduleController;
 
 use App\Http\Controllers\Admin\DrugProcurementController;
@@ -115,8 +115,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     Route::get('services/branch-options', [ServiceController::class, 'branchOptions'])->name('services.branch-options');
     Route::resource('services', ServiceController::class);
 
-    // Филиалы
-    Route::resource('branches', BranchController::class);
+
 
 
 
@@ -128,7 +127,6 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     Route::post('schedules-week', [ScheduleController::class, 'storeWeek'])->name('schedules.store-week');
     
     Route::get('vaccinations/{vaccination}/drugs', [VaccinationController::class, 'getDrugs'])->name('vaccinations.drugs');
-    Route::get('vaccination-types/{vaccinationType}/drugs', [VaccinationTypeController::class, 'getDrugs'])->name('vaccination-types.drugs');
     
     // Статистика
     Route::prefix('statistics')->name('statistics.')->group(function () {
@@ -150,6 +148,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
         });
         
         Route::resource('vaccination-types', VaccinationTypeController::class)->parameters(['vaccination-types' => 'vaccinationType']);
+        Route::get('vaccination-types/{vaccinationType}/drugs', [VaccinationTypeController::class, 'getDrugs'])->name('vaccination-types.drugs');
         
         Route::prefix('system')->name('system.')->group(function () {
             Route::resource('statuses', StatusController::class)->parameters(['statuses' => 'status']);

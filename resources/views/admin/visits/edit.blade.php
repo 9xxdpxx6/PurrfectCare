@@ -34,7 +34,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="client_id" class="form-label">Клиент</label>
-                            <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror" required data-url="{{ route('admin.visits.client-options') }}">
+                            <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror" data-url="{{ route('admin.visits.client-options') }}">
                                 <option value="">Выберите клиента</option>
                                 @foreach($clients as $client)
                                     <option value="{{ $client->id }}" @if(old('client_id', $item->client_id) == $client->id) selected @endif>
@@ -49,7 +49,7 @@
 
                         <div class="col-md-6 mb-3">
                             <label for="pet_id" class="form-label">Питомец</label>
-                            <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" required data-url="{{ route('admin.visits.pet-options') }}" @if(!old('client_id', $item->client_id)) disabled @endif>
+                            <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.visits.pet-options') }}" @if(!old('client_id', $item->client_id)) disabled @endif>
                                 <option value="">Выберите питомца</option>
                                 @foreach($pets as $pet)
                                     <option value="{{ $pet->id }}" data-client="{{ $pet->client_id }}" @if(old('pet_id', $item->pet_id) == $pet->id) selected @endif>
@@ -66,7 +66,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="schedule_id" class="form-label">Расписание</label>
-                            <select name="schedule_id" id="schedule_id" class="form-select @error('schedule_id') is-invalid @enderror" required data-url="{{ route('admin.visits.schedule-options') }}">
+                            <select name="schedule_id" id="schedule_id" class="form-select @error('schedule_id') is-invalid @enderror" data-url="{{ route('admin.visits.schedule-options') }}">
                                 <option value="">Выберите расписание</option>
                                 @foreach($schedules as $schedule)
                                     <option value="{{ $schedule->id }}" @if(old('schedule_id', $item->schedule_id) == $schedule->id) selected @endif>
@@ -97,7 +97,7 @@
                             @endphp
                             <input type="text" name="visit_time" id="visit_time" 
                                 class="form-control @error('visit_time') is-invalid @enderror" 
-                                value="{{ $visitTime }}" placeholder="чч:мм" required>
+                                value="{{ $visitTime }}" placeholder="чч:мм">
                             @error('visit_time')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -115,7 +115,7 @@
 
                     <div class="mb-3">
                         <label for="status_id" class="form-label">Статус</label>
-                        <select name="status_id" id="status_id" class="form-select @error('status_id') is-invalid @enderror" required data-url="{{ route('admin.visits.status-options') }}">
+                        <select name="status_id" id="status_id" class="form-select @error('status_id') is-invalid @enderror" data-url="{{ route('admin.visits.status-options') }}">
                             <option value="">Выберите статус</option>
                             @foreach($statuses as $status)
                                 <option value="{{ $status->id }}" @if(old('status_id', $item->status_id) == $status->id) selected @endif>

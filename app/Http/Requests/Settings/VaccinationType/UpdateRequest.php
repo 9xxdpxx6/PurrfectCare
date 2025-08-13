@@ -20,7 +20,8 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $vaccinationTypeId = $this->route('vaccination_type');
+        $vaccinationType = $this->route('vaccinationType');
+        $vaccinationTypeId = $vaccinationType ? $vaccinationType->id : null;
         
         return [
             'name' => [
@@ -33,7 +34,7 @@ class UpdateRequest extends FormRequest
             'price' => 'required|numeric|min:0',
             'drugs' => 'required|array|min:1',
             'drugs.*.drug_id' => 'required|exists:drugs,id',
-            'drugs.*.dosage' => 'required|numeric|min:0.01|max:9999.99',
+            'drugs.*.dosage' => 'required|numeric|min:0.01|max:999.99',
             // Batch template отключен по требованию клиники
             // 'drugs.*.batch_template' => 'nullable|string|max:255',
         ];
@@ -58,7 +59,7 @@ class UpdateRequest extends FormRequest
             'drugs.*.dosage.required' => 'Необходимо указать дозировку',
             'drugs.*.dosage.numeric' => 'Дозировка должна быть числом',
             'drugs.*.dosage.min' => 'Дозировка должна быть больше 0',
-            'drugs.*.dosage.max' => 'Дозировка не может превышать 9999.99',
+            'drugs.*.dosage.max' => 'Дозировка не может превышать 999.99',
         ];
     }
 }

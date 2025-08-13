@@ -15,17 +15,17 @@
     <div class="row g-3">
         <div class="col-md-6 col-lg-4">
             <label for="name" class="form-label">Имя</label>
-            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required maxlength="255">
+            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" maxlength="255">
             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}" required maxlength="255">
+            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}" maxlength="255">
             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="phone" class="form-label">Телефон</label>
-            <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone') }}" required maxlength="20">
+            <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone') }}" maxlength="20">
             @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
