@@ -504,13 +504,13 @@ class OrderFactory extends Factory
             }
         }
         
-        // Добавляем вакцинацию как элемент заказа
+        // Добавляем тип вакцинации как элемент заказа
         OrderItem::create([
             'order_id' => $order->id,
-            'item_type' => Vaccination::class,
-            'item_id' => $vaccination->id,
+            'item_type' => VaccinationType::class,
+            'item_id' => $vaccinationType->id,
             'quantity' => 1,
-            'unit_price' => 0 // Вакцинация как процедура бесплатная
+            'unit_price' => $vaccinationType->price
         ]);
     }
 

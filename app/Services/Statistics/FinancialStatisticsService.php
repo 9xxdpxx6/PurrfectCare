@@ -6,7 +6,7 @@ use App\Models\Order;
 use App\Models\Service;
 use App\Models\Drug;
 use App\Models\LabTest;
-use App\Models\Vaccination;
+use App\Models\VaccinationType;
 use App\Models\Branch;
 use Carbon\Carbon;
 
@@ -38,7 +38,7 @@ class FinancialStatisticsService
                     case 'LabTest':
                         $categories['lab_tests'] += $item->quantity * $item->unit_price;
                         break;
-                    case 'Vaccination':
+                    case 'VaccinationType':
                         $categories['vaccinations'] += $item->quantity * $item->unit_price;
                         break;
                 }

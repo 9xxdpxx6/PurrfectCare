@@ -80,7 +80,7 @@ class Order extends Model
 
     public function vaccinations()
     {
-        return $this->items->where('item_type', 'App\Models\Vaccination');
+        return $this->items->where('item_type', 'App\Models\VaccinationType');
     }
 
     public function servicesTotal()
