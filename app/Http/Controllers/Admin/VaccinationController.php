@@ -72,7 +72,10 @@ class VaccinationController extends AdminController
     {
         $default_administered_at = now()->format('d.m.Y');
         
-        return view("admin.{$this->viewPath}.create", compact('default_administered_at'));
+        // Получаем ID питомца из параметра запроса
+        $selectedPetId = request('pet');
+        
+        return view("admin.{$this->viewPath}.create", compact('default_administered_at', 'selectedPetId'));
     }
 
     public function store(StoreRequest $request): RedirectResponse

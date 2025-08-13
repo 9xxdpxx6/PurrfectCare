@@ -37,9 +37,10 @@
                         <div class="col-md-6">
                             <label for="client_id" class="form-label">Клиент</label>
                             <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror" data-url="{{ route('admin.orders.client-options') }}">
-                                @if(old('client_id'))
+                                @if(old('client_id') || $selectedClientId)
                                     @php
-                                        $selectedClient = \App\Models\User::find(old('client_id'));
+                                        $clientId = old('client_id', $selectedClientId);
+                                        $selectedClient = \App\Models\User::find($clientId);
                                     @endphp
                                     @if($selectedClient)
                                         <option value="{{ $selectedClient->id }}" selected>{{ $selectedClient->name }}</option>
@@ -54,9 +55,10 @@
                         <div class="col-md-6">
                             <label for="pet_id" class="form-label">Питомец</label>
                             <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.orders.pet-options') }}">
-                                @if(old('pet_id'))
+                                @if(old('pet_id') || $selectedPetId)
                                     @php
-                                        $selectedPet = \App\Models\Pet::with('client')->find(old('pet_id'));
+                                        $petId = old('pet_id', $selectedPetId);
+                                        $selectedPet = \App\Models\Pet::with('client')->find($petId);
                                     @endphp
                                     @if($selectedPet)
                                         <option value="{{ $selectedPet->id }}" selected data-client="{{ $selectedPet->client_id }}">{{ $selectedPet->name }} ({{ $selectedPet->client->name ?? 'Без владельца' }})</option>
@@ -628,6 +630,10 @@
         const clientSelect = document.getElementById('client_id');
         const petSelect = document.getElementById('pet_id');
         
+        // Получаем предустановленные значения
+        const selectedClientId = '{{ old('client_id', $selectedClientId ?? "") }}';
+        const selectedPetId = '{{ old('pet_id', $selectedPetId ?? "") }}';
+        
         // Обработчик отправки формы
         document.getElementById('orderForm').addEventListener('submit', function(e) {
             // Удаляем пустые элементы заказа перед отправкой
@@ -671,7 +677,7 @@
                 }, 50);
             }
         });
-
+        
         petTomSelect = new createTomSelect('#pet_id', {
             placeholder: 'Выберите питомца...',
             valueField: 'value',
@@ -681,23 +687,54 @@
             preload: false,
             load: function(query, callback) {
                 const clientId = clientTomSelect.getValue();
-                if (!clientId) {
-                    callback([]);
-                    return;
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                // Если выбран клиент, фильтруем по нему
+                if (clientId) {
+                    url += '&client_id=' + clientId;
                 }
                 
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false&client_id=' + clientId;
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))
                     .catch(() => callback([]));
             },
-            onItemAdd: function() {
+            onItemAdd: function(value) {
+                // При выборе питомца автоматически заполняем клиента
+                const selectedOption = this.options[value];
+                if (selectedOption && selectedOption.dataset && selectedOption.dataset.client) {
+                    const clientId = selectedOption.dataset.client;
+                    clientTomSelect.setValue(clientId);
+                }
+                
                 setTimeout(() => {
                     this.close();
                     this.blur();
                 }, 50);
             }
+        });
+        
+        // Устанавливаем предустановленные значения с задержкой для полной инициализации
+        setTimeout(() => {
+            // Сначала устанавливаем клиента
+            if (selectedClientId) {
+                clientTomSelect.setValue(selectedClientId);
+            }
+            
+            // Затем с задержкой устанавливаем питомца
+            setTimeout(() => {
+                if (selectedPetId) {
+                    petTomSelect.setValue(selectedPetId);
+                }
+            }, 200);
+        }, 100);
+        
+        // Обработчик изменения клиента
+        clientTomSelect.on('change', function(value) {
+            // Очищаем выбранного питомца при смене клиента
+            petTomSelect.clear();
+            // Обновляем список питомцев
+            petTomSelect.refreshOptions();
         });
 
         new createTomSelect('#status_id', {

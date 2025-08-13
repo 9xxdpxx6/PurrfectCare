@@ -34,7 +34,19 @@ class OrderController extends AdminController
 
     public function create(): View
     {
-        return view("admin.{$this->viewPath}.create");
+        // Получаем ID клиента и питомца из параметров запроса
+        $selectedClientId = request('client');
+        $selectedPetId = request('pet');
+        
+        // Если передан pet_id, но не передан client_id, получаем владельца питомца
+        if ($selectedPetId && !$selectedClientId) {
+            $pet = Pet::with('client')->find($selectedPetId);
+            if ($pet && $pet->client) {
+                $selectedClientId = $pet->client->id;
+            }
+        }
+        
+        return view("admin.{$this->viewPath}.create", compact('selectedClientId', 'selectedPetId'));
     }
 
     public function edit($id): View

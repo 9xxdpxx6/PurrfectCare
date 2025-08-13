@@ -106,7 +106,7 @@
                                                         
                                                         @if($visit->status)
                                                             <div class="d-flex h-100 align-items-center">
-                                                                <span class="badge" style="background-color: {{ $visit->status->color }}; color: white;">
+                                                                <span class="badge" style="background-color: {!! $visit->status->color !!}; color: white;">
                                                                     {{ $visit->status->name }}
                                                                 </span>
                                                             </div>
@@ -245,7 +245,7 @@
                                                         
                                                         @if($order->status)
                                                             <div>
-                                                                <span class="badge" style="background-color: {{ $order->status->color }}; color: white;">
+                                                                <span class="badge" style="background-color: {!! $order->status->color !!}; color: white;">
                                                                     {{ $order->status->name }}
                                                                 </span>
                                                             </div>
@@ -341,6 +341,36 @@
                     <a href="{{ route('admin.orders.create', ['client' => $user->id]) }}" class="btn btn-outline-success">
                         <i class="bi bi-cart-plus"></i> Добавить заказ
                     </a>
+                    
+                    @if($pets->count() > 0)
+                        <hr>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-flask"></i> Добавить анализ
+                            </button>
+                            <ul class="dropdown-menu">
+                                @foreach($pets as $pet)
+                                    <li><a class="dropdown-item" href="{{ route('admin.lab-tests.create', ['pet' => $pet->id]) }}">
+                                        {{ $pet->name }}
+                                    </a></li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-droplet"></i> Добавить вакцинацию
+                            </button>
+                            <ul class="dropdown-menu">
+                                @foreach($pets as $pet)
+                                    <li><a class="dropdown-item" href="{{ route('admin.vaccinations.create', ['pet' => $pet->id]) }}">
+                                        {{ $pet->name }}
+                                    </a></li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    
                     <hr>
                     <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать

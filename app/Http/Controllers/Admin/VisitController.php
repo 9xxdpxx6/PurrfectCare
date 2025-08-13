@@ -42,9 +42,22 @@ class VisitController extends AdminController
         $diagnoses = DictionaryDiagnosis::all();
         $default_status = Status::where('name', 'Новый')->first();
         $default_status_id = $default_status ? $default_status->id : null;
+        
+        // Получаем ID клиента и питомца из параметров запроса
+        $selectedClientId = request('client');
+        $selectedPetId = request('pet');
+        
+        // Если передан pet_id, но не передан client_id, получаем владельца питомца
+        if ($selectedPetId && !$selectedClientId) {
+            $pet = Pet::with('client')->find($selectedPetId);
+            if ($pet && $pet->client) {
+                $selectedClientId = $pet->client->id;
+            }
+        }
+        
         return view("admin.{$this->viewPath}.create", compact(
             'clients', 'pets', 'schedules', 'statuses',
-            'symptoms', 'diagnoses', 'default_status_id'
+            'symptoms', 'diagnoses', 'default_status_id', 'selectedClientId', 'selectedPetId'
         ));
     }
 

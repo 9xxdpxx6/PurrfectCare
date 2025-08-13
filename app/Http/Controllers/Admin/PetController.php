@@ -28,7 +28,11 @@ class PetController extends AdminController
     {
         $clients = User::all();
         $breeds = Breed::all();
-        return view("admin.{$this->viewPath}.create", compact('clients', 'breeds'));
+        
+        // Получаем ID клиента из параметра запроса
+        $selectedClientId = request('owner');
+        
+        return view("admin.{$this->viewPath}.create", compact('clients', 'breeds', 'selectedClientId'));
     }
 
     public function edit($id) : View

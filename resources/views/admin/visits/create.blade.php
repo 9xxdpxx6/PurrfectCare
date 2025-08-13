@@ -39,7 +39,7 @@
                             <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror">
                                 <option value="">Выберите клиента</option>
                                 @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" @if(old('client_id') == $client->id) selected @endif>
+                                    <option value="{{ $client->id }}" @if(old('client_id', $selectedClientId ?? '') == $client->id) selected @endif>
                                         {{ $client->name }}
                                     </option>
                                 @endforeach
@@ -54,7 +54,7 @@
                             <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.visits.pet-options') }}">
                                 <option value="">Выберите питомца</option>
                                 @foreach($pets as $pet)
-                                    <option value="{{ $pet->id }}" data-client="{{ $pet->client_id }}" @if(old('pet_id') == $pet->id) selected @endif>
+                                    <option value="{{ $pet->id }}" data-client="{{ $pet->client_id }}" @if(old('pet_id', $selectedPetId ?? '') == $pet->id) selected @endif>
                                         {{ $pet->name }}
                                     </option>
                                 @endforeach
@@ -193,11 +193,16 @@
     $oldSymptoms = old('symptoms');
     $oldDiagnoses = old('diagnoses');
     $oldPetId = old('pet_id');
+    $oldClientId = old('client_id');
 @endphp
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const clientSelect = document.getElementById('client_id');
         const petSelect = document.getElementById('pet_id');
+        
+        // Получаем предустановленные значения
+        const selectedClientId = '{{ $oldClientId ?? $selectedClientId ?? "" }}';
+        const selectedPetId = '{{ $oldPetId ?? $selectedPetId ?? "" }}';
         
         // Инициализация TomSelect
         const clientTomSelect = new createTomSelect('#client_id', {
@@ -212,12 +217,61 @@
         
         const petTomSelect = new createTomSelect('#pet_id', {
             placeholder: 'Выберите питомца...',
-            onItemAdd: function() {
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: false,
+            load: function(query, callback) {
+                const clientId = clientTomSelect.getValue();
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                // Если выбран клиент, фильтруем по нему
+                if (clientId) {
+                    url += '&client_id=' + clientId;
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback([]));
+            },
+            onItemAdd: function(value) {
+                // При выборе питомца автоматически заполняем клиента
+                const selectedOption = this.options[value];
+                if (selectedOption && selectedOption.dataset && selectedOption.dataset.client) {
+                    const clientId = selectedOption.dataset.client;
+                    clientTomSelect.setValue(clientId);
+                }
+                
                 setTimeout(() => {
                     this.close();
                     this.blur();
                 }, 50);
             }
+        });
+        
+        // Устанавливаем предустановленные значения с задержкой для полной инициализации
+        setTimeout(() => {
+            // Сначала устанавливаем клиента
+            if (selectedClientId) {
+                clientTomSelect.setValue(selectedClientId);
+            }
+            
+            // Затем с задержкой устанавливаем питомца
+            setTimeout(() => {
+                if (selectedPetId) {
+                    petTomSelect.setValue(selectedPetId);
+                }
+            }, 200);
+        }, 100);
+        
+        // Обработчик изменения клиента
+        clientTomSelect.on('change', function(value) {
+            // Очищаем выбранного питомца при смене клиента
+            petTomSelect.clear();
+            // Обновляем список питомцев
+            petTomSelect.refreshOptions();
         });
         
         new createTomSelect('#schedule_id', {

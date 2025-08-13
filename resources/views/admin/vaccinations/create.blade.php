@@ -32,9 +32,10 @@
                                 <label for="pet_id" class="form-label">Питомец</label>
                                 <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" 
                                         data-url="{{ route('admin.vaccinations.pet-options') }}">
-                                    @if(old('pet_id'))
+                                    @if(old('pet_id') || $selectedPetId)
                                         @php
-                                            $selectedPet = \App\Models\Pet::with('client')->find(old('pet_id'));
+                                            $petId = old('pet_id', $selectedPetId);
+                                            $selectedPet = \App\Models\Pet::with('client')->find($petId);
                                         @endphp
                                         @if($selectedPet)
                                             <option value="{{ $selectedPet->id }}" selected>

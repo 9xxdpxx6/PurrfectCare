@@ -73,7 +73,10 @@ class LabTestController extends AdminController
     {
         $labTestTypes = LabTestType::with('params')->get();
         
-        return view("admin.{$this->viewPath}.create", compact('labTestTypes'));
+        // Получаем ID питомца из параметра запроса
+        $selectedPetId = request('pet');
+        
+        return view("admin.{$this->viewPath}.create", compact('labTestTypes', 'selectedPetId'));
     }
 
     public function store(StoreRequest $request): RedirectResponse

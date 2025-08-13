@@ -5,8 +5,11 @@
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Добавить питомца</h1>
-    @if(request('client_id'))
-        <a href="{{ route('admin.users.edit', request('client_id')) }}" class="btn btn-outline-secondary">
+    @if(request('client_id') || $selectedClientId)
+        @php
+            $clientId = request('client_id', $selectedClientId);
+        @endphp
+        <a href="{{ route('admin.users.show', $clientId) }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад
         </a>
     @else
@@ -16,9 +19,10 @@
     @endif
 </div>
 
-@if(request('client_id'))
+@if(request('client_id') || $selectedClientId)
     @php
-        $selectedClient = $clients->firstWhere('id', request('client_id'));
+        $clientId = request('client_id', $selectedClientId);
+        $selectedClient = $clients->firstWhere('id', $clientId);
     @endphp
     @if($selectedClient)
         <div class="alert alert-info mb-4">
@@ -78,7 +82,7 @@
             <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id">
                 <option value="">Выберите владельца</option>
                 @foreach($clients as $client)
-                    <option value="{{ $client->id }}" @if(old('client_id', request('client_id')) == $client->id) selected @endif>{{ $client->name }}</option>
+                    <option value="{{ $client->id }}" @if(old('client_id', $selectedClientId ?? request('client_id')) == $client->id) selected @endif>{{ $client->name }}</option>
                 @endforeach
             </select>
             @error('client_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -95,8 +99,11 @@
         </div>
     </div>
     <div class="mt-4 d-flex justify-content-between">
-        @if(request('client_id'))
-            <a href="{{ route('admin.users.edit', request('client_id')) }}" class="btn btn-outline-secondary">
+        @if(request('client_id') || $selectedClientId)
+            @php
+                $clientId = request('client_id', $selectedClientId);
+            @endphp
+            <a href="{{ route('admin.users.show', $clientId) }}" class="btn btn-outline-secondary">
                 <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>
             </a>
         @else
