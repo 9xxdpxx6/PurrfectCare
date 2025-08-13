@@ -30,15 +30,9 @@ class UpdateRequest extends FormRequest
                 Rule::unique('branches', 'name')->ignore($this->branch->id),
             ],
             'address' => 'required|string|max:500',
-            'phone' => 'required|string|max:20',
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('branches', 'email')->ignore($this->branch->id),
-            ],
-            'working_hours' => 'nullable|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'phone' => 'nullable|string|max:20',
+            'opens_at' => 'required|date_format:H:i',
+            'closes_at' => 'required|date_format:H:i|after:opens_at',
         ];
     }
 
@@ -51,10 +45,11 @@ class UpdateRequest extends FormRequest
             'name.required' => 'Название филиала обязательно для заполнения',
             'name.unique' => 'Филиал с таким названием уже существует',
             'address.required' => 'Адрес обязателен для заполнения',
-            'phone.required' => 'Телефон обязателен для заполнения',
-            'email.required' => 'Email обязателен для заполнения',
-            'email.email' => 'Введите корректный email адрес',
-            'email.unique' => 'Филиал с таким email уже существует',
+            'opens_at.required' => 'Время открытия обязательно для заполнения',
+            'opens_at.date_format' => 'Время открытия должно быть в формате ЧЧ:ММ',
+            'closes_at.required' => 'Время закрытия обязательно для заполнения',
+            'closes_at.date_format' => 'Время закрытия должно быть в формате ЧЧ:ММ',
+            'closes_at.after' => 'Время закрытия должно быть позже времени открытия',
         ];
     }
 } 

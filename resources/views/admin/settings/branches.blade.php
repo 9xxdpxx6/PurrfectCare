@@ -2,6 +2,62 @@
 
 @section('title', 'Филиалы')
 
+@push('styles')
+<style>
+    /* Стили для Bootstrap уведомлений */
+    .notification-toast {
+        animation: slideInRight 0.3s ease-out;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        border: none;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .notification-toast .toast-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background-color: transparent;
+    }
+    
+    .notification-toast .toast-body {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    /* Стили для кнопки закрытия в зависимости от типа уведомления */
+    .notification-toast.bg-warning .btn-close {
+        filter: invert(1) grayscale(100%) brightness(0);
+        opacity: 1;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .notification-toast.fade-out {
+        animation: slideOutRight 0.3s ease-in forwards;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Филиалы - {{ $branches->total() }}</h1>
@@ -10,6 +66,10 @@
             <i class="bi bi-plus"></i> Добавить филиал
         </button>
     </div>
+</div>
+
+<!-- Bootstrap уведомления -->
+<div id="notifications-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1060; max-width: 400px;">
 </div>
 
 <form method="GET" class="mb-4">
@@ -140,6 +200,91 @@
 
 @push('scripts')
 <script>
+// Функции для работы с Bootstrap уведомлениями
+function createToast(message, type = 'info', title = null) {
+    const container = document.getElementById('notifications-container');
+    if (!container) return;
+    
+    const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
+    // Определяем иконку и цвет в зависимости от типа
+    let icon, bgClass, textClass;
+    switch (type) {
+        case 'success':
+            icon = 'bi-check-circle-fill';
+            bgClass = 'bg-success';
+            textClass = 'text-white';
+            title = title || 'Успешно';
+            break;
+        case 'error':
+        case 'danger':
+            icon = 'bi-exclamation-triangle-fill';
+            bgClass = 'bg-danger';
+            textClass = 'text-white';
+            title = title || 'Ошибка';
+            break;
+        case 'warning':
+            icon = 'bi-exclamation-circle-fill';
+            bgClass = 'bg-warning';
+            textClass = 'text-dark';
+            title = title || 'Предупреждение';
+            break;
+        case 'info':
+        default:
+            icon = 'bi-info-circle-fill';
+            bgClass = 'bg-info';
+            textClass = 'text-white';
+            title = title || 'Информация';
+            break;
+    }
+    
+    const toastHtml = `
+        <div id="${toastId}" class="toast notification-toast ${bgClass} ${textClass}" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header ${textClass}">
+                <i class="bi ${icon} me-2"></i>
+                <strong class="me-auto">${title}</strong>
+                <button type="button" class="btn-close ${type === 'warning' ? '' : 'btn-close-white'}" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: type === 'error' || type === 'danger' ? 8000 : 5000
+    });
+    
+    toast.show();
+    
+    // Автоматическое удаление элемента после скрытия
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+    });
+    
+    return toast;
+}
+
+function showError(message, title = 'Ошибка') {
+    return createToast(message, 'error', title);
+}
+
+function showSuccess(message, title = 'Успешно') {
+    return createToast(message, 'success', title);
+}
+
+function showWarning(message, title = 'Предупреждение') {
+    return createToast(message, 'warning', title);
+}
+
+function showInfo(message, title = 'Информация') {
+    return createToast(message, 'info', title);
+}
+
 let hasChanges = false;
 let changedRows = new Set();
 let timePickers = new Map();
@@ -234,25 +379,78 @@ document.addEventListener('DOMContentLoaded', function () {
                 data[input.dataset.field] = input.value;
             });
             
-                            fetch(`{{ route('admin.settings.system.branches.update', '') }}/${rowId}`, {
-                method: 'PATCH',
+            // Проверяем обязательные поля
+            if (!data.name || !data.name.trim()) {
+                showWarning('Название филиала обязательно для заполнения');
+                return;
+            }
+            
+            if (!data.address || !data.address.trim()) {
+                showWarning('Адрес филиала обязателен для заполнения');
+                return;
+            }
+            
+            // Проверяем обязательность времени работы
+            const opensTime = data.opens_at ? data.opens_at.trim() : '';
+            const closesTime = data.closes_at ? data.closes_at.trim() : '';
+            
+            if (!opensTime) {
+                showWarning('Время открытия обязательно для заполнения');
+                return;
+            }
+            
+            if (!closesTime) {
+                showWarning('Время закрытия обязательно для заполнения');
+                return;
+            }
+            
+            // Проверяем логику времени работы
+            if (opensTime && closesTime) {
+                const opens = new Date(`2000-01-01 ${opensTime}`);
+                const closes = new Date(`2000-01-01 ${closesTime}`);
+                
+                if (opens >= closes) {
+                    showWarning('Время закрытия должно быть позже времени открытия');
+                    return;
+                }
+            }
+            
+            fetch(`{{ route('admin.settings.system.branches.update', '') }}/${rowId}`, {
+                method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify({...data, _method: 'PATCH'})
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    // Проверяем, является ли ответ JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                        });
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    window.location.reload();
+                    showSuccess('Филиал успешно обновлен');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
-                    showNotification('Ошибка при сохранении', 'error');
+                    showWarning(data.message || 'Ошибка при сохранении');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showNotification('Ошибка при сохранении', 'error');
+                showWarning('Ошибка при сохранении: ' + error.message);
             });
         }
     }
@@ -365,25 +563,78 @@ document.addEventListener('DOMContentLoaded', function () {
             data[input.dataset.field] = input.value;
         });
         
-                    fetch("{{ route('admin.settings.system.branches.store') }}", {
+        // Проверяем обязательные поля
+        if (!data.name || !data.name.trim()) {
+            showWarning('Название филиала обязательно для заполнения');
+            return;
+        }
+        
+        if (!data.address || !data.address.trim()) {
+            showWarning('Адрес филиала обязателен для заполнения');
+            return;
+        }
+        
+        // Проверяем обязательность времени работы
+        const opensTime = data.opens_at ? data.opens_at.trim() : '';
+        const closesTime = data.closes_at ? data.closes_at.trim() : '';
+        
+        if (!opensTime) {
+            showWarning('Время открытия обязательно для заполнения');
+            return;
+        }
+        
+        if (!closesTime) {
+            showWarning('Время закрытия обязательно для заполнения');
+            return;
+        }
+        
+        // Проверяем логику времени работы
+        if (opensTime && closesTime) {
+            const opens = new Date(`2000-01-01 ${opensTime}`);
+            const closes = new Date(`2000-01-01 ${closesTime}`);
+            
+            if (opens >= closes) {
+                showWarning('Время закрытия должно быть позже времени открытия');
+                return;
+            }
+        }
+        
+        fetch("{{ route('admin.settings.system.branches.store') }}", {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                // Проверяем, является ли ответ JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                    });
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                window.location.reload();
-            } else {
-                alert('Ошибка при создании филиала');
-            }
+                showSuccess('Филиал успешно создан');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                            } else {
+                    showWarning(data.message || 'Ошибка при создании филиала');
+                }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Произошла ошибка при создании филиала');
+            showWarning('Произошла ошибка при создании филиала: ' + error.message);
         });
     }
 
@@ -394,34 +645,57 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.deleteRow = function(id) {
         if (confirm('Вы уверены, что хотите удалить этот филиал?')) {
-                            fetch(`{{ route('admin.settings.system.branches.destroy', '') }}/${id}`, {
-                method: 'DELETE',
+            fetch(`{{ route('admin.settings.system.branches.destroy', '') }}/${id}`, {
+                method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
-                }
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ _method: 'DELETE' })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    // Проверяем, является ли ответ JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                        });
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     const card = document.querySelector(`[data-id="${id}"]`);
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
+                    showSuccess('Филиал успешно удален');
                 } else {
-                    alert(data.message || 'Ошибка при удалении филиала');
+                    showError(data.message || 'Ошибка при удалении филиала');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Произошла ошибка при удалении филиала');
+                showError('Произошла ошибка при удалении филиала: ' + error.message);
             });
         }
     }
 
+    // Функция для совместимости с существующим кодом
     window.showNotification = function(message, type) {
-        // Only show error notifications
+        // Используем новую функцию createToast напрямую
         if (type === 'error') {
-            alert(message);
+            createToast(message, 'error', 'Ошибка');
+        } else if (type === 'success') {
+            createToast(message, 'success', 'Успешно');
+        } else if (type === 'warning') {
+            createToast(message, 'warning', 'Предупреждение');
+        } else {
+            createToast(message, 'info', 'Информация');
         }
     }
 });
