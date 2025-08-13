@@ -86,7 +86,7 @@
                     <i class="bi bi-calendar-check text-primary fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title text-primary mb-2">{{ number_format($metrics['total_visits']) }}</h3>
-                <h6 class="text-white mb-0">Приёмов</h6>
+                <h6 class="mb-0">Приёмов</h6>
             </div>
         </div>
     </div>
@@ -98,7 +98,7 @@
                     <i class="bi bi-cart-check text-success fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title text-success mb-2">{{ number_format($metrics['total_orders']) }}</h3>
-                <h6 class="text-white mb-0">Заказов</h6>
+                <h6 class="mb-0">Заказов</h6>
             </div>
         </div>
     </div>
@@ -110,7 +110,7 @@
                     <i class="bi bi-cash-stack text-info fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title text-info mb-2">{{ number_format($metrics['total_revenue'], 0, ',', ' ') }} ₽</h3>
-                <h6 class="text-white mb-0">Выручка</h6>
+                <h6 class="mb-0">Выручка</h6>
             </div>
         </div>
     </div>
@@ -122,7 +122,7 @@
                     <i class="bi bi-people text-warning fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title text-warning mb-2">{{ number_format($metrics['total_clients']) }}</h3>
-                <h6 class="text-white mb-0">Новых клиентов</h6>
+                <h6 class="mb-0">Новых клиентов</h6>
             </div>
         </div>
     </div>
@@ -226,19 +226,19 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-6">
-                        <h6 class="text-white mb-1">Филиалов</h6>
+                        <h6 class="mb-1">Филиалов</h6>
                         <h4 class="text-primary mb-0">{{ $metrics['total_branches'] }}</h4>
                     </div>
                     <div class="col-6">
-                        <h6 class="text-white mb-1">Всего сотрудников</h6>
+                        <h6 class="mb-1">Всего сотрудников</h6>
                         <h4 class="text-success mb-0">{{ $metrics['total_employees'] }}</h4>
                     </div>
                     <div class="col-6 mt-2">
-                        <h6 class="text-white mb-1">Услуг</h6>
+                        <h6 class="mb-1">Услуг</h6>
                         <h4 class="text-info mb-0">{{ $metrics['total_services'] }}</h4>
                     </div>
                     <div class="col-6 mt-2">
-                        <h6 class="text-white mb-1">Ветеринаров</h6>
+                        <h6 class="mb-1">Ветеринаров</h6>
                         <h4 class="text-warning mb-0">{{ $metrics['total_veterinarians'] }}</h4>
                     </div>
                 </div>
