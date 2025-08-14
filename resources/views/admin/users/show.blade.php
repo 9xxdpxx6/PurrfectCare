@@ -76,8 +76,8 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex flex-column flex-md-row align-items-md-center gap-md-3">
-                                                    <div class="flex-grow-1">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-6">
                                                         <h6 class="mb-1">Приём #{{ $visit->id }}</h6>
                                                         <p class="text-muted small mb-2">
                                                             @if($visit->schedule && $visit->schedule->shift_starts_at)
@@ -94,7 +94,7 @@
                                                         @endif
                                                     </div>
                                                     
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="col-md-3">
                                                         @if($visit->schedule && $visit->schedule->employee)
                                                             <p class="text-muted small mb-0">
                                                                 <i class="bi bi-person"></i> {{ $visit->schedule->employee->name }}
@@ -103,9 +103,11 @@
                                                                 @endif
                                                             </p>
                                                         @endif
-                                                        
+                                                    </div>
+                                                    
+                                                    <div class="col-md-3 text-md-center">
                                                         @if($visit->status)
-                                                            <div class="d-flex h-100 align-items-center">
+                                                            <div class="d-flex justify-content-center">
                                                                 <span class="badge" style="background-color: {!! $visit->status->color !!}; color: white;">
                                                                     {{ $visit->status->name }}
                                                                 </span>
@@ -152,8 +154,8 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex flex-column flex-md-row align-items-md-center gap-md-3">
-                                                    <div class="flex-grow-1">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-6">
                                                         <div class="d-flex align-items-center gap-2 mb-1">
                                                             <h6 class="mb-0">{{ $pet->name }}</h6>
                                                             @if($pet->gender === 'male')
@@ -169,7 +171,7 @@
                                                         </p>
                                                     </div>
                                                     
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="col-md-6 text-md-end">
                                                         <p class="text-muted small mb-0">
                                                             {{ $pet->breed->name ?? '—' }}
                                                             @if($pet->breed && $pet->breed->species)
@@ -217,8 +219,8 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
-                                                    <div class="flex-grow-1">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-5">
                                                         <div class="d-flex align-items-center gap-2 mb-1">
                                                             <h6 class="mb-0">Заказ #{{ $order->id }}</h6>
                                                             @if($order->is_paid)
@@ -236,18 +238,20 @@
                                                         @endif
                                                     </div>
                                                     
-                                                    <div class="d-flex flex-column gap-1">
-                                                        @if($order->total)
-                                                            <div>
-                                                                <strong>{{ number_format($order->total, 2, ',', ' ') }} ₽</strong>
-                                                            </div>
-                                                        @endif
-                                                        
+                                                    <div class="col-md-4 text-md-center">
                                                         @if($order->status)
-                                                            <div>
+                                                            <div class="d-flex justify-content-center">
                                                                 <span class="badge" style="background-color: {!! $order->status->color !!}; color: white;">
                                                                     {{ $order->status->name }}
                                                                 </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    <div class="col-md-3 text-md-end">
+                                                        @if($order->total)
+                                                            <div>
+                                                                <strong>{{ number_format($order->total, 2, ',', ' ') }} ₽</strong>
                                                             </div>
                                                         @endif
                                                     </div>
