@@ -23,44 +23,44 @@
 <h5 class="text-muted mb-3">Быстрые переходы</h5>
 <div class="row mb-4">
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <a href="{{ route('admin.visits.index') }}" class="btn h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn nav-btn-primary">
-            <i class="bi bi-calendar-check fs-1 mb-2 text-primary"></i>
-            <span class="fw-bold text-primary">Приёмы</span>
+        <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-primary h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
+            <i class="bi bi-calendar-check fs-1 mb-2"></i>
+            <span class="fw-bold">Приёмы</span>
         </a>
     </div>
     
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <a href="{{ route('admin.orders.index') }}" class="btn h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn nav-btn-success">
-            <i class="bi bi-cart-check fs-1 mb-2 text-success"></i>
-            <span class="fw-bold text-success">Заказы</span>
+        <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-success h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
+            <i class="bi bi-cart-check fs-1 mb-2"></i>
+            <span class="fw-bold">Заказы</span>
         </a>
     </div>
     
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <a href="{{ route('admin.users.index') }}" class="btn h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn nav-btn-info">
-            <i class="bi bi-people fs-1 mb-2 text-info"></i>
-            <span class="fw-bold text-info">Клиенты</span>
+        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-info h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
+            <i class="bi bi-people fs-1 mb-2"></i>
+            <span class="fw-bold">Клиенты</span>
         </a>
     </div>
     
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <a href="{{ route('admin.pets.index') }}" class="btn h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn nav-btn-warning">
-            <i class="bi bi-heart fs-1 mb-2 text-warning"></i>
-            <span class="fw-bold text-warning">Питомцы</span>
+        <a href="{{ route('admin.pets.index') }}" class="btn btn-outline-warning h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
+            <i class="bi bi-heart fs-1 mb-2"></i>
+            <span class="fw-bold">Питомцы</span>
         </a>
     </div>
     
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <a href="{{ route('admin.employees.index') }}" class="btn h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn nav-btn-secondary">
-            <i class="bi bi-person-badge fs-1 mb-2 text-secondary"></i>
-            <span class="fw-bold text-secondary">Сотрудники</span>
+        <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
+            <i class="bi bi-person-badge fs-1 mb-2"></i>
+            <span class="fw-bold">Сотрудники</span>
         </a>
     </div>
     
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-        <a href="{{ route('admin.statistics.dashboard') }}" class="btn h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn nav-btn-dark">
-            <i class="bi bi-graph-up fs-1 mb-2 text-dark-light"></i>
-            <span class="fw-bold text-dark-light">Статистика</span>
+        <a href="{{ route('admin.statistics.dashboard') }}" class="btn btn-outline-dark h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
+            <i class="bi bi-graph-up fs-1 mb-2"></i>
+            <span class="fw-bold">Статистика</span>
         </a>
     </div>
 </div>
@@ -74,8 +74,8 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-calendar-check fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title text-white mb-2">{{ number_format($metrics['total_visits']) }}</h3>
-                <h6 class="text-white mb-0">Приёмов</h6>
+                <h3 class="card-title mb-2">{{ number_format($metrics['total_visits']) }}</h3>
+                <h6 class= mb-0">Приёмов</h6>
             </div>
         </div>
     </div>
@@ -84,10 +84,10 @@
         <div class="card kpi-card grad-success">
             <div class="card-body text-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-cart-check text-white fs-1 me-2"></i>
+                    <i class="bi bi-cart-check fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title text-white mb-2">{{ number_format($metrics['total_orders']) }}</h3>
-                <h6 class="text-white mb-0">Заказов</h6>
+                <h3 class="card-title mb-2">{{ number_format($metrics['total_orders']) }}</h3>
+                <h6 class= mb-0">Заказов</h6>
             </div>
         </div>
     </div>
@@ -96,10 +96,10 @@
         <div class="card kpi-card grad-info">
             <div class="card-body text-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-cash-stack text-white fs-1 me-2"></i>
+                    <i class="bi bi-cash-stack fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title text-white mb-2">{{ number_format($metrics['total_revenue'], 0, ',', ' ') }} ₽</h3>
-                <h6 class="text-white mb-0">Выручка</h6>
+                <h3 class="card-title mb-2">{{ number_format($metrics['total_revenue'], 0, ',', ' ') }} ₽</h3>
+                <h6 class= mb-0">Выручка</h6>
             </div>
         </div>
     </div>
@@ -108,10 +108,10 @@
         <div class="card kpi-card grad-warning">
             <div class="card-body text-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-people text-white fs-1 me-2"></i>
+                    <i class="bi bi-people fs-1 me-2"></i>
                 </div>
-                <h3 class="card-title text-white mb-2">{{ number_format($additionalMetrics['total_clients']) }}</h3>
-                <h6 class="text-white mb-0">Новых клиентов</h6>
+                <h3 class="card-title mb-2">{{ number_format($additionalMetrics['total_clients']) }}</h3>
+                <h6 class= mb-0">Новых клиентов</h6>
             </div>
         </div>
     </div>
@@ -340,8 +340,8 @@
             <div class="card-body">
                 <div class="row">
                     @foreach($weekStats as $day => $stats)
-                        <div class="col-md-3 col-sm-6 mb-3">
-                            <div class="card border-0 bg-light">
+                        <div class="col-md-6 col-sm-6 mb-3">
+                            <div class="card border-0">
                                 <div class="card-body text-center">
                                     <h6 class="card-title text-muted mb-2">{{ $day }}</h6>
                                     <div class="row">
@@ -448,356 +448,26 @@
 
 @push('styles')
 <style>
-/* Адаптивные цвета для темной и светлой темы */
-[data-bs-theme="dark"] .text-muted {
-    color: #adb5bd !important;
+/* Специальные стили для кнопки Статистика */
+[data-bs-theme="dark"] .btn-outline-dark {
+    color: #ffffff !important;
+    border-color: #ffffff !important;
 }
 
-[data-bs-theme="dark"] .card {
-    background-color: #2b3035;
-    border-color: #495057;
+[data-bs-theme="dark"] .btn-outline-dark:hover {
+    background-color: #ffffff !important;
+    color: #000000 !important;
 }
 
-[data-bs-theme="dark"] .card-header {
-    background-color: #343a40;
-    border-color: #495057;
+[data-bs-theme="light"] .btn-outline-dark {
+    color: #000000 !important;
+    border-color: #000000 !important;
 }
 
-[data-bs-theme="dark"] .list-group-item {
-    background-color: #2b3035;
-    border-color: #495057;
-    color: #f8f9fa;
-}
-
-[data-bs-theme="dark"] .list-group-item:hover {
-    background-color: #343a40;
-}
-
-[data-bs-theme="dark"] .bg-light {
-    background-color: #343a40 !important;
-}
-
-[data-bs-theme="dark"] .text-body {
-    color: #f8f9fa !important;
-}
-
-[data-bs-theme="dark"] .text-decoration-underline {
-    color: #f8f9fa !important;
-}
-
-[data-bs-theme="dark"] .text-decoration-underline:hover {
-    color: #0d6efd !important;
-}
-
-/* Светлая тема */
-[data-bs-theme="light"] .text-muted {
-    color: #6c757d !important;
-}
-
-[data-bs-theme="light"] .text-body {
-    color: #212529 !important;
-}
-
-[data-bs-theme="light"] .text-decoration-underline {
-    color: #212529 !important;
-}
-
-[data-bs-theme="light"] .text-decoration-underline:hover {
-    color: #0d6efd !important;
-}
-
-/* KPI карточки */
-.kpi-card {
-    border: none;
-    border-radius: 15px;
-    transition: transform 0.2s;
-}
-
-.kpi-card:hover {
-    transform: translateY(-5px);
-}
-
-.grad-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.grad-success {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.grad-info {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.grad-warning {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
-
-/* KPI карточки с обводкой */
-.kpi-outline {
-    border: 2px solid;
-    border-radius: 15px;
-    transition: all 0.2s;
-}
-
-.kpi-outline:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-[data-bs-theme="dark"] .kpi-outline:hover {
-    box-shadow: 0 5px 15px rgba(255,255,255,0.1);
-}
-
-.kpi-outline.primary {
-    border-color: #667eea;
-}
-
-.kpi-outline.success {
-    border-color: #f093fb;
-}
-
-.kpi-outline.info {
-    border-color: #4facfe;
-}
-
-/* Навигационные кнопки */
-.nav-btn {
-    transition: all 0.2s;
-    border-radius: 15px;
-}
-
-.nav-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-[data-bs-theme="dark"] .nav-btn:hover {
-    box-shadow: 0 5px 15px rgba(255,255,255,0.1);
-}
-
-/* Адаптивные цвета для заголовков */
-[data-bs-theme="dark"] h1, 
-[data-bs-theme="dark"] h2, 
-[data-bs-theme="dark"] h3, 
-[data-bs-theme="dark"] h4, 
-[data-bs-theme="dark"] h5, 
-[data-bs-theme="dark"] h6 {
-    color: #f8f9fa;
-}
-
-[data-bs-theme="light"] h1, 
-[data-bs-theme="light"] h2, 
-[data-bs-theme="light"] h3, 
-[data-bs-theme="light"] h4, 
-[data-bs-theme="light"] h5, 
-[data-bs-theme="light"] h6 {
-    color: #212529;
-}
-
-/* Адаптивные цвета для ссылок */
-[data-bs-theme="dark"] a {
-    color: #0d6efd;
-}
-
-[data-bs-theme="dark"] a:hover {
-    color: #0a58ca;
-}
-
-[data-bs-theme="light"] a {
-    color: #0d6efd;
-}
-
-[data-bs-theme="light"] a:hover {
-    color: #0a58ca;
-}
-
-/* Специальные стили для навигационных кнопок в темной теме */
-[data-bs-theme="dark"] .nav-btn {
-    background-color: #2b3035;
-    border-color: currentColor;
-}
-
-[data-bs-theme="dark"] .nav-btn:hover {
-    background-color: #343a40;
-    border-color: currentColor;
-}
-
-[data-bs-theme="dark"] .nav-btn.text-primary {
-    color: #0d6efd !important;
-}
-
-[data-bs-theme="dark"] .nav-btn.text-success {
-    color: #198754 !important;
-}
-
-[data-bs-theme="dark"] .nav-btn.text-info {
-    color: #0dcaf0 !important;
-}
-
-[data-bs-theme="dark"] .nav-btn.text-warning {
-    color: #ffc107 !important;
-}
-
-[data-bs-theme="dark"] .nav-btn.text-secondary {
-    color: #6c757d !important;
-}
-
-[data-bs-theme="dark"] .nav-btn.text-dark {
-    color: #f8f9fa !important;
-}
-
-/* Специальный класс для темной/светлой темы */
-[data-bs-theme="dark"] .text-dark-light {
-    color: #f8f9fa !important;
-}
-
-[data-bs-theme="light"] .text-dark-light {
-    color: #212529 !important;
-}
-
-/* Стили для светлой темы */
-[data-bs-theme="light"] .nav-btn {
-    background-color: #fff;
-    border-color: currentColor;
-}
-
-[data-bs-theme="light"] .nav-btn:hover {
-    background-color: #f8f9fa;
-    border-color: currentColor;
-}
-
-/* Специальные стили для навигационных кнопок с правильными цветами */
-.nav-btn-primary {
-    border: 2px solid #0d6efd !important;
-    color: #0d6efd !important;
-}
-
-.nav-btn-success {
-    border: 2px solid #198754 !important;
-    color: #198754 !important;
-}
-
-.nav-btn-info {
-    border: 2px solid #0dcaf0 !important;
-    color: #0dcaf0 !important;
-}
-
-.nav-btn-warning {
-    border: 2px solid #ffc107 !important;
-    color: #ffc107 !important;
-}
-
-.nav-btn-secondary {
-    border: 2px solid #6c757d !important;
-    color: #6c757d !important;
-}
-
-.nav-btn-dark {
-    border: 2px solid #212529 !important;
-    color: #212529 !important;
-}
-
-/* Стили для кнопок быстрых действий */
-.action-btn {
-    border: 1px solid;
-    transition: all 0.2s;
-}
-
-.action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.action-btn-primary {
-    border-color: #0d6efd !important;
-    color: #0d6efd !important;
-    background-color: transparent;
-}
-
-.action-btn-primary:hover {
-    background-color: #0d6efd !important;
-    color: white !important;
-}
-
-.action-btn-success {
-    border-color: #198754 !important;
-    color: #198754 !important;
-    background-color: transparent;
-}
-
-.action-btn-success:hover {
-    background-color: #198754 !important;
-    color: white !important;
-}
-
-.action-btn-info {
-    border-color: #0dcaf0 !important;
-    color: #0dcaf0 !important;
-    background-color: transparent;
-}
-
-.action-btn-info:hover {
-    background-color: #0dcaf0 !important;
-    color: white !important;
-}
-
-.action-btn-warning {
-    border-color: #ffc107 !important;
-    color: #ffc107 !important;
-    background-color: transparent;
-}
-
-.action-btn-warning:hover {
-    background-color: #ffc107 !important;
-    color: white !important;
-}
-
-.action-btn-secondary {
-    border-color: #6c757d !important;
-    color: #6c757d !important;
-    background-color: transparent;
-}
-
-.action-btn-secondary:hover {
-    background-color: #6c757d !important;
-    color: white !important;
-}
-
-.action-btn-dark {
-    border-color: #212529 !important;
-    color: #212529 !important;
-    background-color: transparent;
-}
-
-.action-btn-dark:hover {
-    background-color: #212529 !important;
-    color: white !important;
-}
-
-/* Адаптация для темной темы */
-[data-bs-theme="dark"] .nav-btn-dark {
-    border-color: #f8f9fa !important;
-    color: #f8f9fa !important;
-}
-
-[data-bs-theme="dark"] .action-btn-dark {
-    border-color: #f8f9fa !important;
-    color: #f8f9fa !important;
-}
-
-[data-bs-theme="dark"] .action-btn-dark:hover {
-    background-color: #f8f9fa !important;
-    color: #212529 !important;
-}
-
-/* Адаптивные цвета для текста в карточках */
-[data-bs-theme="dark"] .card-body {
-    color: #f8f9fa;
-}
-
-[data-bs-theme="light"] .card-body {
-    color: #212529;
+[data-bs-theme="light"] .btn-outline-dark:hover {
+    background-color: #000000 !important;
+    color: #ffffff !important;
 }
 </style>
 @endpush
+
