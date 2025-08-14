@@ -214,6 +214,8 @@
     </div>
 </div>
 
+
+
 <!-- Дополнительная статистика -->
 <div class="row">
     <div class="col-md-6 mb-4">
@@ -275,6 +277,89 @@
         </div>
     </div>
 </div>
+
+<!-- Средние показатели по дням недели -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-calendar-week"></i> 
+                    @if($period === 'custom')
+                        Средние показатели по дням недели за выбранный период
+                    @else
+                        Средние показатели по дням недели за {{ $period === 'week' ? 'неделю' : ($period === 'month' ? 'месяц' : ($period === 'quarter' ? 'квартал' : ($period === 'year' ? 'год' : 'всё время'))) }}
+                    @endif
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach($weekAverageStats['weekdays'] as $day => $stats)
+                        <div class="col-md-6 col-sm-6 mb-3">
+                            <div class="card border h-100">
+                                <div class="card-body text-center">
+                                    <div class="d-flex align-items-center justify-content-center mb-2">
+                                        @if($stats['rank'])
+                                            @php
+                                                $trophyColors = ['warning', 'secondary', 'danger'];
+                                                $trophyColor = $trophyColors[$stats['rank'] - 1] ?? 'secondary';
+                                            @endphp
+                                            <i class="bi bi-trophy-fill text-{{ $trophyColor }} me-2"></i>
+                                        @endif
+                                        <h6 class="card-title text-muted mb-0">{{ $day }}</h6>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Приёмы</small>
+                                            <strong class="text-primary">{{ $stats['visits'] }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Заказы</small>
+                                            <strong class="text-success">{{ $stats['orders'] }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Выручка</small>
+                                            <strong class="text-info">{{ number_format($stats['revenue'], 0, ',', ' ') }} ₽</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                    
+                    @if($weekAverageStats['bestDay'])
+                        <div class="col-md-6 col-sm-6 mb-3">
+                            <div class="card border h-100">
+                                <div class="card-body text-center">
+                                    <div class="d-flex align-items-center justify-content-center mb-2">
+                                        <i class="bi bi-star-fill text-warning me-2"></i>
+                                        <h6 class="card-title text-muted mb-0">
+                                            Лучший день ({{ $weekAverageStats['bestDay']['date']->format('d.m.Y') }})
+                                        </h6>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Приёмы</small>
+                                            <strong class="text-primary">{{ $weekAverageStats['bestDay']['visits'] }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Заказы</small>
+                                            <strong class="text-success">{{ $weekAverageStats['bestDay']['orders'] }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Выручка</small>
+                                            <strong class="text-info">{{ number_format($weekAverageStats['bestDay']['revenue'], 0, ',', ' ') }} ₽</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -313,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Данные для графика за неделю
-    const weeklyData = @json($weeklyStats);
+    const weeklyData = {!! json_encode($weeklyStats) !!};
     
     // График статистики за выбранный период
     const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');

@@ -91,4 +91,145 @@ class DashboardStatisticsService
         
         return $data;
     }
+
+    public function getWeekAverageStats($startDate, $endDate)
+    {
+        $stats = [];
+        $startOfPeriod = Carbon::parse($startDate);
+        $endOfPeriod = Carbon::parse($endDate);
+        
+        $dayNames = [
+            'Monday' => 'Понедельник',
+            'Tuesday' => 'Вторник',
+            'Wednesday' => 'Среда',
+            'Thursday' => 'Четверг',
+            'Friday' => 'Пятница',
+            'Saturday' => 'Суббота',
+            'Sunday' => 'Воскресенье'
+        ];
+        
+        // Получаем все недели в выбранном периоде
+        $weeksInPeriod = [];
+        $currentDate = $startOfPeriod->copy();
+        
+        while ($currentDate->lte($endOfPeriod)) {
+            $weekStart = $currentDate->copy()->startOfWeek(Carbon::MONDAY);
+            $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
+            
+            // Проверяем, что неделя пересекается с выбранным периодом
+            if ($weekStart->lte($endOfPeriod) && $weekEnd->gte($startOfPeriod)) {
+                $weeksInPeriod[] = [
+                    'start' => $weekStart,
+                    'end' => $weekEnd
+                ];
+            }
+            
+            $currentDate->addWeek();
+        }
+        
+        // Считаем статистику для каждого дня недели
+        for ($i = 0; $i < 7; $i++) {
+            $dayName = Carbon::create()->startOfWeek(Carbon::MONDAY)->addDays($i)->format('l');
+            $dayNameRu = $dayNames[$dayName] ?? $dayName;
+            
+            $totalVisits = 0;
+            $totalOrders = 0;
+            $totalRevenue = 0;
+            $weekCount = 0;
+            
+            // Считаем сумму по всем неделям периода для данного дня недели
+            foreach ($weeksInPeriod as $week) {
+                $weekStart = $week['start'];
+                $weekEnd = $week['end'];
+                
+                // Находим дату для конкретного дня недели в этой неделе
+                $targetDate = $weekStart->copy()->addDays($i);
+                
+                // Проверяем, что дата попадает в выбранный период
+                if ($targetDate->between($startOfPeriod, $endOfPeriod)) {
+                    $totalVisits += Visit::whereDate('starts_at', $targetDate)->count();
+                    $totalOrders += Order::whereDate('created_at', $targetDate)->count();
+                    $totalRevenue += Order::whereDate('created_at', $targetDate)
+                        ->where('is_paid', true)
+                        ->sum('total');
+                    $weekCount++;
+                }
+            }
+            
+            // Вычисляем средние значения
+            $stats[$dayNameRu] = [
+                'visits' => $weekCount > 0 ? round($totalVisits / $weekCount, 1) : 0,
+                'orders' => $weekCount > 0 ? round($totalOrders / $weekCount, 1) : 0,
+                'revenue' => $weekCount > 0 ? round($totalRevenue / $weekCount, 2) : 0,
+            ];
+        }
+        
+        // Определяем топ-3 дня недели по выручке
+        $weekdayRanking = [];
+        foreach ($stats as $dayName => $dayStats) {
+            $weekdayRanking[] = [
+                'day' => $dayName,
+                'revenue' => $dayStats['revenue']
+            ];
+        }
+        
+        // Сортируем по выручке
+        usort($weekdayRanking, function($a, $b) {
+            return $b['revenue'] <=> $a['revenue'];
+        });
+        
+        // Добавляем информацию о топ-3 днях недели
+        $topWeekdays = array_slice($weekdayRanking, 0, 3);
+        foreach ($stats as $dayName => &$dayStats) {
+            $dayStats['rank'] = null;
+            foreach ($topWeekdays as $index => $topDay) {
+                if ($topDay['day'] === $dayName) {
+                    $dayStats['rank'] = $index + 1;
+                    break;
+                }
+            }
+        }
+        
+        // Получаем самый прибыльный день за весь период
+        $topDay = $this->getTopDays($startDate, $endDate, 1);
+        $bestDay = !empty($topDay) ? $topDay[0] : null;
+        
+        return [
+            'weekdays' => $stats,
+            'bestDay' => $bestDay
+        ];
+    }
+
+    public function getTopDays($startDate, $endDate, $limit = 3)
+    {
+        $startOfPeriod = Carbon::parse($startDate);
+        $endOfPeriod = Carbon::parse($endDate);
+        
+        $topDays = [];
+        $current = $startOfPeriod->copy();
+        
+        while ($current <= $endOfPeriod) {
+            $revenue = Order::whereDate('created_at', $current)
+                ->where('is_paid', true)
+                ->sum('total');
+            
+            if ($revenue > 0) {
+                $topDays[] = [
+                    'date' => $current->copy(),
+                    'revenue' => $revenue,
+                    'visits' => Visit::whereDate('starts_at', $current)->count(),
+                    'orders' => Order::whereDate('created_at', $current)->count(),
+                ];
+            }
+            
+            $current->addDay();
+        }
+        
+        // Сортируем по выручке и берем топ-3
+        usort($topDays, function($a, $b) {
+            return $b['revenue'] <=> $a['revenue'];
+        });
+        
+        return array_slice($topDays, 0, $limit);
+    }
 }

@@ -86,11 +86,14 @@ class StatisticsController extends Controller
         // Статистика по выбранному периоду
         $weeklyStats = $this->dashboardService->getPeriodStats($startDate, $endDate);
         
+        // Средние показатели за неделю в выбранном периоде
+        $weekAverageStats = $this->dashboardService->getWeekAverageStats($startDate, $endDate);
+        
         // Топ услуг
         $topServices = $this->dashboardService->getTopServices($startDate);
         
         $dateRange = $startDate->format('d.m.Y') . ' — ' . $endDate->format('d.m.Y');
-        return view('admin.statistics.dashboard', compact('metrics', 'weeklyStats', 'topServices', 'period', 'startDate', 'endDate', 'dateRange'));
+        return view('admin.statistics.dashboard', compact('metrics', 'weeklyStats', 'weekAverageStats', 'topServices', 'period', 'startDate', 'endDate', 'dateRange'));
     }
     
     public function financial(Request $request)

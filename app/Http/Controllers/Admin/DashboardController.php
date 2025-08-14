@@ -81,7 +81,8 @@ class DashboardController extends Controller
     private function getWeekStats()
     {
         $stats = [];
-        $startOfWeek = Carbon::now()->startOfWeek();
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
         
         $dayNames = [
             'Monday' => 'Понедельник',
@@ -93,20 +94,96 @@ class DashboardController extends Controller
             'Sunday' => 'Воскресенье'
         ];
         
+        // Получаем все недели в текущем месяце
+        $weeksInMonth = [];
+        $currentDate = $startOfMonth->copy();
+        
+        while ($currentDate->lte($endOfMonth)) {
+            $weekStart = $currentDate->copy()->startOfWeek(Carbon::MONDAY);
+            $weekEnd = $weekStart->copy()->endOfWeek(Carbon::SUNDAY);
+            
+            // Проверяем, что неделя пересекается с текущим месяцем
+            if ($weekStart->lte($endOfMonth) && $weekEnd->gte($startOfMonth)) {
+                $weeksInMonth[] = [
+                    'start' => $weekStart,
+                    'end' => $weekEnd
+                ];
+            }
+            
+            $currentDate->addWeek();
+        }
+        
+        // Считаем статистику для каждого дня недели
         for ($i = 0; $i < 7; $i++) {
-            $date = $startOfWeek->copy()->addDays($i);
-            $dayName = $date->format('l'); // День недели на английском
+            $dayOfWeek = $i + 1; // 1 = понедельник, 7 = воскресенье
+            $dayName = Carbon::create()->startOfWeek(Carbon::MONDAY)->addDays($i)->format('l');
             $dayNameRu = $dayNames[$dayName] ?? $dayName;
             
+            $totalVisits = 0;
+            $totalOrders = 0;
+            $totalRevenue = 0;
+            $weekCount = 0;
+            
+            // Считаем сумму по всем неделям месяца для данного дня недели
+            foreach ($weeksInMonth as $week) {
+                $weekStart = $week['start'];
+                $weekEnd = $week['end'];
+                
+                // Находим дату для конкретного дня недели в этой неделе
+                $targetDate = $weekStart->copy()->addDays($i);
+                
+                // Проверяем, что дата попадает в текущий месяц
+                if ($targetDate->between($startOfMonth, $endOfMonth)) {
+                    $totalVisits += Visit::whereDate('starts_at', $targetDate)->count();
+                    $totalOrders += Order::whereDate('created_at', $targetDate)->count();
+                    $totalRevenue += Order::whereDate('created_at', $targetDate)
+                        ->where('is_paid', true)
+                        ->sum('total');
+                    $weekCount++;
+                }
+            }
+            
+            // Вычисляем средние значения
             $stats[$dayNameRu] = [
-                'visits' => Visit::whereDate('starts_at', $date)->count(),
-                'orders' => Order::whereDate('created_at', $date)->count(),
-                'revenue' => Order::whereDate('created_at', $date)
-                    ->where('is_paid', true)
-                    ->sum('total'),
+                'visits' => $weekCount > 0 ? round($totalVisits / $weekCount, 1) : 0,
+                'orders' => $weekCount > 0 ? round($totalOrders / $weekCount, 1) : 0,
+                'revenue' => $weekCount > 0 ? round($totalRevenue / $weekCount, 2) : 0,
             ];
         }
         
-        return $stats;
+        // Определяем топ-3 дня недели по выручке
+        $weekdayRanking = [];
+        foreach ($stats as $dayName => $dayStats) {
+            $weekdayRanking[] = [
+                'day' => $dayName,
+                'revenue' => $dayStats['revenue']
+            ];
+        }
+        
+        // Сортируем по выручке
+        usort($weekdayRanking, function($a, $b) {
+            return $b['revenue'] <=> $a['revenue'];
+        });
+        
+        // Добавляем информацию о топ-3 днях недели
+        $topWeekdays = array_slice($weekdayRanking, 0, 3);
+        foreach ($stats as $dayName => &$dayStats) {
+            $dayStats['rank'] = null;
+            foreach ($topWeekdays as $index => $topDay) {
+                if ($topDay['day'] === $dayName) {
+                    $dayStats['rank'] = $index + 1;
+                    break;
+                }
+            }
+        }
+        
+        // Получаем самый прибыльный день за месяц
+        $topDay = $this->statisticsService->getTopDays($startOfMonth, $endOfMonth, 1);
+        $bestDay = !empty($topDay) ? $topDay[0] : null;
+        
+        return [
+            'weekdays' => $stats,
+            'bestDay' => $bestDay
+        ];
     }
 } 

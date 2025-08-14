@@ -334,16 +334,25 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-graph-up"></i> Статистика по дням недели
+                    <i class="bi bi-graph-up"></i> Средние показатели по дням недели за текущий месяц
                 </h5>
             </div>
             <div class="card-body">
                 <div class="row">
-                    @foreach($weekStats as $day => $stats)
+                    @foreach($weekStats['weekdays'] as $day => $stats)
                         <div class="col-md-6 col-sm-6 mb-3">
-                            <div class="card border-0">
+                            <div class="card border h-100">
                                 <div class="card-body text-center">
-                                    <h6 class="card-title text-muted mb-2">{{ $day }}</h6>
+                                    <div class="d-flex align-items-center justify-content-center mb-2">
+                                        @if($stats['rank'])
+                                            @php
+                                                $trophyColors = ['warning', 'secondary', 'danger'];
+                                                $trophyColor = $trophyColors[$stats['rank'] - 1] ?? 'secondary';
+                                            @endphp
+                                            <i class="bi bi-trophy-fill text-{{ $trophyColor }} me-2"></i>
+                                        @endif
+                                        <h6 class="card-title text-muted mb-0">{{ $day }}</h6>
+                                    </div>
                                     <div class="row">
                                         <div class="col-4">
                                             <small class="text-muted d-block">Приёмы</small>
@@ -362,11 +371,42 @@
                             </div>
                         </div>
                     @endforeach
+                    
+                    @if($weekStats['bestDay'])
+                        <div class="col-md-6 col-sm-6 mb-3">
+                            <div class="card border h-100">
+                                <div class="card-body text-center">
+                                    <div class="d-flex align-items-center justify-content-center mb-2">
+                                        <i class="bi bi-star-fill text-warning me-2"></i>
+                                        <h6 class="card-title text-muted mb-0">
+                                            Лучший день ({{ $weekStats['bestDay']['date']->format('d.m.Y') }})
+                                        </h6>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Приёмы</small>
+                                            <strong class="text-primary">{{ $weekStats['bestDay']['visits'] }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Заказы</small>
+                                            <strong class="text-success">{{ $weekStats['bestDay']['orders'] }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted d-block">Выручка</small>
+                                            <strong class="text-info">{{ number_format($weekStats['bestDay']['revenue'], 0, ',', ' ') }} ₽</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
 
 <!-- Общая информация -->
 <div class="row">
