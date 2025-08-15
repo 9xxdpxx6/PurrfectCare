@@ -71,7 +71,6 @@
                             <span>{{ $item->created_at->format('d.m.Y H:i') }}</span>
                         </div>
                         <div class="d-flex align-items-center mb-2">
-                            <span class="text-muted fw-bold me-2">Статус заказа:</span>
                             <div class="d-flex gap-2">
                                 @if($item->is_paid)
                                     <span class="badge bg-success">Оплачен</span>

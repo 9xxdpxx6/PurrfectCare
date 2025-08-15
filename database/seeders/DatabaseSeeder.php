@@ -94,7 +94,7 @@ class DatabaseSeeder extends Seeder
         Schedule::factory(200)->create();
 
         // Создаем приемы
-        Visit::factory(300)->create();
+        Visit::factory(800)->create();
 
         // Создаем заказы с правильным распределением по клиентам
         Order::factory()->createWithDistribution();
@@ -111,15 +111,19 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * Создает связи между приемами и заказами
+     * Создает связи между приемами и заказами для конверсии 70-90%
      */
     private function createVisitOrderLinks(): void
     {
         $visits = Visit::all();
         $orders = Order::all();
         
-        // Создаем связи для 60% приемов
-        $visitsToLink = $visits->random(min($visits->count(), (int)($visits->count() * 0.6)));
+        // Целевая конверсия: 75-85% (случайно в этом диапазоне)
+        $conversionRate = fake()->numberBetween(75, 85) / 100;
+        $visitsToLinkCount = (int)($visits->count() * $conversionRate);
+        
+        // Случайно выбираем приемы для связывания
+        $visitsToLink = $visits->random($visitsToLinkCount);
         
         foreach ($visitsToLink as $visit) {
             // Получаем заказы того же клиента и питомца
@@ -127,8 +131,9 @@ class DatabaseSeeder extends Seeder
                                   ->where('pet_id', $visit->pet_id);
             
             if ($clientOrders->isNotEmpty()) {
-                // Связываем с 1-3 подходящими заказами
-                $ordersToLink = $clientOrders->random(min($clientOrders->count(), rand(1, 3)));
+                // 80% случаев - связываем с 1 заказом, 15% - с 2, 5% - с 3
+                $orderCount = fake()->randomElement([1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3]);
+                $ordersToLink = $clientOrders->random(min($clientOrders->count(), $orderCount));
                 
                 foreach ($ordersToLink as $order) {
                     // Проверяем, что связь не существует
@@ -141,25 +146,23 @@ class DatabaseSeeder extends Seeder
                         ]);
                     }
                 }
+            } else {
+                // Если нет заказов того же клиента и питомца, создаем случайную связь
+                // Это имитирует случаи когда заказ создается после приема
+                $randomOrder = $orders->random();
+                
+                if (!VisitOrder::where('visit_id', $visit->id)
+                               ->where('order_id', $randomOrder->id)
+                               ->exists()) {
+                    VisitOrder::create([
+                        'visit_id' => $visit->id,
+                        'order_id' => $randomOrder->id,
+                    ]);
+                }
             }
         }
         
-        // Дополнительно создаем некоторые случайные связи (10% от общего количества)
-        $randomLinksCount = min(50, (int)($visits->count() * 0.1));
-        
-        for ($i = 0; $i < $randomLinksCount; $i++) {
-            $randomVisit = $visits->random();
-            $randomOrder = $orders->random();
-            
-            // Проверяем, что связь не существует
-            if (!VisitOrder::where('visit_id', $randomVisit->id)
-                           ->where('order_id', $randomOrder->id)
-                           ->exists()) {
-                VisitOrder::create([
-                    'visit_id' => $randomVisit->id,
-                    'order_id' => $randomOrder->id,
-                ]);
-            }
-        }
+        echo "Создано связей visit_orders: " . VisitOrder::count() . " из " . $visits->count() . " приемов\n";
+        echo "Конверсия: " . round((VisitOrder::distinct('visit_id')->count() / $visits->count()) * 100, 1) . "%\n";
     }
 }

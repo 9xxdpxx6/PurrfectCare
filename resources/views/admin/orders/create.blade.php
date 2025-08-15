@@ -15,6 +15,10 @@
 <form action="{{ route('admin.orders.store') }}" method="POST" id="orderForm">
     @csrf
     
+    @if(isset($selectedVisitId) && $selectedVisitId)
+        <input type="hidden" name="visit_id" value="{{ $selectedVisitId }}">
+    @endif
+    
     @if ($errors->any())
         @php
             // Исключаем ошибки полей, которые уже показываются рядом с полями
@@ -683,7 +687,8 @@
         // Получаем предустановленные значения
         const selectedClientId = '{{ old("client_id", $selectedClientId ?? "") }}';
         const selectedPetId = '{{ old("pet_id", $selectedPetId ?? "") }}';
-        const selectedVisits = @json(old('visits', []));
+        const selectedVisitId = '{{ $selectedVisitId ?? "" }}';
+        const selectedVisits = @json(old('visits', isset($selectedVisitId) && $selectedVisitId ? [$selectedVisitId] : []));
         
         // Обработчик отправки формы
         document.getElementById('orderForm').addEventListener('submit', function(e) {

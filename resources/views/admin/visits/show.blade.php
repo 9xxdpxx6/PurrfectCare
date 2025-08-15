@@ -42,7 +42,7 @@
                         <div class="d-flex align-items-center gap-2 mt-3">
                             <span class="text-muted">Статус:</span>
                             @if($item->status)
-                                <span class="badge fs-6" style='background-color: {{ $item->status->color ?? '#6c757d' }};'>
+                                <span class="badge fs-6" style="background-color: {{ $item->status->color ?? '#6c757d' }};">
                                     {{ $item->status->name }}
                                 </span>
                             @else
@@ -232,6 +232,15 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center px-0">
                                 <div>
                                     <a href="{{ route('admin.orders.show', $order) }}" class="text-decoration-none fw-bold">
+                                        @if($order->is_paid)
+                                            <span class="text-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Оплачен">
+                                                <i class="bi bi-check-all"></i>
+                                            </span>
+                                        @else
+                                            <span class="text-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Не оплачен">
+                                                <i class="bi bi-cash"></i>
+                                            </span>
+                                        @endif
                                         Заказ #{{ $order->id }}
                                     </a>
                                     <div class="small text-muted">
@@ -242,14 +251,9 @@
                                     </div>
                                 </div>
                                 <div class="d-flex flex-column align-items-end gap-1">
-                                    <span class="badge" style="background-color: {{ $order->status->color ?? '#6c757d' }}">
+                                    <span class="badge" style="background-color: {{ $order->status->color ?? '#6c757d' }};">
                                         {{ $order->status->name }}
                                     </span>
-                                    @if($order->is_paid)
-                                        <span class="badge bg-success">Оплачен</span>
-                                    @else
-                                        <span class="badge bg-warning">Не оплачен</span>
-                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -266,9 +270,22 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    <!-- Основные действия -->
                     <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать приём
                     </a>
+                    @php
+                        $orderParams = ['visit' => $item->id];
+                        if($item->pet) $orderParams['pet'] = $item->pet->id;
+                        if($item->client) $orderParams['client'] = $item->client->id;
+                    @endphp
+                    <a href="{{ route('admin.orders.create', $orderParams) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus"></i> Добавить заказ
+                    </a>
+                    
+                    <hr>
+                    
+                    <!-- Просмотр зависимостей -->
                     @if($item->client)
                         <a href="{{ route('admin.users.show', $item->client) }}" class="btn btn-outline-info">
                             <i class="bi bi-person"></i> Профиль клиента
@@ -284,12 +301,15 @@
                             <i class="bi bi-calendar3"></i> Расписание
                         </a>
                     @endif
+                    
                     <hr>
+                    
+                    <!-- Удаление -->
                     <form action="{{ route('admin.visits.destroy', $item) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100"
-                            onclick="return confirm('Удалить приём {{ \Carbon\Carbon::parse($item->starts_at)->format('d.m.Y H:i') }}? Это действие нельзя отменить.');">
+                            onclick="return confirm('Удалить приём {{ \Carbon\Carbon::parse($item->starts_at)->format('d.m.Y H:i') }}? Это действие нельзя отменить.')">
                             <i class="bi bi-trash"></i> Удалить приём
                         </button>
                     </form>

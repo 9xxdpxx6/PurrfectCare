@@ -34,9 +34,19 @@ class OrderController extends AdminController
 
     public function create(): View
     {
-        // Получаем ID клиента и питомца из параметров запроса
+        // Получаем ID клиента, питомца и приема из параметров запроса
         $selectedClientId = request('client');
         $selectedPetId = request('pet');
+        $selectedVisitId = request('visit');
+        
+        // Если передан visit_id, получаем данные из приема
+        if ($selectedVisitId && !$selectedClientId && !$selectedPetId) {
+            $visit = \App\Models\Visit::with(['client', 'pet'])->find($selectedVisitId);
+            if ($visit) {
+                $selectedClientId = $visit->client_id;
+                $selectedPetId = $visit->pet_id;
+            }
+        }
         
         // Если передан pet_id, но не передан client_id, получаем владельца питомца
         if ($selectedPetId && !$selectedClientId) {
@@ -46,7 +56,7 @@ class OrderController extends AdminController
             }
         }
         
-        return view("admin.{$this->viewPath}.create", compact('selectedClientId', 'selectedPetId'));
+        return view("admin.{$this->viewPath}.create", compact('selectedClientId', 'selectedPetId', 'selectedVisitId'));
     }
 
     public function edit($id): View
@@ -135,6 +145,9 @@ class OrderController extends AdminController
         // Сохраняем связи с приемами
         if ($request->has('visits') && is_array($request->visits)) {
             $order->visits()->sync($request->visits);
+        } elseif ($request->has('visit_id') && $request->visit_id) {
+            // Автоматическая привязка к приему, если он был передан в параметрах
+            $order->visits()->sync([$request->visit_id]);
         }
         
         return redirect()
