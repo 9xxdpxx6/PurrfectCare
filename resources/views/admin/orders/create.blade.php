@@ -16,13 +16,38 @@
     @csrf
     
     @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+        @php
+            // Исключаем ошибки полей, которые уже показываются рядом с полями
+            $fieldErrors = ['client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id', 'visits', 'notes'];
+            $generalErrors = [];
+            
+            foreach ($errors->all() as $error) {
+                $isFieldError = false;
+                foreach ($fieldErrors as $field) {
+                    // Проверяем, относится ли ошибка к конкретному полю
+                    if ($errors->has($field)) {
+                        $fieldErrorMessages = $errors->get($field);
+                        if (in_array($error, $fieldErrorMessages)) {
+                            $isFieldError = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$isFieldError) {
+                    $generalErrors[] = $error;
+                }
+            }
+        @endphp
+        
+        @if (count($generalErrors) > 0)
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($generalErrors as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
     @endif
     
     <div class="row g-3">
@@ -143,6 +168,31 @@
                                     </label>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="visits" class="form-label">Связанные приемы</label>
+                            <select name="visits[]" id="visits" class="form-select @error('visits') is-invalid @enderror" multiple data-url="{{ route('admin.orders.visit-options') }}">
+                                @if(old('visits'))
+                                    @foreach(old('visits') as $visitId)
+                                        @php
+                                            $selectedVisit = \App\Models\Visit::with(['client', 'pet', 'status'])->find($visitId);
+                                        @endphp
+                                        @if($selectedVisit)
+                                            <option value="{{ $selectedVisit->id }}" selected>
+                                                Прием от {{ $selectedVisit->starts_at->format('d.m.Y H:i') }}
+                                                @if($selectedVisit->client) - {{ $selectedVisit->client->name }} @endif
+                                                @if($selectedVisit->pet) ({{ $selectedVisit->pet->name }}) @endif
+                                                @if($selectedVisit->status) [{{ $selectedVisit->status->name }}] @endif
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                @endif
+                            </select>
+                            @error('visits')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="form-text text-muted">Выберите приемы, связанные с этим заказом</small>
                         </div>
                         
                         <div class="col-12">
@@ -631,8 +681,9 @@
         const petSelect = document.getElementById('pet_id');
         
         // Получаем предустановленные значения
-        const selectedClientId = '{{ old('client_id', $selectedClientId ?? "") }}';
-        const selectedPetId = '{{ old('pet_id', $selectedPetId ?? "") }}';
+        const selectedClientId = '{{ old("client_id", $selectedClientId ?? "") }}';
+        const selectedPetId = '{{ old("pet_id", $selectedPetId ?? "") }}';
+        const selectedVisits = @json(old('visits', []));
         
         // Обработчик отправки формы
         document.getElementById('orderForm').addEventListener('submit', function(e) {
@@ -726,6 +777,35 @@
                 if (selectedPetId) {
                     petTomSelect.setValue(selectedPetId);
                 }
+                
+                // И с еще большей задержкой устанавливаем приемы
+                setTimeout(() => {
+                    if (selectedVisits && selectedVisits.length > 0 && selectedClientId) {
+                        console.log('Restoring selected visits:', selectedVisits);
+                        // Загружаем опции для выбранных приемов
+                        const visitsUrl = document.getElementById('visits').dataset.url + '?selected=' + selectedVisits.join(',') + '&filter=false&client_id=' + selectedClientId;
+                        
+                        fetch(visitsUrl)
+                            .then(response => response.json())
+                            .then(options => {
+                                console.log('Loaded visit options for restoration:', options);
+                                // Добавляем опции в TomSelect
+                                options.forEach(option => {
+                                    visitsTomSelect.addOption(option);
+                                });
+                                
+                                // Устанавливаем выбранные значения
+                                selectedVisits.forEach(visitId => {
+                                    visitsTomSelect.setValue(visitId, true); // silent = true, чтобы не вызывать событие
+                                });
+                                
+                                console.log('Visits restored successfully');
+                            })
+                            .catch(error => {
+                                console.error('Error loading selected visits:', error);
+                            });
+                    }
+                }, 300);
             }, 200);
         }, 100);
         
@@ -871,6 +951,82 @@
         // Инициализация состояния кнопок
         updatePetDependentButtons();
         
+        // TomSelect для приемов
+        const visitsTomSelect = new createTomSelect('#visits', {
+            placeholder: 'Выберите приемы...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: false,
+            load: function(query, callback) {
+                const clientId = clientTomSelect.getValue();
+                
+                // Если клиент не выбран, не загружаем приемы
+                if (!clientId) {
+                    callback([]);
+                    return;
+                }
+                
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false&client_id=' + clientId;
+                
+                // Если выбран питомец, фильтруем по нему
+                const petId = petTomSelect.getValue();
+                if (petId) {
+                    url += '&pet_id=' + petId;
+                }
+                
+                // Добавляем текущую дату для фильтрации (приемы должны быть до даты заказа)
+                const currentDate = new Date().toISOString().split('T')[0];
+                url += '&order_date=' + currentDate;
+                
+                console.log('Loading visits from URL:', url);
+                
+                fetch(url)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.json();
+                    })
+                    .then(json => {
+                        console.log('Visits loaded:', json);
+                        callback(json);
+                    })
+                    .catch(error => {
+                        console.error('Error loading visits:', error);
+                        callback([]);
+                    });
+            },
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
+        });
+        
+        // Обновляем список приемов при изменении клиента или питомца
+        function updateVisitOptions() {
+            const clientId = clientTomSelect.getValue();
+            console.log('Updating visit options for client:', clientId);
+            
+            // Очищаем текущие опции
+            visitsTomSelect.clear();
+            visitsTomSelect.clearOptions();
+            
+            if (clientId) {
+                // Если клиент выбран, принудительно загружаем приемы
+                visitsTomSelect.load('');
+            }
+        }
+        
+        clientTomSelect.on('change', function(value) {
+            console.log('Client changed to:', value);
+            updateVisitOptions();
+        });
+        
+        petTomSelect.on('change', function(value) {
+            updateVisitOptions();
+        });
 
         
         // Инициализируем lastValue для petTomSelect

@@ -58,4 +58,9 @@ class Visit extends Model
     {
         return $this->hasMany(Symptom::class);
     }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'visit_orders');
+    }
 }

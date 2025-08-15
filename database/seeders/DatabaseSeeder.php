@@ -27,6 +27,7 @@ use App\Models\DictionarySymptom;
 use App\Models\DictionaryDiagnosis;
 use App\Models\Symptom;
 use App\Models\Diagnosis;
+use App\Models\VisitOrder;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -92,7 +93,7 @@ class DatabaseSeeder extends Seeder
         // Создаем расписание
         Schedule::factory(200)->create();
 
-        // Создаем визиты
+        // Создаем приемы
         Visit::factory(300)->create();
 
         // Создаем заказы с правильным распределением по клиентам
@@ -104,5 +105,61 @@ class DatabaseSeeder extends Seeder
         // Создаем симптомы и диагнозы
         Symptom::factory(400)->create();
         Diagnosis::factory(300)->create();
+
+        // Создаем связи между приемами и заказами
+        $this->createVisitOrderLinks();
+    }
+
+    /**
+     * Создает связи между приемами и заказами
+     */
+    private function createVisitOrderLinks(): void
+    {
+        $visits = Visit::all();
+        $orders = Order::all();
+        
+        // Создаем связи для 60% приемов
+        $visitsToLink = $visits->random(min($visits->count(), (int)($visits->count() * 0.6)));
+        
+        foreach ($visitsToLink as $visit) {
+            // Получаем заказы того же клиента и питомца
+            $clientOrders = $orders->where('client_id', $visit->client_id)
+                                  ->where('pet_id', $visit->pet_id);
+            
+            if ($clientOrders->isNotEmpty()) {
+                // Связываем с 1-3 подходящими заказами
+                $ordersToLink = $clientOrders->random(min($clientOrders->count(), rand(1, 3)));
+                
+                foreach ($ordersToLink as $order) {
+                    // Проверяем, что связь не существует
+                    if (!VisitOrder::where('visit_id', $visit->id)
+                                   ->where('order_id', $order->id)
+                                   ->exists()) {
+                        VisitOrder::create([
+                            'visit_id' => $visit->id,
+                            'order_id' => $order->id,
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Дополнительно создаем некоторые случайные связи (10% от общего количества)
+        $randomLinksCount = min(50, (int)($visits->count() * 0.1));
+        
+        for ($i = 0; $i < $randomLinksCount; $i++) {
+            $randomVisit = $visits->random();
+            $randomOrder = $orders->random();
+            
+            // Проверяем, что связь не существует
+            if (!VisitOrder::where('visit_id', $randomVisit->id)
+                           ->where('order_id', $randomOrder->id)
+                           ->exists()) {
+                VisitOrder::create([
+                    'visit_id' => $randomVisit->id,
+                    'order_id' => $randomOrder->id,
+                ]);
+            }
+        }
     }
 }

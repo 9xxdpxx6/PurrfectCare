@@ -92,6 +92,21 @@
                         </div>
                     </div>
 
+                    <div class="stats-container d-flex flex-column align-items-lg-end align-self-start text-nowrap">
+                        <p class="card-text">
+                            <i class="bi bi-calendar-check"></i> <span>Приемы:</span> {{ $pet->visits_count }}
+                        </p>
+                        <p class="card-text">
+                            <i class="bi bi-bag"></i> <span>Заказы:</span> {{ $pet->orders_count }}
+                        </p>
+                        <p class="card-text">
+                            <i class="bi bi-droplet"></i> <span>Вакцинации:</span> {{ $pet->vaccinations_count }}
+                        </p>
+                        <p class="card-text">
+                            <i class="bi bi-clipboard-data"></i> <span>Анализы:</span> {{ $pet->lab_tests_count }}
+                        </p>
+                    </div>
+
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0">
                         <a href="{{ route('admin.pets.show', $pet) }}" class="btn btn-outline-info" title="Просмотр">
                             <span class="d-none d-lg-inline-block">Просмотр</span>

@@ -57,7 +57,7 @@ class OperationalStatisticsService
                 $progressWidth = min(100, ($avgVisitsPerDay / $maxLoad) * 100);
                 $progressPercentage = round($progressWidth);
                 
-                // Процент от общего количества визитов
+                // Процент от общего количества приемов
                 $visitsPercentage = $totalVisits > 0 ? round(($visitsCount / $totalVisits) * 100, 1) : 0;
                 
                 return [

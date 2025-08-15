@@ -41,7 +41,10 @@ class DrugProcurementController extends AdminController
 
     public function create(): View
     {
-        return view("admin.{$this->viewPath}.create");
+        // Получаем ID препарата из параметра запроса
+        $selectedDrugId = request('drug');
+        
+        return view("admin.{$this->viewPath}.create", compact('selectedDrugId'));
     }
 
     public function edit($id): View

@@ -17,13 +17,38 @@
     @method('PATCH')
     
     @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+        @php
+            // Исключаем ошибки полей, которые уже показываются рядом с полями
+            $fieldErrors = ['client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id', 'visits', 'notes'];
+            $generalErrors = [];
+            
+            foreach ($errors->all() as $error) {
+                $isFieldError = false;
+                foreach ($fieldErrors as $field) {
+                    // Проверяем, относится ли ошибка к конкретному полю
+                    if ($errors->has($field)) {
+                        $fieldErrorMessages = $errors->get($field);
+                        if (in_array($error, $fieldErrorMessages)) {
+                            $isFieldError = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$isFieldError) {
+                    $generalErrors[] = $error;
+                }
+            }
+        @endphp
+        
+        @if (count($generalErrors) > 0)
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($generalErrors as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
     @endif
     
     <div class="row g-3">
@@ -135,6 +160,40 @@
                                     </label>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="visits" class="form-label">Связанные приемы</label>
+                            <select name="visits[]" id="visits" class="form-select @error('visits') is-invalid @enderror" multiple data-url="{{ route('admin.orders.visit-options') }}">
+                                @if(old('visits'))
+                                    @foreach(old('visits') as $visitId)
+                                        @php
+                                            $selectedVisit = \App\Models\Visit::with(['client', 'pet', 'status'])->find($visitId);
+                                        @endphp
+                                        @if($selectedVisit)
+                                            <option value="{{ $selectedVisit->id }}" selected>
+                                                Прием от {{ $selectedVisit->starts_at->format('d.m.Y H:i') }}
+                                                @if($selectedVisit->client) - {{ $selectedVisit->client->name }} @endif
+                                                @if($selectedVisit->pet) ({{ $selectedVisit->pet->name }}) @endif
+                                                @if($selectedVisit->status) [{{ $selectedVisit->status->name }}] @endif
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                @else
+                                    @foreach($item->visits as $visit)
+                                        <option value="{{ $visit->id }}" selected>
+                                            Прием от {{ $visit->starts_at->format('d.m.Y H:i') }}
+                                            @if($visit->client) - {{ $visit->client->name }} @endif
+                                            @if($visit->pet) ({{ $visit->pet->name }}) @endif
+                                            @if($visit->status) [{{ $visit->status->name }}] @endif
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            @error('visits')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="form-text text-muted">Выберите приемы, связанные с этим заказом</small>
                         </div>
                         
                         <div class="col-12">
@@ -617,6 +676,9 @@
         const clientSelect = document.getElementById('client_id');
         const petSelect = document.getElementById('pet_id');
         
+        // Получаем предустановленные значения
+        const selectedVisits = @json(old('visits', $item->visits->pluck('id')->toArray()));
+        
         // TomSelect для основных полей
         const clientTomSelect = new createTomSelect('#client_id', {
             placeholder: 'Выберите клиента...',
@@ -766,6 +828,10 @@
                 });
         }
         
+        // Устанавливаем флаг инициализации для TomSelect элементов
+        clientTomSelect.isInitializing = true;
+        petTomSelect.isInitializing = true;
+        
         // Слушатель изменения клиента
         clientTomSelect.on('change', function(value) {
             filterPetsByClient(value);
@@ -803,10 +869,96 @@
         // Инициализация состояния кнопок
         updatePetDependentButtons();
         
+        // TomSelect для приемов
+        const visitsTomSelect = new createTomSelect('#visits', {
+            placeholder: 'Выберите приемы...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: false,
+            load: function(query, callback) {
+                const clientId = clientTomSelect.getValue();
+                
+                // Если клиент не выбран, не загружаем приемы
+                if (!clientId) {
+                    callback([]);
+                    return;
+                }
+                
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false&client_id=' + clientId;
+                
+                // Если выбран питомец, фильтруем по нему
+                const petId = petTomSelect.getValue();
+                if (petId) {
+                    url += '&pet_id=' + petId;
+                }
+                
+                // Добавляем текущую дату для фильтрации (приемы должны быть до даты заказа)
+                const currentDate = new Date().toISOString().split('T')[0];
+                url += '&order_date=' + currentDate;
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback([]));
+            },
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
+        });
+        
+        // Обновляем список приемов при изменении клиента или питомца
+        function updateVisitOptions() {
+            const clientId = clientTomSelect.getValue();
+            console.log('Updating visit options for client:', clientId);
+            
+            // Очищаем текущие опции
+            visitsTomSelect.clear();
+            visitsTomSelect.clearOptions();
+            
+            if (clientId) {
+                // Если клиент выбран, принудительно загружаем приемы
+                visitsTomSelect.load('');
+            }
+        }
+        
+        // Слушатели изменения клиента и питомца для обновления приемов (только при изменении пользователем)
+        clientTomSelect.on('change', function(value) {
+            // Очищаем приемы только при ручном изменении клиента 
+            if (this.isInitializing !== true) {
+                updateVisitOptions();
+            }
+        });
+        
+        petTomSelect.on('change', function(value) {
+            // Очищаем приемы только при ручном изменении питомца
+            if (this.isInitializing !== true) {
+                updateVisitOptions();
+            }
+        });
 
         
         // Инициализируем lastValue для petTomSelect
         petTomSelect.lastValue = petTomSelect.getValue();
+        
+        // Убираем флаг инициализации и восстанавливаем приемы после установки питомца
+        setTimeout(() => {
+            // Восстанавливаем выбранные приемы при ошибках валидации
+            if (selectedVisits && selectedVisits.length > 0) {
+                // Приемы уже есть в DOM в option-ах, просто устанавливаем их в TomSelect
+                selectedVisits.forEach(visitId => {
+                    visitsTomSelect.setValue(visitId);
+                });
+            }
+            
+            // Убираем флаг инициализации после восстановления всех значений
+            clientTomSelect.isInitializing = false;
+            petTomSelect.isInitializing = false;
+        }, 300);
         
         // Инициализируем тоталы для существующих элементов
         calculateTotal();

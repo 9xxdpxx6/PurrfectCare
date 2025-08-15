@@ -73,11 +73,10 @@ class StatisticsController extends Controller
             ? round($metrics['total_revenue'] / $metrics['total_orders'], 2) 
             : 0;
         
-        // Конверсия приёмов в заказы
+        // Конверсия приёмов в заказы (на основе реальных связей)
         $visitsWithOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
-            ->whereHas('client.orders', function($query) use ($startDate, $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate]);
-            })->count();
+            ->whereHas('orders')
+            ->count();
         
         $metrics['conversion_rate'] = $metrics['total_visits'] > 0 
             ? round(($visitsWithOrders / $metrics['total_visits']) * 100, 1) 
@@ -150,7 +149,7 @@ class StatisticsController extends Controller
             $endDate = Carbon::now();
         }
         
-        // Данные визитов
+        // Данные приемов
         $visitsData = $this->operationalService->getVisitsData($startDate, $endDate);
         
         // Загруженность сотрудников
@@ -263,7 +262,7 @@ class StatisticsController extends Controller
             $dates[] = $earliestOrder->created_at;
         }
         
-        // Визиты
+        // Приемы
         $earliestVisit = Visit::orderBy('starts_at')->first();
         if ($earliestVisit) {
             $dates[] = $earliestVisit->starts_at;

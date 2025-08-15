@@ -39,7 +39,7 @@ class DashboardController extends Controller
             'total_branches' => Branch::count(),
             'total_employees' => Employee::count(),
             'average_order' => $metrics['total_orders'] > 0 ? round($metrics['total_revenue'] / $metrics['total_orders']) : 0,
-            'conversion_rate' => $metrics['total_visits'] > 0 ? round(($metrics['total_orders'] / $metrics['total_visits']) * 100) : 0,
+            'conversion_rate' => $this->calculateConversionRate($startDate, $endDate),
         ];
         
         // Сегодняшние приёмы
@@ -185,5 +185,24 @@ class DashboardController extends Controller
             'weekdays' => $stats,
             'bestDay' => $bestDay
         ];
+    }
+
+    /**
+     * Рассчитывает конверсию приёмов в заказы на основе реальных связей
+     */
+    private function calculateConversionRate($startDate, $endDate)
+    {
+        $totalVisits = Visit::whereBetween('starts_at', [$startDate, $endDate])->count();
+        
+        if ($totalVisits === 0) {
+            return 0;
+        }
+        
+        // Считаем количество уникальных визитов, которые связаны с заказами
+        $visitsWithOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            ->whereHas('orders')
+            ->count();
+        
+        return round(($visitsWithOrders / $totalVisits) * 100, 1);
     }
 } 

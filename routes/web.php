@@ -81,6 +81,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
     Route::get('orders/drug-options', [OrderController::class, 'orderDrugOptions'])->name('orders.drug-options');
     Route::get('orders/lab-test-options', [OrderController::class, 'orderLabTestOptions'])->name('orders.lab-test-options');
     Route::get('orders/vaccination-options', [OrderController::class, 'orderVaccinationOptions'])->name('orders.vaccination-options');
+    Route::get('orders/visit-options', [OrderController::class, 'orderVisitOptions'])->name('orders.visit-options');
     Route::resource('orders', OrderController::class);
 
     // Препараты

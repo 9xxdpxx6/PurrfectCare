@@ -419,7 +419,52 @@
             </div>
         </div>
     @endif
-    
+
+    <!-- Связанные приемы -->
+    @if($item->visits && $item->visits->count() > 0)
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-check"></i> Связанные приемы
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach($item->visits as $visit)
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <a href="{{ route('admin.visits.show', $visit) }}" class="text-decoration-none fw-bold">
+                                        Прием от {{ $visit->starts_at->format('d.m.Y H:i') }}
+                                    </a>
+                                    <div class="small text-muted">
+                                        @if($visit->client)
+                                            Клиент: {{ $visit->client->name }}
+                                        @endif
+                                        @if($visit->pet)
+                                            | Питомец: {{ $visit->pet->name }}
+                                        @endif
+                                    </div>
+                                    @if($visit->complaints)
+                                        <div class="small">
+                                            Жалобы: {{ Str::limit($visit->complaints, 100) }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div>
+                                    @if($visit->status)
+                                        <span class="badge" style="background-color: {{ $visit->status->color ?? '#6c757d' }}">
+                                            {{ $visit->status->name }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
 </div>
 @endsection 

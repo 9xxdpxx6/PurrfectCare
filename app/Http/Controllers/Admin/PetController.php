@@ -69,9 +69,18 @@ class PetController extends AdminController
     public function index(Request $request) : View
     {
         $filter = app(PetFilter::class, ['queryParams' => $request->query()]);
-        $query = Pet::query()->with(['breed.species', 'client'])->filter($filter);
+        $query = Pet::query()->with(['breed.species', 'client', 'visits', 'orders', 'vaccinations'])->filter($filter);
         $items = $query->paginate(25)->withQueryString();
         $owners = User::orderBy('name')->get();
+        
+        // Подсчитываем статистику для каждого питомца
+        foreach ($items as $pet) {
+            $pet->visits_count = $pet->visits->count();
+            $pet->orders_count = $pet->orders->count();
+            $pet->vaccinations_count = $pet->vaccinations->count();
+            $pet->lab_tests_count = $pet->labTests->count();
+        }
+        
         return view("admin.{$this->viewPath}.index", compact('items', 'owners'));
     }
 

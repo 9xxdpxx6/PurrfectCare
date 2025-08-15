@@ -217,6 +217,46 @@
                 </div>
             </div>
         @endif
+
+        <!-- Связанные заказы -->
+        @if($item->orders && $item->orders->count() > 0)
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-cart-check"></i> Связанные заказы
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach($item->orders as $order)
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <a href="{{ route('admin.orders.show', $order) }}" class="text-decoration-none fw-bold">
+                                        Заказ #{{ $order->id }}
+                                    </a>
+                                    <div class="small text-muted">
+                                        Создан: {{ $order->created_at->format('d.m.Y H:i') }}
+                                    </div>
+                                    <div class="small">
+                                        Сумма: {{ number_format($order->total, 2, ',', ' ') }} ₽
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column align-items-end gap-1">
+                                    <span class="badge" style="background-color: {{ $order->status->color ?? '#6c757d' }}">
+                                        {{ $order->status->name }}
+                                    </span>
+                                    @if($order->is_paid)
+                                        <span class="badge bg-success">Оплачен</span>
+                                    @else
+                                        <span class="badge bg-warning">Не оплачен</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
     <!-- Блок действий -->
     <div class="col-12 col-lg-4 order-2 order-lg-2">

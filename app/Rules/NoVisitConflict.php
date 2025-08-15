@@ -29,11 +29,11 @@ class NoVisitConflict implements Rule
             return false;
         }
         
-        // Ищем конфликтующие визиты
+        // Ищем конфликтующие приемы
         $query = Visit::where('schedule_id', $scheduleId)
             ->where('starts_at', $visitTime);
         
-        // Исключаем текущий визит при обновлении
+        // Исключаем текущий прием при обновлении
         if ($this->visitId) {
             $query->where('id', '!=', $this->visitId);
         }

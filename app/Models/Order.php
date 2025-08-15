@@ -110,4 +110,9 @@ class Order extends Model
             return $item->quantity * $item->unit_price;
         });
     }
+
+    public function visits()
+    {
+        return $this->belongsToMany(Visit::class, 'visit_orders');
+    }
 }

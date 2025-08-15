@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('status_id')->constrained();
             $table->text('complaints')->nullable();
             $table->text('notes')->nullable();
+            $table->boolean('is_completed')->default(false);
             $table->timestamps();
         });
     }

@@ -27,6 +27,13 @@
                         @if($selectedDrug)
                             <option value="{{ $selectedDrug->id }}" selected>{{ $selectedDrug->name }}{{ $selectedDrug->unit ? ' (' . $selectedDrug->unit->symbol . ')' : '' }}</option>
                         @endif
+                    @elseif(isset($selectedDrugId))
+                        @php
+                            $selectedDrug = \App\Models\Drug::with('unit')->find($selectedDrugId);
+                        @endphp
+                        @if($selectedDrug)
+                            <option value="{{ $selectedDrug->id }}" selected>{{ $selectedDrug->name }}{{ $selectedDrug->unit ? ' (' . $selectedDrug->unit->symbol . ')' : '' }}</option>
+                        @endif
                     @endif
                 </select>
                 @error('drug_id')
@@ -243,6 +250,11 @@
                     .catch(() => callback());
             }
         });
+
+        // Инициализируем единицу измерения для предварительно выбранного препарата
+        @if(isset($selectedDrugId) && !old('drug_id'))
+            updateQuantityUnit('{{ $selectedDrugId }}');
+        @endif
 
         // Air Datepickers
         createDatepicker('#delivery_date');

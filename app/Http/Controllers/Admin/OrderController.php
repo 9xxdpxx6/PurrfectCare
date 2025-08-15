@@ -76,7 +76,7 @@ class OrderController extends AdminController
         
         $filter = app(OrderFilter::class, ['queryParams' => $queryParams]);
         $query = $this->model::with([
-            'client', 'pet', 'status', 'branch', 'manager', 'items.item'
+            'client', 'pet', 'status', 'branch', 'manager', 'items.item', 'visits'
         ])->filter($filter);
         
         // Если есть поиск и это число, сортируем результаты
@@ -95,7 +95,7 @@ class OrderController extends AdminController
     {
         $item = $this->model::with([
             'client', 'pet', 'status', 'branch', 'manager',
-            'items.item'
+            'items.item', 'visits.status'
         ])->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('item'));
     }
@@ -130,6 +130,11 @@ class OrderController extends AdminController
         // Списание со склада только если заказ закрыт
         if ($closedAt) {
             $this->processInventoryReduction($order);
+        }
+        
+        // Сохраняем связи с приемами
+        if ($request->has('visits') && is_array($request->visits)) {
+            $order->visits()->sync($request->visits);
         }
         
         return redirect()
@@ -183,6 +188,13 @@ class OrderController extends AdminController
         // Списание со склада только если заказ закрыт
         if ($closedAt) {
             $this->processInventoryReduction($order);
+        }
+        
+        // Обновляем связи с приемами
+        if ($request->has('visits') && is_array($request->visits)) {
+            $order->visits()->sync($request->visits);
+        } else {
+            $order->visits()->detach(); // Удаляем все связи, если приемы не выбраны
         }
         
         return redirect()
@@ -292,5 +304,36 @@ class OrderController extends AdminController
     {
         $request->merge(['include_price' => true]);
         return app(\App\Services\Options\VaccinationTypeOptionsService::class)->getOptions($request);
+    }
+
+    public function orderVisitOptions(Request $request)
+    {
+        return app(\App\Services\Options\VisitOptionsService::class)->getOptions($request);
+    }
+
+    // TomSelect опции для основных полей
+    public function clientOptions(Request $request)
+    {
+        return app(\App\Services\Options\ClientOptionsService::class)->getOptions($request);
+    }
+
+    public function petOptions(Request $request)
+    {
+        return app(\App\Services\Options\PetOptionsService::class)->getOptions($request);
+    }
+
+    public function statusOptions(Request $request)
+    {
+        return app(\App\Services\Options\StatusOptionsService::class)->getOptions($request);
+    }
+
+    public function branchOptions(Request $request)
+    {
+        return app(\App\Services\Options\BranchOptionsService::class)->getOptions($request);
+    }
+
+    public function managerOptions(Request $request)
+    {
+        return app(\App\Services\Options\EmployeeOptionsService::class)->getManagerOptions($request);
     }
 } 

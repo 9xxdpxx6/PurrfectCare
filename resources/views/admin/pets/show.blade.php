@@ -91,7 +91,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#visitsCollapse" aria-expanded="true" aria-controls="visitsCollapse">
-                        <i class="bi bi-calendar-check me-2"></i> Последние приёмы ({{ $visitsTotal }})
+                        <i class="bi bi-calendar-check me-2"></i> Приёмы ({{ $visitsTotal }})
                     </button>
                 </h2>
                 <div id="visitsCollapse" class="accordion-collapse collapse show">
@@ -102,8 +102,8 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
-                                                    <div class="flex-grow-1">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-6">
                                                         <h6 class="mb-1">Приём #{{ $visit->id }}</h6>
                                                         <p class="text-muted small mb-2">
                                                             @if($visit->schedule && $visit->schedule->shift_starts_at)
@@ -114,7 +114,7 @@
                                                         </p>
                                                     </div>
                                                     
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="col-md-3">
                                                         @if($visit->schedule && $visit->schedule->employee)
                                                             <p class="text-muted small mb-0">
                                                                 <i class="bi bi-person"></i> {{ $visit->schedule->employee->name }}
@@ -123,10 +123,12 @@
                                                                 @endif
                                                             </p>
                                                         @endif
-                                                        
+                                                    </div>
+                                                    
+                                                    <div class="col-md-3 text-md-center">
                                                         @if($visit->status)
-                                                            <div>
-                                                                <span class="badge" style="background-color: {{ $visit->status->color }}; color: white;">
+                                                            <div class="d-flex justify-content-center">
+                                                                <span class="badge" style="background-color: {!! $visit->status->color !!}; color: white;">
                                                                     {{ $visit->status->name }}
                                                                 </span>
                                                             </div>
@@ -161,7 +163,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#vaccinationsCollapse" aria-expanded="false" aria-controls="vaccinationsCollapse">
-                        <i class="bi bi-shield-check me-2"></i> Последние вакцинации ({{ $vaccinationsTotal }})
+                        <i class="bi bi-shield-check me-2"></i> Вакцинации ({{ $vaccinationsTotal }})
                     </button>
                 </h2>
                 <div id="vaccinationsCollapse" class="accordion-collapse collapse">
@@ -172,13 +174,13 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
-                                                    <div class="flex-grow-1">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-6">
                                                         <h6 class="mb-1">Вакцинация #{{ $vaccination->id }}</h6>
                                                         <p class="text-muted small mb-2">{{ $vaccination->administered_at->format('d.m.Y') }}</p>
                                                     </div>
                                                     
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="col-md-6 text-md-end">
                                                         @if($vaccination->veterinarian)
                                                             <p class="text-muted small mb-0">
                                                                 <i class="bi bi-person"></i> {{ $vaccination->veterinarian->name }}
@@ -217,7 +219,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#labTestsCollapse" aria-expanded="false" aria-controls="labTestsCollapse">
-                        <i class="bi bi-clipboard-pulse me-2"></i> Последние анализы ({{ $labTestsTotal }})
+                        <i class="bi bi-clipboard-pulse me-2"></i> Анализы ({{ $labTestsTotal }})
                     </button>
                 </h2>
                 <div id="labTestsCollapse" class="accordion-collapse collapse">
@@ -228,8 +230,8 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
-                                                    <div class="flex-grow-1">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-6">
                                                         <h6 class="mb-1">Анализ #{{ $labTest->id }}</h6>
                                                         <p class="text-muted small mb-2">
                                                             Получен: {{ $labTest->created_at->format('d.m.Y') }}
@@ -239,7 +241,7 @@
                                                         </p>
                                                     </div>
                                                     
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="col-md-6 text-md-end">
                                                         @if($labTest->veterinarian)
                                                             <p class="text-muted small mb-0">
                                                                 <i class="bi bi-person"></i> {{ $labTest->veterinarian->name }}
@@ -283,7 +285,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ordersCollapse" aria-expanded="false" aria-controls="ordersCollapse">
-                        <i class="bi bi-bag me-2"></i> Последние заказы ({{ $ordersTotal }})
+                        <i class="bi bi-bag me-2"></i> Заказы ({{ $ordersTotal }})
                     </button>
                 </h2>
                 <div id="ordersCollapse" class="accordion-collapse collapse">
@@ -294,8 +296,8 @@
                                     <div class="border rounded p-3 bg-body-tertiary">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-md-3">
-                                                    <div class="flex-grow-1">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-5">
                                                         <div class="d-flex align-items-center gap-2 mb-1">
                                                             <h6 class="mb-0">Заказ #{{ $order->id }}</h6>
                                                             @if($order->is_paid)
@@ -313,18 +315,20 @@
                                                         @endif
                                                     </div>
                                                     
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="col-md-4 text-md-center">
+                                                        @if($order->status)
+                                                            <div class="d-flex justify-content-center">
+                                                                <span class="badge" style="background-color: {!! $order->status->color !!}; color: white;">
+                                                                    {{ $order->status->name }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    <div class="col-md-3 text-md-end">
                                                         @if($order->total)
                                                             <div>
                                                                 <strong>{{ number_format($order->total, 2, ',', ' ') }} ₽</strong>
-                                                            </div>
-                                                        @endif
-                                                        
-                                                        @if($order->status)
-                                                            <div>
-                                                                <span class="badge" style="background-color: {{ $order->status->color }}; color: white;">
-                                                                    {{ $order->status->name }}
-                                                                </span>
                                                             </div>
                                                         @endif
                                                     </div>

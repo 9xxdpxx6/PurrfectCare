@@ -131,7 +131,8 @@ class VisitController extends AdminController
         $filter = app(VisitFilter::class, ['queryParams' => $queryParams]);
         $query = $this->model::with([
             'client', 'pet', 'schedule', 'status',
-            'symptoms.dictionarySymptom', 'diagnoses.dictionaryDiagnosis'
+            'symptoms.dictionarySymptom', 'diagnoses.dictionaryDiagnosis',
+            'orders'
         ])->filter($filter);
         $items = $query->paginate(25)->withQueryString();
         
@@ -176,6 +177,7 @@ class VisitController extends AdminController
         $item = $this->model::with([
             'client', 'pet', 'schedule.veterinarian', 'status',
             'symptoms.dictionarySymptom', 'diagnoses.dictionaryDiagnosis',
+            'orders.status'
         ])->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('item'));
     }
@@ -254,7 +256,7 @@ class VisitController extends AdminController
         $visit = $this->model::findOrFail($id);
         $visit->update($validated);
         
-        // Удаляем все старые симптомы этого визита
+        // Удаляем все старые симптомы этого приема
         $visit->symptoms()->delete();
         
         // Создаём новые симптомы
@@ -280,7 +282,7 @@ class VisitController extends AdminController
             }
         }
         
-        // Удаляем все старые диагнозы этого визита
+        // Удаляем все старые диагнозы этого приема
         $visit->diagnoses()->delete();
         
         // Создаём новые диагнозы
