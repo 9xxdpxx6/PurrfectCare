@@ -194,7 +194,7 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="mb-0">
-                                        <a href="{{ route('admin.services.show', $service['service']->id) }}" class="text-decoration-underline text-body">
+                                        <a href="{{ route('admin.services.show', $service['service']->id) }}" class="text-decoration-none text-body">
                                             {{ $service['service']->name }}
                                         </a>
                                     </h6>

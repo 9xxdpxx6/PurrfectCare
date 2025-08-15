@@ -68,7 +68,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ordersCollapse" aria-expanded="true" aria-controls="ordersCollapse">
-                        <i class="bi bi-cart me-2"></i> Последние заказы ({{ $ordersTotal }})
+                        <i class="bi bi-cart me-2"></i> Заказы ({{ $ordersTotal }})
                     </button>
                 </h2>
                 <div id="ordersCollapse" class="accordion-collapse collapse show">
@@ -129,7 +129,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#vaccinationsCollapse" aria-expanded="false" aria-controls="vaccinationsCollapse">
-                        <i class="bi bi-shield-check me-2"></i> Последние вакцинации ({{ $vaccinationsTotal }})
+                        <i class="bi bi-shield-check me-2"></i> Вакцинации ({{ $vaccinationsTotal }})
                     </button>
                 </h2>
                 <div id="vaccinationsCollapse" class="accordion-collapse collapse">
@@ -175,7 +175,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#labTestsCollapse" aria-expanded="false" aria-controls="labTestsCollapse">
-                        <i class="bi bi-clipboard-data me-2"></i> Последние анализы ({{ $labTestsTotal }})
+                        <i class="bi bi-clipboard-data me-2"></i> Анализы ({{ $labTestsTotal }})
                     </button>
                 </h2>
                 <div id="labTestsCollapse" class="accordion-collapse collapse">
@@ -230,6 +230,67 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Расписания -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#schedulesCollapse" aria-expanded="false" aria-controls="schedulesCollapse">
+                        <i class="bi bi-calendar-week me-2"></i> Расписания ({{ $schedulesTotal }})
+                    </button>
+                </h2>
+                <div id="schedulesCollapse" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        @if($schedules->count() > 0)
+                            <div class="d-flex flex-column gap-3">
+                                @foreach($schedules as $schedule)
+                                    <div class="border rounded p-3 bg-body-tertiary">
+                                        <div class="row align-items-center g-2">
+                                            <!-- Дата и время -->
+                                            <div class="col-12 col-md-4 mb-2 mb-md-0">
+                                                <h6 class="mb-1">{{ $schedule->shift_starts_at->format('d.m.Y') }}</h6>
+                                                <small class="text-muted">{{ $schedule->shift_starts_at->format('D') }}</small>
+                                            </div>
+                                            
+                                            <!-- Время работы -->
+                                            <div class="col-12 col-md-4 mb-2 mb-md-0">
+                                                <div>
+                                                    <small class="text-muted d-block">Время работы</small>
+                                                    <span>{{ $schedule->shift_starts_at->format('H:i') }} - {{ $schedule->shift_ends_at->format('H:i') }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Филиал -->
+                                            <div class="col-12 col-md-3 mb-2 mb-md-0">
+                                                <div>
+                                                    <small class="text-muted d-block">Филиал</small>
+                                                    <span>{{ $schedule->branch->name ?? 'Филиал не указан' }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Действие на больших экранах -->
+                                            <div class="col-12 col-md-1 text-end d-none d-md-block">
+                                                <a href="{{ route('admin.schedules.show', $schedule) }}" class="btn btn-outline-primary btn-sm" title="Подробнее">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <!-- Действие на маленьких экранах -->
+                                        <div class="row d-md-none mt-2">
+                                            <div class="col-12">
+                                                <a href="{{ route('admin.schedules.show', $schedule) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                    <i class="bi bi-eye"></i> Подробнее
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted mb-0">Расписания не найдены</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -253,6 +314,10 @@
                 <div class="d-flex justify-content-between mb-2">
                     <span>Всего анализов:</span>
                     <strong>{{ $labTestsTotal }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Всего расписаний:</span>
+                    <strong>{{ $schedulesTotal }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span>Специальностей:</span>
@@ -290,6 +355,13 @@
                     </a>
                     <a href="{{ route('admin.employees.resetPassword', $employee) }}" class="btn btn-outline-primary">
                         <i class="bi bi-key"></i> Сбросить пароль
+                    </a>
+                    <hr>
+                    <a href="{{ route('admin.schedules.create', ['veterinarian_id' => $employee->id]) }}" class="btn btn-outline-info">
+                        <i class="bi bi-calendar-plus"></i> Расписание на день
+                    </a>
+                    <a href="{{ route('admin.schedules.create-week', ['veterinarian_id' => $employee->id]) }}" class="btn btn-outline-success">
+                        <i class="bi bi-calendar-week"></i> Расписание на неделю
                     </a>
                     <hr>
                     <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" class="d-grid">

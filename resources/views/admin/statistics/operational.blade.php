@@ -153,7 +153,7 @@
                                 @foreach($employeeLoad as $employee)
                                     <tr>
                                         <td>
-                                            <strong><a href="{{ route('admin.employees.show', $employee['employee']) }}" class="text-decoration-none">{{ $employee['employee']->name }}</a></strong>
+                                            <strong><a href="{{ route('admin.employees.show', $employee['employee']) }}" class="text-decoration-none text-body">{{ $employee['employee']->name }}</a></strong>
                                             @if($employee['employee']->specialties->count() > 0)
                                                 <br><small class="text-muted d-none-mobile">
                                                     {{ $employee['employee']->specialties->pluck('name')->join(', ') }}

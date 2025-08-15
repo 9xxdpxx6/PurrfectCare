@@ -43,14 +43,10 @@ class Vaccination extends Model
         return $this->belongsTo(Employee::class, 'veterinarian_id');
     }
 
-    // Связь с препаратами через тип вакцинации
-    public function drugs()
+    // Получить препараты через тип вакцинации (helper метод)
+    public function getDrugsAttribute()
     {
-        if ($this->vaccinationType) {
-            return $this->vaccinationType->drugs();
-        }
-        
-        return collect(); // Возвращаем пустую коллекцию если нет типа вакцинации
+        return $this->vaccinationType ? $this->vaccinationType->drugs : collect();
     }
 
     public function orders()

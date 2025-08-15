@@ -189,7 +189,7 @@
                                 @foreach($topServices as $service)
                                     <tr>
                                         <td>
-                                            <a href="{{ route('admin.services.show', $service['service']->id) }}" class="text-decoration-underline text-body">
+                                            <a href="{{ route('admin.services.show', $service['service']->id) }}" class="text-decoration-none text-body">
                                                 {{ $service['service']->name }}
                                             </a>
                                         </td>

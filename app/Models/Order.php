@@ -65,48 +65,48 @@ class Order extends Model
 
     public function services()
     {
-        return $this->items->where('item_type', 'App\Models\Service');
+        return $this->items()->where('item_type', 'App\Models\Service');
     }
 
     public function drugs()
     {
-        return $this->items->where('item_type', 'App\Models\Drug');
+        return $this->items()->where('item_type', 'App\Models\Drug');
     }
 
     public function labTests()
     {
-        return $this->items->where('item_type', 'App\Models\LabTest');
+        return $this->items()->where('item_type', 'App\Models\LabTest');
     }
 
     public function vaccinations()
     {
-        return $this->items->where('item_type', 'App\Models\VaccinationType');
+        return $this->items()->where('item_type', 'App\Models\VaccinationType');
     }
 
     public function servicesTotal()
     {
-        return $this->services()->sum(function($item) {
+        return $this->services()->get()->sum(function($item) {
             return $item->quantity * $item->unit_price;
         });
     }
 
     public function drugsTotal()
     {
-        return $this->drugs()->sum(function($item) {
+        return $this->drugs()->get()->sum(function($item) {
             return $item->quantity * $item->unit_price;
         });
     }
 
     public function labTestsTotal()
     {
-        return $this->labTests()->sum(function($item) {
+        return $this->labTests()->get()->sum(function($item) {
             return $item->quantity * $item->unit_price;
         });
     }
 
     public function vaccinationsTotal()
     {
-        return $this->vaccinations()->sum(function($item) {
+        return $this->vaccinations()->get()->sum(function($item) {
             return $item->quantity * $item->unit_price;
         });
     }

@@ -63,4 +63,9 @@ class Employee extends Model
     {
         return $this->hasMany(Order::class, 'manager_id');
     }
+
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class, 'veterinarian_id');
+    }
 }

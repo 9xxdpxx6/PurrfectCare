@@ -156,10 +156,10 @@
                                     <strong>Ветеринар:</strong> {{ $vaccination->veterinarian->name ?? 'Не указан' }}
                                 </p>
                             </div>
-                            @if($vaccination->drugs && $vaccination->drugs->count() > 0)
+                            @if($vaccination->vaccinationType && $vaccination->vaccinationType->drugs && $vaccination->vaccinationType->drugs->count() > 0)
                                 <div class="mt-2">
                                     <small><strong>Препараты:</strong>
-                                        @foreach($vaccination->drugs as $drug)
+                                        @foreach($vaccination->vaccinationType->drugs as $drug)
                                             <span class="text-muted">{{ $drug->name }}@if(!$loop->last), @endif</span>
                                         @endforeach
                                     </small>

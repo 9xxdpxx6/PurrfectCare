@@ -426,8 +426,8 @@
                                         <div class="col-12">
                                             <small class="text-muted">Препараты в вакцинации:</small>
                                             <ul class="vaccination-drugs-list mt-1 mb-0" style="list-style: none; padding-left: 0;">
-                                                @if($orderItem->item)
-                                                    @foreach($orderItem->item->drugs as $drug)
+                                                @if($orderItem->item && $orderItem->item->vaccinationType && $orderItem->item->vaccinationType->drugs)
+                                                    @foreach($orderItem->item->vaccinationType->drugs as $drug)
                                                         <li class="mb-1">
                                                             <small class="text-muted">• {{ $drug->name }} - {{ $drug->pivot->dosage }} шт.</small>
                                                         </li>

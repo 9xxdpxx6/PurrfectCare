@@ -167,7 +167,7 @@
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h6 class="mb-1">
-                                                <a href="{{ route('admin.visits.show', $visit->id) }}" class="text-decoration-none">
+                                                <a href="{{ route('admin.visits.show', $visit->id) }}" class="text-decoration-none text-body">
                                                     {{ $visit->pet->name ?? 'Без имени' }}
                                                 </a>
                                             </h6>
@@ -217,7 +217,7 @@
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h6 class="mb-1">
-                                                <a href="{{ route('admin.orders.show', $order->id) }}" class="text-decoration-none">
+                                                <a href="{{ route('admin.orders.show', $order->id) }}" class="text-decoration-none text-body">
                                                     Заказ #{{ $order->id }}
                                                 </a>
                                             </h6>
@@ -270,7 +270,7 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1">
-                                        <a href="{{ route('admin.visits.show', $visit->id) }}" class="text-decoration-none">
+                                        <a href="{{ route('admin.visits.show', $visit->id) }}" class="text-decoration-none text-body">
                                             {{ $visit->pet->name ?? 'Без имени' }}
                                         </a>
                                     </h6>
@@ -308,7 +308,7 @@
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="mb-0">
-                                        <a href="{{ route('admin.services.show', $service['service']->id) }}" class="text-decoration-underline text-body">
+                                        <a href="{{ route('admin.services.show', $service['service']->id) }}" class="text-decoration-none text-body">
                                             {{ $service['service']->name }}
                                         </a>
                                     </h6>
@@ -450,33 +450,38 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.visits.create') }}" class="btn btn-sm w-100 action-btn action-btn-primary">
+                        <a href="{{ route('admin.visits.create') }}" class="btn btn-sm w-100 action-btn action-btn-primary text-start ms-3">
                             <i class="bi bi-plus-circle"></i> Новый приём
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.orders.create') }}" class="btn btn-sm w-100 action-btn action-btn-success">
+                        <a href="{{ route('admin.orders.create') }}" class="btn btn-sm w-100 action-btn action-btn-success text-start ms-3">
                             <i class="bi bi-cart-plus"></i> Новый заказ
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.users.create') }}" class="btn btn-sm w-100 action-btn action-btn-info">
+                        <a href="{{ route('admin.users.create') }}" class="btn btn-sm w-100 action-btn action-btn-info text-start ms-3">
                             <i class="bi bi-person-plus"></i> Новый клиент
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.pets.create') }}" class="btn btn-sm w-100 action-btn action-btn-warning">
+                        <a href="{{ route('admin.pets.create') }}" class="btn btn-sm w-100 action-btn action-btn-warning text-start ms-3">
                             <i class="bi bi-heart"></i> Новый питомец
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.schedules.index') }}" class="btn btn-sm w-100 action-btn action-btn-secondary">
+                        <a href="{{ route('admin.schedules.index') }}" class="btn btn-sm w-100 action-btn action-btn-secondary text-start ms-3">
                             <i class="bi bi-calendar-week"></i> Расписание
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.drugs.index') }}" class="btn btn-sm w-100 action-btn action-btn-dark">
+                        <a href="{{ route('admin.drugs.index') }}" class="btn btn-sm w-100 action-btn action-btn-dark text-start ms-3">
                             <i class="bi bi-capsule"></i> Препараты
+                        </a>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <a href="{{ route('admin.settings.index') }}" class="btn btn-sm w-100 action-btn action-btn-light text-start ms-3">
+                            <i class="bi bi-gear"></i> Настройки
                         </a>
                     </div>
                 </div>
@@ -484,6 +489,7 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('styles')

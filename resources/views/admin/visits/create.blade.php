@@ -22,16 +22,7 @@
                 <form action="{{ route('admin.visits.store') }}" method="POST">
                     @csrf
 
-                    @if($errors->any())
-                        <div class="alert alert-danger">
-                            <h6 class="alert-heading">Ошибки валидации:</h6>
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -50,7 +41,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="pet_id" class="form-label">Питомец</label>
+                            <label for="pet_id" class="form-label">Питомец <small class="text-muted">(необязательно)</small></label>
                             <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.visits.pet-options') }}">
                                 <option value="">Выберите питомца</option>
                                 @foreach($pets as $pet)
@@ -71,7 +62,8 @@
                             <select name="schedule_id" id="schedule_id" class="form-select @error('schedule_id') is-invalid @enderror">
                                 <option value="">Выберите расписание</option>
                                 @foreach($schedules as $schedule)
-                                    <option value="{{ $schedule->id }}" @if(old('schedule_id') == $schedule->id) selected @endif>
+                                    <option value="{{ $schedule->id }}" 
+                                        @if(old('schedule_id') == $schedule->id || (isset($selectedScheduleId) && $selectedScheduleId == $schedule->id)) selected @endif>
                                         @if($schedule->veterinarian)
                                             {{ $schedule->veterinarian->name }} - 
                                         @endif
@@ -203,6 +195,7 @@
         // Получаем предустановленные значения
         const selectedClientId = '{{ $oldClientId ?? $selectedClientId ?? "" }}';
         const selectedPetId = '{{ $oldPetId ?? $selectedPetId ?? "" }}';
+        const selectedScheduleId = '{{ old("schedule_id") ?? $selectedScheduleId ?? "" }}';
         
         // Инициализация TomSelect
         const clientTomSelect = new createTomSelect('#client_id', {
@@ -264,6 +257,15 @@
                     petTomSelect.setValue(selectedPetId);
                 }
             }, 200);
+            
+            // Устанавливаем расписание
+            if (selectedScheduleId) {
+                scheduleTomSelect.setValue(selectedScheduleId);
+                // Также запускаем получение доступного времени для выбранного расписания
+                setTimeout(() => {
+                    getAvailableTime(selectedScheduleId);
+                }, 300);
+            }
         }, 100);
         
         // Обработчик изменения клиента
@@ -274,7 +276,7 @@
             petTomSelect.refreshOptions();
         });
         
-        new createTomSelect('#schedule_id', {
+        const scheduleTomSelect = new createTomSelect('#schedule_id', {
             placeholder: 'Выберите расписание...',
             onItemAdd: function() {
                 setTimeout(() => {
@@ -506,12 +508,18 @@
                     // Показываем информацию о расписании
                     const scheduleInfo = document.getElementById('schedule-info');
                     if (scheduleInfo) {
+                        const hasAvailableTime = data.available_times.length > 0;
+                        const alertClass = hasAvailableTime ? 'alert-info' : 'alert-danger';
+                        const timeText = hasAvailableTime ? 
+                            data.available_times.map(t => t.time).join(', ') : 
+                            'Нет свободного времени';
+                        
                         scheduleInfo.innerHTML = `
-                            <div class="alert alert-info">
+                            <div class="alert ${alertClass}">
                                 <strong>Врач:</strong> ${data.schedule.veterinarian}<br>
                                 <strong>Смена:</strong> ${data.schedule.shift_start} - ${data.schedule.shift_end}<br>
-                                <strong>Доступное время:</strong> ${data.available_times.length > 0 ? 
-                                    data.available_times.map(t => t.time).join(', ') : 'Нет свободного времени'}
+                                <strong>Доступное время:</strong> ${timeText}
+                                ${!hasAvailableTime ? '<br><br><i class="bi bi-exclamation-triangle"></i> <strong>Все слоты заняты! Выберите другое расписание.</strong>' : ''}
                             </div>
                         `;
                     }
@@ -521,6 +529,26 @@
                         const timeOnly = data.next_available_time.split(' ')[1]; // Берем только время
                         visitTimeInput.value = timeOnly;
                         updateVisitTimeInterval(); // Обновляем отображение интервала
+                    } else {
+                        // Если нет доступного времени, очищаем поле времени
+                        visitTimeInput.value = '';
+                        updateVisitTimeInterval();
+                    }
+                    
+                    // Блокируем/разблокируем кнопку сохранения
+                    const submitButton = document.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        if (data.available_times.length === 0) {
+                            submitButton.disabled = true;
+                            submitButton.textContent = 'Нет доступного времени';
+                            submitButton.classList.add('btn-secondary');
+                            submitButton.classList.remove('btn-success');
+                        } else {
+                            submitButton.disabled = false;
+                            submitButton.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
+                            submitButton.classList.add('btn-success');
+                            submitButton.classList.remove('btn-secondary');
+                        }
                     }
                 })
                 .catch(error => {
@@ -540,6 +568,15 @@
                     scheduleInfo.innerHTML = '';
                 }
                 updateVisitTimeInterval();
+                
+                // Возвращаем кнопку в исходное состояние
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
+                    submitButton.classList.add('btn-success');
+                    submitButton.classList.remove('btn-secondary');
+                }
             }
         });
         

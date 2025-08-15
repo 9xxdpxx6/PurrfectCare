@@ -48,7 +48,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="pet_id" class="form-label">Питомец</label>
+                            <label for="pet_id" class="form-label">Питомец <small class="text-muted">(необязательно)</small></label>
                             <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.visits.pet-options') }}" @if(!old('client_id', $item->client_id)) disabled @endif>
                                 <option value="">Выберите питомца</option>
                                 @foreach($pets as $pet)

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\BelongsToClient;
 use App\Rules\VisitTimeWithinSchedule;
 use App\Rules\NoVisitConflict;
+use App\Rules\HasAvailableTime;
 
 class StoreRequest extends FormRequest
 {
@@ -18,8 +19,8 @@ class StoreRequest extends FormRequest
     {
         return [
             'client_id' => 'required|exists:users,id',
-            'pet_id' => ['required', 'exists:pets,id', new BelongsToClient],
-            'schedule_id' => 'required|exists:schedules,id',
+            'pet_id' => ['nullable', 'exists:pets,id', new BelongsToClient],
+            'schedule_id' => ['required', 'exists:schedules,id', new HasAvailableTime],
             'visit_time' => 'required|date_format:H:i',
             'starts_at' => ['required', 'date', new VisitTimeWithinSchedule, new NoVisitConflict],
             'status_id' => 'required|exists:statuses,id',
@@ -39,11 +40,11 @@ class StoreRequest extends FormRequest
         return [
             'client_id.required' => 'Необходимо выбрать клиента',
             'client_id.exists' => 'Клиент не найден',
-            'pet_id.required' => 'Необходимо выбрать питомца',
             'pet_id.exists' => 'Питомец не найден',
             'pet_id.belongs_to_client' => 'Выбранный питомец не принадлежит указанному клиенту',
             'schedule_id.required' => 'Необходимо выбрать расписание',
             'schedule_id.exists' => 'Расписание не найдено',
+            'schedule_id.has_available_time' => 'Для выбранного расписания нет свободного времени. Все слоты заняты.',
             'visit_time.required' => 'Необходимо указать время приёма',
             'visit_time.date_format' => 'Неверный формат времени (должно быть чч:мм)',
             'starts_at.required' => 'Необходимо указать дату и время',

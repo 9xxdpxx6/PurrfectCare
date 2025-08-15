@@ -8,6 +8,7 @@ use App\Models\Branch;
 use App\Models\Order;
 use App\Models\Vaccination;
 use App\Models\LabTest;
+use App\Models\Schedule;
 use App\Http\Requests\Admin\Employee\StoreRequest;
 use App\Http\Requests\Admin\Employee\UpdateRequest;
 use App\Http\Filters\EmployeeFilter;
@@ -120,6 +121,7 @@ class EmployeeController extends AdminController
         $ordersTotal = Order::where('manager_id', $id)->count();
         $vaccinationsTotal = Vaccination::where('veterinarian_id', $id)->count();
         $labTestsTotal = LabTest::where('veterinarian_id', $id)->count();
+        $schedulesTotal = Schedule::where('veterinarian_id', $id)->count();
         
         // Загружаем ограниченные данные для отображения
         $orders = Order::where('manager_id', $id)
@@ -129,7 +131,7 @@ class EmployeeController extends AdminController
             ->get();
             
         $vaccinations = Vaccination::where('veterinarian_id', $id)
-            ->with(['pet.client', 'drugs'])
+            ->with(['pet.client', 'vaccinationType.drugs'])
             ->latest()
             ->limit(10)
             ->get();
@@ -139,8 +141,14 @@ class EmployeeController extends AdminController
             ->latest()
             ->limit(10)
             ->get();
+            
+        $schedules = Schedule::where('veterinarian_id', $id)
+            ->with(['branch'])
+            ->latest()
+            ->limit(10)
+            ->get();
         
-        return view('admin.employees.show', compact('employee', 'orders', 'vaccinations', 'labTests', 'ordersTotal', 'vaccinationsTotal', 'labTestsTotal'));
+        return view('admin.employees.show', compact('employee', 'orders', 'vaccinations', 'labTests', 'schedules', 'ordersTotal', 'vaccinationsTotal', 'labTestsTotal', 'schedulesTotal'));
     }
 
     public function specialtyOptions(Request $request)

@@ -85,16 +85,16 @@
         </div>
 
         <!-- Препараты -->
-        @if($item->drugs && $item->drugs->count() > 0)
+        @if($item->vaccinationType && $item->vaccinationType->drugs && $item->vaccinationType->drugs->count() > 0)
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-capsule"></i> Препараты ({{ $item->drugs->count() }})
+                        <i class="bi bi-capsule"></i> Препараты ({{ $item->vaccinationType->drugs->count() }})
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex flex-column gap-3">
-                        @foreach($item->drugs as $drug)
+                        @foreach($item->vaccinationType->drugs as $drug)
                             <div class="border rounded p-3 bg-body-tertiary position-relative">
                                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2">
                                     <div class="flex-grow-1">

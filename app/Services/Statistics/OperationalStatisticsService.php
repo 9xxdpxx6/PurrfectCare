@@ -33,7 +33,7 @@ class OperationalStatisticsService
     {
         $totalVisits = Visit::whereBetween('starts_at', [$startDate, $endDate])->count();
         
-        return Visit::whereBetween('starts_at', [$startDate, $endDate])
+        $employeeData = Visit::whereBetween('starts_at', [$startDate, $endDate])
             ->with('schedule.veterinarian')
             ->get()
             ->groupBy('schedule.veterinarian_id')
@@ -48,15 +48,6 @@ class OperationalStatisticsService
                 $visitsCount = $visits->count();
                 $avgVisitsPerDay = $workingDays > 0 ? $visitsCount / $workingDays : 0;
                 
-                // Определяем уровень загруженности
-                $loadLevel = $avgVisitsPerDay <= 2 ? 'Низкая' : ($avgVisitsPerDay <= 4 ? 'Средняя' : 'Высокая');
-                $loadColor = $avgVisitsPerDay <= 2 ? 'success' : ($avgVisitsPerDay <= 4 ? 'warning' : 'danger');
-                
-                // Расчет процентов для прогресс-бара
-                $maxLoad = 6; // Максимальная загруженность
-                $progressWidth = min(100, ($avgVisitsPerDay / $maxLoad) * 100);
-                $progressPercentage = round($progressWidth);
-                
                 // Процент от общего количества приемов
                 $visitsPercentage = $totalVisits > 0 ? round(($visitsCount / $totalVisits) * 100, 1) : 0;
                 
@@ -65,14 +56,71 @@ class OperationalStatisticsService
                     'visits_count' => $visitsCount,
                     'working_days' => $workingDays,
                     'avg_visits_per_day' => $avgVisitsPerDay,
-                    'load_level' => $loadLevel,
-                    'load_color' => $loadColor,
-                    'progress_width' => $progressWidth,
-                    'progress_percentage' => $progressPercentage,
                     'visits_percentage' => $visitsPercentage,
                 ];
-            })
-            ->sortByDesc('visits_count');
+            });
+        
+        // Рассчитываем динамические пороги на основе фактических данных
+        $allAvgLoads = $employeeData->pluck('avg_visits_per_day')->filter()->values();
+        
+        if ($allAvgLoads->count() > 0) {
+            // Сортируем для расчёта перцентилей
+            $sortedLoads = $allAvgLoads->sort()->values();
+            $count = $sortedLoads->count();
+            
+            if ($count > 2) {
+                // Рассчитываем 33-й и 66-й перцентили
+                $p33Index = (int) ceil($count * 0.33) - 1;
+                $p66Index = (int) ceil($count * 0.66) - 1;
+                
+                $lowThreshold = max(8, $sortedLoads[$p33Index]);
+                $mediumThreshold = max(12, $sortedLoads[$p66Index]);
+            } else {
+                // Если данных мало, используем минимум и медиану
+                $lowThreshold = max(8, $sortedLoads->min());
+                $mediumThreshold = max(12, $sortedLoads->median());
+            }
+            
+            $maxLoad = max(20, $allAvgLoads->max() * 1.2);
+        } else {
+            // Fallback на реалистичные значения для ветеринарной практики
+            $lowThreshold = 8;
+            $mediumThreshold = 12;
+            $maxLoad = 20;
+        }
+        
+        // Применяем рассчитанные пороги к каждому сотруднику
+        return $employeeData->map(function($data) use ($lowThreshold, $mediumThreshold, $maxLoad) {
+            $avgVisitsPerDay = $data['avg_visits_per_day'];
+            
+            // Определяем уровень загруженности на основе динамических порогов
+            if ($avgVisitsPerDay <= $lowThreshold) {
+                $loadLevel = 'Низкая';
+                $loadColor = 'success';
+            } elseif ($avgVisitsPerDay <= $mediumThreshold) {
+                $loadLevel = 'Средняя';
+                $loadColor = 'warning';
+            } else {
+                $loadLevel = 'Высокая';
+                $loadColor = 'danger';
+            }
+            
+            // Расчет процентов для прогресс-бара
+            $progressWidth = min(100, ($avgVisitsPerDay / $maxLoad) * 100);
+            $progressPercentage = round($progressWidth);
+            
+            return array_merge($data, [
+                'load_level' => $loadLevel,
+                'load_color' => $loadColor,
+                'progress_width' => $progressWidth,
+                'progress_percentage' => $progressPercentage,
+                'thresholds' => [
+                    'low' => round($lowThreshold, 1),
+                    'medium' => round($mediumThreshold, 1),
+                    'max' => round($maxLoad, 1),
+                ],
+            ]);
+        })->sortByDesc('visits_count');
     }
 
     public function getStatusStats($startDate, $endDate)

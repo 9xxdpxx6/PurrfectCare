@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Добавить расписание на неделю</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('admin.schedules.create') }}" class="btn btn-outline-primary me-2">
+        <a href="{{ route('admin.schedules.create', isset($selectedVeterinarian) ? ['veterinarian_id' => $selectedVeterinarian] : []) }}" class="btn btn-outline-primary me-2">
                 <i class="bi bi-calendar-day"></i> <span class="d-none d-lg-inline">Расписание на день</span>
             </a>
             <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
@@ -69,7 +69,8 @@
                             <select name="veterinarian_id" id="veterinarian_id" class="form-select @error('veterinarian_id') is-invalid @enderror">
                                 <option value="">Выберите ветеринара</option>
                                 @foreach($veterinarians as $veterinarian)
-                                    <option value="{{ $veterinarian->id }}" @if(old('veterinarian_id') == $veterinarian->id) selected @endif>
+                                    <option value="{{ $veterinarian->id }}" 
+                                        @if(old('veterinarian_id') == $veterinarian->id || (isset($selectedVeterinarian) && $selectedVeterinarian == $veterinarian->id)) selected @endif>
                                         {{ $veterinarian->name }}
                                         @if($veterinarian->specialization)
                                             <small>({{ $veterinarian->specialization }})</small>
@@ -87,7 +88,8 @@
                             <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
                                 <option value="">Выберите филиал</option>
                                 @foreach($branches as $branch)
-                                    <option value="{{ $branch->id }}" @if(old('branch_id') == $branch->id) selected @endif>
+                                    <option value="{{ $branch->id }}" 
+                                        @if(old('branch_id') == $branch->id || (isset($selectedBranch) && $selectedBranch == $branch->id)) selected @endif>
                                         {{ $branch->name }}
                                     </option>
                                 @endforeach

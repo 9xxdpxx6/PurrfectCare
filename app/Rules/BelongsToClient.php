@@ -15,6 +15,11 @@ class BelongsToClient implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        // Если питомец не выбран (nullable), валидация проходит
+        if (empty($value)) {
+            return;
+        }
+        
         $clientId = request()->input('client_id');
         
         if (!$clientId) {

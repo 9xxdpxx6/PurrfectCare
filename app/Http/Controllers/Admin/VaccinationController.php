@@ -156,14 +156,16 @@ class VaccinationController extends AdminController
     {
         $vaccination = Vaccination::with('vaccinationType.drugs')->findOrFail($id);
         
-        $drugs = $vaccination->drugs->map(function($drug) {
-            return [
-                'id' => $drug->id,
-                'name' => $drug->name,
-                'dosage' => $drug->pivot->dosage,
-                'price' => $drug->price ?? 0
-            ];
-        });
+        $drugs = $vaccination->vaccinationType && $vaccination->vaccinationType->drugs 
+            ? $vaccination->vaccinationType->drugs->map(function($drug) {
+                return [
+                    'id' => $drug->id,
+                    'name' => $drug->name,
+                    'dosage' => $drug->pivot->dosage,
+                    'price' => $drug->price ?? 0
+                ];
+            })
+            : collect();
         
         return response()->json($drugs);
     }

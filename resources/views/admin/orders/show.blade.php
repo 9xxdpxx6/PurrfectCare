@@ -107,10 +107,10 @@
     </div>
     
     @php
-        $services = $item->services();
-        $drugs = $item->drugs();
-        $labTests = $item->labTests();
-        $vaccinations = $item->vaccinations();
+        $services = $item->services()->get();
+        $drugs = $item->drugs()->get();
+        $labTests = $item->labTests()->get();
+        $vaccinations = $item->vaccinations()->get();
     @endphp
 
     @if($services->count() > 0)
@@ -128,7 +128,7 @@
                             <div class="border rounded p-3 bg-body-tertiary">
                                 <div class="row align-items-center g-2">
                                     <!-- Название услуги -->
-                                    <div class="col-12 col-md-6 col-xl-6 mb-2 mb-xl-0">
+                                    <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
                                                 {{ $orderItem->item->name }}
@@ -139,8 +139,8 @@
                                     </div>
                                     
                                     <!-- Количество и цена -->
-                                    <div class="col-12 col-md-6 col-xl-3 mb-2 mb-xl-0">
-                                        <div class="d-flex justify-content-between justify-content-md-start gap-md-3">
+                                    <div class="col-12 col-md-5 col-xl-3 mb-2 mb-xl-0">
+                                        <div class="d-flex justify-content-between w-100 gap-md-1">
                                             <div>
                                                 <small class="text-muted d-block">Кол-во</small>
                                                 <span class="fw-bold">{{ $orderItem->quantity }}</span>
@@ -153,14 +153,9 @@
                                     </div>
                                     
                                     <!-- Сумма -->
-                                    <div class="col-12 col-xl-3 text-xl-end">
+                                    <div class="col-12 col-md-3 col-xl-2 text-xl-end">
                                         <div class="d-flex justify-content-end align-items-center">
-                                            <div class="d-xl-none">
-                                                <small class="text-muted d-block">Сумма</small>
-                                                <span class="fw-bold">{{ number_format($orderItem->quantity * $orderItem->unit_price, 2, ',', ' ') }} ₽</span>
-                                            </div>
-                                            
-                                            <div class="d-none d-xl-block text-end">
+                                            <div class="text-end">
                                                 <small class="text-muted d-block">Сумма</small>
                                                 <div class="fw-bold">
                                                     {{ number_format($orderItem->quantity * $orderItem->unit_price, 2, ',', ' ') }} ₽
@@ -198,7 +193,7 @@
                             <div class="border rounded p-3 bg-body-tertiary">
                                 <div class="row align-items-center g-2">
                                     <!-- Название препарата -->
-                                    <div class="col-12 col-md-6 col-xl-6 mb-2 mb-xl-0">
+                                    <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
                                                 {{ $orderItem->item->name }}
@@ -209,8 +204,8 @@
                                     </div>
                                     
                                     <!-- Количество и цена -->
-                                    <div class="col-12 col-md-6 col-xl-3 mb-2 mb-xl-0">
-                                        <div class="d-flex justify-content-between justify-content-md-start gap-md-3">
+                                    <div class="col-12 col-md-5 col-xl-3 mb-2 mb-xl-0">
+                                        <div class="d-flex justify-content-between w-100 gap-md-1">
                                             <div>
                                                 <small class="text-muted d-block">Кол-во</small>
                                                 <span class="fw-bold">{{ $orderItem->quantity }}</span>
@@ -223,14 +218,9 @@
                                     </div>
                                     
                                     <!-- Сумма -->
-                                    <div class="col-12 col-xl-3 text-xl-end">
+                                    <div class="col-12 col-md-3 col-xl-2 text-xl-end">
                                         <div class="d-flex justify-content-end align-items-center">
-                                            <div class="d-xl-none">
-                                                <small class="text-muted d-block">Сумма</small>
-                                                <span class="fw-bold">{{ number_format($orderItem->quantity * $orderItem->unit_price, 2, ',', ' ') }} ₽</span>
-                                            </div>
-                                            
-                                            <div class="d-none d-xl-block text-end">
+                                            <div class="text-end">
                                                 <small class="text-muted d-block">Сумма</small>
                                                 <div class="fw-bold">
                                                     {{ number_format($orderItem->quantity * $orderItem->unit_price, 2, ',', ' ') }} ₽
@@ -268,7 +258,7 @@
                             <div class="border rounded p-3 bg-body-tertiary">
                                 <div class="row align-items-center g-2">
                                     <!-- Название анализа -->
-                                    <div class="col-12 col-md-6 col-xl-6 mb-2 mb-xl-0">
+                                    <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
                                                 Анализ #{{ $orderItem->item->id }}
@@ -279,8 +269,8 @@
                                     </div>
                                     
                                     <!-- Количество и цена -->
-                                    <div class="col-12 col-md-6 col-xl-3 mb-2 mb-xl-0">
-                                        <div class="d-flex justify-content-between justify-content-md-start gap-md-3">
+                                    <div class="col-12 col-md-5 col-xl-3 mb-2 mb-xl-0">
+                                        <div class="d-flex justify-content-between w-100 gap-md-1">
                                             <div>
                                                 <small class="text-muted d-block">Кол-во</small>
                                                 <span class="fw-bold">{{ $orderItem->quantity }}</span>
@@ -293,14 +283,9 @@
                                     </div>
                                     
                                     <!-- Сумма -->
-                                    <div class="col-12 col-xl-3 text-xl-end">
+                                    <div class="col-12 col-md-3 col-xl-2 text-xl-end">
                                         <div class="d-flex justify-content-end align-items-center">
-                                            <div class="d-xl-none">
-                                                <small class="text-muted d-block">Сумма</small>
-                                                <span class="fw-bold">{{ number_format($orderItem->quantity * $orderItem->unit_price, 2, ',', ' ') }} ₽</span>
-                                            </div>
-                                            
-                                            <div class="d-none d-xl-block text-end">
+                                            <div class="text-end">
                                                 <small class="text-muted d-block">Сумма</small>
                                                 <div class="fw-bold">
                                                     {{ number_format($orderItem->quantity * $orderItem->unit_price, 2, ',', ' ') }} ₽
@@ -338,7 +323,7 @@
                             <div class="border rounded p-3 bg-body-tertiary">
                                 <div class="row align-items-center g-2">
                                     <!-- Название вакцинации -->
-                                    <div class="col-12 col-md-6 col-xl-6 mb-2 mb-xl-0">
+                                    <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
                                                 Вакцинация #{{ $orderItem->item->id }}
@@ -349,8 +334,8 @@
                                     </div>
                                     
                                     <!-- Количество и цена -->
-                                    <div class="col-12 col-md-6 col-xl-3 mb-2 mb-xl-0">
-                                        <div class="d-flex justify-content-between justify-content-md-start gap-md-3">
+                                    <div class="col-12 col-md-5 col-xl-3 mb-2 mb-xl-0">
+                                        <div class="d-flex justify-content-between w-100 gap-md-1">
                                             <div>
                                                 <small class="text-muted d-block">Кол-во</small>
                                                 <span class="fw-bold">{{ $orderItem->quantity }}</span>
@@ -363,14 +348,9 @@
                                     </div>
                                     
                                     <!-- Сумма -->
-                                    <div class="col-12 col-xl-3 text-xl-end">
+                                    <div class="col-12 col-md-3 col-xl-2 text-xl-end">
                                         <div class="d-flex justify-content-end align-items-center">
-                                            <div class="d-xl-none">
-                                                <small class="text-muted d-block">Сумма</small>
-                                                <span class="fw-bold">{{ number_format($orderItem->quantity * $orderItem->unit_price, 2, ',', ' ') }} ₽</span>
-                                            </div>
-                                            
-                                            <div class="d-none d-xl-block text-end">
+                                            <div class="text-end">
                                                 <small class="text-muted d-block">Сумма</small>
                                                 <div class="fw-bold">
                                                     {{ number_format($orderItem->quantity * $orderItem->unit_price, 2, ',', ' ') }} ₽

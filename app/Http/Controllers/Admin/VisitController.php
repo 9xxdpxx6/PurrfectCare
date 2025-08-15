@@ -43,9 +43,10 @@ class VisitController extends AdminController
         $default_status = Status::where('name', 'Новый')->first();
         $default_status_id = $default_status ? $default_status->id : null;
         
-        // Получаем ID клиента и питомца из параметров запроса
+        // Получаем ID клиента, питомца и расписания из параметров запроса
         $selectedClientId = request('client');
         $selectedPetId = request('pet');
+        $selectedScheduleId = request('schedule_id');
         
         // Если передан pet_id, но не передан client_id, получаем владельца питомца
         if ($selectedPetId && !$selectedClientId) {
@@ -57,7 +58,7 @@ class VisitController extends AdminController
         
         return view("admin.{$this->viewPath}.create", compact(
             'clients', 'pets', 'schedules', 'statuses',
-            'symptoms', 'diagnoses', 'default_status_id', 'selectedClientId', 'selectedPetId'
+            'symptoms', 'diagnoses', 'default_status_id', 'selectedClientId', 'selectedPetId', 'selectedScheduleId'
         ));
     }
 

@@ -54,7 +54,20 @@ class ScheduleController extends AdminController
             $query->where('is_veterinarian', true);
         })->orderBy('name')->get();
         $branches = Branch::orderBy('name')->get();
-        return view("admin.{$this->viewPath}.create", compact('veterinarians', 'branches'));
+        
+        // Получаем предвыбранного ветеринара из параметра запроса
+        $selectedVeterinarian = request()->get('veterinarian_id');
+        $selectedBranch = null;
+        
+        // Если выбран ветеринар, получаем его первый филиал
+        if ($selectedVeterinarian) {
+            $employee = Employee::with('branches')->find($selectedVeterinarian);
+            if ($employee && $employee->branches->count() > 0) {
+                $selectedBranch = $employee->branches->first()->id;
+            }
+        }
+        
+        return view("admin.{$this->viewPath}.create", compact('veterinarians', 'branches', 'selectedVeterinarian', 'selectedBranch'));
     }
 
     /**
@@ -190,7 +203,20 @@ class ScheduleController extends AdminController
             $query->where('is_veterinarian', true);
         })->orderBy('name')->get();
         $branches = Branch::orderBy('name')->get();
-        return view("admin.{$this->viewPath}.create-week", compact('veterinarians', 'branches'));
+        
+        // Получаем предвыбранного ветеринара из параметра запроса
+        $selectedVeterinarian = request()->get('veterinarian_id');
+        $selectedBranch = null;
+        
+        // Если выбран ветеринар, получаем его первый филиал
+        if ($selectedVeterinarian) {
+            $employee = Employee::with('branches')->find($selectedVeterinarian);
+            if ($employee && $employee->branches->count() > 0) {
+                $selectedBranch = $employee->branches->first()->id;
+            }
+        }
+        
+        return view("admin.{$this->viewPath}.create-week", compact('veterinarians', 'branches', 'selectedVeterinarian', 'selectedBranch'));
     }
 
     /**
