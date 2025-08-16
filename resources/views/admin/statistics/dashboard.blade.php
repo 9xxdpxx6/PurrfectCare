@@ -35,7 +35,8 @@
 <!-- Навигация по разделам статистики -->
 <h5 class="text-muted mb-2">Разделы</h5>
 <div class="row mb-4">
-    <div class="col-lg-3 col-md-6 mb-3">
+    <!-- Первая строка: 3 карточки -->
+    <div class="col-lg-4 col-md-6 mb-3">
         <a href="{{ route('admin.statistics.financial') }}" class="btn btn-outline-primary h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
             <div class="d-flex align-items-center justify-content-center mb-2">
                 <i class="bi bi-cash-coin fs-1"></i>
@@ -45,7 +46,7 @@
         </a>
     </div>
     
-    <div class="col-lg-3 col-md-6 mb-3">
+    <div class="col-lg-4 col-md-6 mb-3">
         <a href="{{ route('admin.statistics.operational') }}" class="btn btn-outline-success h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
             <div class="d-flex align-items-center justify-content-center mb-2">
                 <i class="bi bi-calendar-check fs-1"></i>
@@ -55,7 +56,7 @@
         </a>
     </div>
     
-    <div class="col-lg-3 col-md-6 mb-3">
+    <div class="col-lg-4 col-md-6 mb-3">
         <a href="{{ route('admin.statistics.clients') }}" class="btn btn-outline-info h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
             <div class="d-flex align-items-center justify-content-center mb-2">
                 <i class="bi bi-people fs-1"></i>
@@ -64,14 +65,27 @@
             <small class="text-muted">Статистика клиентов и питомцев</small>
         </a>
     </div>
-    
-    <div class="col-lg-3 col-md-6 mb-3">
+</div>
+
+<div class="row mb-4">
+    <!-- Вторая строка: 2 карточки -->
+    <div class="col-lg-6 col-md-6 mb-3">
         <a href="{{ route('admin.statistics.medical') }}" class="btn btn-outline-warning h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
             <div class="d-flex align-items-center justify-content-center mb-2">
                 <i class="bi bi-heart-pulse fs-1"></i>
             </div>
             <h6 class="mb-1">Медицина</h6>
             <small class="text-muted">Медицинская статистика и аналитика</small>
+        </a>
+    </div>
+    
+    <div class="col-lg-6 col-md-6 mb-3">
+        <a href="{{ route('admin.statistics.conversion') }}" class="btn btn-outline-danger h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
+            <div class="d-flex align-items-center justify-content-center mb-2">
+                <i class="bi bi-graph-up-arrow fs-1"></i>
+            </div>
+            <h6 class="mb-1">Конверсия</h6>
+            <small class="text-muted">Конверсия приёмов в заказы</small>
         </a>
     </div>
 </div>
@@ -167,7 +181,7 @@
                 <h5 class="card-title mb-0">
                     <i class="bi bi-graph-up"></i> 
                     @if($period === 'custom')
-                        Статистика за интервал {{ $dateRange }}
+                        Статистика за интервал {{ $dateRangeString }}
                     @else
                         Статистика за {{ $period === 'week' ? 'неделю' : ($period === 'month' ? 'месяц' : ($period === 'quarter' ? 'квартал' : ($period === 'year' ? 'год' : 'всё время'))) }}
                     @endif

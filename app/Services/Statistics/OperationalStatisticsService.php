@@ -81,7 +81,7 @@ class OperationalStatisticsService
                 $mediumThreshold = max(12, $sortedLoads->median());
             }
             
-            $maxLoad = max(20, $allAvgLoads->max() * 1.2);
+            $maxLoad = $allAvgLoads->max();
         } else {
             // Fallback на реалистичные значения для ветеринарной практики
             $lowThreshold = 8;
@@ -90,8 +90,33 @@ class OperationalStatisticsService
         }
         
         // Применяем рассчитанные пороги к каждому сотруднику
-        return $employeeData->map(function($data) use ($lowThreshold, $mediumThreshold, $maxLoad) {
+        return $employeeData->map(function($data) use ($lowThreshold, $mediumThreshold, $startDate, $endDate) {
             $avgVisitsPerDay = $data['avg_visits_per_day'];
+            $employee = $data['employee'];
+            
+            // Рассчитываем теоретический максимум на основе расписания ветеринара
+            $schedules = Schedule::where('veterinarian_id', $employee->id)
+                ->whereBetween('shift_starts_at', [$startDate, $endDate])
+                ->get();
+            
+            $theoreticalMaxPerDay = 0;
+            if ($schedules->count() > 0) {
+                // Рассчитываем среднее количество рабочих часов в день
+                $totalWorkingHours = 0;
+                foreach ($schedules as $schedule) {
+                    $shiftStart = Carbon::parse($schedule->shift_starts_at);
+                    $shiftEnd = Carbon::parse($schedule->shift_ends_at);
+                    $workingHours = $shiftEnd->diffInHours($shiftStart);
+                    $totalWorkingHours += $workingHours;
+                }
+                $avgWorkingHoursPerDay = $totalWorkingHours / $schedules->count();
+                
+                // Длительность приёма = 30 минут = 2 приёма в час
+                $theoreticalMaxPerDay = $avgWorkingHoursPerDay * 2;
+            }
+            
+            // Если не можем рассчитать теоретический максимум, используем фиксированное значение
+            $individualMaxLoad = $theoreticalMaxPerDay > 0 ? $theoreticalMaxPerDay : 18;
             
             // Определяем уровень загруженности на основе динамических порогов
             if ($avgVisitsPerDay <= $lowThreshold) {
@@ -105,8 +130,8 @@ class OperationalStatisticsService
                 $loadColor = 'danger';
             }
             
-            // Расчет процентов для прогресс-бара
-            $progressWidth = min(100, ($avgVisitsPerDay / $maxLoad) * 100);
+            // Расчет процентов для прогресс-бара (может быть больше 100%)
+            $progressWidth = ($avgVisitsPerDay / $individualMaxLoad) * 100;
             $progressPercentage = round($progressWidth);
             
             return array_merge($data, [
@@ -114,10 +139,11 @@ class OperationalStatisticsService
                 'load_color' => $loadColor,
                 'progress_width' => $progressWidth,
                 'progress_percentage' => $progressPercentage,
+                'theoretical_max' => round($individualMaxLoad, 1),
                 'thresholds' => [
                     'low' => round($lowThreshold, 1),
                     'medium' => round($mediumThreshold, 1),
-                    'max' => round($maxLoad, 1),
+                    'max' => round($individualMaxLoad, 1),
                 ],
             ]);
         })->sortByDesc('visits_count');

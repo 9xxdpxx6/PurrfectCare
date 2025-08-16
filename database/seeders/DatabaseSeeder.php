@@ -125,44 +125,63 @@ class DatabaseSeeder extends Seeder
         // Случайно выбираем приемы для связывания
         $visitsToLink = $visits->random($visitsToLinkCount);
         
+        // Отслеживаем уже использованные заказы
+        $usedOrders = collect();
+        
         foreach ($visitsToLink as $visit) {
-            // Получаем заказы того же клиента и питомца
-            $clientOrders = $orders->where('client_id', $visit->client_id)
-                                  ->where('pet_id', $visit->pet_id);
+            // Получаем заказы того же клиента и питомца, которые еще не использованы
+            $availableClientOrders = $orders->where('client_id', $visit->client_id)
+                                          ->where('pet_id', $visit->pet_id)
+                                          ->whereNotIn('id', $usedOrders->pluck('id'));
             
-            if ($clientOrders->isNotEmpty()) {
-                // 80% случаев - связываем с 1 заказом, 15% - с 2, 5% - с 3
-                $orderCount = fake()->randomElement([1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3]);
-                $ordersToLink = $clientOrders->random(min($clientOrders->count(), $orderCount));
+            if ($availableClientOrders->isNotEmpty()) {
+                // Максимум 2 заказа на визит
+                $orderCount = fake()->randomElement([1, 1, 1, 1, 1, 1, 1, 1, 2, 2]);
+                $ordersToLink = $availableClientOrders->random(min($availableClientOrders->count(), $orderCount));
                 
                 foreach ($ordersToLink as $order) {
-                    // Проверяем, что связь не существует
-                    if (!VisitOrder::where('visit_id', $visit->id)
-                                   ->where('order_id', $order->id)
-                                   ->exists()) {
-                        VisitOrder::create([
-                            'visit_id' => $visit->id,
-                            'order_id' => $order->id,
-                        ]);
-                    }
+                    VisitOrder::create([
+                        'visit_id' => $visit->id,
+                        'order_id' => $order->id,
+                    ]);
+                    
+                    // Добавляем заказ в список использованных
+                    $usedOrders->push($order);
                 }
             } else {
-                // Если нет заказов того же клиента и питомца, создаем случайную связь
-                // Это имитирует случаи когда заказ создается после приема
-                $randomOrder = $orders->random();
+                // Если нет доступных заказов того же клиента и питомца, 
+                // ищем любой неиспользованный заказ
+                $availableOrders = $orders->whereNotIn('id', $usedOrders->pluck('id'));
                 
-                if (!VisitOrder::where('visit_id', $visit->id)
-                               ->where('order_id', $randomOrder->id)
-                               ->exists()) {
+                if ($availableOrders->isNotEmpty()) {
+                    $randomOrder = $availableOrders->random();
+                    
                     VisitOrder::create([
                         'visit_id' => $visit->id,
                         'order_id' => $randomOrder->id,
                     ]);
+                    
+                    // Добавляем заказ в список использованных
+                    $usedOrders->push($randomOrder);
                 }
             }
         }
         
         echo "Создано связей visit_orders: " . VisitOrder::count() . " из " . $visits->count() . " приемов\n";
         echo "Конверсия: " . round((VisitOrder::distinct('visit_id')->count() / $visits->count()) * 100, 1) . "%\n";
+        
+        // Проверяем ограничения
+        $maxOrdersPerVisit = VisitOrder::selectRaw('visit_id, COUNT(*) as order_count')
+            ->groupBy('visit_id')
+            ->orderBy('order_count', 'desc')
+            ->first();
+            
+        $maxVisitsPerOrder = VisitOrder::selectRaw('order_id, COUNT(*) as visit_count')
+            ->groupBy('order_id')
+            ->orderBy('visit_count', 'desc')
+            ->first();
+            
+        echo "Максимум заказов на визит: " . ($maxOrdersPerVisit ? $maxOrdersPerVisit->order_count : 0) . "\n";
+        echo "Максимум визитов на заказ: " . ($maxVisitsPerOrder ? $maxVisitsPerOrder->visit_count : 0) . "\n";
     }
 }

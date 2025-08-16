@@ -282,6 +282,11 @@
                                     Медицина
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.conversion') ? 'active' : '' }}" href="{{ route('admin.statistics.conversion') }}">
+                                    Конверсия
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>

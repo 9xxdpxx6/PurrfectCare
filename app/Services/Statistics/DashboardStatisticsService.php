@@ -8,11 +8,15 @@ use App\Models\Service;
 use App\Models\User;
 use App\Models\Employee;
 use Carbon\Carbon;
+use App\Services\Statistics\ConversionStatisticsService;
 
 class DashboardStatisticsService
 {
     public function getMetrics($startDate, $endDate)
     {
+        $conversionService = new ConversionStatisticsService();
+        $overallConversion = $conversionService->getOverallConversion($startDate, $endDate);
+        
         return [
             'total_visits' => Visit::whereBetween('starts_at', [$startDate, $endDate])->count(),
             'total_orders' => Order::whereBetween('created_at', [$startDate, $endDate])->count(),
@@ -21,6 +25,8 @@ class DashboardStatisticsService
                 ->sum('total'),
             'total_services' => Service::count(),
             'total_veterinarians' => Employee::count(),
+            'conversion_rate' => $overallConversion['conversion_rate'],
+            'visits_with_orders' => $overallConversion['visits_with_orders'],
         ];
     }
 
@@ -231,5 +237,14 @@ class DashboardStatisticsService
         });
         
         return array_slice($topDays, 0, $limit);
+    }
+
+    /**
+     * Получить все метрики конверсии
+     */
+    public function getConversionMetrics($startDate, $endDate)
+    {
+        $conversionService = new ConversionStatisticsService();
+        return $conversionService->getAllConversionMetrics($startDate, $endDate);
     }
 }

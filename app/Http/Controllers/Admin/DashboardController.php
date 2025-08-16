@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Statistics\DashboardStatisticsService;
+use App\Services\Statistics\DateRangeService;
 use App\Models\Visit;
 use App\Models\Order;
 use App\Models\User;
@@ -17,17 +18,21 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
     protected $statisticsService;
+    protected $dateRangeService;
 
-    public function __construct(DashboardStatisticsService $statisticsService)
-    {
+    public function __construct(
+        DashboardStatisticsService $statisticsService,
+        DateRangeService $dateRangeService
+    ) {
         $this->statisticsService = $statisticsService;
+        $this->dateRangeService = $dateRangeService;
     }
 
     public function dashboard()
     {
         // Получаем данные за текущий месяц
-        $startDate = Carbon::now()->startOfMonth();
-        $endDate = Carbon::now()->endOfMonth();
+        $startDate = $this->dateRangeService->getStartDate('month');
+        $endDate = Carbon::now();
         
         // Основные метрики
         $metrics = $this->statisticsService->getMetrics($startDate, $endDate);
@@ -81,8 +86,8 @@ class DashboardController extends Controller
     private function getWeekStats()
     {
         $stats = [];
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
+        $startOfMonth = $this->dateRangeService->getStartDate('month');
+        $endOfMonth = Carbon::now();
         
         $dayNames = [
             'Monday' => 'Понедельник',

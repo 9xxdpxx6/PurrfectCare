@@ -9,6 +9,7 @@ use App\Services\Statistics\FinancialStatisticsService;
 use App\Services\Statistics\OperationalStatisticsService;
 use App\Services\Statistics\ClientStatisticsService;
 use App\Services\Statistics\MedicalStatisticsService;
+use App\Services\Statistics\DateRangeService;
 use App\Models\Visit;
 use App\Models\Order;
 use App\Models\User;
@@ -25,19 +26,22 @@ class StatisticsController extends Controller
     protected $operationalService;
     protected $clientService;
     protected $medicalService;
+    protected $dateRangeService;
 
     public function __construct(
         DashboardStatisticsService $dashboardService,
         FinancialStatisticsService $financialService,
         OperationalStatisticsService $operationalService,
         ClientStatisticsService $clientService,
-        MedicalStatisticsService $medicalService
+        MedicalStatisticsService $medicalService,
+        DateRangeService $dateRangeService
     ) {
         $this->dashboardService = $dashboardService;
         $this->financialService = $financialService;
         $this->operationalService = $operationalService;
         $this->clientService = $clientService;
         $this->medicalService = $medicalService;
+        $this->dateRangeService = $dateRangeService;
     }
 
     public function dashboard(Request $request)
@@ -46,18 +50,10 @@ class StatisticsController extends Controller
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
         
-        if ($period === 'custom' && $startDateInput && $endDateInput) {
-            try {
-                $startDate = Carbon::createFromFormat('d.m.Y', $startDateInput)->startOfDay();
-                $endDate = Carbon::createFromFormat('d.m.Y', $endDateInput)->endOfDay();
-            } catch (\Throwable $e) {
-                $startDate = $this->getStartDate('month');
-                $endDate = Carbon::now();
-            }
-        } else {
-            $startDate = $this->getStartDate($period);
-            $endDate = Carbon::now();
-        }
+        $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+        $startDate = $dateRange['startDate'];
+        $endDate = $dateRange['endDate'];
+        $dateRangeString = $dateRange['dateRange'];
         
         // Основные метрики
         $metrics = $this->dashboardService->getMetrics($startDate, $endDate);
@@ -91,8 +87,7 @@ class StatisticsController extends Controller
         // Топ услуг
         $topServices = $this->dashboardService->getTopServices($startDate);
         
-        $dateRange = $startDate->format('d.m.Y') . ' — ' . $endDate->format('d.m.Y');
-        return view('admin.statistics.dashboard', compact('metrics', 'weeklyStats', 'weekAverageStats', 'topServices', 'period', 'startDate', 'endDate', 'dateRange'));
+        return view('admin.statistics.dashboard', compact('metrics', 'weeklyStats', 'weekAverageStats', 'topServices', 'period', 'startDate', 'endDate', 'dateRangeString'));
     }
     
     public function financial(Request $request)
@@ -101,18 +96,10 @@ class StatisticsController extends Controller
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
         
-        if ($period === 'custom' && $startDateInput && $endDateInput) {
-            try {
-                $startDate = Carbon::createFromFormat('d.m.Y', $startDateInput)->startOfDay();
-                $endDate = Carbon::createFromFormat('d.m.Y', $endDateInput)->endOfDay();
-            } catch (\Throwable $e) {
-                $startDate = $this->getStartDate('month');
-                $endDate = Carbon::now();
-            }
-        } else {
-            $startDate = $this->getStartDate($period);
-            $endDate = Carbon::now();
-        }
+        $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+        $startDate = $dateRange['startDate'];
+        $endDate = $dateRange['endDate'];
+        $dateRangeString = $dateRange['dateRange'];
         
         // Выручка по периодам
         $revenueData = $this->financialService->getRevenueData($startDate, $endDate);
@@ -126,8 +113,7 @@ class StatisticsController extends Controller
         // Топ услуг
         $topServices = $this->financialService->getTopServices($startDate, $endDate);
         
-        $dateRange = $startDate->format('d.m.Y') . ' — ' . $endDate->format('d.m.Y');
-        return view('admin.statistics.financial', compact('revenueData', 'categoryRevenue', 'branchRevenue', 'topServices', 'period', 'startDate', 'endDate', 'dateRange'));
+        return view('admin.statistics.financial', compact('revenueData', 'categoryRevenue', 'branchRevenue', 'topServices', 'period', 'startDate', 'endDate', 'dateRangeString'));
     }
     
     public function operational(Request $request)
@@ -136,18 +122,10 @@ class StatisticsController extends Controller
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
         
-        if ($period === 'custom' && $startDateInput && $endDateInput) {
-            try {
-                $startDate = Carbon::createFromFormat('d.m.Y', $startDateInput)->startOfDay();
-                $endDate = Carbon::createFromFormat('d.m.Y', $endDateInput)->endOfDay();
-            } catch (\Throwable $e) {
-                $startDate = $this->getStartDate('month');
-                $endDate = Carbon::now();
-            }
-        } else {
-            $startDate = $this->getStartDate($period);
-            $endDate = Carbon::now();
-        }
+        $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+        $startDate = $dateRange['startDate'];
+        $endDate = $dateRange['endDate'];
+        $dateRangeString = $dateRange['dateRange'];
         
         // Данные приемов
         $visitsData = $this->operationalService->getVisitsData($startDate, $endDate);
@@ -161,8 +139,7 @@ class StatisticsController extends Controller
         // Статистика расписания
         $scheduleStats = $this->operationalService->getScheduleStats($startDate, $endDate);
         
-        $dateRange = $startDate->format('d.m.Y') . ' — ' . $endDate->format('d.m.Y');
-        return view('admin.statistics.operational', compact('visitsData', 'employeeLoad', 'statusStats', 'scheduleStats', 'period', 'startDate', 'endDate', 'dateRange'));
+        return view('admin.statistics.operational', compact('visitsData', 'employeeLoad', 'statusStats', 'scheduleStats', 'period', 'startDate', 'endDate', 'dateRangeString'));
     }
     
     public function clients(Request $request)
@@ -171,18 +148,10 @@ class StatisticsController extends Controller
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
         
-        if ($period === 'custom' && $startDateInput && $endDateInput) {
-            try {
-                $startDate = Carbon::createFromFormat('d.m.Y', $startDateInput)->startOfDay();
-                $endDate = Carbon::createFromFormat('d.m.Y', $endDateInput)->endOfDay();
-            } catch (\Throwable $e) {
-                $startDate = $this->getStartDate('month');
-                $endDate = Carbon::now();
-            }
-        } else {
-            $startDate = $this->getStartDate($period);
-            $endDate = Carbon::now();
-        }
+        $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+        $startDate = $dateRange['startDate'];
+        $endDate = $dateRange['endDate'];
+        $dateRangeString = $dateRange['dateRange'];
         
         // Данные клиентов
         $clientsData = $this->clientService->getClientsData($startDate, $endDate);
@@ -193,8 +162,7 @@ class StatisticsController extends Controller
         // Топ клиентов
         $topClients = $this->clientService->getTopClients($startDate, $endDate);
         
-        $dateRange = $startDate->format('d.m.Y') . ' — ' . $endDate->format('d.m.Y');
-        return view('admin.statistics.clients', compact('clientsData', 'petsData', 'topClients', 'period', 'startDate', 'endDate', 'dateRange'));
+        return view('admin.statistics.clients', compact('clientsData', 'petsData', 'topClients', 'period', 'startDate', 'endDate', 'dateRangeString'));
     }
     
     public function medical(Request $request)
@@ -203,18 +171,10 @@ class StatisticsController extends Controller
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
         
-        if ($period === 'custom' && $startDateInput && $endDateInput) {
-            try {
-                $startDate = Carbon::createFromFormat('d.m.Y', $startDateInput)->startOfDay();
-                $endDate = Carbon::createFromFormat('d.m.Y', $endDateInput)->endOfDay();
-            } catch (\Throwable $e) {
-                $startDate = $this->getStartDate('month');
-                $endDate = Carbon::now();
-            }
-        } else {
-            $startDate = $this->getStartDate($period);
-            $endDate = Carbon::now();
-        }
+        $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+        $startDate = $dateRange['startDate'];
+        $endDate = $dateRange['endDate'];
+        $dateRangeString = $dateRange['dateRange'];
         
         // Статистика диагнозов
         $diagnosesData = $this->medicalService->getDiagnosesData($startDate, $endDate);
@@ -235,57 +195,24 @@ class StatisticsController extends Controller
             return [$item['name'] => $item['count']];
         });
         
-        $dateRange = $startDate->format('d.m.Y') . ' — ' . $endDate->format('d.m.Y');
-        return view('admin.statistics.medical', compact('diagnosesData', 'diagnosesCount', 'totalDiagnosesCount', 'vaccinationsData', 'labTestsData', 'labTestsDataForDisplay', 'labTestsTypesCount', 'period', 'startDate', 'endDate', 'dateRange'));
+        return view('admin.statistics.medical', compact('diagnosesData', 'diagnosesCount', 'totalDiagnosesCount', 'vaccinationsData', 'labTestsData', 'labTestsDataForDisplay', 'labTestsTypesCount', 'period', 'startDate', 'endDate', 'dateRangeString'));
     }
     
-    private function getStartDate($period)
+    public function conversion(Request $request)
     {
-        return match($period) {
-            'week' => Carbon::now()->subWeek(),
-            'month' => Carbon::now()->subMonth(),
-            'quarter' => Carbon::now()->subQuarter(),
-            'year' => Carbon::now()->subYear(),
-            'all' => $this->getEarliestDataDate(),
-            default => Carbon::now()->subMonth(),
-        };
+        $period = $request->get('period', 'month');
+        $startDateInput = $request->get('start_date');
+        $endDateInput = $request->get('end_date');
+        
+        $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+        $startDate = $dateRange['startDate'];
+        $endDate = $dateRange['endDate'];
+        $dateRangeString = $dateRange['dateRange'];
+        
+        // Получаем все метрики конверсии
+        $conversionMetrics = $this->dashboardService->getConversionMetrics($startDate, $endDate);
+        
+        return view('admin.statistics.conversion', compact('conversionMetrics', 'period', 'startDate', 'endDate', 'dateRangeString'));
     }
-
-    private function getEarliestDataDate()
-    {
-        // Получаем самую раннюю дату из всех основных таблиц
-        $dates = [];
-        
-        // Заказы
-        $earliestOrder = Order::orderBy('created_at')->first();
-        if ($earliestOrder) {
-            $dates[] = $earliestOrder->created_at;
-        }
-        
-        // Приемы
-        $earliestVisit = Visit::orderBy('starts_at')->first();
-        if ($earliestVisit) {
-            $dates[] = $earliestVisit->starts_at;
-        }
-        
-        // Клиенты
-        $earliestUser = User::orderBy('created_at')->first();
-        if ($earliestUser) {
-            $dates[] = $earliestUser->created_at;
-        }
-        
-        // Питомцы
-        $earliestPet = Pet::orderBy('created_at')->first();
-        if ($earliestPet) {
-            $dates[] = $earliestPet->created_at;
-        }
-        
-        // Если есть данные, возвращаем самую раннюю дату
-        if (!empty($dates)) {
-            return min($dates);
-        }
-        
-        // Если данных нет, возвращаем дату 3 года назад
-        return Carbon::now()->subYears(3);
-    }
+    
 } 

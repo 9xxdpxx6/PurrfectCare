@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\DrugProcurementController;
 use App\Http\Controllers\Admin\StatisticsController;
 
+
 use App\Http\Controllers\Admin\Settings\MainSettingsController as SettingsSettingsController;
 use App\Http\Controllers\Admin\Settings\LabTestTypeController;
 use App\Http\Controllers\Admin\Settings\LabTestParamController;
@@ -136,6 +137,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/operational', [StatisticsController::class, 'operational'])->name('operational');
         Route::get('/clients', [StatisticsController::class, 'clients'])->name('clients');
         Route::get('/medical', [StatisticsController::class, 'medical'])->name('medical');
+        Route::get('/conversion', [StatisticsController::class, 'conversion'])->name('conversion');
     });
 
     // Настройки
