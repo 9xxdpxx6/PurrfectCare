@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin\Order;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\BelongsToClient;
 use App\Rules\CheckDrugQuantity;
+use App\Rules\OrderCompletionRule;
 
 class StoreRequest extends FormRequest
 {
@@ -24,7 +25,7 @@ class StoreRequest extends FormRequest
             'notes' => 'nullable|string|max:1000',
             'total' => 'required|numeric|min:0|max:999999.99',
             'is_paid' => 'boolean',
-            'is_closed' => 'boolean',
+            'is_closed' => ['boolean', new OrderCompletionRule],
             'items' => 'required|array|min:1',
             'items.*.item_type' => 'required|in:service,drug,lab_test,vaccination',
             'items.*.item_id' => 'required|integer',

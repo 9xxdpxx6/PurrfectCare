@@ -18,6 +18,7 @@ use App\Http\Requests\Admin\Order\StoreRequest;
 use App\Http\Requests\Admin\Order\UpdateRequest;
 use App\Http\Filters\OrderFilter;
 use App\Http\Traits\HasOptionsMethods;
+use App\Services\Order\OrderManagementService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -25,8 +26,12 @@ use Illuminate\View\View;
 class OrderController extends AdminController
 {
     use HasOptionsMethods;
-    public function __construct()
+    
+    protected $orderService;
+    
+    public function __construct(OrderManagementService $orderService)
     {
+        $this->orderService = $orderService;
         $this->model = Order::class;
         $this->viewPath = 'orders';
         $this->routePrefix = 'orders';
@@ -114,45 +119,12 @@ class OrderController extends AdminController
     {
         try {
             $validated = $request->validated();
-        
-        // Определяем дату закрытия если заказ выполнен
-        $closedAt = null;
-        if ($request->has('is_closed') && $request->input('is_closed')) {
-            $closedAt = now();
-        }
-        
-        $order = $this->model::create([
-            'client_id' => $validated['client_id'],
-            'pet_id' => $validated['pet_id'],
-            'status_id' => $validated['status_id'],
-            'branch_id' => $validated['branch_id'],
-            'manager_id' => $validated['manager_id'],
-            'notes' => $validated['notes'] ?? null,
-            'total' => $validated['total'],
-            'is_paid' => $request->has('is_paid') && $request->input('is_paid'),
-            'closed_at' => $closedAt
-        ]);
-
-        foreach ($validated['items'] as $item) {
-            $this->createOrderItem($order, $item, $validated);
-        }
-        
-        // Списание со склада только если заказ закрыт
-        if ($closedAt) {
-            $this->processInventoryReduction($order);
-        }
-        
-        // Сохраняем связи с приемами
-        if ($request->has('visits') && is_array($request->visits)) {
-            $order->visits()->sync($request->visits);
-        } elseif ($request->has('visit_id') && $request->visit_id) {
-            // Автоматическая привязка к приему, если он был передан в параметрах
-            $order->visits()->sync([$request->visit_id]);
-        }
-        
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Заказ успешно создан');
+            
+            $this->orderService->createOrder($validated, $request);
+            
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Заказ успешно создан');
         } catch (\Exception $e) {
             \Log::error('Order store error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()
@@ -166,53 +138,11 @@ class OrderController extends AdminController
         try {
             $validated = $request->validated();
             
-            $order = $this->model::with('items')->findOrFail($id);
-        
-        // Определяем дату закрытия если заказ выполнен
-        $closedAt = $order->closed_at;
-        if ($request->has('is_closed') && $request->input('is_closed') && !$closedAt) {
-            $closedAt = now();
-        } elseif (!$request->has('is_closed') || !$request->input('is_closed')) {
-            $closedAt = null;
-        }
-        
-        // Возвращаем препараты на склад из старого заказа если он был закрыт
-        if ($order->closed_at) {
-            $this->processInventoryReturn($order);
-        }
-        
-        $order->update([
-            'client_id' => $validated['client_id'],
-            'pet_id' => $validated['pet_id'],
-            'status_id' => $validated['status_id'],
-            'branch_id' => $validated['branch_id'],
-            'manager_id' => $validated['manager_id'],
-            'notes' => $validated['notes'] ?? null,
-            'total' => $validated['total'],
-            'is_paid' => $request->has('is_paid') && $request->input('is_paid'),
-            'closed_at' => $closedAt
-        ]);
-
-        $order->items()->delete();
-        foreach ($validated['items'] as $item) {
-            $this->createOrderItem($order, $item, $validated);
-        }
-        
-        // Списание со склада только если заказ закрыт
-        if ($closedAt) {
-            $this->processInventoryReduction($order);
-        }
-        
-        // Обновляем связи с приемами
-        if ($request->has('visits') && is_array($request->visits)) {
-            $order->visits()->sync($request->visits);
-        } else {
-            $order->visits()->detach(); // Удаляем все связи, если приемы не выбраны
-        }
-        
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Заказ успешно обновлен');
+            $this->orderService->updateOrder($id, $validated, $request);
+            
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Заказ успешно обновлен');
         } catch (\Exception $e) {
             \Log::error('Order update error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()
@@ -221,78 +151,18 @@ class OrderController extends AdminController
         }
     }
 
-    protected function getItemType($type)
-    {
-        return match($type) {
-            'service' => Service::class,
-            'drug' => Drug::class,
-            'lab_test' => LabTestType::class,
-            'vaccination' => VaccinationType::class,
-            default => throw new \InvalidArgumentException('Неизвестный тип элемента')
-        };
-    }
 
-    protected function createOrderItem($order, $item, $validated)
-    {
-        // Для всех типов элементов создаем OrderItem напрямую
-        return $order->items()->create([
-            'item_type' => $this->getItemType($item['item_type']),
-            'item_id' => $item['item_id'],
-            'quantity' => $item['quantity'],
-            'unit_price' => $item['unit_price']
-        ]);
-    }
 
     public function destroy($id): RedirectResponse
     {
-        $order = $this->model::with('items')->findOrFail($id);
-        
-        // Убираем проверку зависимостей - элементы заказа удаляются каскадно
-        
-        // Возвращаем препараты на склад если заказ был закрыт
-        if ($order->closed_at) {
-            $this->processInventoryReturn($order);
-        }
-        
-        // Удаляем сам заказ (элементы удалятся каскадно)
-        $order->delete();
+        $this->orderService->deleteOrder($id);
 
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', 'Заказ успешно удален');
     }
     
-    /**
-     * Обработка списания препаратов со склада
-     */
-    protected function processInventoryReduction($order)
-    {
-        foreach ($order->items as $item) {
-            if ($item->item_type === 'App\Models\Drug') {
-                // Списание препаратов из заказа
-                $drug = Drug::find($item->item_id);
-                if ($drug) {
-                    $drug->decrement('quantity', $item->quantity);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Обработка возврата препаратов на склад
-     */
-    protected function processInventoryReturn($order)
-    {
-        foreach ($order->items as $item) {
-            if ($item->item_type === 'App\Models\Drug') {
-                // Возврат препаратов из заказа
-                $drug = Drug::find($item->item_id);
-                if ($drug) {
-                    $drug->increment('quantity', $item->quantity);
-                }
-            }
-        }
-    }
+
 
     // TomSelect опции
     public function orderServiceOptions(Request $request)
