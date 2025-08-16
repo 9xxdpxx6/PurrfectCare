@@ -90,9 +90,6 @@
                             @error('starts_at')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="invalid-feedback" id="visit_time_error" style="display: none;">
-                                Неверный формат времени. Используйте формат чч:мм
-                            </div>
                         </div>
                     </div>
 
@@ -196,6 +193,10 @@
         const selectedClientId = '{{ $oldClientId ?? $selectedClientId ?? "" }}';
         const selectedPetId = '{{ $oldPetId ?? $selectedPetId ?? "" }}';
         const selectedScheduleId = '{{ old("schedule_id") ?? $selectedScheduleId ?? "" }}';
+        
+        // Переменные для старых значений
+        const oldSymptoms = @json($oldSymptoms ?? []);
+        const oldDiagnoses = @json($oldDiagnoses ?? []);
         
         // Инициализация TomSelect
         const clientTomSelect = new createTomSelect('#client_id', {
@@ -326,12 +327,40 @@
         });
         
         // Восстанавливаем старые значения симптомов при ошибке валидации
-        @if($oldSymptoms)
-            const oldSymptoms = @json($oldSymptoms);
-            if (oldSymptoms && oldSymptoms.length > 0) {
+        if (oldSymptoms && oldSymptoms.length > 0) {
+            // Сначала очищаем все существующие опции
+            symptomsSelect.clearOptions();
+            
+            // Создаем опции для уже выбранных симптомов
+            oldSymptoms.forEach(symptomId => {
+                if (typeof symptomId === 'string' && symptomId.trim() !== '') {
+                    if (isNaN(symptomId)) {
+                        // Кастомный симптом
+                        symptomsSelect.addOption({
+                            value: symptomId,
+                            text: symptomId
+                        });
+                    } else {
+                        // Симптом из словаря - нужно загрузить его данные
+                        fetch(`{{ route('admin.visits.symptom-options') }}?q=&selected=${symptomId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data && data.length > 0) {
+                                    const symptom = data.find(s => s.value == symptomId);
+                                    if (symptom) {
+                                        symptomsSelect.addOption(symptom);
+                                    }
+                                }
+                            });
+                    }
+                }
+            });
+            
+            // Устанавливаем значения после загрузки опций
+            setTimeout(() => {
                 symptomsSelect.setValue(oldSymptoms);
-            }
-        @endif
+            }, 500);
+        }
         
         const diagnosesSelect = new createTomSelect('#diagnoses', {
             placeholder: 'Выберите диагнозы...',
@@ -363,12 +392,40 @@
         });
         
         // Восстанавливаем старые значения диагнозов при ошибке валидации
-        @if($oldDiagnoses)
-            const oldDiagnoses = @json($oldDiagnoses);
-            if (oldDiagnoses && oldDiagnoses.length > 0) {
+        if (oldDiagnoses && oldDiagnoses.length > 0) {
+            // Сначала очищаем все существующие опции
+            diagnosesSelect.clearOptions();
+            
+            // Создаем опции для уже выбранных диагнозов
+            oldDiagnoses.forEach(diagnosisId => {
+                if (typeof diagnosisId === 'string' && diagnosisId.trim() !== '') {
+                    if (isNaN(diagnosisId)) {
+                        // Кастомный диагноз
+                        diagnosesSelect.addOption({
+                            value: diagnosisId,
+                            text: diagnosisId
+                        });
+                    } else {
+                        // Диагноз из словаря - нужно загрузить его данные
+                        fetch(`{{ route('admin.visits.diagnosis-options') }}?q=&selected=${diagnosisId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data && data.length > 0) {
+                                    const diagnosis = data.find(d => d.value == diagnosisId);
+                                    if (diagnosis) {
+                                        diagnosesSelect.addOption(diagnosis);
+                                    }
+                                }
+                            });
+                    }
+                }
+            });
+            
+            // Устанавливаем значения после загрузки опций
+            setTimeout(() => {
                 diagnosesSelect.setValue(oldDiagnoses);
-            }
-        @endif
+            }, 500);
+        }
         
         // Фильтрация питомцев по клиенту
         function filterPetsByClient(clientId) {
@@ -394,7 +451,7 @@
             });
             
             // Восстанавливаем выбранное значение питомца
-            const currentPetId = '{{ $oldPetId }}';
+            const currentPetId = '{{ $oldPetId ?? "" }}';
             if (currentPetId) {
                 petTomSelect.setValue(currentPetId);
             }
@@ -434,16 +491,6 @@
         // Слушатель ввода времени
         visitTimeInput.addEventListener('input', function() {
             updateVisitTimeInterval();
-            
-            // Валидация в реальном времени
-            const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-            if (this.value && !timeRegex.test(this.value)) {
-                this.classList.add('is-invalid');
-                document.getElementById('visit_time_error').style.display = 'block';
-            } else {
-                this.classList.remove('is-invalid');
-                document.getElementById('visit_time_error').style.display = 'none';
-            }
         });
 
         function updateVisitTimeInterval() {
@@ -535,19 +582,18 @@
                         updateVisitTimeInterval();
                     }
                     
-                    // Блокируем/разблокируем кнопку сохранения
-                    const submitButton = document.querySelector('button[type="submit"]');
-                    if (submitButton) {
-                        if (data.available_times.length === 0) {
-                            submitButton.disabled = true;
-                            submitButton.textContent = 'Нет доступного времени';
-                            submitButton.classList.add('btn-secondary');
-                            submitButton.classList.remove('btn-success');
-                        } else {
-                            submitButton.disabled = false;
-                            submitButton.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
-                            submitButton.classList.add('btn-success');
-                            submitButton.classList.remove('btn-secondary');
+                    // Показываем предупреждение если нет доступного времени
+                    if (data.available_times.length === 0) {
+                        const scheduleInfo = document.getElementById('schedule-info');
+                        if (scheduleInfo) {
+                            scheduleInfo.innerHTML = `
+                                <div class="alert alert-warning">
+                                    <strong>Врач:</strong> ${data.schedule.veterinarian}<br>
+                                    <strong>Смена:</strong> ${data.schedule.shift_start} - ${data.schedule.shift_end}<br>
+                                    <strong>Доступное время:</strong> Нет свободного времени<br>
+                                    <br><i class="bi bi-exclamation-triangle"></i> <strong>Все слоты заняты! Выберите другое расписание.</strong>
+                                </div>
+                            `;
                         }
                     }
                 })
@@ -569,14 +615,7 @@
                 }
                 updateVisitTimeInterval();
                 
-                // Возвращаем кнопку в исходное состояние
-                const submitButton = document.querySelector('button[type="submit"]');
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="bi bi-check-lg"></i> Сохранить';
-                    submitButton.classList.add('btn-success');
-                    submitButton.classList.remove('btn-secondary');
-                }
+
             }
         });
         
@@ -603,27 +642,6 @@
         
         // Добавляем обработчик отправки формы
         document.querySelector('form').addEventListener('submit', function(e) {
-            // Проверяем, что выбрано расписание и время
-            if (!selectedSchedule) {
-                e.preventDefault();
-                alert('Необходимо выбрать расписание');
-                return;
-            }
-            
-            if (!visitTimeInput.value) {
-                e.preventDefault();
-                alert('Необходимо указать время приёма');
-                return;
-            }
-            
-            // Проверяем формат времени
-            const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-            if (!timeRegex.test(visitTimeInput.value)) {
-                e.preventDefault();
-                alert('Неверный формат времени. Используйте формат чч:мм');
-                return;
-            }
-            
             // Объединяем дату из расписания с временем приёма
             if (selectedSchedule && visitTimeInput.value) {
                 const scheduleDate = new Date(selectedSchedule.shift_starts_at);
@@ -662,15 +680,15 @@
             const diagnosesValues = diagnosesSelect.getValue();
             
             // Очищаем оригинальные select поля
-            const symptomsSelect = document.getElementById('symptoms');
-            const diagnosesSelect = document.getElementById('diagnoses');
+            const symptomsSelectElement = document.getElementById('symptoms');
+            const diagnosesSelectElement = document.getElementById('diagnoses');
             
             // Удаляем все option из select полей
-            while (symptomsSelect.firstChild) {
-                symptomsSelect.removeChild(symptomsSelect.firstChild);
+            while (symptomsSelectElement.firstChild) {
+                symptomsSelectElement.removeChild(symptomsSelectElement.firstChild);
             }
-            while (diagnosesSelect.firstChild) {
-                diagnosesSelect.removeChild(diagnosesSelect.firstChild);
+            while (diagnosesSelectElement.firstChild) {
+                diagnosesSelectElement.removeChild(diagnosesSelectElement.firstChild);
             }
             
             // Добавляем новые значения как option в select поля
@@ -678,14 +696,14 @@
                 const option = document.createElement('option');
                 option.value = value;
                 option.selected = true;
-                symptomsSelect.appendChild(option);
+                symptomsSelectElement.appendChild(option);
             });
             
             diagnosesValues.forEach(value => {
                 const option = document.createElement('option');
                 option.value = value;
                 option.selected = true;
-                diagnosesSelect.appendChild(option);
+                diagnosesSelectElement.appendChild(option);
             });
         });
 

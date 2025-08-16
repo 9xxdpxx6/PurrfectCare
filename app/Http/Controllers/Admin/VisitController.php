@@ -271,7 +271,7 @@ class VisitController extends AdminController
                         'custom_symptom' => null,
                         'notes' => null
                     ]);
-        } else {
+                } else {
                     // Создаем кастомный симптом
                     Symptom::create([
                         'visit_id' => $visit->id,
@@ -297,7 +297,7 @@ class VisitController extends AdminController
                         'custom_diagnosis' => null,
                         'treatment_plan' => null
                     ]);
-        } else {
+                } else {
                     // Создаем кастомный диагноз
                     Diagnosis::create([
                         'visit_id' => $visit->id,

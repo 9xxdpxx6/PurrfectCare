@@ -20,16 +20,7 @@
                     @csrf
                     @method('PATCH')
 
-                    @if($errors->any())
-                        <div class="alert alert-danger">
-                            <h6 class="alert-heading">Ошибки валидации:</h6>
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -184,10 +175,18 @@
 @endsection
 
 @push('scripts')
+@php
+    $oldSymptoms = old('symptoms');
+    $oldDiagnoses = old('diagnoses');
+@endphp
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const clientSelect = document.getElementById('client_id');
         const petSelect = document.getElementById('pet_id');
+        
+        // Переменные для старых значений
+        const oldSymptoms = @json($oldSymptoms ?? []);
+        const oldDiagnoses = @json($oldDiagnoses ?? []);
         
         // Инициализация TomSelect
         const clientTomSelect = new createTomSelect('#client_id', {
@@ -260,6 +259,54 @@
             }
         });
         
+        // Восстанавливаем старые значения симптомов при ошибке валидации
+        if (oldSymptoms && oldSymptoms.length > 0) {
+            // Сначала очищаем все существующие опции
+            symptomsSelect.clearOptions();
+            
+            // Создаем опции для уже выбранных симптомов
+            oldSymptoms.forEach(symptomId => {
+                if (typeof symptomId === 'string' && symptomId.trim() !== '') {
+                    if (isNaN(symptomId)) {
+                        // Кастомный симптом
+                        symptomsSelect.addOption({
+                            value: symptomId,
+                            text: symptomId
+                        });
+                    } else {
+                        // Симптом из словаря - нужно загрузить его данные
+                        fetch(`{{ route('admin.visits.symptom-options') }}?q=&selected=${symptomId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data && data.length > 0) {
+                                    const symptom = data.find(s => s.value == symptomId);
+                                    if (symptom) {
+                                        symptomsSelect.addOption(symptom);
+                                    }
+                                }
+                            });
+                    }
+                }
+            });
+            
+            // Устанавливаем значения после загрузки опций
+            setTimeout(() => {
+                symptomsSelect.setValue(oldSymptoms);
+            }, 500);
+        } else {
+            // Если нет old значений, восстанавливаем изначально выбранные
+            const selectedSymptoms = @json($selectedSymptoms ?? []);
+            if (selectedSymptoms && selectedSymptoms.length > 0) {
+                selectedSymptoms.forEach(symptom => {
+                    symptomsSelect.addOption({
+                        value: symptom.id,
+                        text: symptom.name
+                    });
+                });
+                symptomsSelect.setValue(selectedSymptoms.map(s => s.id));
+            }
+        }
+        
         // Инициализация TomSelect для диагнозов с предварительно выбранными значениями
         const diagnosesSelect = new createTomSelect('#diagnoses', {
             placeholder: 'Выберите диагнозы...',
@@ -289,6 +336,54 @@
                 }, 50);
             }
         });
+        
+        // Восстанавливаем старые значения диагнозов при ошибке валидации
+        if (oldDiagnoses && oldDiagnoses.length > 0) {
+            // Сначала очищаем все существующие опции
+            diagnosesSelect.clearOptions();
+            
+            // Создаем опции для уже выбранных диагнозов
+            oldDiagnoses.forEach(diagnosisId => {
+                if (typeof diagnosisId === 'string' && diagnosisId.trim() !== '') {
+                    if (isNaN(diagnosisId)) {
+                        // Кастомный диагноз
+                        diagnosesSelect.addOption({
+                            value: diagnosisId,
+                            text: diagnosisId
+                        });
+                    } else {
+                        // Диагноз из словаря - нужно загрузить его данные
+                        fetch(`{{ route('admin.visits.diagnosis-options') }}?q=&selected=${diagnosisId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data && data.length > 0) {
+                                    const diagnosis = data.find(d => d.value == diagnosisId);
+                                    if (diagnosis) {
+                                        diagnosesSelect.addOption(diagnosis);
+                                    }
+                                }
+                            });
+                    }
+                }
+            });
+            
+            // Устанавливаем значения после загрузки опций
+            setTimeout(() => {
+                diagnosesSelect.setValue(oldDiagnoses);
+            }, 500);
+        } else {
+            // Если нет old значений, восстанавливаем изначально выбранные
+            const selectedDiagnoses = @json($selectedDiagnoses ?? []);
+            if (selectedDiagnoses && selectedDiagnoses.length > 0) {
+                selectedDiagnoses.forEach(diagnosis => {
+                    diagnosesSelect.addOption({
+                        value: diagnosis.id,
+                        text: diagnosis.name
+                    });
+                });
+                diagnosesSelect.setValue(selectedDiagnoses.map(d => d.id));
+            }
+        }
         
         // Фильтрация питомцев по клиенту
         function filterPetsByClient(clientId) {
@@ -351,14 +446,6 @@
         // Слушатель ввода времени
         visitTimeInput.addEventListener('input', function() {
             updateVisitTimeInterval();
-            
-            // Валидация в реальном времени
-            const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-            if (this.value && !timeRegex.test(this.value)) {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
-            }
         });
 
         function updateVisitTimeInterval() {
@@ -526,27 +613,6 @@
         
         // Добавляем обработчик отправки формы
         document.querySelector('form').addEventListener('submit', function(e) {
-            // Проверяем, что выбрано расписание и время
-            if (!selectedSchedule) {
-                e.preventDefault();
-                alert('Необходимо выбрать расписание');
-                return;
-            }
-            
-            if (!visitTimeInput.value) {
-                e.preventDefault();
-                alert('Необходимо указать время приёма');
-                return;
-            }
-            
-            // Проверяем формат времени
-            const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-            if (!timeRegex.test(visitTimeInput.value)) {
-                e.preventDefault();
-                alert('Неверный формат времени. Используйте формат чч:мм');
-                return;
-            }
-            
             // Объединяем дату из расписания с временем приёма
             if (selectedSchedule && visitTimeInput.value) {
                 const scheduleDate = new Date(selectedSchedule.shift_starts_at);
@@ -579,6 +645,37 @@
                     document.getElementById('starts_at').value = fullDateTime;
                 }
             }
+            
+            // Добавляем значения TomSelect в форму перед отправкой
+            const symptomsValues = symptomsSelect.getValue();
+            const diagnosesValues = diagnosesSelect.getValue();
+            
+            // Очищаем оригинальные select поля
+            const symptomsSelectElement = document.getElementById('symptoms');
+            const diagnosesSelectElement = document.getElementById('diagnoses');
+            
+            // Удаляем все option из select полей
+            while (symptomsSelectElement.firstChild) {
+                symptomsSelectElement.removeChild(symptomsSelectElement.firstChild);
+            }
+            while (diagnosesSelectElement.firstChild) {
+                diagnosesSelectElement.removeChild(diagnosesSelectElement.firstChild);
+            }
+            
+            // Добавляем новые значения как option в select поля
+            symptomsValues.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.selected = true;
+                symptomsSelectElement.appendChild(option);
+            });
+            
+            diagnosesValues.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.selected = true;
+                diagnosesSelectElement.appendChild(option);
+            });
         });
     });
 </script>
