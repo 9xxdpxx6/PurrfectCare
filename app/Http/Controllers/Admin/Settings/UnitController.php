@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Unit;
 use App\Services\Settings\UnitService;
-use App\Http\Requests\Settings\Unit\StoreRequest;
-use App\Http\Requests\Settings\Unit\UpdateRequest;
+use App\Http\Requests\Admin\Settings\Unit\StoreRequest;
+use App\Http\Requests\Admin\Settings\Unit\UpdateRequest;
 use Illuminate\Http\Request;
 
 class UnitController extends SettingsController

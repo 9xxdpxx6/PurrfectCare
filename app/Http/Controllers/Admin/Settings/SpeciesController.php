@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Species;
 use App\Services\Settings\SpeciesService;
-use App\Http\Requests\Settings\Species\StoreRequest;
-use App\Http\Requests\Settings\Species\UpdateRequest;
+use App\Http\Requests\Admin\Settings\Species\StoreRequest;
+use App\Http\Requests\Admin\Settings\Species\UpdateRequest;
 use Illuminate\Http\Request;
 
 class SpeciesController extends SettingsController

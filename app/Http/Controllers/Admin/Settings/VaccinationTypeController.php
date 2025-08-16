@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\VaccinationType;
 use App\Services\Settings\VaccinationTypeService;
-use App\Http\Requests\Settings\VaccinationType\StoreRequest;
-use App\Http\Requests\Settings\VaccinationType\UpdateRequest;
+use App\Http\Requests\Admin\Settings\VaccinationType\StoreRequest;
+use App\Http\Requests\Admin\Settings\VaccinationType\UpdateRequest;
 use Illuminate\Http\Request;
 
 class VaccinationTypeController extends SettingsController

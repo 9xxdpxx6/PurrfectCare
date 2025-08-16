@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Specialty;
 use App\Services\Settings\SpecialtyService;
-use App\Http\Requests\Settings\Specialty\StoreRequest;
-use App\Http\Requests\Settings\Specialty\UpdateRequest;
+use App\Http\Requests\Admin\Settings\Specialty\StoreRequest;
+use App\Http\Requests\Admin\Settings\Specialty\UpdateRequest;
 use Illuminate\Http\Request;
 
 class SpecialtyController extends SettingsController

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Status;
 use App\Services\Settings\StatusService;
-use App\Http\Requests\Settings\Status\StoreRequest;
-use App\Http\Requests\Settings\Status\UpdateRequest;
+use App\Http\Requests\Admin\Settings\Status\StoreRequest;
+use App\Http\Requests\Admin\Settings\Status\UpdateRequest;
 use Illuminate\Http\Request;
 
 class StatusController extends SettingsController

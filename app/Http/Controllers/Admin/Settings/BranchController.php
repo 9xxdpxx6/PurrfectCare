@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Branch;
 use App\Services\Settings\BranchService;
-use App\Http\Requests\Settings\Branch\StoreRequest;
-use App\Http\Requests\Settings\Branch\UpdateRequest;
+use App\Http\Requests\Admin\Settings\Branch\StoreRequest;
+use App\Http\Requests\Admin\Settings\Branch\UpdateRequest;
 use Illuminate\Http\Request;
 
 class BranchController extends SettingsController

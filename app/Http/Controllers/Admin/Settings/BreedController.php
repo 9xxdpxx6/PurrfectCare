@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Breed;
 use App\Services\Settings\BreedService;
-use App\Http\Requests\Settings\Breed\StoreRequest;
-use App\Http\Requests\Settings\Breed\UpdateRequest;
+use App\Http\Requests\Admin\Settings\Breed\StoreRequest;
+use App\Http\Requests\Admin\Settings\Breed\UpdateRequest;
 use Illuminate\Http\Request;
 
 class BreedController extends SettingsController

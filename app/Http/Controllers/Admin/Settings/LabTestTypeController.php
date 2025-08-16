@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\LabTestType;
 use App\Services\Settings\LabTestTypeService;
-use App\Http\Requests\Settings\LabTestType\StoreRequest;
-use App\Http\Requests\Settings\LabTestType\UpdateRequest;
+use App\Http\Requests\Admin\Settings\LabTestType\StoreRequest;
+use App\Http\Requests\Admin\Settings\LabTestType\UpdateRequest;
 use Illuminate\Http\Request;
 
 class LabTestTypeController extends SettingsController

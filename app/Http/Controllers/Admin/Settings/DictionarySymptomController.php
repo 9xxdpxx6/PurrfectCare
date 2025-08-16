@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\DictionarySymptom;
 use App\Services\Settings\DictionarySymptomService;
-use App\Http\Requests\Settings\DictionarySymptom\StoreRequest;
-use App\Http\Requests\Settings\DictionarySymptom\UpdateRequest;
+use App\Http\Requests\Admin\Settings\DictionarySymptom\StoreRequest;
+use App\Http\Requests\Admin\Settings\DictionarySymptom\UpdateRequest;
 use Illuminate\Http\Request;
 
 class DictionarySymptomController extends SettingsController

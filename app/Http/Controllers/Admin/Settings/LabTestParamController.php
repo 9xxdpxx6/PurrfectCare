@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\LabTestParam;
 use App\Services\Settings\LabTestParamService;
-use App\Http\Requests\Settings\LabTestParam\StoreRequest;
-use App\Http\Requests\Settings\LabTestParam\UpdateRequest;
+use App\Http\Requests\Admin\Settings\LabTestParam\StoreRequest;
+use App\Http\Requests\Admin\Settings\LabTestParam\UpdateRequest;
 use Illuminate\Http\Request;
 
 class LabTestParamController extends SettingsController

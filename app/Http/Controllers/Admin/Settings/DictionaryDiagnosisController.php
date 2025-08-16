@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\DictionaryDiagnosis;
 use App\Services\Settings\DictionaryDiagnosisService;
-use App\Http\Requests\Settings\DictionaryDiagnosis\StoreRequest;
-use App\Http\Requests\Settings\DictionaryDiagnosis\UpdateRequest;
+use App\Http\Requests\Admin\Settings\DictionaryDiagnosis\StoreRequest;
+use App\Http\Requests\Admin\Settings\DictionaryDiagnosis\UpdateRequest;
 use Illuminate\Http\Request;
 
 class DictionaryDiagnosisController extends SettingsController

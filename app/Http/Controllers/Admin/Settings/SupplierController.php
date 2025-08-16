@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Models\Supplier;
 use App\Services\Settings\SupplierService;
-use App\Http\Requests\Settings\Supplier\StoreRequest;
-use App\Http\Requests\Settings\Supplier\UpdateRequest;
+use App\Http\Requests\Admin\Settings\Supplier\StoreRequest;
+use App\Http\Requests\Admin\Settings\Supplier\UpdateRequest;
 use Illuminate\Http\Request;
 
 class SupplierController extends SettingsController
