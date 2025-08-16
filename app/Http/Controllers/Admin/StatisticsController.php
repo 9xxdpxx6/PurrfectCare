@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Statistics\DashboardStatisticsService;
+use App\Services\Statistics\DashboardMetricsService;
+use App\Services\Statistics\WeekStatisticsService;
 use App\Services\Statistics\FinancialStatisticsService;
 use App\Services\Statistics\OperationalStatisticsService;
 use App\Services\Statistics\ClientStatisticsService;
@@ -22,6 +24,8 @@ use Carbon\Carbon;
 class StatisticsController extends Controller
 {
     protected $dashboardService;
+    protected $metricsService;
+    protected $weekStatisticsService;
     protected $financialService;
     protected $operationalService;
     protected $clientService;
@@ -30,6 +34,8 @@ class StatisticsController extends Controller
 
     public function __construct(
         DashboardStatisticsService $dashboardService,
+        DashboardMetricsService $metricsService,
+        WeekStatisticsService $weekStatisticsService,
         FinancialStatisticsService $financialService,
         OperationalStatisticsService $operationalService,
         ClientStatisticsService $clientService,
@@ -37,6 +43,8 @@ class StatisticsController extends Controller
         DateRangeService $dateRangeService
     ) {
         $this->dashboardService = $dashboardService;
+        $this->metricsService = $metricsService;
+        $this->weekStatisticsService = $weekStatisticsService;
         $this->financialService = $financialService;
         $this->operationalService = $operationalService;
         $this->clientService = $clientService;
@@ -58,31 +66,22 @@ class StatisticsController extends Controller
         // Основные метрики
         $metrics = $this->dashboardService->getMetrics($startDate, $endDate);
         
-        // Дополнительные метрики
-        $metrics['total_clients'] = User::whereBetween('created_at', [$startDate, $endDate])->count();
-        $metrics['total_pets'] = Pet::whereBetween('created_at', [$startDate, $endDate])->count();
-        $metrics['total_employees'] = Employee::count();
-        $metrics['total_branches'] = Branch::count();
+        // Дополнительные метрики через сервис
+        $additionalMetrics = $this->metricsService->getAdditionalMetrics(
+            $startDate, 
+            $endDate, 
+            $metrics['total_orders'], 
+            $metrics['total_revenue']
+        );
         
-        // Средний чек
-        $metrics['average_order'] = $metrics['total_orders'] > 0 
-            ? round($metrics['total_revenue'] / $metrics['total_orders'], 2) 
-            : 0;
-        
-        // Конверсия приёмов в заказы (на основе реальных связей)
-        $visitsWithOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
-            ->whereHas('orders')
-            ->count();
-        
-        $metrics['conversion_rate'] = $metrics['total_visits'] > 0 
-            ? round(($visitsWithOrders / $metrics['total_visits']) * 100, 1) 
-            : 0;
+        // Объединяем метрики
+        $metrics = array_merge($metrics, $additionalMetrics);
         
         // Статистика по выбранному периоду
         $weeklyStats = $this->dashboardService->getPeriodStats($startDate, $endDate);
         
         // Средние показатели за неделю в выбранном периоде
-        $weekAverageStats = $this->dashboardService->getWeekAverageStats($startDate, $endDate);
+        $weekAverageStats = $this->weekStatisticsService->getWeekStats($startDate, $endDate);
         
         // Топ услуг
         $topServices = $this->dashboardService->getTopServices($startDate);
@@ -104,6 +103,10 @@ class StatisticsController extends Controller
         // Выручка по периодам
         $revenueData = $this->financialService->getRevenueData($startDate, $endDate);
         
+        // Общее количество заказов и выручка
+        $totalOrders = $this->financialService->getTotalOrders($startDate, $endDate);
+        $totalRevenue = $this->financialService->getTotalRevenue($startDate, $endDate);
+        
         // Выручка по категориям
         $categoryRevenue = $this->financialService->getCategoryRevenue($startDate, $endDate);
         
@@ -113,7 +116,18 @@ class StatisticsController extends Controller
         // Топ услуг
         $topServices = $this->financialService->getTopServices($startDate, $endDate);
         
-        return view('admin.statistics.financial', compact('revenueData', 'categoryRevenue', 'branchRevenue', 'topServices', 'period', 'startDate', 'endDate', 'dateRangeString'));
+        return view('admin.statistics.financial', compact(
+            'revenueData', 
+            'totalOrders', 
+            'totalRevenue',
+            'categoryRevenue', 
+            'branchRevenue', 
+            'topServices', 
+            'period', 
+            'startDate', 
+            'endDate', 
+            'dateRangeString'
+        ));
     }
     
     public function operational(Request $request)

@@ -12,6 +12,26 @@ use Carbon\Carbon;
 
 class FinancialStatisticsService
 {
+    /**
+     * Получить общее количество заказов за период
+     */
+    public function getTotalOrders($startDate, $endDate)
+    {
+        return Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('is_paid', true) // Только оплаченные заказы
+            ->count();
+    }
+
+    /**
+     * Получить общую выручку за период
+     */
+    public function getTotalRevenue($startDate, $endDate)
+    {
+        return Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('is_paid', true) // Только оплаченные заказы
+            ->sum('total');
+    }
+
     public function getCategoryRevenue($startDate, $endDate)
     {
         $orders = Order::whereBetween('created_at', [$startDate, $endDate])

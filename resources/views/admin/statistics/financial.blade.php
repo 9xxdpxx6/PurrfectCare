@@ -39,12 +39,6 @@
 
 <!-- Основные финансовые метрики -->
 <div class="row mb-4">
-    @php
-        $totalRevenue = array_sum($revenueData);
-        $totalOrders = count($revenueData);
-        $averageRevenue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
-    @endphp
-    
     <div class="col-md-3 mb-3">
         <div class="card kpi-outline success h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
@@ -64,7 +58,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-cart-check fs-1"></i>
                 </div>
-                <h3>{{ number_format($totalOrders) }}</h3>
+                <h3>{{ number_format($totalOrders, 0, ',', ' ') }}</h3>
                 <p class="card-text text-muted mb-1">
                     @php
                         $lastDigit = $totalOrders % 10;
@@ -82,7 +76,7 @@
                     @endphp
                     {{ $orderText }}
                 </p>
-                <small class="text-muted d-block">Количество созданных заказов</small>
+                <small class="text-muted d-block">Количество оплаченных заказов</small>
             </div>
         </div>
     </div>
@@ -93,7 +87,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-graph-up fs-1"></i>
                 </div>
-                <h3>{{ number_format($averageRevenue, 0, ',', ' ') }} ₽</h3>
+                <h3>{{ number_format($totalOrders > 0 ? round($totalRevenue / $totalOrders) : 0, 0, ',', ' ') }} ₽</h3>
                 <p class="card-text text-muted mb-1">Средний чек</p>
                 <small class="text-muted d-block">Средняя сумма заказа</small>
             </div>
@@ -330,8 +324,8 @@ document.addEventListener('DOMContentLoaded', function() {
         rangePicker.selectDate([hiddenStart.value, hiddenEnd.value]);
     }
     // Данные для графиков
-    const revenueData = @json($revenueData);
-    const categoryRevenue = @json($categoryRevenue);
+    const revenueData = {!! json_encode($revenueData) !!};
+    const categoryRevenue = {!! json_encode($categoryRevenue) !!};
     
     // График выручки по дням
     const revenueCtx = document.getElementById('revenueChart').getContext('2d');
