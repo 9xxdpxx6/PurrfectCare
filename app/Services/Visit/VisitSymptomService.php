@@ -1,0 +1,213 @@
+<?php
+
+namespace App\Services\Visit;
+
+use App\Models\Visit;
+use App\Models\Symptom;
+use App\Models\DictionarySymptom;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class VisitSymptomService
+{
+    /**
+     * Создать симптомы для приема
+     * 
+     * @param Visit $visit Прием
+     * @param array $symptoms Массив симптомов
+     * @return void
+     */
+    public function createSymptoms(Visit $visit, array $symptoms): void
+    {
+        try {
+            foreach ($symptoms as $symptomData) {
+                if (!empty(trim($symptomData))) {
+                    $this->createSymptom($visit, $symptomData);
+                }
+            }
+
+            Log::info('Симптомы созданы для приема', [
+                'visit_id' => $visit->id,
+                'symptoms_count' => count(array_filter($symptoms))
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при создании симптомов', [
+                'visit_id' => $visit->id,
+                'symptoms' => $symptoms,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Обновить симптомы для приема
+     * 
+     * @param Visit $visit Прием
+     * @param array $symptoms Массив симптомов
+     * @return void
+     */
+    public function updateSymptoms(Visit $visit, array $symptoms): void
+    {
+        try {
+            // Удаляем все старые симптомы
+            $visit->symptoms()->delete();
+            
+            // Создаем новые симптомы
+            $this->createSymptoms($visit, $symptoms);
+
+            Log::info('Симптомы обновлены для приема', [
+                'visit_id' => $visit->id,
+                'symptoms_count' => count(array_filter($symptoms))
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при обновлении симптомов', [
+                'visit_id' => $visit->id,
+                'symptoms' => $symptoms,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Создать конкретный симптом
+     * 
+     * @param Visit $visit Прием
+     * @param string|int $symptomData Данные симптома
+     * @return Symptom Созданный симптом
+     */
+    protected function createSymptom(Visit $visit, $symptomData): Symptom
+    {
+        if (is_numeric($symptomData)) {
+            // Проверяем существование симптома в словаре
+            $dictionarySymptom = DictionarySymptom::find($symptomData);
+            if ($dictionarySymptom) {
+                return Symptom::create([
+                    'visit_id' => $visit->id,
+                    'dictionary_symptom_id' => $symptomData,
+                    'custom_symptom' => null,
+                    'notes' => null
+                ]);
+            }
+        } else {
+            // Создаем кастомный симптом
+            return Symptom::create([
+                'visit_id' => $visit->id,
+                'dictionary_symptom_id' => null,
+                'custom_symptom' => $symptomData,
+                'notes' => null
+            ]);
+        }
+
+        throw new \InvalidArgumentException('Некорректные данные симптома: ' . $symptomData);
+    }
+
+    /**
+     * Получить симптомы приема с форматированием для отображения
+     * 
+     * @param Visit $visit Прием
+     * @param int $limit Лимит для отображения
+     * @return array Форматированные симптомы
+     */
+    public function getFormattedSymptoms(Visit $visit, int $limit = 3): array
+    {
+        $symptoms = $visit->symptoms;
+        $limitedSymptoms = $symptoms->take($limit);
+        $symptomsCount = $symptoms->count();
+        
+        $symptomNames = $limitedSymptoms->map(function($symptom) {
+            return $symptom->getName();
+        })->toArray();
+        
+        if ($symptomsCount > $limit) {
+            $symptomNames[] = '...';
+        }
+        
+        return [
+            'display' => $symptomNames,
+            'total_count' => $symptomsCount,
+            'limited_count' => $limitedSymptoms->count()
+        ];
+    }
+
+    /**
+     * Получить детальную информацию о симптомах приема
+     * 
+     * @param Visit $visit Прием
+     * @return array Детальная информация
+     */
+    public function getSymptomsDetails(Visit $visit): array
+    {
+        $symptoms = $visit->symptoms()->with('dictionarySymptom')->get();
+        
+        $details = [
+            'dictionary_symptoms' => [],
+            'custom_symptoms' => [],
+            'total_count' => $symptoms->count()
+        ];
+
+        foreach ($symptoms as $symptom) {
+            if ($symptom->dictionary_symptom_id) {
+                $details['dictionary_symptoms'][] = [
+                    'id' => $symptom->dictionary_symptom_id,
+                    'name' => $symptom->dictionarySymptom->name ?? 'Неизвестный симптом',
+                    'notes' => $symptom->notes
+                ];
+            } else {
+                $details['custom_symptoms'][] = [
+                    'id' => $symptom->custom_symptom,
+                    'name' => $symptom->custom_symptom,
+                    'notes' => $symptom->notes
+                ];
+            }
+        }
+
+        return $details;
+    }
+
+    /**
+     * Проверить существование симптома в словаре
+     * 
+     * @param int $symptomId ID симптома
+     * @return bool
+     */
+    public function symptomExistsInDictionary(int $symptomId): bool
+    {
+        return DictionarySymptom::where('id', $symptomId)->exists();
+    }
+
+    /**
+     * Получить статистику по симптомам приема
+     * 
+     * @param Visit $visit Прием
+     * @return array Статистика
+     */
+    public function getSymptomsStatistics(Visit $visit): array
+    {
+        $symptoms = $visit->symptoms;
+        
+        return [
+            'total_symptoms' => $symptoms->count(),
+            'dictionary_symptoms' => $symptoms->whereNotNull('dictionary_symptom_id')->count(),
+            'custom_symptoms' => $symptoms->whereNotNull('custom_symptom')->count(),
+            'symptoms_with_notes' => $symptoms->whereNotNull('notes')->count()
+        ];
+    }
+
+    /**
+     * Поиск симптомов по названию
+     * 
+     * @param string $query Поисковый запрос
+     * @param int $limit Лимит результатов
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function searchSymptoms(string $query, int $limit = 10)
+    {
+        return DictionarySymptom::where('name', 'like', "%{$query}%")
+            ->limit($limit)
+            ->get();
+    }
+}
