@@ -7,6 +7,9 @@ use App\Models\Employee;
 use App\Models\Branch;
 use App\Http\Filters\ScheduleFilter;
 use App\Http\Traits\HasOptionsMethods;
+use App\Services\Schedule\ScheduleValidationService;
+use App\Services\Schedule\ScheduleCreationService;
+use App\Services\Schedule\DateTimeProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -20,8 +23,19 @@ class ScheduleController extends AdminController
 {
     use HasOptionsMethods;
 
-    public function __construct()
-    {
+    protected $validationService;
+    protected $creationService;
+    protected $dateTimeService;
+
+    public function __construct(
+        ScheduleValidationService $validationService,
+        ScheduleCreationService $creationService,
+        DateTimeProcessingService $dateTimeService
+    ) {
+        $this->validationService = $validationService;
+        $this->creationService = $creationService;
+        $this->dateTimeService = $dateTimeService;
+        
         $this->model = Schedule::class;
         $this->viewPath = 'schedules';
         $this->routePrefix = 'schedules';
@@ -70,54 +84,14 @@ class ScheduleController extends AdminController
         return view("admin.{$this->viewPath}.create", compact('veterinarians', 'branches', 'selectedVeterinarian', 'selectedBranch'));
     }
 
-    /**
-     * Проверка логических противоречий в расписании
-     * 
-     * @param int $veterinarianId ID ветеринара
-     * @param string $shiftStartsAt Время начала смены
-     * @param string $shiftEndsAt Время окончания смены
-     * @param int|null $excludeScheduleId ID расписания для исключения (при обновлении)
-     * @return array Массив с ошибками или пустой массив, если ошибок нет
-     */
-    private function validateScheduleConflicts(
-        int $veterinarianId,
-        string $shiftStartsAt,
-        string $shiftEndsAt,
-        ?int $excludeScheduleId = null
-    ): array {
-        // Проверяем, нет ли у ветеринара других смен в это же время
-        $query = Schedule::where('veterinarian_id', $veterinarianId)
-                ->where('shift_ends_at', '>', $shiftStartsAt)
-                ->where('shift_starts_at', '<', $shiftEndsAt);
-
-        if ($excludeScheduleId) {
-            $query->where('id', '!=', $excludeScheduleId);
-        }
-
-        $conflictingSchedules = $query->with('branch')->get();
-
-        if ($conflictingSchedules->isEmpty()) {
-            return [];
-        }
-
-        return $conflictingSchedules->map(function($schedule) {
-            return sprintf(
-                'У ветеринара уже есть смена %s - %s в филиале "%s"',
-                Carbon::parse($schedule->shift_starts_at)->format('d.m.Y H:i'),
-                Carbon::parse($schedule->shift_ends_at)->format('H:i'),
-                $schedule->branch->name
-            );
-        })->toArray();
-    }
-
     public function store(StoreRequest $request) : RedirectResponse
     {
         // Обработка полей даты и времени
-        $this->processDateTimeFields($request);
+        $this->dateTimeService->processScheduleDateTimeFields($request);
         $validated = $request->validated();
 
         // Проверяем логические противоречия
-        $errors = $this->validateScheduleConflicts(
+        $errors = $this->validationService->validateScheduleConflicts(
             $validated['veterinarian_id'],
             $validated['shift_starts_at'],
             $validated['shift_ends_at']
@@ -129,7 +103,7 @@ class ScheduleController extends AdminController
                 ->withErrors(['schedule_conflicts' => $errors]);
         }
 
-        $this->model::create($validated);
+        $this->creationService->createSingleSchedule($validated);
 
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
@@ -155,13 +129,12 @@ class ScheduleController extends AdminController
     public function update(Request $request, $id) : RedirectResponse
     {
         // Обработка полей даты и времени
-        $this->processDateTimeFields($request);
+        $this->dateTimeService->processScheduleDateTimeFields($request);
         
-        $item = $this->model::findOrFail($id);
         $validated = $request->validate($this->validationRules);
 
         // Проверяем логические противоречия
-        $errors = $this->validateScheduleConflicts(
+        $errors = $this->validationService->validateScheduleConflicts(
             $validated['veterinarian_id'],
             $validated['shift_starts_at'],
             $validated['shift_ends_at'],
@@ -174,7 +147,7 @@ class ScheduleController extends AdminController
                 ->withErrors(['schedule_conflicts' => $errors]);
         }
 
-        $item->update($validated);
+        $this->creationService->updateSchedule($id, $validated);
 
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
@@ -183,11 +156,7 @@ class ScheduleController extends AdminController
 
     public function destroy($id) : RedirectResponse
     {
-        $item = $this->model::findOrFail($id);
-        
-        // Убираем проверку зависимостей - расписание не имеет зависимостей для проверки
-        
-        $item->delete();
+        $this->creationService->deleteSchedule($id);
 
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
@@ -225,217 +194,70 @@ class ScheduleController extends AdminController
     public function storeWeek(StoreWeekRequest $request) : RedirectResponse
     {
         $validated = $request->validated();
+        
+        // Обработка поля начала недели
+        $this->dateTimeService->processWeekStartField($request);
 
-        // Обработка полей даты и времени
-        // $this->processDateTimeFields($request);
+        // Создаем расписание на неделю через сервис
+        $result = $this->creationService->createWeekSchedule($validated, $request->all());
 
-        $weekStart = Carbon::parse($request->week_start)->startOfWeek();
-        $veterinarianId = $validated['veterinarian_id'];
-        $branchId = $validated['branch_id'];
+        if (!$result['success']) {
+            switch ($result['type']) {
+                case 'conflicts':
+                    $conflicts = $result['data'];
+                    $errorMessages = [];
+                    foreach ($conflicts as $day => $conflict) {
+                        foreach ($conflict['errors'] as $error) {
+                            $errorMessages[] = "{$conflict['day_name']} ({$conflict['date']}): {$error}";
+                        }
+                    }
+                    
+                    return back()
+                        ->withInput()
+                        ->withErrors(['schedule_conflicts' => $errorMessages])
+                        ->with('conflicts', $conflicts);
 
-        $dayMap = [
-            'monday' => 0,
-            'tuesday' => 1,
-            'wednesday' => 2,
-            'thursday' => 3,
-            'friday' => 4,
-            'saturday' => 5,
-            'sunday' => 6,
-        ];
+                case 'existing_schedules':
+                    $existingSchedules = $result['data'];
+                    $existingMessage = "Для всех выбранных дней уже существует расписание: ";
+                    $existingList = [];
+                    foreach ($existingSchedules as $day => $data) {
+                        $existingList[] = "{$data['day_name']} ({$data['date']})";
+                    }
+                    $existingMessage .= implode(', ', $existingList);
 
-        $dayNames = [
-            'monday' => 'Понедельник',
-            'tuesday' => 'Вторник',
-            'wednesday' => 'Среда',
-            'thursday' => 'Четверг',
-            'friday' => 'Пятница',
-            'saturday' => 'Суббота',
-            'sunday' => 'Воскресенье'
-        ];
+                    return back()
+                        ->withInput()
+                        ->with('warning', $existingMessage);
 
-        $schedulesToCreate = [];
-        $conflicts = [];
-        $existingSchedules = [];
-
-        // Проверяем каждый день на конфликты и существующие расписания
-        foreach ($request->days as $day) {
-            $dayOffset = $dayMap[$day];
-            $shiftDate = $weekStart->copy()->addDays($dayOffset);
-            
-            $startTime = $request->input("start_time_{$day}");
-            $endTime = $request->input("end_time_{$day}");
-            
-            $shiftStartsAt = $shiftDate->copy()->format('Y-m-d') . ' ' . $startTime;
-            $shiftEndsAt = $shiftDate->copy()->format('Y-m-d') . ' ' . $endTime;
-
-            // Проверяем существующие расписания на этот день
-            $existingSchedule = Schedule::where('veterinarian_id', $veterinarianId)
-                ->whereDate('shift_starts_at', $shiftDate->format('Y-m-d'))
-                ->first();
-
-            if ($existingSchedule) {
-                $existingSchedules[$day] = [
-                    'schedule' => $existingSchedule,
-                    'day_name' => $dayNames[$day],
-                    'date' => $shiftDate->format('d.m.Y')
-                ];
-                continue;
+                case 'error':
+                    return back()
+                        ->withInput()
+                        ->withErrors(['general' => $result['message']]);
             }
-
-            // Проверяем конфликты с другими расписаниями
-            $conflictErrors = $this->validateScheduleConflicts(
-                $veterinarianId,
-                $shiftStartsAt,
-                $shiftEndsAt
-            );
-
-            if (!empty($conflictErrors)) {
-                $conflicts[$day] = [
-                    'errors' => $conflictErrors,
-                    'day_name' => $dayNames[$day],
-                    'date' => $shiftDate->format('d.m.Y'),
-                    'time' => "{$startTime} - {$endTime}"
-                ];
-                continue;
-            }
-
-            // Добавляем в список для создания
-            $schedulesToCreate[] = [
-                'veterinarian_id' => $veterinarianId,
-                'branch_id' => $branchId,
-                'shift_starts_at' => $shiftStartsAt,
-                'shift_ends_at' => $shiftEndsAt,
-                'day' => $day,
-                'day_name' => $dayNames[$day],
-                'date' => $shiftDate->format('d.m.Y')
-            ];
         }
 
-        // Если есть конфликты, возвращаем ошибки
-        if (!empty($conflicts)) {
-            $errorMessages = [];
-            foreach ($conflicts as $day => $conflict) {
-                foreach ($conflict['errors'] as $error) {
-                    $errorMessages[] = "{$conflict['day_name']} ({$conflict['date']}): {$error}";
-                }
-            }
-
-            return back()
-                ->withInput()
-                ->withErrors(['schedule_conflicts' => $errorMessages])
-                ->with('conflicts', $conflicts);
+        // Формируем сообщение об успехе
+        $createdCount = count($result['created_schedules']);
+        $totalDays = $result['total_days'];
+        
+        $successMessage = "Успешно создано расписаний: {$createdCount}";
+        
+        if ($createdCount < $totalDays) {
+            $skippedCount = $totalDays - $createdCount;
+            $successMessage .= ". Пропущено дней: {$skippedCount} (уже существует расписание)";
         }
 
-        // Если нет расписаний для создания, возвращаем предупреждение
-        if (empty($schedulesToCreate)) {
-            $existingMessage = "Для всех выбранных дней уже существует расписание: ";
+        if (!empty($result['existing_schedules'])) {
             $existingList = [];
-            foreach ($existingSchedules as $day => $data) {
+            foreach ($result['existing_schedules'] as $day => $data) {
                 $existingList[] = "{$data['day_name']} ({$data['date']})";
             }
-            $existingMessage .= implode(', ', $existingList);
-
-            return back()
-                ->withInput()
-                ->with('warning', $existingMessage);
+            $successMessage .= ". Существующие расписания: " . implode(', ', $existingList);
         }
 
-        // Создаём расписания в транзакции
-        try {
-            \DB::beginTransaction();
-
-            $createdSchedules = [];
-            foreach ($schedulesToCreate as $scheduleData) {
-                $schedule = Schedule::create([
-                    'veterinarian_id' => $scheduleData['veterinarian_id'],
-                    'branch_id' => $scheduleData['branch_id'],
-                    'shift_starts_at' => $scheduleData['shift_starts_at'],
-                    'shift_ends_at' => $scheduleData['shift_ends_at'],
-                ]);
-                
-                $createdSchedules[] = $schedule;
-            }
-
-            \DB::commit();
-
-            // Формируем сообщение об успехе
-            $createdCount = count($createdSchedules);
-            $totalDays = count($request->days);
-            
-            $successMessage = "Успешно создано расписаний: {$createdCount}";
-            
-            if ($createdCount < $totalDays) {
-                $skippedCount = $totalDays - $createdCount;
-                $successMessage .= ". Пропущено дней: {$skippedCount} (уже существует расписание)";
-            }
-
-            if (!empty($existingSchedules)) {
-                $existingList = [];
-                foreach ($existingSchedules as $day => $data) {
-                    $existingList[] = "{$data['day_name']} ({$data['date']})";
-                }
-                $successMessage .= ". Существующие расписания: " . implode(', ', $existingList);
-            }
-
-            return redirect()
-                ->route("admin.{$this->routePrefix}.index")
-                ->with('success', $successMessage);
-
-        } catch (\Exception $e) {
-            \DB::rollBack();
-            
-            \Log::error('Ошибка при создании расписания на неделю', [
-                'error' => $e->getMessage(),
-                'veterinarian_id' => $veterinarianId,
-                'branch_id' => $branchId,
-                'week_start' => $request->week_start,
-                'days' => $request->days
-            ]);
-
-            return back()
-                ->withInput()
-                ->withErrors(['general' => 'Произошла ошибка при создании расписания. Попробуйте еще раз.']);
-        }
-    }
-
-    /**
-     * Обработка полей даты и времени для создания datetime полей
-     */
-    private function processDateTimeFields(Request $request)
-    {
-        if ($request->has('shift_date') && $request->has('start_time')) {
-            try {
-                $date = Carbon::createFromFormat('d.m.Y', $request->shift_date);
-                $startTime = $request->start_time;
-                $request->merge([
-                    'shift_starts_at' => $date->format('Y-m-d') . ' ' . $startTime
-                ]);
-            } catch (\Exception $e) {
-                // Игнорируем ошибки парсинга, валидация их поймает
-            }
-        }
-
-        if ($request->has('shift_date') && $request->has('end_time')) {
-            try {
-                $date = Carbon::createFromFormat('d.m.Y', $request->shift_date);
-                $endTime = $request->end_time;
-                $request->merge([
-                    'shift_ends_at' => $date->format('Y-m-d') . ' ' . $endTime
-                ]);
-            } catch (\Exception $e) {
-                // Игнорируем ошибки парсинга, валидация их поймает
-            }
-        }
-
-        if ($request->has('week_start')) {
-            try {
-                $date = Carbon::createFromFormat('d.m.Y', $request->week_start);
-                $request->merge([
-                    'week_start' => $date->format('Y-m-d')
-                ]);
-            } catch (\Exception $e) {
-                // Игнорируем ошибки парсинга, валидация их поймает
-            }
-        }
+        return redirect()
+            ->route("admin.{$this->routePrefix}.index")
+            ->with('success', $successMessage);
     }
 } 
