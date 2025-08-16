@@ -6,6 +6,7 @@ use App\Models\Visit;
 use App\Models\Symptom;
 use App\Models\DictionarySymptom;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class VisitSymptomService
@@ -20,11 +21,15 @@ class VisitSymptomService
     public function createSymptoms(Visit $visit, array $symptoms): void
     {
         try {
+            DB::beginTransaction();
+            
             foreach ($symptoms as $symptomData) {
                 if (!empty(trim($symptomData))) {
                     $this->createSymptom($visit, $symptomData);
                 }
             }
+
+            DB::commit();
 
             Log::info('Симптомы созданы для приема', [
                 'visit_id' => $visit->id,
@@ -32,6 +37,8 @@ class VisitSymptomService
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Ошибка при создании симптомов', [
                 'visit_id' => $visit->id,
                 'symptoms' => $symptoms,
@@ -51,11 +58,15 @@ class VisitSymptomService
     public function updateSymptoms(Visit $visit, array $symptoms): void
     {
         try {
+            DB::beginTransaction();
+            
             // Удаляем все старые симптомы
             $visit->symptoms()->delete();
             
             // Создаем новые симптомы
             $this->createSymptoms($visit, $symptoms);
+
+            DB::commit();
 
             Log::info('Симптомы обновлены для приема', [
                 'visit_id' => $visit->id,
@@ -63,6 +74,8 @@ class VisitSymptomService
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Ошибка при обновлении симптомов', [
                 'visit_id' => $visit->id,
                 'symptoms' => $symptoms,
@@ -209,5 +222,69 @@ class VisitSymptomService
         return DictionarySymptom::where('name', 'like', "%{$query}%")
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * Получить все симптомы для приема
+     * 
+     * @param Visit $visit Прием
+     * @return \Illuminate\Database\Eloquent\Collection Коллекция симптомов
+     */
+    public function getVisitSymptoms(Visit $visit)
+    {
+        return $visit->symptoms()->with('dictionarySymptom')->get();
+    }
+
+    /**
+     * Удалить все симптомы для приема
+     * 
+     * @param Visit $visit Прием
+     * @return void
+     */
+    public function deleteVisitSymptoms(Visit $visit): void
+    {
+        try {
+            DB::beginTransaction();
+            
+            $symptomsCount = $visit->symptoms()->count();
+            $visit->symptoms()->delete();
+            
+            DB::commit();
+            
+            Log::info('Симптомы удалены для приема', [
+                'visit_id' => $visit->id,
+                'deleted_count' => $symptomsCount
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении симптомов', [
+                'visit_id' => $visit->id,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Получить статистику по симптомам
+     * 
+     * @param Visit $visit Прием
+     * @return array Статистика
+     */
+    public function getSymptomStatistics(Visit $visit): array
+    {
+        $symptoms = $this->getVisitSymptoms($visit);
+        
+        $dictionarySymptoms = $symptoms->whereNotNull('dictionary_symptom_id');
+        $customSymptoms = $symptoms->whereNotNull('custom_symptom');
+        
+        return [
+            'total' => $symptoms->count(),
+            'dictionary' => $dictionarySymptoms->count(),
+            'custom' => $customSymptoms->count(),
+            'with_notes' => $symptoms->whereNotNull('notes')->count()
+        ];
     }
 }

@@ -11,6 +11,8 @@ use App\Http\Traits\HasOptionsMethods;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ServiceController extends AdminController
 {
@@ -51,31 +53,83 @@ class ServiceController extends AdminController
 
     public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-        $branches = $validated['branches'];
-        unset($validated['branches']);
-        
-        $service = $this->model::create($validated);
-        $service->branches()->sync($branches);
-        
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Услуга успешно создана');
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            $branches = $validated['branches'];
+            unset($validated['branches']);
+            
+            $service = $this->model::create($validated);
+            $service->branches()->sync($branches);
+            
+            DB::commit();
+            
+            Log::info('Услуга успешно создана', [
+                'service_id' => $service->id,
+                'service_name' => $service->name,
+                'branches_count' => count($branches)
+            ]);
+            
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Услуга успешно создана');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при создании услуги', [
+                'data' => $request->validated(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при создании услуги: ' . $e->getMessage()]);
+        }
     }
 
     public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validated();
-        $branches = $validated['branches'];
-        unset($validated['branches']);
-        
-        $service = $this->model::findOrFail($id);
-        $service->update($validated);
-        $service->branches()->sync($branches);
-        
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Услуга успешно обновлена');
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            $branches = $validated['branches'];
+            unset($validated['branches']);
+            
+            $service = $this->model::findOrFail($id);
+            $oldName = $service->name;
+            
+            $service->update($validated);
+            $service->branches()->sync($branches);
+            
+            DB::commit();
+            
+            Log::info('Услуга успешно обновлена', [
+                'service_id' => $service->id,
+                'old_name' => $oldName,
+                'new_name' => $service->name,
+                'branches_count' => count($branches)
+            ]);
+            
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Услуга успешно обновлена');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при обновлении услуги', [
+                'service_id' => $id,
+                'data' => $request->validated(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при обновлении услуги: ' . $e->getMessage()]);
+        }
     }
 
     public function show($id): View
@@ -105,15 +159,38 @@ class ServiceController extends AdminController
 
     public function destroy($id): RedirectResponse
     {
-        $item = $this->model::findOrFail($id);
-        
-        // Убираем проверку зависимостей - связи с филиалами удаляются каскадно
-        
-        // Удаляем услугу (связи удалятся каскадно)
-        $item->delete();
+        try {
+            DB::beginTransaction();
+            
+            $item = $this->model::findOrFail($id);
+            
+            // Убираем проверку зависимостей - связи с филиалами удаляются каскадно
+            $serviceName = $item->name;
+            
+            // Удаляем услугу (связи удалятся каскадно)
+            $item->delete();
+            
+            DB::commit();
+            
+            Log::info('Услуга успешно удалена', [
+                'service_id' => $id,
+                'service_name' => $serviceName
+            ]);
 
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Услуга успешно удалена');
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Услуга успешно удалена');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении услуги', [
+                'service_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()
+                ->withErrors(['error' => 'Ошибка при удалении услуги: ' . $e->getMessage()]);
+        }
     }
 } 

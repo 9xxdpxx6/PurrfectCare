@@ -4,6 +4,8 @@ namespace App\Services\Settings;
 
 use App\Models\Branch;
 use App\Http\Filters\Settings\BranchFilter;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BranchService
 {
@@ -22,7 +24,30 @@ class BranchService
      */
     public function create(array $data)
     {
-        return Branch::create($data);
+        try {
+            DB::beginTransaction();
+            
+            $branch = Branch::create($data);
+            
+            DB::commit();
+            
+            Log::info('Филиал успешно создан', [
+                'branch_id' => $branch->id,
+                'branch_name' => $branch->name
+            ]);
+            
+            return $branch;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при создании филиала', [
+                'data' => $data,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
+        }
     }
 
     /**
@@ -30,7 +55,33 @@ class BranchService
      */
     public function update(Branch $branch, array $data)
     {
-        return $branch->update($data);
+        try {
+            DB::beginTransaction();
+            
+            $oldName = $branch->name;
+            $result = $branch->update($data);
+            
+            DB::commit();
+            
+            Log::info('Филиал успешно обновлен', [
+                'branch_id' => $branch->id,
+                'old_name' => $oldName,
+                'new_name' => $branch->name
+            ]);
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при обновлении филиала', [
+                'branch_id' => $branch->id,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
+        }
     }
 
     /**
@@ -38,9 +89,32 @@ class BranchService
      */
     public function delete(Branch $branch)
     {
-        // Убираем проверку зависимостей - связи с услугами удаляются каскадно
-        
-        return $branch->delete();
+        try {
+            DB::beginTransaction();
+            
+            // Убираем проверку зависимостей - связи с услугами удаляются каскадно
+            $branchName = $branch->name;
+            $result = $branch->delete();
+            
+            DB::commit();
+            
+            Log::info('Филиал успешно удален', [
+                'branch_id' => $branch->id,
+                'branch_name' => $branchName
+            ]);
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении филиала', [
+                'branch_id' => $branch->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
+        }
     }
 
     /**

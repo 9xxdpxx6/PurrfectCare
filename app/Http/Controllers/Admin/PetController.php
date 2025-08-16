@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Filters\PetFilter;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PetController extends AdminController
 {
@@ -45,64 +47,141 @@ class PetController extends AdminController
 
     public function store(StoreRequest $request) : RedirectResponse
     {
-        $validated = $request->validated();
-        
-        $pet = $this->model::create($validated);
-        
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Питомец успешно создан');
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            
+            $pet = $this->model::create($validated);
+            
+            DB::commit();
+            
+            Log::info('Питомец успешно создан', [
+                'pet_id' => $pet->id,
+                'pet_name' => $pet->name,
+                'owner_id' => $pet->owner_id,
+                'breed_id' => $pet->breed_id
+            ]);
+            
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Питомец успешно создан');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при создании питомца', [
+                'data' => $request->validated(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при создании питомца: ' . $e->getMessage()]);
+        }
     }
 
     public function update(UpdateRequest $request, $id) : RedirectResponse
     {
-        $validated = $request->validated();
-        
-        $item = $this->model::findOrFail($id);
-        $item->update($validated);
-        
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Данные питомца успешно обновлены');
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            
+            $item = $this->model::findOrFail($id);
+            $oldName = $item->name;
+            $oldOwnerId = $item->owner_id;
+            $oldBreedId = $item->breed_id;
+            
+            $item->update($validated);
+            
+            DB::commit();
+            
+            Log::info('Данные питомца успешно обновлены', [
+                'pet_id' => $item->id,
+                'old_name' => $oldName,
+                'new_name' => $item->name,
+                'old_owner_id' => $oldOwnerId,
+                'new_owner_id' => $item->owner_id,
+                'old_breed_id' => $oldBreedId,
+                'new_breed_id' => $item->breed_id
+            ]);
+            
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Данные питомца успешно обновлены');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при обновлении питомца', [
+                'pet_id' => $id,
+                'data' => $request->validated(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при обновлении питомца: ' . $e->getMessage()]);
+        }
     }
 
     public function index(Request $request) : View
     {
-        $filter = app(PetFilter::class, ['queryParams' => $request->query()]);
-        $query = Pet::query()->with(['breed.species', 'client', 'visits', 'orders', 'vaccinations'])->filter($filter);
-        $items = $query->paginate(25)->withQueryString();
-        $owners = User::orderBy('name')->get();
+        $filter = app()->make(PetFilter::class, ['queryParams' => array_filter($request->all())]);
         
-        // Подсчитываем статистику для каждого питомца
-        foreach ($items as $pet) {
-            $pet->visits_count = $pet->visits->count();
-            $pet->orders_count = $pet->orders->count();
-            $pet->vaccinations_count = $pet->vaccinations->count();
-            $pet->lab_tests_count = $pet->labTests->count();
-        }
+        $query = $this->model::with(['owner', 'breed.species']);
+        $filter->apply($query);
         
-        return view("admin.{$this->viewPath}.index", compact('items', 'owners'));
+        $items = $query->paginate(25)->appends($request->query());
+        $clients = User::orderBy('name')->get();
+        $breeds = Breed::with('species')->orderBy('name')->get();
+        
+        return view("admin.{$this->viewPath}.index", compact('items', 'clients', 'breeds'));
     }
 
     public function show($id) : View
     {
-        $pet = $this->model::with([
-            'client',
-            'breed.species'
-        ])->findOrFail($id);
-        
-        // Получаем общее количество записей
-        $visitsTotal = $pet->visits()->count();
-        $vaccinationsTotal = $pet->vaccinations()->count();
-        $labTestsTotal = $pet->labTests()->count();
-        $ordersTotal = $pet->orders()->count();
-        
-        // Загружаем ограниченные данные для отображения
-        $visits = $pet->visits()->with(['schedule.veterinarian'])->latest()->limit(10)->get();
-        $vaccinations = $pet->vaccinations()->with(['veterinarian'])->latest()->limit(10)->get();
-        $labTests = $pet->labTests()->with(['veterinarian', 'labTestType'])->latest()->limit(10)->get();
-        $orders = $pet->orders()->latest()->limit(10)->get();
-        
-        return view("admin.{$this->viewPath}.show", compact('pet', 'visits', 'vaccinations', 'labTests', 'orders', 'visitsTotal', 'vaccinationsTotal', 'labTestsTotal', 'ordersTotal'));
+        $item = $this->model::with(['owner', 'breed.species'])->findOrFail($id);
+        return view("admin.{$this->viewPath}.show", compact('item'));
+    }
+
+    public function destroy($id) : RedirectResponse
+    {
+        try {
+            DB::beginTransaction();
+            
+            $item = $this->model::findOrFail($id);
+            
+            // Проверяем наличие зависимых записей
+            if ($errorMessage = $item->hasDependencies()) {
+                throw new \Exception($errorMessage);
+            }
+            
+            $petName = $item->name;
+            $item->delete();
+            
+            DB::commit();
+            
+            Log::info('Питомец успешно удален', [
+                'pet_id' => $id,
+                'pet_name' => $petName
+            ]);
+
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Питомец успешно удален');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении питомца', [
+                'pet_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()
+                ->withErrors(['error' => 'Ошибка при удалении питомца: ' . $e->getMessage()]);
+        }
     }
 } 

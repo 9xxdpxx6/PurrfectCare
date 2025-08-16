@@ -5,6 +5,7 @@ namespace App\Services\Order;
 use App\Models\Order;
 use App\Models\Visit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OrderVisitService
@@ -19,6 +20,8 @@ class OrderVisitService
     public function syncOrderVisits(Order $order, Request $request): void
     {
         try {
+            DB::beginTransaction();
+            
             if ($request->has('visits') && is_array($request->visits)) {
                 // Синхронизируем с выбранными приемами
                 $order->visits()->sync($request->visits);
@@ -43,7 +46,12 @@ class OrderVisitService
                     'order_id' => $order->id
                 ]);
             }
+            
+            DB::commit();
+            
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Ошибка при синхронизации связей заказа с приемами', [
                 'order_id' => $order->id,
                 'error' => $e->getMessage()
@@ -98,32 +106,38 @@ class OrderVisitService
     public function createOrderFromVisit(Visit $visit, array $orderData): Order
     {
         try {
+            DB::beginTransaction();
+            
             // Создаем заказ
             $order = Order::create([
                 'client_id' => $visit->client_id,
                 'pet_id' => $visit->pet_id,
                 'status_id' => $orderData['status_id'] ?? 1, // По умолчанию "Новый"
-                'branch_id' => $orderData['branch_id'] ?? $visit->branch_id,
-                'manager_id' => $orderData['manager_id'] ?? auth()->id(),
+                'branch_id' => $visit->schedule->branch_id ?? $orderData['branch_id'],
+                'manager_id' => $orderData['manager_id'] ?? null,
                 'notes' => $orderData['notes'] ?? null,
                 'total' => $orderData['total'] ?? 0,
                 'is_paid' => $orderData['is_paid'] ?? false,
                 'closed_at' => null
             ]);
-
-            // Привязываем к приему
+            
+            // Привязываем заказ к приему
             $order->visits()->attach($visit->id);
-
+            
+            DB::commit();
+            
             Log::info('Заказ создан на основе приема', [
                 'order_id' => $order->id,
                 'visit_id' => $visit->id,
                 'client_id' => $visit->client_id,
                 'pet_id' => $visit->pet_id
             ]);
-
+            
             return $order;
-
+            
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Ошибка при создании заказа на основе приема', [
                 'visit_id' => $visit->id,
                 'order_data' => $orderData,
@@ -134,7 +148,7 @@ class OrderVisitService
     }
 
     /**
-     * Получить статистику по связям заказов с приемами
+     * Получить статистику по связям заказ-прием
      * 
      * @param Order $order Заказ
      * @return array Статистика
@@ -143,66 +157,44 @@ class OrderVisitService
     {
         $visits = $this->getOrderVisits($order);
         
-        $statistics = [
+        return [
             'total_visits' => $visits->count(),
             'completed_visits' => $visits->where('status.name', 'Завершен')->count(),
-            'pending_visits' => $visits->where('status.name', 'Ожидает')->count(),
-            'cancelled_visits' => $visits->where('status.name', 'Отменен')->count(),
-            'visit_dates' => $visits->pluck('visit_date')->toArray()
+            'scheduled_visits' => $visits->where('status.name', 'Запланирован')->count(),
+            'cancelled_visits' => $visits->where('status.name', 'Отменен')->count()
         ];
-
-        return $statistics;
     }
 
     /**
-     * Проверить доступность приема для привязки к заказу
+     * Отвязать заказ от приема
      * 
+     * @param Order $order Заказ
      * @param int $visitId ID приема
-     * @param int $orderId ID заказа (для исключения при обновлении)
-     * @return bool
+     * @return void
      */
-    public function isVisitAvailableForOrder(int $visitId, ?int $orderId = null): bool
+    public function detachOrderFromVisit(Order $order, int $visitId): void
     {
-        $query = Visit::where('id', $visitId);
-        
-        if ($orderId) {
-            // Исключаем текущий заказ при обновлении
-            $query->whereDoesntHave('orders', function($q) use ($orderId) {
-                $q->where('order_id', $orderId);
-            });
+        try {
+            DB::beginTransaction();
+            
+            $order->visits()->detach($visitId);
+            
+            DB::commit();
+            
+            Log::info('Заказ отвязан от приема', [
+                'order_id' => $order->id,
+                'visit_id' => $visitId
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при отвязке заказа от приема', [
+                'order_id' => $order->id,
+                'visit_id' => $visitId,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
         }
-        
-        $visit = $query->first();
-        
-        if (!$visit) {
-            return false;
-        }
-
-        // Проверяем, что прием не отменен
-        if ($visit->status && $visit->status->name === 'Отменен') {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Получить рекомендации по приемам для заказа
-     * 
-     * @param int $clientId ID клиента
-     * @param int $petId ID питомца
-     * @return \Illuminate\Database\Eloquent\Collection Коллекция рекомендуемых приемов
-     */
-    public function getRecommendedVisits(int $clientId, int $petId)
-    {
-        return Visit::where('client_id', $clientId)
-            ->where('pet_id', $petId)
-            ->whereDoesntHave('orders')
-            ->whereHas('status', function($query) {
-                $query->whereNotIn('name', ['Отменен', 'Завершен']);
-            })
-            ->with(['status', 'branch'])
-            ->orderBy('visit_date', 'desc')
-            ->get();
     }
 }

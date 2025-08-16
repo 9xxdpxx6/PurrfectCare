@@ -4,6 +4,8 @@ namespace App\Services\Settings;
 
 use App\Models\DictionaryDiagnosis;
 use App\Http\Filters\Settings\DictionaryDiagnosisFilter;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DictionaryDiagnosisService
 {
@@ -22,7 +24,30 @@ class DictionaryDiagnosisService
      */
     public function create(array $data)
     {
-        return DictionaryDiagnosis::create($data);
+        try {
+            DB::beginTransaction();
+            
+            $diagnosis = DictionaryDiagnosis::create($data);
+            
+            DB::commit();
+            
+            Log::info('Диагноз успешно создан', [
+                'diagnosis_id' => $diagnosis->id,
+                'diagnosis_name' => $diagnosis->name
+            ]);
+            
+            return $diagnosis;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при создании диагноза', [
+                'data' => $data,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
+        }
     }
 
     /**
@@ -30,7 +55,33 @@ class DictionaryDiagnosisService
      */
     public function update(DictionaryDiagnosis $dictionaryDiagnosis, array $data)
     {
-        return $dictionaryDiagnosis->update($data);
+        try {
+            DB::beginTransaction();
+            
+            $oldName = $dictionaryDiagnosis->name;
+            $result = $dictionaryDiagnosis->update($data);
+            
+            DB::commit();
+            
+            Log::info('Диагноз успешно обновлен', [
+                'diagnosis_id' => $dictionaryDiagnosis->id,
+                'old_name' => $oldName,
+                'new_name' => $dictionaryDiagnosis->name
+            ]);
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при обновлении диагноза', [
+                'diagnosis_id' => $dictionaryDiagnosis->id,
+                'data' => $data,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
+        }
     }
 
     /**
@@ -38,11 +89,35 @@ class DictionaryDiagnosisService
      */
     public function delete(DictionaryDiagnosis $dictionaryDiagnosis)
     {
-        if ($errorMessage = $dictionaryDiagnosis->hasDependencies()) {
-            throw new \Exception($errorMessage);
+        try {
+            DB::beginTransaction();
+            
+            if ($errorMessage = $dictionaryDiagnosis->hasDependencies()) {
+                throw new \Exception($errorMessage);
+            }
+            
+            $diagnosisName = $dictionaryDiagnosis->name;
+            $result = $dictionaryDiagnosis->delete();
+            
+            DB::commit();
+            
+            Log::info('Диагноз успешно удален', [
+                'diagnosis_id' => $dictionaryDiagnosis->id,
+                'diagnosis_name' => $diagnosisName
+            ]);
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении диагноза', [
+                'diagnosis_id' => $dictionaryDiagnosis->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
         }
-        
-        return $dictionaryDiagnosis->delete();
     }
 
     /**

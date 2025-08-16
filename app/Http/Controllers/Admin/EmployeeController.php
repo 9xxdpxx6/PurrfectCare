@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class EmployeeController extends AdminController
 {
@@ -51,23 +53,50 @@ class EmployeeController extends AdminController
 
     public function store(StoreRequest $request) : RedirectResponse
     {
-        $validated = $request->validated();
-        
-        $tempPassword = Str::random(8);
-        $validated['password'] = Hash::make($tempPassword);
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            
+            $tempPassword = Str::random(8);
+            $validated['password'] = Hash::make($tempPassword);
 
-        $employee = Employee::create($validated);
-        
-        if ($request->filled('specialties')) {
-            $employee->specialties()->attach($request->input('specialties'));
+            $employee = Employee::create($validated);
+            
+            if ($request->filled('specialties')) {
+                $employee->specialties()->attach($request->input('specialties'));
+            }
+            if ($request->filled('branches')) {
+                $employee->branches()->attach($request->input('branches'));
+            }
+            
+            DB::commit();
+            
+            Log::info('Сотрудник успешно создан', [
+                'employee_id' => $employee->id,
+                'employee_name' => $employee->name,
+                'email' => $employee->email,
+                'specialties_count' => $request->filled('specialties') ? count($request->input('specialties')) : 0,
+                'branches_count' => $request->filled('branches') ? count($request->input('branches')) : 0
+            ]);
+            
+            // TODO: отправить временный пароль на email
+            return redirect()->route('admin.employees.index')
+                ->with('success', 'Сотрудник успешно создан. Временный пароль: ' . $tempPassword);
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при создании сотрудника', [
+                'data' => $request->validated(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при создании сотрудника: ' . $e->getMessage()]);
         }
-        if ($request->filled('branches')) {
-            $employee->branches()->attach($request->input('branches'));
-        }
-        
-        // TODO: отправить временный пароль на email
-        return redirect()->route('admin.employees.index')
-            ->with('success', 'Сотрудник успешно создан. Временный пароль: ' . $tempPassword);
     }
 
     public function edit($id) : View
@@ -80,37 +109,122 @@ class EmployeeController extends AdminController
 
     public function update(UpdateRequest $request, $id) : RedirectResponse
     {
-        $employee = Employee::findOrFail($id);
-        $validated = $request->validated();
-        
-        $employee->update($validated);
-        $employee->specialties()->sync($request->input('specialties', []));
-        $employee->branches()->sync($request->input('branches', []));
-        
-        return redirect()->route('admin.employees.index')
-            ->with('success', 'Данные сотрудника успешно обновлены');
+        try {
+            DB::beginTransaction();
+            
+            $employee = Employee::findOrFail($id);
+            $validated = $request->validated();
+            
+            $oldName = $employee->name;
+            $oldEmail = $employee->email;
+            
+            $employee->update($validated);
+            $employee->specialties()->sync($request->input('specialties', []));
+            $employee->branches()->sync($request->input('branches', []));
+            
+            DB::commit();
+            
+            Log::info('Данные сотрудника успешно обновлены', [
+                'employee_id' => $employee->id,
+                'old_name' => $oldName,
+                'new_name' => $employee->name,
+                'old_email' => $oldEmail,
+                'new_email' => $employee->email,
+                'specialties_count' => count($request->input('specialties', [])),
+                'branches_count' => count($request->input('branches', []))
+            ]);
+            
+            return redirect()->route('admin.employees.index')
+                ->with('success', 'Данные сотрудника успешно обновлены');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при обновлении сотрудника', [
+                'employee_id' => $id,
+                'data' => $request->validated(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при обновлении сотрудника: ' . $e->getMessage()]);
+        }
     }
 
     public function destroy($id) : RedirectResponse
     {
-        $employee = Employee::findOrFail($id);
-        
-        // Убираем проверку зависимостей - связи со специализациями удаляются каскадно
-        
-        // Удаляем сотрудника (связи удалятся каскадно)
-        $employee->delete();
-        return redirect()->route('admin.employees.index')
-            ->with('success', 'Сотрудник успешно удалён');
+        try {
+            DB::beginTransaction();
+            
+            $employee = Employee::findOrFail($id);
+            
+            // Убираем проверку зависимостей - связи со специализациями удаляются каскадно
+            $employeeName = $employee->name;
+            $employeeEmail = $employee->email;
+            
+            // Удаляем сотрудника (связи удалятся каскадно)
+            $employee->delete();
+            
+            DB::commit();
+            
+            Log::info('Сотрудник успешно удален', [
+                'employee_id' => $id,
+                'employee_name' => $employeeName,
+                'employee_email' => $employeeEmail
+            ]);
+            
+            return redirect()->route('admin.employees.index')
+                ->with('success', 'Сотрудник успешно удалён');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении сотрудника', [
+                'employee_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withErrors(['error' => 'Ошибка при удалении сотрудника: ' . $e->getMessage()]);
+        }
     }
 
     public function resetPassword($id) : RedirectResponse
     {
-        $employee = Employee::findOrFail($id);
-        $tempPassword = Str::random(8);
-        $employee->update(['password' => Hash::make($tempPassword)]);
-        // TODO: отправить новый временный пароль на email
-        return redirect()->route('admin.employees.index')
-            ->with('success', 'Пароль успешно сброшен. Новый временный пароль: ' . $tempPassword);
+        try {
+            DB::beginTransaction();
+            
+            $employee = Employee::findOrFail($id);
+            $tempPassword = Str::random(8);
+            $employee->update(['password' => Hash::make($tempPassword)]);
+            
+            DB::commit();
+            
+            Log::info('Пароль сотрудника успешно сброшен', [
+                'employee_id' => $id,
+                'employee_name' => $employee->name,
+                'employee_email' => $employee->email
+            ]);
+            
+            // TODO: отправить новый временный пароль на email
+            return redirect()->route('admin.employees.index')
+                ->with('success', 'Пароль успешно сброшен. Новый временный пароль: ' . $tempPassword);
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при сбросе пароля сотрудника', [
+                'employee_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withErrors(['error' => 'Ошибка при сбросе пароля: ' . $e->getMessage()]);
+        }
     }
 
     public function show($id): View

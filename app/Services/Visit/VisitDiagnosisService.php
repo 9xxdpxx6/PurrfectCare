@@ -6,6 +6,7 @@ use App\Models\Visit;
 use App\Models\Diagnosis;
 use App\Models\DictionaryDiagnosis;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class VisitDiagnosisService
@@ -20,11 +21,15 @@ class VisitDiagnosisService
     public function createDiagnoses(Visit $visit, array $diagnoses): void
     {
         try {
+            DB::beginTransaction();
+            
             foreach ($diagnoses as $diagnosisData) {
                 if (!empty(trim($diagnosisData))) {
                     $this->createDiagnosis($visit, $diagnosisData);
                 }
             }
+
+            DB::commit();
 
             Log::info('Диагнозы созданы для приема', [
                 'visit_id' => $visit->id,
@@ -32,6 +37,8 @@ class VisitDiagnosisService
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Ошибка при создании диагнозов', [
                 'visit_id' => $visit->id,
                 'diagnoses' => $diagnoses,
@@ -51,11 +58,15 @@ class VisitDiagnosisService
     public function updateDiagnoses(Visit $visit, array $diagnoses): void
     {
         try {
+            DB::beginTransaction();
+            
             // Удаляем все старые диагнозы
             $visit->diagnoses()->delete();
             
             // Создаем новые диагнозы
             $this->createDiagnoses($visit, $diagnoses);
+
+            DB::commit();
 
             Log::info('Диагнозы обновлены для приема', [
                 'visit_id' => $visit->id,
@@ -63,6 +74,8 @@ class VisitDiagnosisService
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Ошибка при обновлении диагнозов', [
                 'visit_id' => $visit->id,
                 'diagnoses' => $diagnoses,
@@ -243,5 +256,69 @@ class VisitDiagnosisService
             ->whereNotNull('treatment_plan')
             ->with('dictionaryDiagnosis')
             ->get();
+    }
+
+    /**
+     * Получить все диагнозы для приема
+     * 
+     * @param Visit $visit Прием
+     * @return \Illuminate\Database\Eloquent\Collection Коллекция диагнозов
+     */
+    public function getVisitDiagnoses(Visit $visit)
+    {
+        return $visit->diagnoses()->with('dictionaryDiagnosis')->get();
+    }
+
+    /**
+     * Удалить все диагнозы для приема
+     * 
+     * @param Visit $visit Прием
+     * @return void
+     */
+    public function deleteVisitDiagnoses(Visit $visit): void
+    {
+        try {
+            DB::beginTransaction();
+            
+            $diagnosesCount = $visit->diagnoses()->count();
+            $visit->diagnoses()->delete();
+            
+            DB::commit();
+            
+            Log::info('Диагнозы удалены для приема', [
+                'visit_id' => $visit->id,
+                'deleted_count' => $diagnosesCount
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении диагнозов', [
+                'visit_id' => $visit->id,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Получить статистику по диагнозам
+     * 
+     * @param Visit $visit Прием
+     * @return array Статистика
+     */
+    public function getDiagnosisStatistics(Visit $visit): array
+    {
+        $diagnoses = $this->getVisitDiagnoses($visit);
+        
+        $dictionaryDiagnoses = $diagnoses->whereNotNull('dictionary_diagnosis_id');
+        $customDiagnoses = $diagnoses->whereNotNull('custom_diagnosis');
+        
+        return [
+            'total' => $diagnoses->count(),
+            'dictionary' => $dictionaryDiagnoses->count(),
+            'custom' => $customDiagnoses->count(),
+            'with_treatment_plan' => $diagnoses->whereNotNull('treatment_plan')->count()
+        ];
     }
 }

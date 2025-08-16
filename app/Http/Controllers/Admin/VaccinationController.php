@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Http\Traits\HasOptionsMethods;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class VaccinationController extends AdminController
 {
@@ -80,19 +82,47 @@ class VaccinationController extends AdminController
 
     public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-        
-        $vaccination = $this->model::create([
-            'vaccination_type_id' => $validated['vaccination_type_id'],
-            'pet_id' => $validated['pet_id'],
-            'veterinarian_id' => $validated['veterinarian_id'],
-            'administered_at' => $validated['administered_at'],
-            'next_due' => $validated['next_due'] ?? null,
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            
+            $vaccination = $this->model::create([
+                'vaccination_type_id' => $validated['vaccination_type_id'],
+                'pet_id' => $validated['pet_id'],
+                'veterinarian_id' => $validated['veterinarian_id'],
+                'administered_at' => $validated['administered_at'],
+                'next_due' => $validated['next_due'] ?? null,
+            ]);
+            
+            DB::commit();
+            
+            Log::info('Вакцинация успешно создана', [
+                'vaccination_id' => $vaccination->id,
+                'vaccination_type_id' => $vaccination->vaccination_type_id,
+                'pet_id' => $vaccination->pet_id,
+                'veterinarian_id' => $vaccination->veterinarian_id,
+                'administered_at' => $vaccination->administered_at,
+                'next_due' => $vaccination->next_due
+            ]);
 
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Вакцинация успешно создана');
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Вакцинация успешно создана');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при создании вакцинации', [
+                'data' => $request->validated(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при создании вакцинации: ' . $e->getMessage()]);
+        }
     }
 
     public function show($id): View
@@ -113,33 +143,101 @@ class VaccinationController extends AdminController
 
     public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validated();
-        $vaccination = $this->model::findOrFail($id);
-        
-        $vaccination->update([
-            'vaccination_type_id' => $validated['vaccination_type_id'],
-            'pet_id' => $validated['pet_id'],
-            'veterinarian_id' => $validated['veterinarian_id'],
-            'administered_at' => $validated['administered_at'],
-            'next_due' => $validated['next_due'] ?? null,
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            $vaccination = $this->model::findOrFail($id);
+            
+            $oldVaccinationTypeId = $vaccination->vaccination_type_id;
+            $oldPetId = $vaccination->pet_id;
+            $oldVeterinarianId = $vaccination->veterinarian_id;
+            $oldAdministeredAt = $vaccination->administered_at;
+            $oldNextDue = $vaccination->next_due;
+            
+            $vaccination->update([
+                'vaccination_type_id' => $validated['vaccination_type_id'],
+                'pet_id' => $validated['pet_id'],
+                'veterinarian_id' => $validated['veterinarian_id'],
+                'administered_at' => $validated['administered_at'],
+                'next_due' => $validated['next_due'] ?? null,
+            ]);
+            
+            DB::commit();
+            
+            Log::info('Вакцинация успешно обновлена', [
+                'vaccination_id' => $vaccination->id,
+                'old_vaccination_type_id' => $oldVaccinationTypeId,
+                'new_vaccination_type_id' => $vaccination->vaccination_type_id,
+                'old_pet_id' => $oldPetId,
+                'new_pet_id' => $vaccination->pet_id,
+                'old_veterinarian_id' => $oldVeterinarianId,
+                'new_veterinarian_id' => $vaccination->veterinarian_id,
+                'old_administered_at' => $oldAdministeredAt,
+                'new_administered_at' => $vaccination->administered_at,
+                'old_next_due' => $oldNextDue,
+                'new_next_due' => $vaccination->next_due
+            ]);
 
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Вакцинация успешно обновлена');
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Вакцинация успешно обновлена');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при обновлении вакцинации', [
+                'vaccination_id' => $id,
+                'data' => $request->validated(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при обновлении вакцинации: ' . $e->getMessage()]);
+        }
     }
 
     public function destroy($id): RedirectResponse
     {
-        $vaccination = $this->model::findOrFail($id);
-        
-        // Убираем проверку зависимостей - вакцинация не имеет зависимостей для проверки
-        
-        $vaccination->delete();
-        
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Вакцинация успешно удалена');
+        try {
+            DB::beginTransaction();
+            
+            $vaccination = $this->model::findOrFail($id);
+            
+            // Убираем проверку зависимостей - вакцинация не имеет зависимостей для проверки
+            $vaccinationTypeId = $vaccination->vaccination_type_id;
+            $petId = $vaccination->pet_id;
+            $veterinarianId = $vaccination->veterinarian_id;
+            
+            $vaccination->delete();
+            
+            DB::commit();
+            
+            Log::info('Вакцинация успешно удалена', [
+                'vaccination_id' => $id,
+                'vaccination_type_id' => $vaccinationTypeId,
+                'pet_id' => $petId,
+                'veterinarian_id' => $veterinarianId
+            ]);
+            
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Вакцинация успешно удалена');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении вакцинации', [
+                'vaccination_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withErrors(['error' => 'Ошибка при удалении вакцинации: ' . $e->getMessage()]);
+        }
     }
 
     public function vaccinationOptions(Request $request)

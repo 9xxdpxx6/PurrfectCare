@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 abstract class AdminController extends Controller
 {
@@ -33,19 +35,42 @@ abstract class AdminController extends Controller
 
     public function destroy($id): RedirectResponse
     {
-        $item = $this->model::findOrFail($id);
-        
-        // Проверяем наличие зависимых записей
-        if ($errorMessage = $item->hasDependencies()) {
+        try {
+            DB::beginTransaction();
+            
+            $item = $this->model::findOrFail($id);
+            
+            // Проверяем наличие зависимых записей
+            if ($errorMessage = $item->hasDependencies()) {
+                throw new \Exception($errorMessage);
+            }
+            
+            $itemName = $item->name ?? 'Запись';
+            $item->delete();
+            
+            DB::commit();
+            
+            Log::info('Запись успешно удалена', [
+                'model' => $this->model,
+                'item_id' => $id,
+                'item_name' => $itemName
+            ]);
+
             return redirect()
                 ->route("admin.{$this->routePrefix}.index")
-                ->with('error', $errorMessage);
+                ->with('success', 'Запись успешно удалена');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при удалении записи', [
+                'model' => $this->model,
+                'item_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()
+                ->withErrors(['error' => 'Ошибка при удалении записи: ' . $e->getMessage()]);
         }
-        
-        $item->delete();
-
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Запись успешно удалена');
     }
 }

@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DrugProcurementController extends AdminController
 {
@@ -61,79 +62,137 @@ class DrugProcurementController extends AdminController
 
     public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        DB::transaction(function () use ($validated) {
-            // Создаем поставку
-            $procurement = $this->model::create($validated);
-            
-            // Увеличиваем количество на складе
-            $drug = Drug::find($validated['drug_id']);
-            $drug->increment('quantity', $validated['quantity']);
-        });
+            DB::transaction(function () use ($validated) {
+                // Создаем поставку
+                $procurement = $this->model::create($validated);
+                
+                // Увеличиваем количество на складе
+                $drug = Drug::find($validated['drug_id']);
+                $drug->increment('quantity', $validated['quantity']);
+            });
 
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Поставка успешно создана');
+            Log::info('Поставка успешно создана', [
+                'drug_id' => $validated['drug_id'],
+                'quantity' => $validated['quantity'],
+                'supplier_id' => $validated['supplier_id'] ?? null
+            ]);
+
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Поставка успешно создана');
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при создании поставки', [
+                'data' => $validated ?? $request->validated(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при создании поставки: ' . $e->getMessage()]);
+        }
     }
 
     public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        DB::transaction(function () use ($validated, $id) {
-            // Получаем старую поставку
-            $oldProcurement = $this->model::findOrFail($id);
-            $oldQuantity = $oldProcurement->quantity;
-            $oldDrugId = $oldProcurement->drug_id;
-            
-            // Обновляем поставку
-            $oldProcurement->update($validated);
-            
-            // Если изменился препарат или количество
-            if ($oldDrugId != $validated['drug_id'] || $oldQuantity != $validated['quantity']) {
-                // Откатываем старое изменение (уменьшаем количество старого препарата)
-                $oldDrug = Drug::find($oldDrugId);
-                $oldDrug->decrement('quantity', $oldQuantity);
+            DB::transaction(function () use ($validated, $id) {
+                // Получаем старую поставку
+                $oldProcurement = $this->model::findOrFail($id);
+                $oldQuantity = $oldProcurement->quantity;
+                $oldDrugId = $oldProcurement->drug_id;
                 
-                // Применяем новое изменение (увеличиваем количество нового препарата)
-                $newDrug = Drug::find($validated['drug_id']);
-                $newDrug->increment('quantity', $validated['quantity']);
-            } else {
-                // Если препарат не изменился, но изменилось количество
-                $quantityDiff = $validated['quantity'] - $oldQuantity;
-                if ($quantityDiff != 0) {
-                    $drug = Drug::find($validated['drug_id']);
-                    $drug->increment('quantity', $quantityDiff);
+                // Обновляем поставку
+                $oldProcurement->update($validated);
+                
+                // Если изменился препарат или количество
+                if ($oldDrugId != $validated['drug_id'] || $oldQuantity != $validated['quantity']) {
+                    // Откатываем старое изменение (уменьшаем количество старого препарата)
+                    $oldDrug = Drug::find($oldDrugId);
+                    $oldDrug->decrement('quantity', $oldQuantity);
+                    
+                    // Применяем новое изменение (увеличиваем количество нового препарата)
+                    $newDrug = Drug::find($validated['drug_id']);
+                    $newDrug->increment('quantity', $validated['quantity']);
+                } else {
+                    // Если препарат не изменился, но изменилось количество
+                    $quantityDiff = $validated['quantity'] - $oldQuantity;
+                    if ($quantityDiff != 0) {
+                        $drug = Drug::find($validated['drug_id']);
+                        $drug->increment('quantity', $quantityDiff);
+                    }
                 }
-            }
-        });
+            });
 
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Поставка успешно обновлена');
+            Log::info('Поставка успешно обновлена', [
+                'procurement_id' => $id,
+                'drug_id' => $validated['drug_id'],
+                'quantity' => $validated['quantity'],
+                'supplier_id' => $validated['supplier_id'] ?? null
+            ]);
+
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Поставка успешно обновлена');
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при обновлении поставки', [
+                'procurement_id' => $id,
+                'data' => $validated ?? $request->validated(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при обновлении поставки: ' . $e->getMessage()]);
+        }
     }
 
     public function destroy($id): RedirectResponse
     {
-        $procurement = $this->model::findOrFail($id);
-        
-        // Убираем проверку зависимостей - поставка не имеет зависимостей для проверки
-        
-        DB::transaction(function () use ($procurement) {
-            $quantity = $procurement->quantity;
-            $drugId = $procurement->drug_id;
+        try {
+            $procurement = $this->model::findOrFail($id);
             
-            // Удаляем поставку
-            $procurement->delete();
+            // Убираем проверку зависимостей - поставка не имеет зависимостей для проверки
             
-            // Уменьшаем количество на складе
-            $drug = Drug::find($drugId);
-            $drug->decrement('quantity', $quantity);
-        });
+            DB::transaction(function () use ($procurement) {
+                $quantity = $procurement->quantity;
+                $drugId = $procurement->drug_id;
+                
+                // Удаляем поставку
+                $procurement->delete();
+                
+                // Уменьшаем количество на складе
+                $drug = Drug::find($drugId);
+                $drug->decrement('quantity', $quantity);
+            });
 
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Поставка успешно удалена');
+            Log::info('Поставка успешно удалена', [
+                'procurement_id' => $id,
+                'drug_id' => $procurement->drug_id ?? null,
+                'quantity' => $procurement->quantity ?? null
+            ]);
+
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Поставка успешно удалена');
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при удалении поставки', [
+                'procurement_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Ошибка при удалении поставки: ' . $e->getMessage()]);
+        }
     }
 } 

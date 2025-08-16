@@ -4,6 +4,7 @@ namespace App\Services\Order;
 
 use App\Models\Order;
 use App\Models\Drug;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class InventoryManagementService
@@ -16,10 +17,31 @@ class InventoryManagementService
      */
     public function processInventoryReduction(Order $order): void
     {
-        foreach ($order->items as $item) {
-            if ($item->item_type === 'App\Models\Drug') {
-                $this->reduceDrugQuantity($item);
+        try {
+            DB::beginTransaction();
+            
+            foreach ($order->items as $item) {
+                if ($item->item_type === 'App\Models\Drug') {
+                    $this->reduceDrugQuantity($item);
+                }
             }
+            
+            DB::commit();
+            
+            Log::info('Списание препаратов со склада успешно завершено', [
+                'order_id' => $order->id,
+                'drugs_count' => $order->items->where('item_type', 'App\Models\Drug')->count()
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при списании препаратов со склада', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
         }
     }
 
@@ -31,10 +53,31 @@ class InventoryManagementService
      */
     public function processInventoryReturn(Order $order): void
     {
-        foreach ($order->items as $item) {
-            if ($item->item_type === 'App\Models\Drug') {
-                $this->returnDrugQuantity($item);
+        try {
+            DB::beginTransaction();
+            
+            foreach ($order->items as $item) {
+                if ($item->item_type === 'App\Models\Drug') {
+                    $this->returnDrugQuantity($item);
+                }
             }
+            
+            DB::commit();
+            
+            Log::info('Возврат препаратов на склад успешно завершен', [
+                'order_id' => $order->id,
+                'drugs_count' => $order->items->where('item_type', 'App\Models\Drug')->count()
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при возврате препаратов на склад', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            throw $e;
         }
     }
 

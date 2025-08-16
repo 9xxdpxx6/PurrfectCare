@@ -12,6 +12,8 @@ use App\Http\Traits\HasOptionsMethods;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DrugController extends AdminController
 {
@@ -104,27 +106,84 @@ class DrugController extends AdminController
 
     public function store(StoreRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-        $validated['prescription_required'] = $request->has('prescription_required');
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            $validated['prescription_required'] = $request->has('prescription_required');
 
-        $this->model::create($validated);
+            $drug = $this->model::create($validated);
+            
+            DB::commit();
+            
+            Log::info('Препарат успешно создан', [
+                'drug_id' => $drug->id,
+                'drug_name' => $drug->name,
+                'unit_id' => $drug->unit_id,
+                'prescription_required' => $drug->prescription_required
+            ]);
 
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Препарат успешно создан');
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Препарат успешно создан');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при создании препарата', [
+                'data' => $request->validated(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при создании препарата: ' . $e->getMessage()]);
+        }
     }
 
     public function update(UpdateRequest $request, $id): RedirectResponse
     {
-        $validated = $request->validated();
-        $validated['prescription_required'] = $request->has('prescription_required');
+        try {
+            DB::beginTransaction();
+            
+            $validated = $request->validated();
+            $validated['prescription_required'] = $request->has('prescription_required');
 
-        $item = $this->model::findOrFail($id);
-        $item->update($validated);
+            $item = $this->model::findOrFail($id);
+            $oldName = $item->name;
+            $oldPrescriptionRequired = $item->prescription_required;
+            
+            $item->update($validated);
+            
+            DB::commit();
+            
+            Log::info('Препарат успешно обновлен', [
+                'drug_id' => $item->id,
+                'old_name' => $oldName,
+                'new_name' => $item->name,
+                'old_prescription_required' => $oldPrescriptionRequired,
+                'new_prescription_required' => $item->prescription_required
+            ]);
 
-        return redirect()
-            ->route("admin.{$this->routePrefix}.index")
-            ->with('success', 'Препарат успешно обновлен');
+            return redirect()
+                ->route("admin.{$this->routePrefix}.index")
+                ->with('success', 'Препарат успешно обновлен');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Ошибка при обновлении препарата', [
+                'drug_id' => $id,
+                'data' => $request->validated(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Ошибка при обновлении препарата: ' . $e->getMessage()]);
+        }
     }
 
     // Метод supplierOptions теперь наследуется из трейта HasOptionsMethods

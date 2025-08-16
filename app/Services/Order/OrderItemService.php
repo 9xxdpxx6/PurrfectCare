@@ -9,6 +9,7 @@ use App\Models\LabTestType;
 use App\Models\VaccinationType;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class OrderItemService
 {
@@ -23,6 +24,8 @@ class OrderItemService
     public function createOrderItem(Order $order, array $itemData, array $validated): OrderItem
     {
         try {
+            DB::beginTransaction();
+            
             $itemType = $this->getItemType($itemData['item_type']);
             
             // Проверяем существование элемента
@@ -36,6 +39,8 @@ class OrderItemService
                 'unit_price' => $itemData['unit_price']
             ]);
 
+            DB::commit();
+
             Log::info('Элемент заказа создан', [
                 'order_id' => $order->id,
                 'item_type' => $itemType,
@@ -47,6 +52,8 @@ class OrderItemService
             return $orderItem;
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Ошибка при создании элемента заказа', [
                 'order_id' => $order->id,
                 'item_data' => $itemData,
@@ -67,6 +74,8 @@ class OrderItemService
     public function updateOrderItems(Order $order, array $items, array $validated): void
     {
         try {
+            DB::beginTransaction();
+            
             // Удаляем старые элементы
             $order->items()->delete();
             
@@ -75,12 +84,16 @@ class OrderItemService
                 $this->createOrderItem($order, $item, $validated);
             }
 
+            DB::commit();
+
             Log::info('Элементы заказа обновлены', [
                 'order_id' => $order->id,
                 'items_count' => count($items)
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Ошибка при обновлении элементов заказа', [
                 'order_id' => $order->id,
                 'error' => $e->getMessage()
