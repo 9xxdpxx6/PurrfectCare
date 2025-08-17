@@ -24,8 +24,13 @@ class VisitDiagnosisService
             DB::beginTransaction();
             
             foreach ($diagnoses as $diagnosisData) {
-                if (!empty(trim($diagnosisData))) {
+                // Новая структура: массив с diagnosis_id и treatment_plan
+                if (is_array($diagnosisData) && !empty($diagnosisData['diagnosis_id'])) {
                     $this->createDiagnosis($visit, $diagnosisData);
+                }
+                // Старая структура для совместимости: просто строка/ID
+                elseif (!is_array($diagnosisData) && !empty(trim($diagnosisData))) {
+                    $this->createDiagnosis($visit, ['diagnosis_id' => $diagnosisData, 'treatment_plan' => null]);
                 }
             }
 
@@ -89,20 +94,24 @@ class VisitDiagnosisService
      * Создать конкретный диагноз
      * 
      * @param Visit $visit Прием
-     * @param string|int $diagnosisData Данные диагноза
+     * @param array $diagnosisData Данные диагноза
      * @return Diagnosis Созданный диагноз
      */
-    protected function createDiagnosis(Visit $visit, $diagnosisData): Diagnosis
+    protected function createDiagnosis(Visit $visit, array $diagnosisData): Diagnosis
     {
-        if (is_numeric($diagnosisData)) {
+        $diagnosisId = $diagnosisData['diagnosis_id'];
+        $treatmentPlan = $diagnosisData['treatment_plan'] ?? null;
+        $existingId = $diagnosisData['id'] ?? null; // ID существующего диагноза при обновлении
+        
+        if (is_numeric($diagnosisId)) {
             // Проверяем существование диагноза в словаре
-            $dictionaryDiagnosis = DictionaryDiagnosis::find($diagnosisData);
+            $dictionaryDiagnosis = DictionaryDiagnosis::find($diagnosisId);
             if ($dictionaryDiagnosis) {
                 return Diagnosis::create([
                     'visit_id' => $visit->id,
-                    'dictionary_diagnosis_id' => $diagnosisData,
+                    'dictionary_diagnosis_id' => $diagnosisId,
                     'custom_diagnosis' => null,
-                    'treatment_plan' => null
+                    'treatment_plan' => $treatmentPlan
                 ]);
             }
         } else {
@@ -110,12 +119,12 @@ class VisitDiagnosisService
             return Diagnosis::create([
                 'visit_id' => $visit->id,
                 'dictionary_diagnosis_id' => null,
-                'custom_diagnosis' => $diagnosisData,
-                'treatment_plan' => null
+                'custom_diagnosis' => $diagnosisId,
+                'treatment_plan' => $treatmentPlan
             ]);
         }
 
-        throw new \InvalidArgumentException('Некорректные данные диагноза: ' . $diagnosisData);
+        throw new \InvalidArgumentException('Некорректные данные диагноза: ' . json_encode($diagnosisData));
     }
 
     /**

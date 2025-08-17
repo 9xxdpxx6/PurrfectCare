@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Приём от {{ $item->starts_at->format('d.m.Y H:i') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
-        <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-warning">
+        <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-outline-warning">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
         <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-secondary">
@@ -141,7 +141,7 @@
                                     <ul class="list-group list-group-flush">
                                         @foreach($item->symptoms as $symptom)
                                             <li class="list-group-item">
-                                                <strong>
+                                                <h4 class="mb-0 pb-0">
                                                     @if($symptom->dictionarySymptom)
                                                         {{ $symptom->dictionarySymptom->name }}
                                                     @elseif($symptom->custom_symptom)
@@ -149,8 +149,7 @@
                                                     @else
                                                         <span class="text-muted">Без названия</span>
                                                     @endif
-                                                </strong>
-                                                <br>
+                                                </h4>
                                                 @if($symptom->dictionarySymptom && $symptom->dictionarySymptom->description)
                                                     <span class="text-muted">{{ $symptom->dictionarySymptom->description }}</span>
                                                 @elseif($symptom->notes)
@@ -190,7 +189,7 @@
                                     <ul class="list-group list-group-flush">
                                         @foreach($item->diagnoses as $diagnosis)
                                             <li class="list-group-item">
-                                                <strong>
+                                                <h4 class="mb-0 pb-0">
                                                     @if($diagnosis->dictionaryDiagnosis)
                                                         {{ $diagnosis->dictionaryDiagnosis->name }}
                                                     @elseif($diagnosis->custom_diagnosis)
@@ -198,13 +197,16 @@
                                                     @else
                                                         <span class="text-muted">Без названия</span>
                                                     @endif
-                                                </strong>
-                                                <br>
+                                                </h4>
                                                 @if($diagnosis->dictionaryDiagnosis && $diagnosis->dictionaryDiagnosis->description)
                                                     <span class="text-muted">{{ $diagnosis->dictionaryDiagnosis->description }}</span>
-                                                @elseif($diagnosis->treatment_plan)
-                                                    <span class="text-muted">{{ $diagnosis->treatment_plan }}</span>
-                                                @else
+                                                @endif
+                                                
+                                                @if($diagnosis->treatment_plan)
+                                                    <br><strong>План лечения:</strong> <span class="text-muted">{{ $diagnosis->treatment_plan }}</span>
+                                                @endif
+                                                
+                                                @if((!$diagnosis->dictionaryDiagnosis || !$diagnosis->dictionaryDiagnosis->description) && !$diagnosis->treatment_plan)
                                                     <span class="text-muted">Нет описания</span>
                                                 @endif
                                             </li>

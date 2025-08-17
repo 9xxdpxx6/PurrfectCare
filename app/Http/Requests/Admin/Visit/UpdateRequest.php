@@ -43,7 +43,8 @@ class UpdateRequest extends FormRequest
                 }
             }],
             'diagnoses' => 'nullable|array',
-            'diagnoses.*' => ['required', function ($attribute, $value, $fail) {
+            'diagnoses.*' => 'nullable|array',
+            'diagnoses.*.diagnosis_id' => ['required', function ($attribute, $value, $fail) {
                 // Если число - проверяем существование в справочнике
                 if (is_numeric($value)) {
                     if (!\App\Models\DictionaryDiagnosis::where('id', $value)->exists()) {
@@ -56,6 +57,8 @@ class UpdateRequest extends FormRequest
                     }
                 }
             }],
+            'diagnoses.*.treatment_plan' => 'nullable|string',
+            'diagnoses.*.id' => 'nullable|integer',
         ];
     }
 
@@ -103,6 +106,8 @@ class UpdateRequest extends FormRequest
             'symptoms.*' => 'симптом',
             'diagnoses' => 'диагнозы',
             'diagnoses.*' => 'диагноз',
+            'diagnoses.*.diagnosis_id' => 'диагноз',
+            'diagnoses.*.treatment_plan' => 'план лечения',
         ];
     }
 

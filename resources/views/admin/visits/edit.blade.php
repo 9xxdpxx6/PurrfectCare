@@ -150,13 +150,52 @@
                     </div>
 
                     <!-- Диагнозы -->
-                    <div class="mb-3">
-                        <label for="diagnoses" class="form-label">Диагнозы</label>
-                        <select name="diagnoses[]" id="diagnoses" class="form-select" multiple data-url="{{ route('admin.visits.diagnosis-options') }}">
-                            @foreach($selectedDiagnoses as $diagnosis)
-                                <option value="{{ $diagnosis['id'] }}" selected>{{ $diagnosis['name'] }}</option>
+                    <div class="mb-4">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-6 col-lg-8 col-xl-9">
+                                <h6 class="mb-0">Диагнозы</h6>
+                            </div>
+                            <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mt-md-0">
+                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addDiagnosisItem()">
+                                    <i class="bi bi-plus-lg"></i> Добавить диагноз
+                                </button>
+                            </div>
+                        </div>
+                        <div id="diagnosisItems">
+                            @foreach($selectedDiagnoses as $index => $diagnosis)
+                                <div class="diagnosis-item border rounded p-3 mb-3" data-diagnosis-index="{{ $index }}">
+                                    <div class="row g-3">
+                                        <div class="col-12 col-lg-8">
+                                            <label class="form-label">Диагноз</label>
+                                            <select name="diagnoses[{{ $index }}][diagnosis_id]" class="form-select diagnosis-select" data-url="{{ route('admin.visits.diagnosis-options') }}">
+                                                <option value="{{ $diagnosis['id'] }}" selected>{{ $diagnosis['name'] }}</option>
+                                            </select>
+                                            <input type="hidden" name="diagnoses[{{ $index }}][id]" value="{{ $diagnosis['pivot_id'] ?? '' }}">
+                                        </div>
+                                        
+                                        <div class="col-lg-4">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button type="button" class="btn btn-outline-danger w-100" onclick="removeDiagnosisItem(this)">
+                                                <i class="bi bi-trash"></i> Удалить
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <label class="form-label">План лечения</label>
+                                            <textarea name="diagnoses[{{ $index }}][treatment_plan]" class="form-control" rows="3" placeholder="Опишите план лечения для данного диагноза...">{{ $diagnosis['treatment_plan'] ?? '' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
                             @endforeach
-                        </select>
+                        </div>
+                        @error('diagnoses')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        @error('diagnoses.*')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="d-flex justify-content-between gap-2">
@@ -174,12 +213,43 @@
 </div>
 @endsection
 
+<!-- Шаблон для карточки диагноза -->
+<template id="diagnosisItemTemplate">
+    <div class="diagnosis-item border rounded p-3 mb-3" data-diagnosis-index="">
+        <div class="row g-3">
+            <div class="col-12 col-lg-8">
+                <label class="form-label">Диагноз</label>
+                <select name="diagnoses[INDEX][diagnosis_id]" class="form-select diagnosis-select" data-url="{{ route('admin.visits.diagnosis-options') }}">
+                </select>
+                <input type="hidden" name="diagnoses[INDEX][id]" value="">
+            </div>
+            
+            <div class="col-lg-4">
+                <label class="form-label">&nbsp;</label>
+                <button type="button" class="btn btn-outline-danger w-100" onclick="removeDiagnosisItem(this)">
+                    <i class="bi bi-trash"></i> Удалить
+                </button>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <label class="form-label">План лечения</label>
+                <textarea name="diagnoses[INDEX][treatment_plan]" class="form-control" rows="3" placeholder="Опишите план лечения для данного диагноза..."></textarea>
+            </div>
+        </div>
+    </div>
+</template>
+
 @push('scripts')
 @php
     $oldSymptoms = old('symptoms');
     $oldDiagnoses = old('diagnoses');
 @endphp
 <script>
+    // Глобальные переменные
+    let diagnosisIndex = {{ count($selectedDiagnoses) }};
+    
     document.addEventListener('DOMContentLoaded', function () {
         const clientSelect = document.getElementById('client_id');
         const petSelect = document.getElementById('pet_id');
@@ -307,82 +377,68 @@
             }
         }
         
-        // Инициализация TomSelect для диагнозов с предварительно выбранными значениями
-        const diagnosesSelect = new createTomSelect('#diagnoses', {
-            placeholder: 'Выберите диагнозы...',
-            create: true,
-            valueField: 'value',
-            labelField: 'text',
-            searchField: 'text',
-            preload: true,
-            load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
-                
-                // Добавляем уже выбранные значения к запросу
-                const selectedValues = this.getValue();
-                if (selectedValues.length > 0) {
-                    url += '&selected=' + encodeURIComponent(selectedValues.join(','));
-                }
-                
-                fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
-            },
-            onItemAdd: function() {
-                setTimeout(() => {
-                    this.close();
-                    this.blur();
-                }, 50);
-            }
+        // Инициализация диагнозов уже выполнена глобально
+        
+        // Инициализируем TomSelect для существующих диагнозов
+        const existingDiagnosisSelects = document.querySelectorAll('.diagnosis-select');
+        existingDiagnosisSelects.forEach(select => {
+            initDiagnosisTomSelect(select);
         });
         
         // Восстанавливаем старые значения диагнозов при ошибке валидации
-        if (oldDiagnoses && oldDiagnoses.length > 0) {
-            // Сначала очищаем все существующие опции
-            diagnosesSelect.clearOptions();
+        if (oldDiagnoses && Array.isArray(oldDiagnoses) && oldDiagnoses.length > 0) {
+            // Очищаем существующие диагнозы
+            const diagnosisItems = document.getElementById('diagnosisItems');
+            diagnosisItems.innerHTML = '';
+            diagnosisIndex = 0;
             
-            // Создаем опции для уже выбранных диагнозов
-            oldDiagnoses.forEach(diagnosisId => {
-                if (typeof diagnosisId === 'string' && diagnosisId.trim() !== '') {
-                    if (isNaN(diagnosisId)) {
-                        // Кастомный диагноз
-                        diagnosesSelect.addOption({
-                            value: diagnosisId,
-                            text: diagnosisId
-                        });
-                    } else {
-                        // Диагноз из словаря - нужно загрузить его данные
-                        fetch(`{{ route('admin.visits.diagnosis-options') }}?q=&selected=${diagnosisId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data && data.length > 0) {
-                                    const diagnosis = data.find(d => d.value == diagnosisId);
-                                    if (diagnosis) {
-                                        diagnosesSelect.addOption(diagnosis);
+            oldDiagnoses.forEach((diagnosis, index) => {
+                addDiagnosisItem();
+                const lastDiagnosisItem = diagnosisItems.lastElementChild;
+                
+                if (lastDiagnosisItem) {
+                    // Устанавливаем значение диагноза
+                    const diagnosisSelect = lastDiagnosisItem.querySelector('.diagnosis-select');
+                    const treatmentPlanTextarea = lastDiagnosisItem.querySelector('textarea[name*="treatment_plan"]');
+                    const idInput = lastDiagnosisItem.querySelector('input[name*="[id]"]');
+                    
+                    if (diagnosis.id) {
+                        idInput.value = diagnosis.id;
+                    }
+                    
+                    if (diagnosis.treatment_plan && treatmentPlanTextarea) {
+                        treatmentPlanTextarea.value = diagnosis.treatment_plan;
+                    }
+                    
+                    // Загружаем и устанавливаем выбранный диагноз
+                    const diagnosisId = diagnosis.diagnosis_id || diagnosis.id;
+                    if (diagnosisId) {
+                        if (typeof diagnosisId === 'string' && isNaN(diagnosisId)) {
+                            // Кастомный диагноз
+                            if (diagnosisSelect.tomselect) {
+                                diagnosisSelect.tomselect.addOption({
+                                    value: diagnosisId,
+                                    text: diagnosisId
+                                });
+                                diagnosisSelect.tomselect.setValue(diagnosisId);
+                            }
+                        } else {
+                            // Диагноз из словаря
+                            fetch(`{{ route('admin.visits.diagnosis-options') }}?q=&selected=${diagnosisId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data && data.length > 0) {
+                                        const diagnosisData = data.find(d => d.value == diagnosisId);
+                                        if (diagnosisData && diagnosisSelect.tomselect) {
+                                            diagnosisSelect.tomselect.addOption(diagnosisData);
+                                            diagnosisSelect.tomselect.setValue(diagnosisId);
+                                        }
                                     }
-                                }
-                            });
+                                });
+                        }
                     }
                 }
             });
-            
-            // Устанавливаем значения после загрузки опций
-            setTimeout(() => {
-                diagnosesSelect.setValue(oldDiagnoses);
-            }, 500);
-        } else {
-            // Если нет old значений, восстанавливаем изначально выбранные
-            const selectedDiagnoses = @json($selectedDiagnoses ?? []);
-            if (selectedDiagnoses && selectedDiagnoses.length > 0) {
-                selectedDiagnoses.forEach(diagnosis => {
-                    diagnosesSelect.addOption({
-                        value: diagnosis.id,
-                        text: diagnosis.name
-                    });
-                });
-                diagnosesSelect.setValue(selectedDiagnoses.map(d => d.id));
-            }
         }
         
         // Фильтрация питомцев по клиенту
@@ -648,18 +704,13 @@
             
             // Добавляем значения TomSelect в форму перед отправкой
             const symptomsValues = symptomsSelect.getValue();
-            const diagnosesValues = diagnosesSelect.getValue();
             
             // Очищаем оригинальные select поля
             const symptomsSelectElement = document.getElementById('symptoms');
-            const diagnosesSelectElement = document.getElementById('diagnoses');
             
             // Удаляем все option из select полей
             while (symptomsSelectElement.firstChild) {
                 symptomsSelectElement.removeChild(symptomsSelectElement.firstChild);
-            }
-            while (diagnosesSelectElement.firstChild) {
-                diagnosesSelectElement.removeChild(diagnosesSelectElement.firstChild);
             }
             
             // Добавляем новые значения как option в select поля
@@ -669,14 +720,90 @@
                 option.selected = true;
                 symptomsSelectElement.appendChild(option);
             });
-            
-            diagnosesValues.forEach(value => {
-                const option = document.createElement('option');
-                option.value = value;
-                option.selected = true;
-                diagnosesSelectElement.appendChild(option);
-            });
         });
     });
+    
+    // Функции для работы с диагнозами
+    function addDiagnosisItem() {
+        const template = document.getElementById('diagnosisItemTemplate');
+        const container = document.getElementById('diagnosisItems');
+        const clone = template.content.cloneNode(true);
+        
+        // Обновляем индексы
+        const diagnosisDiv = clone.querySelector('.diagnosis-item');
+        diagnosisDiv.setAttribute('data-diagnosis-index', diagnosisIndex);
+        
+        const selects = clone.querySelectorAll('select');
+        const inputs = clone.querySelectorAll('input');
+        const textareas = clone.querySelectorAll('textarea');
+        
+        selects.forEach(select => {
+            select.name = select.name.replace('INDEX', diagnosisIndex);
+        });
+        
+        inputs.forEach(input => {
+            input.name = input.name.replace('INDEX', diagnosisIndex);
+        });
+        
+        textareas.forEach(textarea => {
+            textarea.name = textarea.name.replace('INDEX', diagnosisIndex);
+        });
+        
+        container.appendChild(clone);
+        
+        // Инициализируем TomSelect для нового диагноза
+        const diagnosisSelect = container.querySelector(`[data-diagnosis-index="${diagnosisIndex}"] .diagnosis-select`);
+        initDiagnosisTomSelect(diagnosisSelect);
+        
+        diagnosisIndex++;
+    }
+    
+    function removeDiagnosisItem(button) {
+        const diagnosisDiv = button.closest('.diagnosis-item');
+        diagnosisDiv.remove();
+    }
+    
+    function initDiagnosisTomSelect(select) {
+        new createTomSelect(select, {
+            placeholder: 'Выберите диагноз...',
+            create: true,
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Добавляем уже выбранные значения к запросу
+                const selectedValues = getAllSelectedDiagnosisValues();
+                if (selectedValues.length > 0) {
+                    url += '&selected=' + encodeURIComponent(selectedValues.join(','));
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
+        });
+    }
+    
+    function getAllSelectedDiagnosisValues() {
+        const diagnosisSelects = document.querySelectorAll('.diagnosis-select');
+        const values = [];
+        diagnosisSelects.forEach(select => {
+            if (select.tomselect && select.tomselect.getValue()) {
+                values.push(select.tomselect.getValue());
+            }
+        });
+        return values;
+    }
 </script>
 @endpush 

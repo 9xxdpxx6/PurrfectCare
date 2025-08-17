@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2 col-12 col-md-7 col-xl-8">Клиент: {{ $user->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning me-2">
+        <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
         <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">

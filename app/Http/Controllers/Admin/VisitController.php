@@ -98,12 +98,16 @@ class VisitController extends AdminController
             if ($diagnosis->dictionary_diagnosis_id) {
                 return [
                     'id' => $diagnosis->dictionary_diagnosis_id,
-                    'name' => $diagnosis->dictionaryDiagnosis->name
+                    'name' => $diagnosis->dictionaryDiagnosis->name,
+                    'treatment_plan' => $diagnosis->treatment_plan,
+                    'pivot_id' => $diagnosis->id
                 ];
             } else {
                 return [
                     'id' => $diagnosis->custom_diagnosis,
-                    'name' => $diagnosis->custom_diagnosis
+                    'name' => $diagnosis->custom_diagnosis,
+                    'treatment_plan' => $diagnosis->treatment_plan,
+                    'pivot_id' => $diagnosis->id
                 ];
             }
         });

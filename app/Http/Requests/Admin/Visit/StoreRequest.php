@@ -31,7 +31,22 @@ class StoreRequest extends FormRequest
             'symptoms' => 'nullable|array',
             'symptoms.*' => 'nullable|string',
             'diagnoses' => 'nullable|array',
-            'diagnoses.*' => 'nullable|string',
+            'diagnoses.*' => 'nullable|array',
+            'diagnoses.*.diagnosis_id' => ['required', function ($attribute, $value, $fail) {
+                // Если число - проверяем существование в справочнике
+                if (is_numeric($value)) {
+                    if (!\App\Models\DictionaryDiagnosis::where('id', $value)->exists()) {
+                        $fail('Выбранный диагноз не найден в справочнике');
+                    }
+                } else {
+                    // Если строка - проверяем что не пустая
+                    if (empty(trim($value))) {
+                        $fail('Диагноз не может быть пустым');
+                    }
+                }
+            }],
+            'diagnoses.*.treatment_plan' => 'nullable|string',
+            'diagnoses.*.id' => 'nullable|integer',
         ];
     }
 
@@ -79,6 +94,8 @@ class StoreRequest extends FormRequest
             'symptoms.*' => 'симптом',
             'diagnoses' => 'диагнозы',
             'diagnoses.*' => 'диагноз',
+            'diagnoses.*.diagnosis_id' => 'диагноз',
+            'diagnoses.*.treatment_plan' => 'план лечения',
         ];
     }
 
