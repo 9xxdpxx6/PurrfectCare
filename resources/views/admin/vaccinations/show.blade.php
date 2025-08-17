@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Вакцинация от {{ $item->administered_at->format('d.m.Y') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
-        <a href="{{ route('admin.vaccinations.edit', $item) }}" class="btn btn-warning">
+        <a href="{{ route('admin.vaccinations.edit', $item) }}" class="btn btn-outline-warning">
             <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Редактировать</span>
         </a>
         <a href="{{ route('admin.vaccinations.index') }}" class="btn btn-outline-secondary">
@@ -29,6 +29,16 @@
                     <div class="col-md-6 mb-3 mt-md-0">
                         <h6 class="text-muted">Дата проведения</h6>
                         <p class="fs-5">{{ $item->administered_at->format('d.m.Y') }}</p>
+                        
+                        @if($item->vaccinationType)
+                            <h6 class="text-muted mt-3">Тип вакцинации</h6>
+                            <p class="fs-5">{{ $item->vaccinationType->name }}</p>
+                            
+                            @if($item->vaccinationType->price)
+                                <h6 class="text-muted mt-3">Цена вакцинации</h6>
+                                <p class="fs-5">{{ number_format($item->vaccinationType->price, 2, ',', ' ') }} ₽</p>
+                            @endif
+                        @endif
                         
                         @if($item->next_due)
                             <h6 class="text-muted mt-3">Следующая вакцинация: {{ $item->next_due->format('d.m.Y') }}</h6>
@@ -106,9 +116,14 @@
                                             </h6>
                                         </div>
                                         
-                                        <a href="{{ route('admin.drugs.show', $drug) }}" class="btn btn-outline-primary btn-sm d-md-none position-absolute top-0 end-0 m-3" title="Подробнее о препарате">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
+                                        <div class="d-md-none position-absolute top-0 end-0 m-3 d-flex gap-2">
+                                            @if($drug->price)
+                                                <span class="badge bg-success">{{ number_format($drug->price, 0, ',', ' ') }} ₽</span>
+                                            @endif
+                                            <a href="{{ route('admin.drugs.show', $drug) }}" class="btn btn-outline-primary btn-sm" title="Подробнее о препарате">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
                                         
                                         @if($drug->description)
                                             <p class="text-muted small mb-2">{{ $drug->description }}</p>
@@ -126,7 +141,13 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="d-none d-md-flex align-self-center">
+                                    <div class="d-none d-md-flex align-items-center gap-2">
+                                        @if($drug->price)
+                                            <div class="text-end">
+                                                <small class="text-muted">Цена:</small>
+                                                <div class="fw-bold">{{ number_format($drug->price, 2, ',', ' ') }} ₽</div>
+                                            </div>
+                                        @endif
                                         <a href="{{ route('admin.drugs.show', $drug) }}" class="btn btn-outline-primary btn-sm" title="Подробнее о препарате">
                                             <i class="bi bi-eye"></i> <span class="d-lg-inline d-none">Подробнее</span>
                                         </a>
@@ -134,6 +155,26 @@
                                 </div>
                             </div>
                         @endforeach
+                        
+                        @php
+                            $totalDrugsPrice = $item->vaccinationType->drugs->sum('price');
+                            $totalPrice = ($item->vaccinationType->price ?? 0) + $totalDrugsPrice;
+                        @endphp
+                        
+                        <div class="border-top pt-3 mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Итого:</h6>
+                                <div class="text-end">
+                                    @if($item->vaccinationType->price)
+                                        <div class="text-muted small">Вакцинация: {{ number_format($item->vaccinationType->price, 2, ',', ' ') }} ₽</div>
+                                    @endif
+                                    @if($totalDrugsPrice > 0)
+                                        <div class="text-muted small">Препараты: {{ number_format($totalDrugsPrice, 2, ',', ' ') }} ₽</div>
+                                    @endif
+                                    <div class="fs-5 fw-bold">{{ number_format($totalPrice, 2, ',', ' ') }} ₽</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -59,7 +59,7 @@ class PetController extends AdminController
             Log::info('Питомец успешно создан', [
                 'pet_id' => $pet->id,
                 'pet_name' => $pet->name,
-                'owner_id' => $pet->owner_id,
+                'client_id' => $pet->client_id,
                 'breed_id' => $pet->breed_id
             ]);
             
@@ -90,7 +90,7 @@ class PetController extends AdminController
             
             $item = $this->model::findOrFail($id);
             $oldName = $item->name;
-            $oldOwnerId = $item->owner_id;
+            $oldClientId = $item->client_id;
             $oldBreedId = $item->breed_id;
             
             $item->update($validated);
@@ -101,8 +101,8 @@ class PetController extends AdminController
                 'pet_id' => $item->id,
                 'old_name' => $oldName,
                 'new_name' => $item->name,
-                'old_owner_id' => $oldOwnerId,
-                'new_owner_id' => $item->owner_id,
+                'old_client_id' => $oldClientId,
+                'new_client_id' => $item->client_id,
                 'old_breed_id' => $oldBreedId,
                 'new_breed_id' => $item->breed_id
             ]);
@@ -130,10 +130,18 @@ class PetController extends AdminController
     {
         $filter = app()->make(PetFilter::class, ['queryParams' => array_filter($request->all())]);
         
-        $query = $this->model::with(['owner', 'breed.species']);
+        $query = $this->model::with(['client', 'breed.species', 'visits', 'orders', 'vaccinations', 'labTests']);
         $filter->apply($query);
         
         $items = $query->paginate(25)->appends($request->query());
+        
+        // Подсчитаем статистику для каждого питомца
+        foreach ($items as $pet) {
+            $pet->visits_count = $pet->visits->count();
+            $pet->orders_count = $pet->orders->count();
+            $pet->vaccinations_count = $pet->vaccinations->count();
+            $pet->lab_tests_count = $pet->labTests->count();
+        }
         $clients = User::orderBy('name')->get();
         $breeds = Breed::with('species')->orderBy('name')->get();
         
@@ -142,8 +150,24 @@ class PetController extends AdminController
 
     public function show($id) : View
     {
-        $item = $this->model::with(['owner', 'breed.species'])->findOrFail($id);
-        return view("admin.{$this->viewPath}.show", compact('item'));
+        $pet = $this->model::with(['client', 'breed.species'])->findOrFail($id);
+        
+        // Загружаем связанные данные
+        $visits = $pet->visits()->with(['schedule.veterinarian.specialties', 'status'])->latest()->limit(10)->get();
+        $vaccinations = $pet->vaccinations()->with(['veterinarian.specialties', 'vaccinationType'])->latest()->limit(10)->get();
+        $labTests = $pet->labTests()->with(['veterinarian.specialties', 'labTestType'])->latest()->limit(10)->get();
+        $orders = $pet->orders()->with(['branch', 'status'])->latest()->limit(10)->get();
+        
+        // Подсчитываем общие количества
+        $visitsTotal = $pet->visits()->count();
+        $vaccinationsTotal = $pet->vaccinations()->count();
+        $labTestsTotal = $pet->labTests()->count();
+        $ordersTotal = $pet->orders()->count();
+        
+        return view("admin.{$this->viewPath}.show", compact(
+            'pet', 'visits', 'vaccinations', 'labTests', 'orders',
+            'visitsTotal', 'vaccinationsTotal', 'labTestsTotal', 'ordersTotal'
+        ));
     }
 
     public function destroy($id) : RedirectResponse

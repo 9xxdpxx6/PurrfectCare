@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2 col-12 col-md-7 col-xl-8">Питомец: {{ $pet->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('admin.pets.edit', $pet) }}" class="btn btn-warning me-2">
+        <a href="{{ route('admin.pets.edit', $pet) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
         <a href="{{ route('admin.pets.index') }}" class="btn btn-outline-secondary">
@@ -115,11 +115,11 @@
                                                     </div>
                                                     
                                                     <div class="col-md-3">
-                                                        @if($visit->schedule && $visit->schedule->employee)
+                                                        @if($visit->schedule && $visit->schedule->veterinarian)
                                                             <p class="text-muted small mb-0">
-                                                                <i class="bi bi-person"></i> {{ $visit->schedule->employee->name }}
-                                                                @if($visit->schedule->employee->specialties->count() > 0)
-                                                                    <span class="text-muted">({{ $visit->schedule->employee->specialties->first()->name }})</span>
+                                                                <i class="bi bi-person"></i> {{ $visit->schedule->veterinarian->name }}
+                                                                @if($visit->schedule->veterinarian->specialties->count() > 0)
+                                                                    <span class="text-muted">({{ $visit->schedule->veterinarian->specialties->first()->name }})</span>
                                                                 @endif
                                                             </p>
                                                         @endif
@@ -128,7 +128,7 @@
                                                     <div class="col-md-3 text-md-center">
                                                         @if($visit->status)
                                                             <div class="d-flex justify-content-center">
-                                                                <span class="badge" style="background-color: {!! $visit->status->color !!}; color: white;">
+                                                                <span class="badge" style="background-color: {{ $visit->status->color }}; color: white;">
                                                                     {{ $visit->status->name }}
                                                                 </span>
                                                             </div>
@@ -137,14 +137,14 @@
                                                 </div>
                                             </div>
                                             
-                                            <div class="align-self-center d-none d-md-block ms-3">
+                                            <div class="align-self-center d-none d-md-block ms-3 text-nowrap">
                                                 <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
                                         </div>
                                         <!-- Кнопка на всю ширину для маленьких экранов -->
-                                        <div class="d-md-none mt-2">
+                                        <div class="d-md-none mt-2 text-nowrap">
                                             <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm w-100">
                                                 <i class="bi bi-eye"></i> Подробнее
                                             </a>
@@ -176,7 +176,7 @@
                                             <div class="flex-grow-1">
                                                 <div class="row align-items-center">
                                                     <div class="col-md-6">
-                                                        <h6 class="mb-1">Вакцинация #{{ $vaccination->id }}</h6>
+                                                        <h6 class="mb-1">{{ $vaccination->vaccinationType->name ?? 'Вакцинация' }}</h6>
                                                         <p class="text-muted small mb-2">{{ $vaccination->administered_at->format('d.m.Y') }}</p>
                                                     </div>
                                                     
@@ -193,14 +193,14 @@
                                                 </div>
                                             </div>
                                             
-                                            <div class="align-self-center d-none d-md-block ms-3">
+                                            <div class="align-self-center d-none d-md-block ms-3 text-nowrap">
                                                 <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
                                         </div>
                                         <!-- Кнопка на всю ширину для маленьких экранов -->
-                                        <div class="d-md-none mt-2">
+                                        <div class="d-md-none mt-2 text-nowrap">
                                             <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-primary btn-sm w-100">
                                                 <i class="bi bi-eye"></i> Подробнее
                                             </a>
@@ -241,7 +241,7 @@
                                                         </p>
                                                     </div>
                                                     
-                                                    <div class="col-md-6 text-md-end">
+                                                    <div class="col-md-6 text-md-start">
                                                         @if($labTest->veterinarian)
                                                             <p class="text-muted small mb-0">
                                                                 <i class="bi bi-person"></i> {{ $labTest->veterinarian->name }}
@@ -253,20 +253,20 @@
                                                         
                                                         <div>
                                                             <small class="text-muted">Тип:</small>
-                                                            <span class="fw-bold">{{ $labTest->labTestType->name ?? 'Не указан' }}</span>
+                                                            <span>{{ $labTest->labTestType->name ?? 'Не указан' }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             
-                                            <div class="align-self-center d-none d-md-block ms-3">
+                                            <div class="align-self-center d-none d-md-block ms-3 text-nowrap">
                                                 <a href="{{ route('admin.lab-tests.show', $labTest) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
                                         </div>
                                         <!-- Кнопка на всю ширину для маленьких экранов -->
-                                        <div class="d-md-none mt-2">
+                                        <div class="d-md-none mt-2 text-nowrap">
                                             <a href="{{ route('admin.lab-tests.show', $labTest) }}" class="btn btn-outline-primary btn-sm w-100">
                                                 <i class="bi bi-eye"></i> Подробнее
                                             </a>
@@ -318,7 +318,7 @@
                                                     <div class="col-md-4 text-md-center">
                                                         @if($order->status)
                                                             <div class="d-flex justify-content-center">
-                                                                <span class="badge" style="background-color: {!! $order->status->color !!}; color: white;">
+                                                                <span class="badge" style="background-color: {{ $order->status->color }}; color: white;">
                                                                     {{ $order->status->name }}
                                                                 </span>
                                                             </div>
@@ -335,14 +335,14 @@
                                                 </div>
                                             </div>
                                             
-                                            <div class="align-self-center d-none d-md-block ms-3">
+                                            <div class="align-self-center d-none d-md-block ms-3 text-nowrap">
                                                 <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">Подробнее</span>
                                                 </a>
                                             </div>
                                         </div>
                                         <!-- Кнопка на всю ширину для маленьких экранов -->
-                                        <div class="d-md-none mt-2">
+                                        <div class="d-md-none mt-2 text-nowrap">
                                             <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm w-100">
                                                 <i class="bi bi-eye"></i> Подробнее
                                             </a>
