@@ -107,7 +107,7 @@
 
 @if($employees->isEmpty())
     <div class="text-center py-5">
-        <i class="bi bi-emoji-neutral display-1 text-muted"></i>
+        <i class="bi bi-emoji-angry display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Сотрудники не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте нового сотрудника.</p>
         <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">

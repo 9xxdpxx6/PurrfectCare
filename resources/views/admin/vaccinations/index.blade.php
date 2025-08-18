@@ -135,7 +135,7 @@
                     <div class="flex-grow-1 d-flex flex-column justify-content-between h-100 align-items-start">
                         <div class="d-flex flex-row align-items-center gap-3 mb-2">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-shield-check"></i>
+                                <i class="bi bi-shield-lock"></i>
                                 {{ $vaccination->administered_at->format('d.m.Y') }}
                             </h5>
                             @if($vaccination->next_due)

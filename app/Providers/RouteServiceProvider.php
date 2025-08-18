@@ -33,6 +33,16 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
+            // Admin routes grouped by sections, loaded from routes/admin/*.php
+            Route::middleware('web')
+                ->prefix('admin')
+                ->as('admin.')
+                ->group(function () {
+                    foreach (glob(base_path('routes/admin/*.php')) as $routeFile) {
+                        require $routeFile;
+                    }
+                });
+
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
