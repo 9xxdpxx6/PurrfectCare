@@ -33,6 +33,10 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
+            // Bot routes (Telegram webhook and related endpoints)
+            Route::middleware('api')
+                ->group(base_path('routes/bot.php'));
+
             // Admin routes grouped by sections, loaded from routes/admin/*.php
             Route::middleware('web')
                 ->prefix('admin')

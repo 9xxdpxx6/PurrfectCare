@@ -381,47 +381,47 @@
                     <div class="collapse show" id="settingsMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.lab-tests.types.*') ? 'active' : '' }}" href="{{ route('admin.settings.lab-tests.types.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.types.*') ? 'active' : '' }}" href="{{ route('admin.lab-tests.types.index') }}">
                                     Типы анализов
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.lab-tests.params.*') ? 'active' : '' }}" href="{{ route('admin.settings.lab-tests.params.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.params.*') ? 'active' : '' }}" href="{{ route('admin.lab-tests.params.index') }}">
                                     Параметры анализов
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.vaccination-types.*') ? 'active' : '' }}" href="{{ route('admin.settings.vaccination-types.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.vaccination-types.*') ? 'active' : '' }}" href="{{ route('admin.vaccination-types.index') }}">
                                     Типы вакцинаций
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.system.statuses.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.statuses.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.statuses.*') ? 'active' : '' }}" href="{{ route('admin.settings.statuses.index') }}">
                                     Статусы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.system.units.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.units.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.units.*') ? 'active' : '' }}" href="{{ route('admin.settings.units.index') }}">
                                     Единицы измерений
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.system.branches.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.branches.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.branches.*') ? 'active' : '' }}" href="{{ route('admin.settings.branches.index') }}">
                                     Филиалы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.system.specialties.*') ? 'active' : '' }}" href="{{ route('admin.settings.system.specialties.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.specialties.*') ? 'active' : '' }}" href="{{ route('admin.settings.specialties.index') }}">
                                     Специальности
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.animals.species.*') ? 'active' : '' }}" href="{{ route('admin.settings.animals.species.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.species.*') ? 'active' : '' }}" href="{{ route('admin.settings.species.index') }}">
                                     Виды животных
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.animals.breeds.*') ? 'active' : '' }}" href="{{ route('admin.settings.animals.breeds.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.breeds.*') ? 'active' : '' }}" href="{{ route('admin.settings.breeds.index') }}">
                                     Породы
                                 </a>
                             </li>
@@ -431,12 +431,12 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.dictionary.diagnoses.*') ? 'active' : '' }}" href="{{ route('admin.settings.dictionary.diagnoses.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.diagnoses.*') ? 'active' : '' }}" href="{{ route('admin.settings.diagnoses.index') }}">
                                     Диагнозы (словарь)
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.dictionary.symptoms.*') ? 'active' : '' }}" href="{{ route('admin.settings.dictionary.symptoms.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.symptoms.*') ? 'active' : '' }}" href="{{ route('admin.settings.symptoms.index') }}">
                                     Симптомы (словарь)
                                 </a>
                             </li>

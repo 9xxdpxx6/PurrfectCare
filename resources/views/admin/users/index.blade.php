@@ -79,7 +79,7 @@
                         </h6>
                         <div class="w-100">
                             <div class="text-muted mb-1">
-                                <i class="bi bi-telephone"></i> Телефон: {{ $user->phone }}
+                                <i class="bi bi-telephone"></i> Телефон: {{ preg_replace('/^(\+?7|8)(\d{3})(\d{3})(\d{2})(\d{2})$/', '+7-$2-$3-$4-$5', $user->phone) }}
                             </div>
                             @if($user->address)
                                 <div class="text-muted mb-1">

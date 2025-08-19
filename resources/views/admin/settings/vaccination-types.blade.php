@@ -253,7 +253,7 @@
             <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-            <a href="{{ route('admin.settings.vaccination-types.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('admin.vaccination-types.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
             <button type="submit" class="btn btn-outline-primary">
@@ -1016,8 +1016,8 @@ function saveRow(button) {
     }
     
     const url = id === 'new' 
-        ? '{{ route("admin.settings.vaccination-types.store") }}'
-        : '{{ url("admin/settings/vaccination-types") }}/' + id;
+                        ? '{{ route("admin.vaccination-types.store") }}'
+                  : '{{ url("admin/vaccination-types") }}/' + id;
     
     const method = id === 'new' ? 'POST' : 'POST';
     

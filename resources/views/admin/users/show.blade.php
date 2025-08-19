@@ -33,15 +33,31 @@
                         </p>
                         <p class="mb-2">
                             <strong><i class="bi bi-telephone"></i> Телефон:</strong>
-                            {{ $user->phone }}
+                            <span class="d-inline-flex align-items-center gap-2 ms-2">
+                                {{ preg_replace('/^(\+?7|8)(\d{3})(\d{3})(\d{2})(\d{2})$/', '+7-$2-$3-$4-$5', $user->phone) }}
+                                <button type="button" class="btn btn-link btn-sm p-0 text-muted" onclick="copyToClipboard('{{ $user->phone }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Копировать номер">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </span>
                         </p>
                         @if($user->telegram)
                         <p class="mb-2">
-                            <strong><i class="bi bi-telegram"></i> Telegram:</strong>
-                            <a href="https://t.me/{{ ltrim($user->telegram, '@') }}" target="_blank" class="text-decoration-none">
-                                {{ $user->telegram }}
-                                <i class="bi bi-box-arrow-up-right text-muted small"></i>
-                            </a>
+                            <strong><i class="bi bi-telegram"></i> Telegram ID:</strong>
+                            @if(is_numeric($user->telegram))
+                                <span class="d-inline-flex align-items-center gap-2 ms-2">
+                                    <a href="https://web.telegram.org/k/#{{ $user->telegram }}" target="_blank" class="text-decoration-none">
+                                        {{ $user->telegram }}
+                                    </a>
+                                    <button type="button" class="btn btn-link btn-sm p-0 text-muted" onclick="copyToClipboard('{{ $user->telegram }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Копировать ID">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </span>
+                            @else
+                                <a href="https://t.me/{{ ltrim($user->telegram, '@') }}" target="_blank" class="text-decoration-none ms-2">
+                                    {{ $user->telegram }}
+                                    <i class="bi bi-box-arrow-up-right text-muted small"></i>
+                                </a>
+                            @endif
                         </p>
                         @endif
                     </div>
@@ -396,12 +412,52 @@
 
 @push('scripts')
 <script>
-    // Инициализация Bootstrap tooltips
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+        // Инициализация Bootstrap тултипов
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     });
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Определяем, что копируем
+            let message = '';
+            if (text.includes('@') || text.length > 15) {
+                message = 'ID Telegram скопирован в буфер обмена!';
+            } else {
+                message = 'Номер телефона скопирован в буфер обмена!';
+            }
+            showAlert(message, 'success');
+        }, function(err) {
+            console.error('Ошибка при копировании: ', err);
+            showAlert('Ошибка при копировании', 'danger');
+        });
+    }
+    
+    function showAlert(message, type) {
+        // Удаляем существующие алерты
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Создаем новый алерт
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Автоматически скрываем через 3 секунды
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
 </script>
 @endpush 

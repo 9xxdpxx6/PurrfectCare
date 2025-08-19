@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->boolean('is_completed')->default(false);
             $table->timestamps();
+            $table->unique(['schedule_id', 'starts_at'], 'visits_schedule_starts_unique');
         });
     }
 

@@ -20,7 +20,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    <a href="{{ route('admin.settings.lab-tests.types.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.lab-tests.types.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-clipboard-data me-3 text-primary"></i>Типы анализов
@@ -28,7 +28,7 @@
                             <i class="bi bi-chevron-right text-muted"></i>
                         </div>
                     </a>
-                    <a href="{{ route('admin.settings.lab-tests.params.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.lab-tests.params.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-list-check me-3 text-primary"></i>Параметры анализов
@@ -50,7 +50,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    <a href="{{ route('admin.settings.system.statuses.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.settings.statuses.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-tags me-3 text-success"></i>Статусы
@@ -58,7 +58,7 @@
                             <i class="bi bi-chevron-right text-muted"></i>
                         </div>
                     </a>
-                    <a href="{{ route('admin.settings.system.units.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.settings.units.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-rulers me-3 text-success"></i>Единицы измерений
@@ -66,7 +66,7 @@
                             <i class="bi bi-chevron-right text-muted"></i>
                         </div>
                     </a>
-                    <a href="{{ route('admin.settings.system.branches.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.settings.branches.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-building me-3 text-success"></i>Филиалы
@@ -74,7 +74,7 @@
                             <i class="bi bi-chevron-right text-muted"></i>
                         </div>
                     </a>
-                    <a href="{{ route('admin.settings.system.specialties.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.settings.specialties.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-person-badge me-3 text-success"></i>Специальности
@@ -96,7 +96,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    <a href="{{ route('admin.settings.animals.species.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.settings.species.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-collection me-3 text-warning"></i>Виды животных
@@ -104,7 +104,7 @@
                             <i class="bi bi-chevron-right text-muted"></i>
                         </div>
                     </a>
-                    <a href="{{ route('admin.settings.animals.breeds.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.settings.breeds.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-tags me-3 text-warning"></i>Породы
@@ -148,7 +148,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    <a href="{{ route('admin.settings.dictionary.diagnoses.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.settings.diagnoses.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-journal-text me-3 text-danger"></i>Диагнозы (словарь)
@@ -156,7 +156,7 @@
                             <i class="bi bi-chevron-right text-muted"></i>
                         </div>
                     </a>
-                    <a href="{{ route('admin.settings.dictionary.symptoms.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
+                    <a href="{{ route('admin.settings.symptoms.index') }}" class="list-group-item list-group-item-action border-0 py-3 px-4 settings-link">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-medium">
                                 <i class="bi bi-exclamation-triangle me-3 text-danger"></i>Симптомы (словарь)

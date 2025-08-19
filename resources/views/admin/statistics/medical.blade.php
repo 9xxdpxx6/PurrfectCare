@@ -280,7 +280,7 @@
                                         </td>
                                         <td>
                                             @if($item['labTestType'])
-                                                <strong><a href="{{ route('admin.settings.lab-tests.types.index') }}" class="text-decoration-none">{{ $item['name'] }}</a></strong>
+                                                <strong><a href="{{ route('admin.lab-tests.types.index') }}" class="text-decoration-none">{{ $item['name'] }}</a></strong>
                                             @else
                                                 <strong>{{ $item['name'] }}</strong>
                                             @endif

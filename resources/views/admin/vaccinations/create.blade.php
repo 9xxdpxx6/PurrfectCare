@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (typeId) {
             // Получаем информацию о препаратах в типе вакцинации
-            fetch(`{{ route('admin.settings.vaccination-types.show', '') }}/${typeId}`)
+            fetch(`{{ route('admin.vaccination-types.show', '') }}/${typeId}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);

@@ -17,8 +17,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Подключаем маршруты Telegram бота
-require __DIR__.'/telegram/webhook.php';
+// Маршруты Telegram бота подключаются через RouteServiceProvider из routes/bot.php
 
 Route::get('/login', function () {
     return 1111;

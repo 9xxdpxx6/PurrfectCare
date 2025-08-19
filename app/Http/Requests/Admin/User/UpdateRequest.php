@@ -3,10 +3,12 @@
 namespace App\Http\Requests\Admin\User;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\UniqueTelegram;
+use App\Traits\NormalizesPhone;
 
 class UpdateRequest extends FormRequest
 {
+    use NormalizesPhone;
+
     public function authorize(): bool
     {
         return true;
@@ -16,11 +18,29 @@ class UpdateRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $this->route('user'),
+            'email' => 'required|string|email|max:255|unique:users,email,' . $this->route('user'),
             'phone' => 'required|string|max:20',
-            'address' => 'nullable|string|max:255',
-            'telegram' => ['nullable', 'string', 'max:255', new UniqueTelegram($this->route('user'))],
+            'address' => 'nullable|string|max:500',
+            'telegram' => 'nullable|string|max:255',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if ($this->phone && !$this->validatePhone($this->phone)) {
+                $validator->errors()->add('phone', 'Неверный формат номера телефона.');
+            }
+        });
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->phone) {
+            $this->merge([
+                'phone' => $this->normalizePhone($this->phone)
+            ]);
+        }
     }
 
     public function messages(): array

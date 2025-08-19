@@ -9,10 +9,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Traits\Filterable;
 use App\Models\Traits\HasDeleteDependenciesCheck;
+use App\Traits\NormalizesPhone;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, Filterable, HasDeleteDependenciesCheck;
+    use HasApiTokens, HasFactory, Notifiable, Filterable, HasDeleteDependenciesCheck, NormalizesPhone;
 
     /**
      * The attributes that are mass assignable.
@@ -64,5 +65,15 @@ class User extends Authenticatable
 
     public function visits() {
         return $this->hasMany(Visit::class, 'client_id');
+    }
+
+    /**
+     * Мутатор для автоматической нормализации телефона
+     */
+    public function setPhoneAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['phone'] = $this->normalizePhone($value);
+        }
     }
 }

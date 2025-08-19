@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -23,28 +23,15 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        // Проверяем, есть ли уже записи в таблице users
-        $existingUsers = \App\Models\User::all();
-
-        if ($existingUsers->count() > 0) {
-            // Если записи есть, выбираем случайного пользователя
-            return [
-                'id' => $this->faker->randomElement($existingUsers)->id,
-            ];
-        }
-
-        // Если записей нет, создаем нового пользователя
         return [
-            'name' => $this->faker->firstName . ' ' . $this->faker->lastName,
-            'email' => $this->faker->unique()->safeEmail,
-            'phone' => '+7' . $this->faker->numerify('##########'), // Российский формат телефона
-            'address' => $this->faker->address,
-            'telegram' => $this->faker->optional(0.7)->userName, // 70% вероятность наличия telegram
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'phone' => '7' . fake()->numberBetween(9000000000, 9999999999), // Генерируем номер в формате 79XXXXXXXXX
+            'address' => fake()->address(),
+            'telegram' => null,
             'email_verified_at' => now(),
-            'password' => Hash::make('password'), // Установите пароль по умолчанию
-            'remember_token' => \Illuminate\Support\Str::random(10),
-            'created_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
+            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'remember_token' => Str::random(10),
         ];
     }
 

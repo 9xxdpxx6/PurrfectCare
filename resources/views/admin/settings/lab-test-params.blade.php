@@ -79,7 +79,7 @@
             <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-                            <a href="{{ route('admin.settings.lab-tests.params.index') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('admin.lab-tests.params.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
             <button type="submit" class="btn btn-outline-primary">
@@ -355,7 +355,7 @@ let changedRows = new Set();
                 return;
             }
             
-            fetch(`{{ route('admin.settings.lab-tests.params.update', '') }}/${rowId}`, {
+            fetch(`{{ route('admin.lab-tests.params.update', '') }}/${rowId}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -510,7 +510,7 @@ let changedRows = new Set();
             return;
         }
         
-        fetch('{{ route('admin.settings.lab-tests.params.store') }}', {
+        fetch('{{ route('admin.lab-tests.params.store') }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -556,7 +556,7 @@ let changedRows = new Set();
 
     function deleteRow(id) {
         if (confirm('Вы уверены, что хотите удалить этот параметр?')) {
-            fetch(`{{ route('admin.settings.lab-tests.params.destroy', '') }}/${id}`, {
+            fetch(`{{ route('admin.lab-tests.params.destroy', '') }}/${id}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
