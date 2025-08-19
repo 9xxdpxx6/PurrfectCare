@@ -135,7 +135,7 @@ class DatabaseSeeder extends Seeder
                                           ->whereNotIn('id', $usedOrders->pluck('id'));
             
             if ($availableClientOrders->isNotEmpty()) {
-                // Максимум 2 заказа на визит
+                // Максимум 2 заказа на приём
                 $orderCount = fake()->randomElement([1, 1, 1, 1, 1, 1, 1, 1, 2, 2]);
                 $ordersToLink = $availableClientOrders->random(min($availableClientOrders->count(), $orderCount));
                 
@@ -181,7 +181,7 @@ class DatabaseSeeder extends Seeder
             ->orderBy('visit_count', 'desc')
             ->first();
             
-        echo "Максимум заказов на визит: " . ($maxOrdersPerVisit ? $maxOrdersPerVisit->order_count : 0) . "\n";
-        echo "Максимум визитов на заказ: " . ($maxVisitsPerOrder ? $maxVisitsPerOrder->visit_count : 0) . "\n";
+        echo "Максимум заказов на приём: " . ($maxOrdersPerVisit ? $maxOrdersPerVisit->order_count : 0) . "\n";
+        echo "Максимум приёмов на заказ: " . ($maxVisitsPerOrder ? $maxVisitsPerOrder->visit_count : 0) . "\n";
     }
 }

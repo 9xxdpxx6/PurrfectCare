@@ -78,7 +78,7 @@ class DashboardMetricsService
             return 0;
         }
         
-        // Считаем количество уникальных визитов, которые связаны с заказами
+        // Считаем количество уникальных приёмов, которые связаны с заказами
         $visitsWithOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
             ->whereHas('orders')
             ->count();

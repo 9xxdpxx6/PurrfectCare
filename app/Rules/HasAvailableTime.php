@@ -31,7 +31,7 @@ class HasAvailableTime implements Rule
         // Получаем все занятые времена для этого расписания
         $query = Visit::where('schedule_id', $scheduleId);
         
-        // Исключаем текущий визит при обновлении
+        // Исключаем текущий приём при обновлении
         if ($this->visitId) {
             $query->where('id', '!=', $this->visitId);
         }

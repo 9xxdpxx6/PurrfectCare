@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Traits\Filterable;
 use App\Models\Traits\HasDeleteDependenciesCheck;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
 
-class Employee extends Model
+class Employee extends Authenticatable
 {
-    use HasFactory, HasRoles, Filterable, HasDeleteDependenciesCheck;
+    use HasFactory, HasRoles, Filterable, HasDeleteDependenciesCheck, Notifiable, AuthenticatableTrait;
 
     protected $guard_name = 'admin';
 
@@ -19,11 +22,16 @@ class Employee extends Model
         'email',
         'phone',
         'password',
+        'is_active',
     ];
 
     protected $hidden = [
         'password',
         'remember_token'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     protected $deleteDependencies = [

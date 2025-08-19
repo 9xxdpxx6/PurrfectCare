@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Приём от {{ $item->starts_at->format('d.m.Y H:i') }}</h1>
+    <h1 class="h2">Приём {{ $item->starts_at->format('d.m.Y H:i') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
         <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-outline-warning">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
@@ -27,7 +27,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6 class="text-muted">Дата и время</h6>
+                        <h6 class="text-muted">Дата и время приёма</h6>
                         <p class="fs-5">
                             @if($item->schedule)
                                 <a href="{{ route('admin.schedules.show', $item->schedule) }}" class="text-decoration-none">
@@ -49,6 +49,13 @@
                                 <span class="text-muted">Не указан</span>
                             @endif
                         </div>
+
+                        @if($item->created_at)
+                        <div class="d-flex align-items-center gap-2 mt-3">
+                            <span class="text-muted">Приём создан:</span>
+                                {{ $item->created_at->format('d.m.Y H:i') }}
+                            </div>
+                        @endif
                     </div>
                     <div class="col-md-6">
                         @if($item->client)
@@ -66,8 +73,9 @@
                             <span class="text-muted">Не указан</span>
                         @endif
                         
+                        <p class="mb-1 text-wrap"><strong>Питомец:</strong> 
                         @if($item->pet)
-                            <p class="mb-1 text-wrap"><strong>Питомец:</strong> {{ $item->pet->name }}
+                            {{ $item->pet->name }}
                                 @if($item->pet->breed)
                                     ({{ $item->pet->breed->species->name ?? '' }} - {{ $item->pet->breed->name ?? '' }})
                                 @endif

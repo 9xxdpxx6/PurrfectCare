@@ -6,11 +6,13 @@ use App\Models\Breed;
 use App\Models\Pet;
 use App\Models\TelegramProfile;
 use Illuminate\Support\Facades\Log;
+use App\Services\NotificationService;
 
 class PetService
 {
     public function __construct(
-        private TelegramApiService $apiService
+        private TelegramApiService $apiService,
+        private NotificationService $notificationService
     ) {
     }
 
@@ -237,7 +239,7 @@ class PetService
                 ];
             }
 
-            Pet::create([
+            $pet = Pet::create([
                 'name' => $petName,
                 'breed_id' => $breedId,
                 'client_id' => $profile->user_id,
@@ -246,6 +248,16 @@ class PetService
                 'temperature' => null,
                 'weight' => null,
             ]);
+
+            // Отправляем уведомление администраторам о новом питомце через бота
+            try {
+                $this->notificationService->notifyAboutBotPetAdded($pet);
+            } catch (\Exception $e) {
+                Log::error('Failed to send notification about bot pet added', [
+                    'pet_id' => $pet->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
 
             // Очищаем данные питомца из профиля
             $profile->state = 'start';

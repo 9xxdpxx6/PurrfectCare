@@ -6,10 +6,18 @@ use App\Models\User;
 use App\Models\TelegramProfile;
 use App\Traits\NormalizesPhone;
 use Illuminate\Support\Facades\Log;
+use App\Services\NotificationService;
 
 class UserRegistrationService
 {
     use NormalizesPhone;
+
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
 
     public function handleRegistrationFlow(TelegramProfile $profile, string $chatId, string $text): array
     {
@@ -527,6 +535,16 @@ class UserRegistrationService
 
         $profile->user_id = $newUser->id;
         $profile->save();
+
+        // Отправляем уведомление администраторам о новой регистрации через бота
+        try {
+            $this->notificationService->notifyAboutBotRegistration($newUser);
+        } catch (\Exception $e) {
+            Log::error('Failed to send notification about bot registration', [
+                'user_id' => $newUser->id,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         return [
             'action' => 'send_message_and_branches',

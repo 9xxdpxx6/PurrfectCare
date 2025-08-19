@@ -3,11 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'PurrfectCare - Админ-панель')</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3.4.0/air-datepicker.css">
     @stack('styles')
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <style>
+        /* Стили для оверлеев */
+        .overlay-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1050;
+            display: none;
+        }
+
+        .overlay-content {
+            position: absolute;
+            top: 54px;
+            right: 40px;
+            background: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            min-width: 300px;
+            max-width: 400px;
+            max-height: 500px;
+            overflow: hidden;
+            animation: overlaySlideIn 0.2s ease-out;
+        }
+
+        @keyframes overlaySlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) translateX(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) translateX(0);
+            }
+        }
+
+        .notifications-overlay {
+            width: 350px;
+        }
+
+        .user-overlay {
+            width: 250px;
+        }
+
+        .overlay-header {
+            padding: 1rem;
+            background-color: var(--bs-light);
+            border-bottom: 1px solid var(--bs-border-color);
+            font-weight: 600;
+        }
+
+        [data-bs-theme="dark"] .overlay-header {
+            background-color: var(--bs-dark);
+            color: var(--bs-light);
+        }
+
+        .overlay-divider {
+            height: 1px;
+            background-color: var(--bs-border-color);
+            margin: 0;
+        }
+
+        .overlay-item {
+            padding: 0.75rem 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .overlay-item:hover {
+            background-color: var(--bs-light);
+        }
+
+        [data-bs-theme="dark"] .overlay-item:hover {
+            background-color: var(--bs-dark);
+        }
+
+        .overlay-item a {
+            color: var(--bs-body-color);
+            text-decoration: none;
+            display: block;
+        }
+
+        .overlay-item a:hover {
+            color: var(--primary-color);
+        }
+
+        .overlay-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Стили для активного состояния кнопок */
+        .nav-link.active,
+        .btn.active {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        /* Устанавливаем высоту header для оверлеев */
+        header {
+            height: var(--header-height);
+        }
+
         .sidebar {
             height: 100vh;
             position: fixed;
@@ -209,13 +313,64 @@
                     <i class="bi bi-moon-fill"></i>
                 </button>
             </div>
+            <div class="nav-item text-nowrap me-3">
+                <button class="btn btn-link nav-link px-3 text-white position-relative" type="button" id="notificationsToggle">
+                    <span class="fs-5"><i class="bi bi-bell-fill"></i></span>
+                    <span class="position-absolute top-0 mt-2 py-0 px-2 fw-normal start-100 translate-middle badge rounded-pill bg-primary notification-badge" id="notificationBadge" style="display: none;">
+                        0
+                    </span>
+                </button>
+            </div>
             <div class="nav-item text-nowrap">
-                <span class="nav-link px-3 text-white">
-                    <i class="bi bi-person-circle"></i> {{ Auth::user()?->name }}
-                </span>
+                <button class="btn btn-link nav-link px-3 text-white" type="button" id="userToggle">
+                    <i class="bi bi-person-fill"></i> {{ Auth::guard('admin')->user()?->name }}
+                </button>
+                <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
             </div>
         </div>
     </header>
+
+    <!-- Оверлей уведомлений -->
+    <div id="notificationsOverlay" class="overlay-overlay" style="display: none;">
+        <div class="overlay-content notifications-overlay">
+            <div class="overlay-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 col-6">Уведомления</h6>
+                <button class="btn btn-sm btn-link text-decoration-none col-6" id="markAllAsRead">
+                    Отметить все как прочитанные
+                </button>
+            </div>
+            <div class="overlay-divider"></div>
+            <div id="notificationsList">
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-bell-slash"></i>
+                    <p class="mb-0">Нет новых уведомлений</p>
+                </div>
+            </div>
+            <div class="overlay-divider"></div>
+            <div class="overlay-item">
+                <a href="{{ route('admin.notifications.index') }}" class="text-decoration-none">
+                    <i class="bi bi-list-ul me-2"></i>Все уведомления
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Оверлей пользователя -->
+    <div id="userOverlay" class="overlay-overlay" style="display: none;">
+        <div class="overlay-content user-overlay">
+            <div class="overlay-header">
+                <h6 class="mb-0">Профиль</h6>
+            </div>
+            <div class="overlay-divider"></div>
+            <div class="overlay-item">
+                <a href="{{ route('admin.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="bi bi-box-arrow-right me-2"></i>Выйти
+                </a>
+            </div>
+        </div>
+    </div>
 
     <div class="sidebar" id="sidebarMenu">
         <div class="px-3">
@@ -370,6 +525,13 @@
                             </li>
                         </ul>
                     </div>
+                </li>
+
+                <!-- Уведомления -->
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
+                        <i class="bi bi-bell me-2"></i>Уведомления
+                    </a>
                 </li>
 
                 <!-- Настройки -->
@@ -730,6 +892,261 @@
                         canvas.style.maxHeight = '';
                     }
                 });
+            });
+
+            // Система уведомлений
+            class NotificationManager {
+                constructor() {
+                    this.badge = document.getElementById('notificationBadge');
+                    this.list = document.getElementById('notificationsList');
+                    this.markAllBtn = document.getElementById('markAllAsRead');
+                    this.overlay = document.getElementById('notificationsOverlay');
+                    this.toggle = document.getElementById('notificationsToggle');
+                    this.isOpen = false;
+                    this.init();
+                }
+
+                init() {
+                    this.loadNotifications();
+                    this.setupEventListeners();
+                    this.startPolling();
+                }
+
+                setupEventListeners() {
+                    this.markAllBtn.addEventListener('click', () => this.markAllAsRead());
+                    
+                    // Переключатель оверлея уведомлений
+                    this.toggle.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.toggleOverlay();
+                    });
+
+                    // Закрытие при клике по темной области
+                    this.overlay.addEventListener('click', (e) => {
+                        if (e.target === this.overlay) {
+                            this.closeOverlay();
+                        }
+                    });
+
+                    // Закрытие при нажатии Escape
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') {
+                            this.closeOverlay();
+                        }
+                    });
+                }
+
+                async loadNotifications() {
+                    try {
+                        const response = await fetch('/admin/notifications/recent');
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.updateBadge(data.unread_count);
+                            this.updateNotificationsList(data.notifications);
+                        }
+                    } catch (error) {
+                        console.error('Failed to load notifications:', error);
+                    }
+                }
+
+                updateBadge(count) {
+                    if (count > 0) {
+                        this.badge.textContent = count;
+                        this.badge.style.display = 'block';
+                    } else {
+                        this.badge.style.display = 'none';
+                    }
+                }
+
+                updateNotificationsList(notifications) {
+                    if (notifications.length === 0) {
+                        this.list.innerHTML = `
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-bell-slash"></i>
+                                <p class="mb-0">Нет новых уведомлений</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    this.list.innerHTML = notifications.map(notification => `
+                        <div class="overlay-item notification-item ${notification.read_at ? 'text-muted' : ''}" 
+                             data-notification-id="${notification.id}">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">${notification.data.title}</div>
+                                    <div class="small">${notification.data.message}</div>
+                                    <div class="text-muted small">
+                                        ${new Date(notification.created_at).toLocaleString('ru-RU')}
+                                    </div>
+                                    <div class="notification-links mt-2">
+                                        ${this.generateNotificationLinks(notification.data)}
+                                    </div>
+                                </div>
+                                ${!notification.read_at ? '<span class="badge bg-primary ms-2">Новое</span>' : ''}
+                            </div>
+                        </div>
+                    `).join('');
+
+                    // Добавляем обработчики кликов
+                    this.list.querySelectorAll('.notification-item').forEach(item => {
+                        item.addEventListener('click', () => this.markAsRead(item.dataset.notificationId));
+                    });
+                }
+
+                async markAsRead(notificationId) {
+                    try {
+                        const response = await fetch(`/admin/notifications/${notificationId}/mark-read`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            this.loadNotifications(); // Перезагружаем список
+                        }
+                    } catch (error) {
+                        console.error('Failed to mark notification as read:', error);
+                    }
+                }
+
+                async markAllAsRead() {
+                    try {
+                        const response = await fetch('/admin/notifications/mark-all-read', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            this.loadNotifications(); // Перезагружаем список
+                        }
+                    } catch (error) {
+                        console.error('Failed to mark all notifications as read:', error);
+                    }
+                }
+
+                toggleOverlay() {
+                    if (this.isOpen) {
+                        this.closeOverlay();
+                    } else {
+                        this.openOverlay();
+                    }
+                }
+
+                openOverlay() {
+                    this.overlay.style.display = 'block';
+                    this.isOpen = true;
+                    this.toggle.classList.add('active');
+                }
+
+                closeOverlay() {
+                    this.overlay.style.display = 'none';
+                    this.isOpen = false;
+                    this.toggle.classList.remove('active');
+                }
+
+                startPolling() {
+                    // Обновляем уведомления каждые 30 секунд
+                    setInterval(() => this.loadNotifications(), 30000);
+                    
+                    // Обновляем при фокусе на вкладке
+                    document.addEventListener('visibilitychange', () => {
+                        if (!document.hidden) {
+                            this.loadNotifications();
+                        }
+                    });
+                }
+
+                generateNotificationLinks(data) {
+                    let links = '';
+                    
+                    if (data && data.data) {
+                        // Ссылка на клиента
+                        if (data.data.client_id) {
+                            links += `<a href="/admin/users/${data.data.client_id}" class="btn btn-sm btn-outline-primary me-2 mb-2">
+                                <i class="bi bi-person"></i>
+                            </a>`;
+                        }
+                        
+                        // Ссылка на питомца
+                        if (data.data.pet_id) {
+                            links += `<a href="/admin/pets/${data.data.pet_id}" class="btn btn-sm btn-outline-success me-2 mb-2">
+                                <i class="bi bi-heart"></i>
+                            </a>`;
+                        }
+                        
+                        // Ссылка на приём
+                        if (data.data.visit_id) {
+                            links += `<a href="/admin/visits/${data.data.visit_id}" class="btn btn-sm btn-outline-info me-2 mb-2">
+                                <i class="bi bi-calendar-check"></i>
+                            </a>`;
+                        }
+                    }
+                    
+                    return links;
+                }
+            }
+
+            // Инициализируем менеджер уведомлений
+            const notificationManager = new NotificationManager();
+
+            // Управление оверлеем пользователя
+            const userToggle = document.getElementById('userToggle');
+            const userOverlay = document.getElementById('userOverlay');
+            let userOverlayOpen = false;
+
+            userToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleUserOverlay();
+            });
+
+            function toggleUserOverlay() {
+                if (userOverlayOpen) {
+                    closeUserOverlay();
+                } else {
+                    openUserOverlay();
+                }
+            }
+
+            function openUserOverlay() {
+                userOverlay.style.display = 'block';
+                userOverlayOpen = true;
+                userToggle.classList.add('active');
+            }
+
+            function closeUserOverlay() {
+                userOverlay.style.display = 'none';
+                userOverlayOpen = false;
+                userToggle.classList.remove('active');
+            }
+
+            // Закрытие при клике по темной области
+            userOverlay.addEventListener('click', (e) => {
+                if (e.target === userOverlay) {
+                    closeUserOverlay();
+                }
+            });
+
+            // Закрытие при нажатии Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeUserOverlay();
+                    notificationManager.closeOverlay();
+                }
+            });
+
+            // Закрытие при клике вне оверлеев (если нужно)
+            document.addEventListener('click', (e) => {
+                // Проверяем, что клик не по кнопкам и не по содержимому оверлеев
+                if (!e.target.closest('.overlay-content') && 
+                    !e.target.closest('#notificationsToggle') && 
+                    !e.target.closest('#userToggle')) {
+                    closeUserOverlay();
+                    notificationManager.closeOverlay();
+                }
             });
         });
     </script>

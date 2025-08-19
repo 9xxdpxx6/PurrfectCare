@@ -37,8 +37,18 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('api')
                 ->group(base_path('routes/bot.php'));
 
-            // Admin routes grouped by sections, loaded from routes/admin/*.php
+            // Admin login routes (without auth)
             Route::middleware('web')
+                ->prefix('admin')
+                ->as('admin.')
+                ->group(function () {
+                    Route::get('/login', [\App\Http\Controllers\Admin\AdminLoginController::class, 'showLoginForm'])->name('login');
+                    Route::post('/login', [\App\Http\Controllers\Admin\AdminLoginController::class, 'login']);
+                    Route::post('/logout', [\App\Http\Controllers\Admin\AdminLoginController::class, 'logout'])->name('logout');
+                });
+
+            // Admin routes grouped by sections, loaded from routes/admin/*.php (with auth)
+            Route::middleware(['web', 'admin.auth'])
                 ->prefix('admin')
                 ->as('admin.')
                 ->group(function () {

@@ -13,13 +13,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Pet;
 use App\Models\User;
+use App\Services\NotificationService;
 
 class AppointmentService
 {
     private int $currentScheduleId = 0;
 
     public function __construct(
-        private TelegramApiService $apiService
+        private TelegramApiService $apiService,
+        private NotificationService $notificationService
     ) {
     }
 
@@ -240,7 +242,7 @@ class AppointmentService
         $messages = [];
         $allAvailableSlots = [];
 
-        // Оптимизация: грузим все визиты по всем расписаниям за этот день одним запросом
+        // Оптимизация: грузим все приёмы по всем расписаниям за этот день одним запросом
         $scheduleIds = $schedules->pluck('id')->all();
         $dayStart = $dateYmd . ' 00:00:00';
         $dayEnd = $dateYmd . ' 23:59:59';
@@ -418,7 +420,7 @@ class AppointmentService
                 $petName = $pet->name;
             }
 
-            // Создаем визит (pet_id может быть null)
+            // Создаем приём (pet_id может быть null)
             $visit = Visit::create([
                 'client_id' => $profile->user_id,
                 'pet_id' => $petId, // Может быть null
@@ -428,6 +430,16 @@ class AppointmentService
                 'complaints' => null,
                 'notes' => null,
             ]);
+
+            // Отправляем уведомление администраторам о новой записи через бота
+            try {
+                $this->notificationService->notifyAboutBotBooking($visit);
+            } catch (\Exception $e) {
+                Log::error('Failed to send notification about bot booking', [
+                    'visit_id' => $visit->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
 
             // Сбрасываем выбранного питомца и другие временные данные после успешного создания записи
             $data = $profile->data ?? [];
@@ -469,7 +481,7 @@ class AppointmentService
         $user = User::find($profile->user_id);
         $userName = $user ? $user->name : 'Клиент';
         
-        // Получаем pet_id из созданного визита
+        // Получаем pet_id из созданного приёма
         $visit = Visit::where('client_id', $profile->user_id)
             ->where('starts_at', $startsAt)
             ->first();
