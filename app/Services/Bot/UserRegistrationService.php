@@ -46,10 +46,17 @@ class UserRegistrationService
         // Если пользователь уже зарегистрирован, не начинаем регистрацию заново
         if ($profile->user_id) {
             Log::info('UserRegistrationService: user already registered, not starting registration');
+            
+            $keyboard = [
+                [
+                    ['text' => '🏠 Главное меню', 'callback_data' => 'main_menu']
+                ]
+            ];
+            
             return [
                 'action' => 'send_message',
                 'message' => '❓ Команда не распознана. Используйте кнопки меню для навигации.',
-                'keyboard' => null
+                'keyboard' => $keyboard
             ];
         }
 
@@ -60,7 +67,7 @@ class UserRegistrationService
         
         return [
             'action' => 'send_message',
-            'message' => 'Пожалуйста, укажите ваше имя.',
+            'message' => 'Пожалуйста, укажите как Вас зовут.',
             'keyboard' => null
         ];
     }
@@ -173,6 +180,25 @@ class UserRegistrationService
     {
         Log::info('UserRegistrationService: creating new user');
         
+        // Проверяем, есть ли уже пользователь с таким Telegram ID
+        $existingUserByTelegram = User::where('telegram', (string)$chatId)->first();
+        if ($existingUserByTelegram) {
+            Log::info('UserRegistrationService: user already exists with this Telegram ID', [
+                'existing_user_id' => $existingUserByTelegram->id,
+                'existing_name' => $existingUserByTelegram->name
+            ]);
+            
+            // Привязываем существующего пользователя к профилю
+            $profile->user_id = $existingUserByTelegram->id;
+            $profile->save();
+            
+            return [
+                'action' => 'send_message_and_branches',
+                'message' => "✅ Отлично! Ваш аккаунт найден и привязан к Telegram. Добро пожаловать, {$existingUserByTelegram->name}!",
+                'keyboard' => null
+            ];
+        }
+        
         $newUser = User::create([
             'name' => $data['name'] ?? 'Клиент',
             'phone' => $data['phone'],
@@ -244,7 +270,7 @@ class UserRegistrationService
         
         return [
             'action' => 'send_message',
-            'message' => 'Пожалуйста, укажите ваше имя.',
+            'message' => 'Пожалуйста, укажите как Вас зовут.',
             'keyboard' => null
         ];
     }

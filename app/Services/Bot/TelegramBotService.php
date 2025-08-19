@@ -67,6 +67,18 @@ class TelegramBotService
                 $this->processStartCommand($chatId, $profile);
                 return;
             }
+            
+            if ($text === '/login') {
+                Log::info('TelegramBotService: processing /login command');
+                $this->handleLoginCommand($chatId, $profile);
+                return;
+            }
+            
+            if ($text === '/logout') {
+                Log::info('TelegramBotService: processing /logout command');
+                $this->handleLogoutCommand($chatId, $profile);
+                return;
+            }
         }
 
         // Обработка состояний для добавления питомца
@@ -428,8 +440,86 @@ class TelegramBotService
 
     protected function processStartCommand(string $chatId, TelegramProfile $profile): void
     {
-        $isRegistered = (bool)$profile->user_id;
-        $this->sendWelcome($chatId, $isRegistered);
+        if ($profile->user_id) {
+            // Пользователь уже зарегистрирован
+            $this->sendWelcome($chatId, true);
+        } else {
+            // Пользователь не зарегистрирован
+            $this->sendWelcome($chatId, false);
+        }
+    }
+
+    protected function handleLoginCommand(string $chatId, TelegramProfile $profile): void
+    {
+        // Отвязываем текущего пользователя и начинаем регистрацию заново
+        if ($profile->user_id) {
+            Log::info('TelegramBotService: user logging out from current account', [
+                'chat_id' => $chatId,
+                'current_user_id' => $profile->user_id
+            ]);
+            
+            // Отвязываем Telegram ID от пользователя в таблице users
+            $user = \App\Models\User::find($profile->user_id);
+            if ($user) {
+                $user->telegram = null;
+                $user->save();
+                Log::info('TelegramBotService: telegram ID unlinked from user', [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name
+                ]);
+            }
+            
+            // Полностью удаляем старый профиль и создаем новый
+            $profile->delete();
+            
+            // Создаем новый чистый профиль
+            $newProfile = new TelegramProfile();
+            $newProfile->telegram_id = (string)$chatId;
+            $newProfile->state = 'start';
+            $newProfile->data = [];
+            $newProfile->save();
+            
+            $this->apiService->sendMessage($chatId, '👋 Вы вышли из аккаунта. Теперь можете войти в другой аккаунт или зарегистрироваться.');
+            $this->sendWelcome($chatId, false);
+        } else {
+            // Пользователь не зарегистрирован, начинаем регистрацию
+            $this->startRegistration($chatId);
+        }
+    }
+
+    protected function handleLogoutCommand(string $chatId, TelegramProfile $profile): void
+    {
+        if ($profile->user_id) {
+            Log::info('TelegramBotService: user logging out', [
+                'chat_id' => $chatId,
+                'user_id' => $profile->user_id
+            ]);
+            
+            // Отвязываем Telegram ID от пользователя в таблице users
+            $user = \App\Models\User::find($profile->user_id);
+            if ($user) {
+                $user->telegram = null;
+                $user->save();
+                Log::info('TelegramBotService: telegram ID unlinked from user', [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name
+                ]);
+            }
+            
+            // Полностью удаляем старый профиль и создаем новый
+            $profile->delete();
+            
+            // Создаем новый чистый профиль
+            $newProfile = new TelegramProfile();
+            $newProfile->telegram_id = (string)$chatId;
+            $newProfile->state = 'start';
+            $newProfile->data = [];
+            $newProfile->save();
+            
+            $this->apiService->sendMessage($chatId, '👋 Вы вышли из аккаунта. Для входа используйте /start или /login.');
+        } else {
+            $this->apiService->sendMessage($chatId, '❌ Вы не вошли в аккаунт. Для входа используйте /start или /login.');
+        }
     }
 }
 
