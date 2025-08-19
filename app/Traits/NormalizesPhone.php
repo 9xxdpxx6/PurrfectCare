@@ -44,21 +44,32 @@ trait NormalizesPhone
     
     protected function validatePhone(string $phone): bool
     {
-        $normalized = $this->normalizePhone($phone);
+        // Убираем все символы кроме цифр
+        $digits = preg_replace('/[^0-9]/', '', $phone);
         
-        // Проверяем, что номер имеет правильную длину и формат
-        if (strlen($normalized) !== 11) {
+        // Принимаем номера длиной 10-11 цифр
+        if (strlen($digits) < 10 || strlen($digits) > 11) {
             return false;
         }
         
-        // Проверяем, что номер начинается с 7
-        if ($normalized[0] !== '7') {
+        // Если 10 цифр - добавляем 7 в начало
+        if (strlen($digits) === 10) {
+            $digits = '7' . $digits;
+        }
+        
+        // Проверяем, что номер начинается с 7 или 8
+        if ($digits[0] !== '7' && $digits[0] !== '8') {
             return false;
+        }
+        
+        // Если начинается с 8, заменяем на 7
+        if ($digits[0] === '8') {
+            $digits = '7' . substr($digits, 1);
         }
         
         // Проверяем, что вторая цифра (код оператора) валидна
-        $operatorCode = $normalized[1];
-        $validOperatorCodes = ['9', '4', '8', '3', '5', '6'];
+        $operatorCode = $digits[1];
+        $validOperatorCodes = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
         
         return in_array($operatorCode, $validOperatorCodes);
     }

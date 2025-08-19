@@ -16,7 +16,8 @@ class UserRegistrationService
         Log::info('UserRegistrationService: handling registration flow', [
             'chat_id' => $chatId,
             'current_state' => $profile->state,
-            'text' => $text
+            'text' => $text,
+            'profile_data' => $profile->data
         ]);
 
         switch ($profile->state) {
@@ -29,6 +30,12 @@ class UserRegistrationService
             case 'await_phone':
                 return $this->handlePhoneInput($profile, $chatId, $text);
             
+            case 'await_email':
+                return $this->handleEmailInput($profile, $chatId, $text);
+            
+            case 'awaiting_verification_code':
+                return $this->handleVerificationCode($profile, $chatId, $text);
+            
             case 'await_phone_existing':
                 return $this->handleExistingPhoneInput($profile, $chatId, $text);
             
@@ -36,7 +43,11 @@ class UserRegistrationService
                 return $this->handleProfileConfirmation($profile, $chatId, $text);
             
             default:
-                Log::warning('UserRegistrationService: unknown state', ['state' => $profile->state]);
+                Log::warning('UserRegistrationService: unknown state', [
+                    'state' => $profile->state,
+                    'text' => $text,
+                    'profile_data' => $profile->data
+                ]);
                 return ['action' => 'error', 'message' => 'Неизвестное состояние регистрации'];
         }
     }
@@ -111,20 +122,283 @@ class UserRegistrationService
         $data = $profile->data ?? [];
         $data['phone'] = $normalizedPhone;
         $profile->data = $data;
-        $profile->state = 'completed';
+        $profile->state = 'await_email';
         $profile->save();
 
-        Log::info('UserRegistrationService: phone received, checking for existing user', [
+        Log::info('UserRegistrationService: phone received, now asking for email', [
             'original_phone' => $text,
             'normalized_phone' => $normalizedPhone
         ]);
+        
+        return [
+            'action' => 'send_message',
+            'message' => "Спасибо! Теперь отправьте ваш email адрес для подтверждения номера телефона.\n\n📧 Email будет использоваться для:\n• Подтверждения номера телефона\n• Отправки важных уведомлений\n• Восстановления доступа к аккаунту",
+            'keyboard' => null
+        ];
+    }
+
+    protected function handleEmailInput(TelegramProfile $profile, string $chatId, string $text): array
+    {
+        // Простая валидация email
+        if (!filter_var($text, FILTER_VALIDATE_EMAIL)) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Неверный формат email адреса. Пожалуйста, введите корректный email.',
+                'keyboard' => null
+            ];
+        }
+
+        $email = strtolower(trim($text));
+        $data = $profile->data ?? [];
+        $data['email'] = $email;
+        $profile->data = $data;
+        $profile->state = 'verifying_email';
+        $profile->save();
+
+        Log::info('UserRegistrationService: email received, starting verification', [
+            'email' => $email,
+            'phone' => $data['phone'] ?? null
+        ]);
+
+        // Проверяем, есть ли уже пользователь с таким email
+        $existingUserByEmail = User::where('email', $email)->first();
+        if ($existingUserByEmail) {
+            return $this->handleExistingEmailUser($profile, $chatId, $existingUserByEmail, $data);
+        }
 
         // Проверяем, есть ли уже пользователь с таким телефоном
-        $existingUser = User::where('phone', $normalizedPhone)->first();
+        $existingUserByPhone = User::where('phone', $data['phone'])->first();
+        if ($existingUserByPhone) {
+            return $this->handleExistingPhoneUser($profile, $chatId, $existingUserByPhone, $data);
+        }
+
+        // Новый пользователь - отправляем код подтверждения
+        return $this->sendVerificationCode($profile, $chatId, $data);
+    }
+
+    protected function handleExistingEmailUser(TelegramProfile $profile, string $chatId, User $existingUser, array $data): array
+    {
+        $profile->data = array_merge($data, [
+            'found_user_id' => $existingUser->id,
+            'found_user_name' => $existingUser->name,
+            'found_user_email' => $existingUser->email
+        ]);
+        $profile->state = 'confirm_existing_email_user';
+        $profile->save();
+
+        $keyboard = [
+            [
+                ['text' => '✅ Да, это мой аккаунт', 'callback_data' => 'confirm_existing_email_user'],
+                ['text' => '❌ Нет, другой email', 'callback_data' => 'use_different_email']
+            ]
+        ];
+
+        return [
+            'action' => 'send_message',
+            'message' => "🔍 Найден существующий аккаунт:\n\n👤 Имя: {$existingUser->name}\n📧 Email: {$existingUser->email}\n📱 Телефон: {$existingUser->phone}\n\nЭто ваш аккаунт? Если да, то на ваш email будет отправлен код подтверждения.",
+            'keyboard' => $keyboard
+        ];
+    }
+
+    protected function handleExistingPhoneUser(TelegramProfile $profile, string $chatId, User $existingUser, array $data): array
+    {
+        $profile->data = array_merge($data, [
+            'found_user_id' => $existingUser->id,
+            'found_user_name' => $existingUser->name,
+            'found_user_phone' => $existingUser->phone
+        ]);
+        $profile->state = 'confirm_existing_phone_user';
+        $profile->save();
+
+        $keyboard = [
+            [
+                ['text' => '✅ Да, это мой аккаунт', 'callback_data' => 'confirm_existing_phone_user'],
+                ['text' => '❌ Нет, другой номер', 'callback_data' => 'use_different_phone']
+            ]
+        ];
+
+        return [
+            'action' => 'send_message',
+            'message' => "🔍 Найден существующий аккаунт:\n\n👤 Имя: {$existingUser->name}\n📧 Email: {$existingUser->email}\n📱 Телефон: {$existingUser->phone}\n\nЭто ваш аккаунт?",
+            'keyboard' => $keyboard
+        ];
+    }
+
+    protected function sendVerificationCodeForExistingUser(TelegramProfile $profile, string $chatId, array $data, User $existingUser): array
+    {
+        // Генерируем 6-значный код
+        $verificationCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
-        if ($existingUser) {
-            return $this->linkExistingUser($profile, $chatId, $existingUser);
+        // Сохраняем код в профиль
+        $profile->data = array_merge($data, [
+            'verification_code' => $verificationCode,
+            'verification_code_created_at' => now()->timestamp,
+            'verifying_existing_user' => true
+        ]);
+        $profile->state = 'awaiting_verification_code';
+        $profile->save();
+
+        Log::info('UserRegistrationService: verification code generated for existing user', [
+            'email' => $existingUser->email,
+            'user_id' => $existingUser->id,
+            'code' => $verificationCode
+        ]);
+
+        try {
+            // Логируем конфигурацию почты (без пароля)
+            Log::info('UserRegistrationService: attempting to send email', [
+                'email' => $existingUser->email,
+                'mail_host' => config('mail.mailers.smtp.host'),
+                'mail_port' => config('mail.mailers.smtp.port'),
+                'mail_username' => config('mail.mailers.smtp.username'),
+                'mail_encryption' => config('mail.mailers.smtp.encryption'),
+                'mail_from_address' => config('mail.from.address'),
+                'mail_from_name' => config('mail.from.name')
+            ]);
+            
+            // Отправляем код на email существующего пользователя
+            \Mail::to($existingUser->email)->send(new \App\Mail\VerificationCode($verificationCode, $existingUser->name));
+            
+            Log::info('UserRegistrationService: email sent successfully', [
+                'email' => $existingUser->email,
+                'verification_code' => $verificationCode
+            ]);
+            
+            return [
+                'action' => 'send_message',
+                'message' => "📧 Код подтверждения отправлен на email: {$existingUser->email}\n\nВведите 6-значный код из письма для привязки аккаунта к Telegram.\n\n⏰ Код действителен 10 минут.",
+                'keyboard' => null
+            ];
+        } catch (\Exception $e) {
+            Log::error('UserRegistrationService: failed to send verification email for existing user', [
+                'email' => $existingUser->email,
+                'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'error_code' => $e->getCode(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'mail_config' => [
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port'),
+                    'username' => config('mail.mailers.smtp.username'),
+                    'encryption' => config('mail.mailers.smtp.encryption')
+                ]
+            ]);
+            
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка отправки email. Пожалуйста, проверьте email адрес и попробуйте снова.',
+                'keyboard' => null
+            ];
+        }
+    }
+
+    protected function sendVerificationCode(TelegramProfile $profile, string $chatId, array $data): array
+    {
+        // Генерируем 6-значный код
+        $verificationCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        
+        // Сохраняем код в профиль
+        $profile->data = array_merge($data, [
+            'verification_code' => $verificationCode,
+            'verification_code_created_at' => now()->timestamp
+        ]);
+        $profile->state = 'awaiting_verification_code';
+        $profile->save();
+
+        Log::info('UserRegistrationService: verification code generated', [
+            'email' => $data['email'],
+            'code' => $verificationCode
+        ]);
+
+        try {
+            // Логируем конфигурацию почты (без пароля)
+            Log::info('UserRegistrationService: attempting to send email', [
+                'email' => $data['email'],
+                'mail_host' => config('mail.mailers.smtp.host'),
+                'mail_port' => config('mail.mailers.smtp.port'),
+                'mail_username' => config('mail.mailers.smtp.username'),
+                'mail_encryption' => config('mail.mailers.smtp.encryption'),
+                'mail_from_address' => config('mail.from.address'),
+                'mail_from_name' => config('mail.from.name')
+            ]);
+            
+            // Отправляем код на email
+            \Mail::to($data['email'])->send(new \App\Mail\VerificationCode($verificationCode, $data['name'] ?? 'Клиент'));
+            
+            Log::info('UserRegistrationService: email sent successfully', [
+                'email' => $data['email'],
+                'verification_code' => $verificationCode
+            ]);
+            
+            return [
+                'action' => 'send_message',
+                'message' => "📧 Код подтверждения отправлен на email: {$data['email']}\n\nВведите 6-значный код из письма для завершения регистрации.\n\n⏰ Код действителен 10 минут.",
+                'keyboard' => null
+            ];
+        } catch (\Exception $e) {
+            Log::error('UserRegistrationService: failed to send verification email', [
+                'email' => $data['email'],
+                'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'error_code' => $e->getCode(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'mail_config' => [
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port'),
+                    'username' => config('mail.mailers.smtp.username'),
+                    'encryption' => config('mail.mailers.smtp.encryption')
+                ]
+            ]);
+            
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка отправки email. Пожалуйста, проверьте email адрес и попробуйте снова.',
+                'keyboard' => null
+            ];
+        }
+    }
+
+    protected function handleVerificationCode(TelegramProfile $profile, string $chatId, string $text): array
+    {
+        $data = $profile->data ?? [];
+        $storedCode = $data['verification_code'] ?? null;
+        $codeCreatedAt = $data['verification_code_created_at'] ?? null;
+        
+        if (!$storedCode || !$codeCreatedAt) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Код подтверждения не найден. Начните регистрацию заново.',
+                'keyboard' => null
+            ];
+        }
+
+        // Проверяем срок действия кода (10 минут)
+        if (now()->timestamp - $codeCreatedAt > 600) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Код подтверждения истек. Начните регистрацию заново.',
+                'keyboard' => null
+            ];
+        }
+
+        // Проверяем код
+        if ($text !== $storedCode) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Неверный код подтверждения. Проверьте код и попробуйте снова.',
+                'keyboard' => null
+            ];
+        }
+
+        // Проверяем, верифицируем ли существующего пользователя или создаем нового
+        if (isset($data['verifying_existing_user']) && $data['verifying_existing_user']) {
+            Log::info('UserRegistrationService: verification code confirmed for existing user, linking account');
+            return $this->linkExistingUserAfterVerification($profile, $chatId, $data);
         } else {
+            // Код верный - создаем пользователя
+            Log::info('UserRegistrationService: verification code confirmed, creating user');
             return $this->createNewUser($profile, $chatId, $data);
         }
     }
@@ -154,6 +428,48 @@ class UserRegistrationService
         } else {
             return $this->handleUserNotFound($chatId, $normalizedPhone);
         }
+    }
+
+    protected function linkExistingUserAfterVerification(TelegramProfile $profile, string $chatId, array $data): array
+    {
+        $foundUserId = $data['found_user_id'] ?? null;
+        if (!$foundUserId) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка: пользователь не найден. Начните регистрацию заново.',
+                'keyboard' => null
+            ];
+        }
+
+        $user = User::find($foundUserId);
+        if (!$user) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка: пользователь не найден. Начните регистрацию заново.',
+                'keyboard' => null
+            ];
+        }
+
+        // Привязываем пользователя к профилю
+        $profile->user_id = $user->id;
+        $profile->state = 'start';
+        $profile->data = [];
+        $profile->save();
+
+        // Обновляем telegram ID у пользователя
+        $user->telegram = (string)$chatId;
+        $user->save();
+
+        Log::info('UserRegistrationService: existing user verified and linked after code confirmation', [
+            'user_id' => $user->id,
+            'user_name' => $user->name
+        ]);
+
+        return [
+            'action' => 'send_message_and_branches',
+            'message' => "✅ Отлично! Ваш аккаунт подтвержден и привязан к Telegram. Добро пожаловать, {$user->name}!",
+            'keyboard' => null
+        ];
     }
 
     protected function linkExistingUser(TelegramProfile $profile, string $chatId, User $existingUser): array
@@ -202,7 +518,7 @@ class UserRegistrationService
         $newUser = User::create([
             'name' => $data['name'] ?? 'Клиент',
             'phone' => $data['phone'],
-            'email' => (string)$chatId.'@telegram.local',
+            'email' => $data['email'] ?? (string)$chatId.'@telegram.local',
             'telegram' => (string)$chatId,
             'password' => '\\',
         ]);
@@ -295,6 +611,108 @@ class UserRegistrationService
         return [
             'action' => 'send_message',
             'message' => $message,
+            'keyboard' => null
+        ];
+    }
+
+    public function confirmExistingEmailUser(string $chatId, TelegramProfile $profile): array
+    {
+        $data = $profile->data ?? [];
+        $foundUserId = $data['found_user_id'] ?? null;
+        
+        if (!$foundUserId) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка: пользователь не найден. Начните регистрацию заново.',
+                'keyboard' => null
+            ];
+        }
+
+        $user = User::find($foundUserId);
+        if (!$user) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка: пользователь не найден. Начните регистрацию заново.',
+                'keyboard' => null
+            ];
+        }
+
+        // Отправляем код подтверждения на email существующего пользователя
+        return $this->sendVerificationCodeForExistingUser($profile, $chatId, $data, $user);
+    }
+
+    public function confirmExistingPhoneUser(string $chatId, TelegramProfile $profile): array
+    {
+        $data = $profile->data ?? [];
+        $foundUserId = $data['found_user_id'] ?? null;
+        
+        if (!$foundUserId) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка: пользователь не найден. Начните регистрацию заново.',
+                'keyboard' => null
+            ];
+        }
+
+        $user = User::find($foundUserId);
+        if (!$user) {
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка: пользователь не найден. Начните регистрацию заново.',
+                'keyboard' => null
+            ];
+        }
+
+        // Привязываем пользователя к профилю
+        $profile->user_id = $user->id;
+        $profile->state = 'start';
+        $profile->data = [];
+        $profile->save();
+
+        // Обновляем telegram ID у пользователя
+        $user->telegram = (string)$chatId;
+        $user->save();
+
+        Log::info('UserRegistrationService: existing phone user confirmed and linked', [
+            'user_id' => $user->id,
+            'user_name' => $user->name
+        ]);
+
+        return [
+            'action' => 'send_message_and_branches',
+            'message' => "✅ Отлично! Ваш аккаунт найден и привязан к Telegram. Добро пожаловать, {$user->name}!",
+            'keyboard' => null
+        ];
+    }
+
+    public function useDifferentEmail(string $chatId, TelegramProfile $profile): array
+    {
+        // Сбрасываем email и возвращаемся к вводу email
+        $data = $profile->data ?? [];
+        unset($data['email']);
+        $profile->data = $data;
+        $profile->state = 'await_email';
+        $profile->save();
+
+        return [
+            'action' => 'send_message',
+            'message' => "Хорошо! Отправьте другой email адрес для подтверждения номера телефона.\n\n📧 Email будет использоваться для:\n• Подтверждения номера телефона\n• Отправки важных уведомлений\n• Восстановления доступа к аккаунту",
+            'keyboard' => null
+        ];
+    }
+
+    public function useDifferentPhone(string $chatId, TelegramProfile $profile): array
+    {
+        // Сбрасываем телефон и возвращаемся к вводу телефона
+        $data = $profile->data ?? [];
+        unset($data['phone']);
+        $profile->data = $data;
+        $profile->state = 'await_phone';
+        $profile->save();
+
+        return [
+            'action' => 'send_message',
+            'message' => "Хорошо! Отправьте другой номер телефона.\n\n📱 Поддерживаемые форматы:\n• +7XXXXXXXXXX\n• 8XXXXXXXXXX\n• 7XXXXXXXXXX\n• 8 967-411 5225\n• +7 (963) 45-78 456\n• 8.967.411.52.25\n\nСистема автоматически уберет все разделители.",
             'keyboard' => null
         ];
     }

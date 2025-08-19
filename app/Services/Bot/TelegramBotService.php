@@ -89,7 +89,7 @@ class TelegramBotService
         }
 
         // Обработка регистрации только для незарегистрированных пользователей
-        if (in_array($profile->state, ['start', 'await_name', 'await_phone', 'await_phone_existing'])) {
+        if (in_array($profile->state, ['start', 'await_name', 'await_phone', 'await_email', 'awaiting_verification_code', 'await_phone_existing'])) {
             $this->handleRegistrationFlow($profile, $chatId, $text);
             return;
         }
@@ -288,6 +288,31 @@ class TelegramBotService
         if ($data === 'confirm_pet_no') {
             $this->petService->cancelPetCreation($profile);
             $result = $this->navigationService->goToMainMenu($chatId, $profile);
+            $this->executeAction($result, $chatId, $profile);
+            return;
+        }
+
+        // Обработка email-верификации
+        if ($data === 'confirm_existing_email_user') {
+            $result = $this->registrationService->confirmExistingEmailUser($chatId, $profile);
+            $this->executeAction($result, $chatId, $profile);
+            return;
+        }
+
+        if ($data === 'confirm_existing_phone_user') {
+            $result = $this->registrationService->confirmExistingPhoneUser($chatId, $profile);
+            $this->executeAction($result, $chatId, $profile);
+            return;
+        }
+
+        if ($data === 'use_different_email') {
+            $result = $this->registrationService->useDifferentEmail($chatId, $profile);
+            $this->executeAction($result, $chatId, $profile);
+            return;
+        }
+
+        if ($data === 'use_different_phone') {
+            $result = $this->registrationService->useDifferentPhone($chatId, $profile);
             $this->executeAction($result, $chatId, $profile);
             return;
         }
