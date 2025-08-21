@@ -58,8 +58,8 @@ class NotificationService
     protected function notifyAllAdmins($notification)
     {
         try {
-            // Получаем всех сотрудников (Employee) - они и есть админы
-            $employees = Employee::all();
+            // Оптимизация: используем select для выбора только нужных полей
+            $employees = Employee::select(['id', 'name', 'email'])->get();
             
             \Log::info('Found employees for notifications', [
                 'count' => $employees->count(),
@@ -103,6 +103,7 @@ class NotificationService
             return 0;
         }
 
+        // Оптимизация: используем индексы на notifiable_type, notifiable_id и read_at
         return Notification::where('notifiable_type', Employee::class)
             ->where('notifiable_id', Auth::guard('admin')->id())
             ->whereNull('read_at')
@@ -118,11 +119,87 @@ class NotificationService
             return collect();
         }
 
-        return Notification::where('notifiable_type', Employee::class)
+        // Оптимизация: используем индексы и select для выбора нужных полей
+        return Notification::select(['id', 'type', 'data', 'read_at', 'created_at'])
+            ->where('notifiable_type', Employee::class)
             ->where('notifiable_id', Auth::guard('admin')->id())
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * Получить все уведомления для текущего сотрудника с пагинацией
+     */
+    public function getAllNotifications($perPage = 25, $filters = [])
+    {
+        if (!Auth::guard('admin')->check()) {
+            return collect();
+        }
+
+        // Оптимизация: используем индексы на notifiable_type, notifiable_id и select для выбора нужных полей
+        $query = Notification::select(['id', 'type', 'data', 'read_at', 'created_at'])
+            ->where('notifiable_type', Employee::class)
+            ->where('notifiable_id', Auth::guard('admin')->id());
+
+        // Применяем фильтры если есть
+        if (!empty($filters)) {
+            if (isset($filters['status'])) {
+                if ($filters['status'] === 'unread') {
+                    // Оптимизация: используем индекс на read_at
+                    $query->whereNull('read_at');
+                } elseif ($filters['status'] === 'read') {
+                    // Оптимизация: используем индекс на read_at
+                    $query->whereNotNull('read_at');
+                }
+            }
+
+            if (isset($filters['type']) && $filters['type']) {
+                // Оптимизация: используем индекс на type
+                $query->where('type', $filters['type']);
+            }
+
+            if (isset($filters['dateFrom']) && $filters['dateFrom']) {
+                $query->whereDate('created_at', '>=', $filters['dateFrom']);
+            }
+
+            if (isset($filters['dateTo']) && $filters['dateTo']) {
+                $query->whereDate('created_at', '<=', $filters['dateTo']);
+            }
+
+            if (isset($filters['sort'])) {
+                switch ($filters['sort']) {
+                    case 'created_asc':
+                        $query->orderBy('created_at', 'asc');
+                        break;
+                    case 'read_asc':
+                        // Оптимизация: используем индекс на read_at
+                        $query->orderBy('read_at', 'asc');
+                        break;
+                    case 'read_desc':
+                        // Оптимизация: используем индекс на read_at
+                        $query->orderBy('read_at', 'desc');
+                        break;
+                    default:
+                        $query->orderBy('created_at', 'desc');
+                        break;
+                }
+            }
+        } else {
+            // По умолчанию сортируем по дате создания (используем индекс на created_at)
+            $query->orderBy('created_at', 'desc');
+        }
+
+        // Отладочная информация
+        \Log::info('NotificationService::getAllNotifications', [
+            'filters' => $filters,
+            'per_page' => $perPage,
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'total_count' => $query->count()
+        ]);
+
+        return $query->paginate($perPage);
     }
 
     /**
@@ -134,7 +211,9 @@ class NotificationService
             return false;
         }
 
-        $notification = Notification::where('id', $notificationId)
+        // Оптимизация: используем индексы на id, notifiable_type, notifiable_id и select для выбора нужных полей
+        $notification = Notification::select(['id', 'read_at'])
+            ->where('id', $notificationId)
             ->where('notifiable_type', Employee::class)
             ->where('notifiable_id', Auth::guard('admin')->id())
             ->first();
@@ -156,6 +235,7 @@ class NotificationService
             return false;
         }
 
+        // Оптимизация: используем индексы на notifiable_type, notifiable_id и read_at
         Notification::where('notifiable_type', Employee::class)
             ->where('notifiable_id', Auth::guard('admin')->id())
             ->whereNull('read_at')

@@ -18,7 +18,10 @@ class VisitTimeCalculationService
     public function getAvailableTime(int $scheduleId): array
     {
         try {
-            $schedule = Schedule::with('veterinarian')->find($scheduleId);
+            // Оптимизация: используем индексы на id и select для выбора нужных полей
+            $schedule = Schedule::select(['id', 'veterinarian_id', 'shift_starts_at', 'shift_ends_at'])
+                ->with(['veterinarian:id,name'])
+                ->find($scheduleId);
             if (!$schedule) {
                 throw new \InvalidArgumentException('Расписание не найдено');
             }
@@ -69,7 +72,9 @@ class VisitTimeCalculationService
      */
     protected function getOccupiedTimes(int $scheduleId): array
     {
-        return Visit::where('schedule_id', $scheduleId)
+        // Оптимизация: используем индексы на schedule_id и starts_at, select для выбора нужных полей
+        return Visit::select(['starts_at'])
+            ->where('schedule_id', $scheduleId)
             ->pluck('starts_at')
             ->map(function($time) {
                 return Carbon::parse($time)->format('H:i');
@@ -182,7 +187,8 @@ class VisitTimeCalculationService
      */
     public function getTimeStatistics(int $scheduleId): array
     {
-        $schedule = Schedule::find($scheduleId);
+        // Оптимизация: используем select для выбора только нужных полей
+        $schedule = Schedule::select(['id', 'shift_starts_at', 'shift_ends_at'])->find($scheduleId);
         if (!$schedule) {
             return [];
         }
@@ -238,7 +244,8 @@ class VisitTimeCalculationService
             $endTime = $time->copy()->addMinutes($duration);
             
             // Проверяем, что прием поместится в смену
-            $schedule = Schedule::find($scheduleId);
+            // Оптимизация: используем select для выбора только нужных полей
+            $schedule = Schedule::select(['id', 'shift_ends_at'])->find($scheduleId);
             if ($schedule && $endTime <= Carbon::parse($schedule->shift_ends_at)) {
                 return [
                     'start_time' => $timeSlot['time'],

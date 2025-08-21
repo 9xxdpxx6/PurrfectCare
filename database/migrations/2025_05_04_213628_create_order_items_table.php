@@ -16,8 +16,13 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->morphs('item');
             $table->integer('quantity')->default(1);
-            $table->decimal('unit_price', 8, 2);
+            $table->decimal('unit_price', 10, 2);
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('order_id'); // Быстрый поиск позиций заказа
+            $table->index('item_type'); // Быстрый поиск по типу товара
+            $table->index('item_id'); // Быстрый поиск по ID товара
         });
     }
 

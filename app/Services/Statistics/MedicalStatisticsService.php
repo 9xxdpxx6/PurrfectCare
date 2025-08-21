@@ -11,8 +11,10 @@ class MedicalStatisticsService
 {
     public function getDiagnosesData($startDate, $endDate)
     {
-        $diagnosesData = Visit::whereBetween('starts_at', [$startDate, $endDate])
-            ->with('diagnoses.dictionaryDiagnosis')
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $diagnosesData = Visit::select(['id', 'starts_at'])
+            ->whereBetween('starts_at', [$startDate, $endDate])
+            ->with(['diagnoses:id,visit_id,dictionary_diagnosis_id', 'diagnoses.dictionaryDiagnosis:id,name'])
             ->get()
             ->flatMap(function($visit) {
                 return $visit->diagnoses;
@@ -38,8 +40,10 @@ class MedicalStatisticsService
 
     public function getVaccinationsData($startDate, $endDate)
     {
-        return Vaccination::whereBetween('created_at', [$startDate, $endDate])
-            ->with('pet.breed.species')
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        return Vaccination::select(['id', 'pet_id', 'created_at'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['pet:id,breed_id', 'pet.breed:id,name,species_id', 'pet.breed.species:id,name'])
             ->get()
             ->groupBy(function($vaccination) {
                 if ($vaccination->pet && $vaccination->pet->breed && $vaccination->pet->breed->species) {
@@ -55,8 +59,10 @@ class MedicalStatisticsService
 
     public function getLabTestsData($startDate, $endDate)
     {
-        return LabTest::whereBetween('created_at', [$startDate, $endDate])
-            ->with('labTestType')
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        return LabTest::select(['id', 'lab_test_type_id', 'created_at'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['labTestType:id,name'])
             ->get()
             ->groupBy(function($labTest) {
                 return $labTest->labTestType ? $labTest->labTestType->id : 'unknown';
@@ -75,8 +81,10 @@ class MedicalStatisticsService
 
     public function getLabTestsTypesCount($startDate, $endDate)
     {
-        return LabTest::whereBetween('created_at', [$startDate, $endDate])
-            ->with('labTestType')
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        return LabTest::select(['id', 'lab_test_type_id'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['labTestType:id,name'])
             ->get()
             ->groupBy(function($labTest) {
                 return $labTest->labTestType ? $labTest->labTestType->id : 'unknown';
@@ -86,8 +94,10 @@ class MedicalStatisticsService
 
     public function getDiagnosesCount($startDate, $endDate)
     {
-        return Visit::whereBetween('starts_at', [$startDate, $endDate])
-            ->with('diagnoses.dictionaryDiagnosis')
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        return Visit::select(['id', 'starts_at'])
+            ->whereBetween('starts_at', [$startDate, $endDate])
+            ->with(['diagnoses:id,visit_id,dictionary_diagnosis_id', 'diagnoses.dictionaryDiagnosis:id,name'])
             ->get()
             ->flatMap(function($visit) {
                 return $visit->diagnoses;
@@ -100,8 +110,10 @@ class MedicalStatisticsService
 
     public function getTotalDiagnosesCount($startDate, $endDate)
     {
-        return Visit::whereBetween('starts_at', [$startDate, $endDate])
-            ->with('diagnoses')
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        return Visit::select(['id', 'starts_at'])
+            ->whereBetween('starts_at', [$startDate, $endDate])
+            ->with(['diagnoses:id,visit_id'])
             ->get()
             ->flatMap(function($visit) {
                 return $visit->diagnoses;

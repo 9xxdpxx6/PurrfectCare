@@ -62,9 +62,21 @@ class VaccinationController extends AdminController
         }
         
         $filter = app(VaccinationFilter::class, ['queryParams' => $queryParams]);
-        $query = $this->model::with([
-            'pet.client', 'veterinarian', 'vaccinationType.drugs'
-        ])->filter($filter);
+        
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $query = $this->model::select([
+                'id', 'vaccination_type_id', 'pet_id', 'veterinarian_id', 'administered_at', 'next_due',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'pet:id,name,client_id',
+                'pet.client:id,name,email',
+                'veterinarian:id,name,email',
+                'vaccinationType:id,name,description',
+                'vaccinationType.drugs:id,name,price'
+            ])
+            ->filter($filter);
+            
         $items = $query->paginate(25)->withQueryString();
         
         return view("admin.{$this->viewPath}.index", compact('items'));
@@ -127,16 +139,34 @@ class VaccinationController extends AdminController
 
     public function show($id): View
     {
-        $item = $this->model::with([
-            'pet.client', 'pet.breed.species', 'veterinarian', 'vaccinationType.drugs'
-        ])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'vaccination_type_id', 'pet_id', 'veterinarian_id', 'administered_at', 'next_due',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'pet:id,name,client_id,birthdate,gender',
+                'pet.client:id,name,email,phone',
+                'pet.breed:id,name,species_id',
+                'pet.breed.species:id,name',
+                'veterinarian:id,name,email,phone',
+                'vaccinationType:id,name,description',
+                'vaccinationType.drugs:id,name,price,dosage'
+            ])
+            ->findOrFail($id);
         
         return view("admin.{$this->viewPath}.show", compact('item'));
     }
 
     public function edit($id): View
     {
-        $item = $this->model::with(['vaccinationType'])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'vaccination_type_id', 'pet_id', 'veterinarian_id', 'administered_at', 'next_due',
+                'created_at', 'updated_at'
+            ])
+            ->with(['vaccinationType:id,name,description'])
+            ->findOrFail($id);
         
         return view("admin.{$this->viewPath}.edit", compact('item'));
     }
@@ -147,7 +177,12 @@ class VaccinationController extends AdminController
             DB::beginTransaction();
             
             $validated = $request->validated();
-            $vaccination = $this->model::findOrFail($id);
+            
+            // Оптимизация: используем select для выбора только нужных полей
+            $vaccination = $this->model::select([
+                    'id', 'vaccination_type_id', 'pet_id', 'veterinarian_id', 'administered_at', 'next_due'
+                ])
+                ->findOrFail($id);
             
             $oldVaccinationTypeId = $vaccination->vaccination_type_id;
             $oldPetId = $vaccination->pet_id;
@@ -204,7 +239,11 @@ class VaccinationController extends AdminController
         try {
             DB::beginTransaction();
             
-            $vaccination = $this->model::findOrFail($id);
+            // Оптимизация: используем select для выбора только нужных полей
+            $vaccination = $this->model::select([
+                    'id', 'vaccination_type_id', 'pet_id', 'veterinarian_id'
+                ])
+                ->findOrFail($id);
             
             // Убираем проверку зависимостей - вакцинация не имеет зависимостей для проверки
             $vaccinationTypeId = $vaccination->vaccination_type_id;
@@ -252,7 +291,13 @@ class VaccinationController extends AdminController
     
     public function getDrugs($id)
     {
-        $vaccination = Vaccination::with('vaccinationType.drugs')->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $vaccination = Vaccination::select(['id', 'vaccination_type_id'])
+            ->with([
+                'vaccinationType:id,name',
+                'vaccinationType.drugs:id,name,price,dosage'
+            ])
+            ->findOrFail($id);
         
         $drugs = $vaccination->vaccinationType && $vaccination->vaccinationType->drugs 
             ? $vaccination->vaccinationType->drugs->map(function($drug) {

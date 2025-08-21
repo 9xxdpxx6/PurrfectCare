@@ -16,6 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('symbol', 10)->unique();
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск единиц измерения по названию
+            $table->index('symbol'); // Быстрый поиск единиц измерения по символу
         });
     }
 

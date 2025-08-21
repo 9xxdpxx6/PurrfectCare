@@ -14,11 +14,16 @@ return new class extends Migration
         Schema::create('drugs', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('price', 8, 2);
+            $table->decimal('price', 10, 2);
             $table->integer('quantity');
             $table->boolean('prescription_required')->default(false);
             $table->foreignId('unit_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск препаратов по названию
+            $table->index('unit_id'); // Быстрый поиск препаратов по единице измерения
+            $table->index('prescription_required'); // Быстрый поиск препаратов по наличию рецепта
         });
     }
 

@@ -28,8 +28,9 @@ class PetController extends AdminController
 
     public function create() : View
     {
-        $clients = User::all();
-        $breeds = Breed::all();
+        // Оптимизация: используем select для выбора только нужных полей
+        $clients = User::select(['id', 'name', 'email', 'phone'])->get();
+        $breeds = Breed::select(['id', 'name', 'species_id'])->get();
         
         // Получаем ID клиента из параметра запроса
         $selectedClientId = request('owner');
@@ -39,9 +40,16 @@ class PetController extends AdminController
 
     public function edit($id) : View
     {
-        $item = $this->model::findOrFail($id);
-        $clients = User::all();
-        $breeds = Breed::all();
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'name', 'client_id', 'breed_id', 'species_id', 'gender', 'birthdate',
+                'weight', 'color', 'microchip', 'notes', 'created_at', 'updated_at'
+            ])
+            ->findOrFail($id);
+            
+        // Оптимизация: используем select для выбора только нужных полей
+        $clients = User::select(['id', 'name', 'email', 'phone'])->get();
+        $breeds = Breed::select(['id', 'name', 'species_id'])->get();
         return view("admin.{$this->viewPath}.edit", compact('item', 'clients', 'breeds'));
     }
 
@@ -130,7 +138,21 @@ class PetController extends AdminController
     {
         $filter = app()->make(PetFilter::class, ['queryParams' => array_filter($request->all())]);
         
-        $query = $this->model::with(['client', 'breed.species', 'visits', 'orders', 'vaccinations', 'labTests']);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $query = $this->model::select([
+                'id', 'name', 'client_id', 'breed_id', 'species_id', 'gender', 'birthdate',
+                'weight', 'color', 'microchip', 'created_at'
+            ])
+            ->with([
+                'client:id,name,email,phone',
+                'breed:id,name,species_id',
+                'breed.species:id,name',
+                'visits:id,pet_id,starts_at,status_id',
+                'orders:id,pet_id,total,is_paid,closed_at',
+                'vaccinations:id,pet_id,administered_at,next_due',
+                'labTests:id,pet_id,received_at,completed_at'
+            ]);
+            
         $filter->apply($query);
         
         $items = $query->paginate(25)->appends($request->query());
@@ -142,23 +164,77 @@ class PetController extends AdminController
             $pet->vaccinations_count = $pet->vaccinations->count();
             $pet->lab_tests_count = $pet->labTests->count();
         }
-        $clients = User::orderBy('name')->get();
-        $breeds = Breed::with('species')->orderBy('name')->get();
+        
+        // Оптимизация: используем select для выбора только нужных полей
+        $clients = User::select(['id', 'name', 'email'])->orderBy('name')->get();
+        $breeds = Breed::select(['id', 'name', 'species_id'])
+            ->with(['species:id,name'])
+            ->orderBy('name')
+            ->get();
         
         return view("admin.{$this->viewPath}.index", compact('items', 'clients', 'breeds'));
     }
 
     public function show($id) : View
     {
-        $pet = $this->model::with(['client', 'breed.species'])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $pet = $this->model::select([
+                'id', 'name', 'client_id', 'breed_id', 'species_id', 'gender', 'birthdate',
+                'weight', 'color', 'microchip', 'notes', 'created_at', 'updated_at'
+            ])
+            ->with([
+                'client:id,name,email,phone,address',
+                'breed:id,name,species_id',
+                'breed.species:id,name'
+            ])
+            ->findOrFail($id);
         
-        // Загружаем связанные данные
-        $visits = $pet->visits()->with(['schedule.veterinarian.specialties', 'status'])->latest()->limit(10)->get();
-        $vaccinations = $pet->vaccinations()->with(['veterinarian.specialties', 'vaccinationType'])->latest()->limit(10)->get();
-        $labTests = $pet->labTests()->with(['veterinarian.specialties', 'labTestType'])->latest()->limit(10)->get();
-        $orders = $pet->orders()->with(['branch', 'status'])->latest()->limit(10)->get();
+        // Загружаем связанные данные с оптимизацией
+        $visits = $pet->visits()
+            ->select(['id', 'pet_id', 'schedule_id', 'starts_at', 'status_id', 'complaints'])
+            ->with([
+                'schedule:id,veterinarian_id,shift_starts_at',
+                'schedule.veterinarian:id,name,email',
+                'schedule.veterinarian.specialties:id,name',
+                'status:id,name'
+            ])
+            ->latest()
+            ->limit(10)
+            ->get();
+            
+        $vaccinations = $pet->vaccinations()
+            ->select(['id', 'pet_id', 'veterinarian_id', 'vaccination_type_id', 'administered_at', 'next_due'])
+            ->with([
+                'veterinarian:id,name,email',
+                'veterinarian.specialties:id,name',
+                'vaccinationType:id,name'
+            ])
+            ->latest()
+            ->limit(10)
+            ->get();
+            
+        $labTests = $pet->labTests()
+            ->select(['id', 'pet_id', 'veterinarian_id', 'lab_test_type_id', 'received_at', 'completed_at'])
+            ->with([
+                'veterinarian:id,name,email',
+                'veterinarian.specialties:id,name',
+                'labTestType:id,name']
+            )
+            ->latest()
+            ->limit(10)
+            ->get();
+            
+        $orders = $pet->orders()
+            ->select(['id', 'pet_id', 'branch_id', 'status_id', 'total', 'is_paid', 'closed_at', 'created_at'])
+            ->with([
+                'branch:id,name,address',
+                'status:id,name'
+            ])
+            ->latest()
+            ->limit(10)
+            ->get();
         
-        // Подсчитываем общие количества
+        // Подсчитываем общие количества с оптимизацией
         $visitsTotal = $pet->visits()->count();
         $vaccinationsTotal = $pet->vaccinations()->count();
         $labTestsTotal = $pet->labTests()->count();
@@ -175,7 +251,8 @@ class PetController extends AdminController
         try {
             DB::beginTransaction();
             
-            $item = $this->model::findOrFail($id);
+            // Оптимизация: используем select для выбора только нужных полей
+            $item = $this->model::select(['id', 'name'])->findOrFail($id);
             
             // Проверяем наличие зависимых записей
             if ($errorMessage = $item->hasDependencies()) {

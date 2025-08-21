@@ -23,6 +23,16 @@ class Schedule extends Model
         'shift_ends_at' => 'datetime'
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'veterinarian_id',
+        'branch_id',
+        'shift_starts_at',
+        'shift_ends_at'
+    ];
+
     protected $deleteDependencies = [
         'visits' => 'Невозможно удалить расписание, так как с ним связаны приёмы',
     ];

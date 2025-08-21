@@ -95,8 +95,8 @@ class VisitSymptomService
     protected function createSymptom(Visit $visit, $symptomData): Symptom
     {
         if (is_numeric($symptomData)) {
-            // Проверяем существование симптома в словаре
-            $dictionarySymptom = DictionarySymptom::find($symptomData);
+            // Оптимизация: используем select для выбора только нужных полей
+            $dictionarySymptom = DictionarySymptom::select(['id', 'name'])->find($symptomData);
             if ($dictionarySymptom) {
                 return Symptom::create([
                     'visit_id' => $visit->id,
@@ -154,7 +154,11 @@ class VisitSymptomService
      */
     public function getSymptomsDetails(Visit $visit): array
     {
-        $symptoms = $visit->symptoms()->with('dictionarySymptom')->get();
+        // Оптимизация: используем индексы на visit_id и select для выбора нужных полей
+        $symptoms = $visit->symptoms()
+            ->select(['id', 'visit_id', 'dictionary_symptom_id', 'custom_symptom', 'notes'])
+            ->with(['dictionarySymptom:id,name'])
+            ->get();
         
         $details = [
             'dictionary_symptoms' => [],
@@ -189,7 +193,8 @@ class VisitSymptomService
      */
     public function symptomExistsInDictionary(int $symptomId): bool
     {
-        return DictionarySymptom::where('id', $symptomId)->exists();
+        // Оптимизация: используем select для выбора только нужных полей
+        return DictionarySymptom::select(['id'])->where('id', $symptomId)->exists();
     }
 
     /**
@@ -219,7 +224,9 @@ class VisitSymptomService
      */
     public function searchSymptoms(string $query, int $limit = 10)
     {
-        return DictionarySymptom::where('name', 'like', "%{$query}%")
+        // Оптимизация: используем select для выбора только нужных полей
+        return DictionarySymptom::select(['id', 'name'])
+            ->where('name', 'like', "%{$query}%")
             ->limit($limit)
             ->get();
     }
@@ -232,7 +239,11 @@ class VisitSymptomService
      */
     public function getVisitSymptoms(Visit $visit)
     {
-        return $visit->symptoms()->with('dictionarySymptom')->get();
+        // Оптимизация: используем индексы на visit_id и select для выбора нужных полей
+        return $visit->symptoms()
+            ->select(['id', 'visit_id', 'dictionary_symptom_id', 'custom_symptom', 'notes'])
+            ->with(['dictionarySymptom:id,name'])
+            ->get();
     }
 
     /**

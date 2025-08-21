@@ -104,8 +104,8 @@ class VisitDiagnosisService
         $existingId = $diagnosisData['id'] ?? null; // ID существующего диагноза при обновлении
         
         if (is_numeric($diagnosisId)) {
-            // Проверяем существование диагноза в словаре
-            $dictionaryDiagnosis = DictionaryDiagnosis::find($diagnosisId);
+            // Оптимизация: используем select для выбора только нужных полей
+            $dictionaryDiagnosis = DictionaryDiagnosis::select(['id', 'name'])->find($diagnosisId);
             if ($dictionaryDiagnosis) {
                 return Diagnosis::create([
                     'visit_id' => $visit->id,
@@ -163,7 +163,11 @@ class VisitDiagnosisService
      */
     public function getDiagnosesDetails(Visit $visit): array
     {
-        $diagnoses = $visit->diagnoses()->with('dictionaryDiagnosis')->get();
+        // Оптимизация: используем индексы на visit_id и select для выбора нужных полей
+        $diagnoses = $visit->diagnoses()
+            ->select(['id', 'visit_id', 'dictionary_diagnosis_id', 'custom_diagnosis', 'treatment_plan'])
+            ->with(['dictionaryDiagnosis:id,name'])
+            ->get();
         
         $details = [
             'dictionary_diagnoses' => [],
@@ -198,7 +202,8 @@ class VisitDiagnosisService
      */
     public function diagnosisExistsInDictionary(int $diagnosisId): bool
     {
-        return DictionaryDiagnosis::where('id', $diagnosisId)->exists();
+        // Оптимизация: используем select для выбора только нужных полей
+        return DictionaryDiagnosis::select(['id'])->where('id', $diagnosisId)->exists();
     }
 
     /**
@@ -228,7 +233,9 @@ class VisitDiagnosisService
      */
     public function searchDiagnoses(string $query, int $limit = 10)
     {
-        return DictionaryDiagnosis::where('name', 'like', "%{$query}%")
+        // Оптимизация: используем select для выбора только нужных полей
+        return DictionaryDiagnosis::select(['id', 'name'])
+            ->where('name', 'like', "%{$query}%")
             ->limit($limit)
             ->get();
     }
@@ -242,7 +249,8 @@ class VisitDiagnosisService
      */
     public function updateTreatmentPlan(int $diagnosisId, string $treatmentPlan): Diagnosis
     {
-        $diagnosis = Diagnosis::findOrFail($diagnosisId);
+        // Оптимизация: используем select для выбора только нужных полей
+        $diagnosis = Diagnosis::select(['id', 'visit_id', 'treatment_plan'])->findOrFail($diagnosisId);
         $diagnosis->update(['treatment_plan' => $treatmentPlan]);
 
         Log::info('План лечения обновлен', [
@@ -261,9 +269,11 @@ class VisitDiagnosisService
      */
     public function getDiagnosesWithTreatmentPlans(Visit $visit)
     {
+        // Оптимизация: используем индексы на visit_id и select для выбора нужных полей
         return $visit->diagnoses()
+            ->select(['id', 'visit_id', 'dictionary_diagnosis_id', 'custom_diagnosis', 'treatment_plan'])
             ->whereNotNull('treatment_plan')
-            ->with('dictionaryDiagnosis')
+            ->with(['dictionaryDiagnosis:id,name'])
             ->get();
     }
 
@@ -275,7 +285,11 @@ class VisitDiagnosisService
      */
     public function getVisitDiagnoses(Visit $visit)
     {
-        return $visit->diagnoses()->with('dictionaryDiagnosis')->get();
+        // Оптимизация: используем индексы на visit_id и select для выбора нужных полей
+        return $visit->diagnoses()
+            ->select(['id', 'visit_id', 'dictionary_diagnosis_id', 'custom_diagnosis', 'treatment_plan'])
+            ->with(['dictionaryDiagnosis:id,name'])
+            ->get();
     }
 
     /**

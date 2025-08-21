@@ -29,8 +29,13 @@ class VisitFilter extends AbstractFilter
 
     protected function search(Builder $builder, $value)
     {
-        // Разбиваем поисковый запрос на слова
-        $words = array_filter(explode(' ', trim($value)));
+        // Нормализация пробелов и обрезка
+        $normalized = trim(preg_replace('/\s+/', ' ', (string) $value));
+
+        // Разбиваем поисковый запрос на слова и отбрасываем слишком короткие (<3)
+        $words = array_values(array_filter(explode(' ', $normalized), function ($w) {
+            return mb_strlen($w) >= 3;
+        }));
         
         if (empty($words)) {
             return $builder;
@@ -40,6 +45,7 @@ class VisitFilter extends AbstractFilter
             foreach ($words as $word) {
                 $query->where(function ($q) use ($word) {
                     $q->where('complaints', 'like', "%{$word}%")
+                      // Поиск по notes только для слов длиной >=3 (фильтр уже применён)
                       ->orWhere('notes', 'like', "%{$word}%")
                       ->orWhereHas('client', function ($q2) use ($word) {
                           $q2->where('name', 'like', "%{$word}%")

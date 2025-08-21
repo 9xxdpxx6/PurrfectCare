@@ -14,10 +14,14 @@ return new class extends Migration
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('price', 8, 2);
+            $table->decimal('price', 10, 2);
             $table->string('description');
             $table->integer('duration');
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск услуг по названию
+            $table->index('price'); // Быстрый поиск услуг по цене
         });
     }
 

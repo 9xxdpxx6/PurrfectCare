@@ -23,6 +23,14 @@ return new class extends Migration
             $table->boolean('is_completed')->default(false);
             $table->timestamps();
             $table->unique(['schedule_id', 'starts_at'], 'visits_schedule_starts_unique');
+            
+            // Индексы для оптимизации производительности
+            $table->index('client_id'); // Быстрый поиск визитов клиента
+            $table->index('pet_id'); // Быстрый поиск визитов питомца
+            $table->index('schedule_id'); // Быстрый поиск по расписанию
+            $table->index('status_id'); // Быстрый поиск по статусу
+            $table->index('starts_at'); // Быстрый поиск по дате/времени
+            $table->index(['client_id', 'starts_at']); // Составной индекс для поиска визитов клиента в определенный период
         });
     }
 

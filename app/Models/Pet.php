@@ -27,6 +27,16 @@ class Pet extends Model
         'weight' => 'decimal:2'
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'client_id',
+        'breed_id',
+        'gender',
+        'birthdate'
+    ];
+
     protected $deleteDependencies = [
         'visits' => 'Невозможно удалить питомца, так как с ним связаны приёмы',
         'vaccinations' => 'Невозможно удалить питомца, так как с ним связаны вакцинации',

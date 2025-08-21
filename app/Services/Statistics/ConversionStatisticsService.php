@@ -19,11 +19,16 @@ class ConversionStatisticsService
      */
     public function getOverallConversion($startDate, $endDate)
     {
-        $totalVisits = Visit::whereBetween('starts_at', [$startDate, $endDate])->count();
-        $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])->count();
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $totalVisits = Visit::select(['id'])->whereBetween('starts_at', [$startDate, $endDate])->count();
+        
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        $totalOrders = Order::select(['id'])->whereBetween('created_at', [$startDate, $endDate])->count();
         
         // Приёмы, которые привели к заказам
-        $visitsWithOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $visitsWithOrders = Visit::select(['id'])
+            ->whereBetween('starts_at', [$startDate, $endDate])
             ->whereHas('orders')
             ->count();
         
@@ -42,24 +47,31 @@ class ConversionStatisticsService
      */
     public function getConversionByBranches($startDate, $endDate)
     {
-        $branches = Branch::all();
+        // Оптимизация: используем select для выбора только нужных полей
+        $branches = Branch::select(['id', 'name', 'address'])->get();
         $conversionData = [];
         
         foreach ($branches as $branch) {
             // Приёмы в филиале
-            $visitsInBranch = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            $visitsInBranch = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereHas('schedule.veterinarian.branches', function($query) use ($branch) {
                     $query->where('branch_id', $branch->id);
                 })
                 ->count();
             
             // Заказы в филиале
-            $ordersInBranch = Order::whereBetween('created_at', [$startDate, $endDate])
+            // Оптимизация: используем индексы на created_at и branch_id, select для выбора только нужных полей
+            $ordersInBranch = Order::select(['id'])
+                ->whereBetween('created_at', [$startDate, $endDate])
                 ->where('branch_id', $branch->id)
                 ->count();
             
             // Приёмы в филиале, которые привели к заказам
-            $visitsWithOrdersInBranch = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            $visitsWithOrdersInBranch = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereHas('schedule.veterinarian.branches', function($query) use ($branch) {
                     $query->where('branch_id', $branch->id);
                 })
@@ -91,8 +103,10 @@ class ConversionStatisticsService
     public function getConversionByClientTypes($startDate, $endDate)
     {
         // Получаем всех клиентов, которые делали заказы в выбранном периоде
-        $clientsWithOrders = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->with('client')
+        // Оптимизация: используем индексы на created_at и client_id, select для выбора только нужных полей
+        $clientsWithOrders = Order::select(['id', 'client_id', 'created_at'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['client:id,name,email'])
             ->get()
             ->groupBy('client_id');
         
@@ -101,7 +115,9 @@ class ConversionStatisticsService
         
         foreach ($clientsWithOrders as $clientId => $orders) {
             // Проверяем, есть ли у клиента заказы до выбранного периода
-            $hasOrdersBeforePeriod = Order::where('client_id', $clientId)
+            // Оптимизация: используем индекс на client_id и created_at, select для выбора только нужных полей
+            $hasOrdersBeforePeriod = Order::select(['id'])
+                ->where('client_id', $clientId)
                 ->where('created_at', '<', $startDate)
                 ->exists();
             
@@ -118,11 +134,14 @@ class ConversionStatisticsService
         
         // Конверсия для постоянных клиентов
         if (!empty($regularClients)) {
-            $regularVisits = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индексы на starts_at и client_id, select для выбора только нужных полей
+            $regularVisits = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereIn('client_id', $regularClients)
                 ->count();
             
-            $regularVisitsWithOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            $regularVisitsWithOrders = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereIn('client_id', $regularClients)
                 ->whereHas('orders')
                 ->count();
@@ -138,11 +157,14 @@ class ConversionStatisticsService
         
         // Конверсия для новых клиентов
         if (!empty($newClients)) {
-            $newVisits = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индексы на starts_at и client_id, select для выбора только нужных полей
+            $newVisits = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereIn('client_id', $newClients)
                 ->count();
             
-            $newVisitsWithOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            $newVisitsWithOrders = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereIn('client_id', $newClients)
                 ->whereHas('orders')
                 ->count();
@@ -164,19 +186,24 @@ class ConversionStatisticsService
      */
     public function getConversionByVeterinarians($startDate, $endDate)
     {
-        $veterinarians = Employee::all();
+        // Оптимизация: используем select для выбора только нужных полей
+        $veterinarians = Employee::select(['id', 'name', 'email'])->get();
         $conversionData = [];
         
         foreach ($veterinarians as $veterinarian) {
             // Приёмы у данного ветеринара
-            $visitsByVet = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            $visitsByVet = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereHas('schedule', function($query) use ($veterinarian) {
                     $query->where('veterinarian_id', $veterinarian->id);
                 })
                 ->count();
             
             // Приёмы у ветеринара, которые привели к заказам
-            $visitsWithOrdersByVet = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            $visitsWithOrdersByVet = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereHas('schedule', function($query) use ($veterinarian) {
                     $query->where('veterinarian_id', $veterinarian->id);
                 })
@@ -206,17 +233,22 @@ class ConversionStatisticsService
      */
     public function getConversionByVisitStatuses($startDate, $endDate)
     {
-        $statuses = Status::all();
+        // Оптимизация: используем select для выбора только нужных полей
+        $statuses = Status::select(['id', 'name'])->get();
         $conversionData = [];
         
         foreach ($statuses as $status) {
             // Приёмы с данным статусом
-            $visitsWithStatus = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индексы на starts_at и status_id, select для выбора только нужных полей
+            $visitsWithStatus = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->where('status_id', $status->id)
                 ->count();
             
             // Приёмы с данным статусом, которые привели к заказам
-            $visitsWithStatusAndOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индексы на starts_at и status_id, select для выбора только нужных полей
+            $visitsWithStatusAndOrders = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->where('status_id', $status->id)
                 ->whereHas('orders')
                 ->count();
@@ -255,12 +287,16 @@ class ConversionStatisticsService
         
         foreach ($timeSlots as $slot) {
             // Приёмы в данном временном слоте
-            $visitsInTimeSlot = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            $visitsInTimeSlot = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereRaw('HOUR(starts_at) >= ? AND HOUR(starts_at) < ?', [$slot['start'], $slot['end']])
                 ->count();
             
             // Приёмы в данном временном слоте, которые привели к заказам
-            $visitsWithOrdersInTimeSlot = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            $visitsWithOrdersInTimeSlot = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereRaw('HOUR(starts_at) >= ? AND HOUR(starts_at) < ?', [$slot['start'], $slot['end']])
                 ->whereHas('orders')
                 ->count();
@@ -297,12 +333,16 @@ class ConversionStatisticsService
         
         foreach ($weekdays as $dayNumber => $dayName) {
             // Приёмы в данный день недели
-            $visitsOnWeekday = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            $visitsOnWeekday = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereRaw('DAYOFWEEK(starts_at) = ?', [$dayNumber])
                 ->count();
             
             // Приёмы в данный день недели, которые привели к заказам
-            $visitsWithOrdersOnWeekday = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            $visitsWithOrdersOnWeekday = Visit::select(['id'])
+                ->whereBetween('starts_at', [$startDate, $endDate])
                 ->whereRaw('DAYOFWEEK(starts_at) = ?', [$dayNumber])
                 ->whereHas('orders')
                 ->count();

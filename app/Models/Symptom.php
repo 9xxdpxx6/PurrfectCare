@@ -11,6 +11,19 @@ class Symptom extends Model
 {
     use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
+    /**
+     * Документация индексов таблицы symptoms
+     *
+     * - visit_id (FK)
+     * - dictionary_symptom_id (FK)
+     * - custom_symptom (string)
+     */
+    protected array $indexes = [
+        'visit_id',
+        'dictionary_symptom_id',
+        'custom_symptom',
+    ];
+
     protected $fillable = [
         'visit_id',
         'dictionary_symptom_id',

@@ -17,6 +17,10 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->default(0);
             $table->text('description')->nullable();
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск типов вакцинаций по названию
+            $table->index('price'); // Быстрый поиск типов вакцинаций по цене
         });
     }
 

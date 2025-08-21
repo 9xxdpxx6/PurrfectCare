@@ -46,7 +46,6 @@ class BotPetAddedNotification extends Notification
             'data' => [
                 'pet_id' => $this->pet->id,
                 'pet_name' => $this->pet->name,
-                'client_id' => $this->pet->client_id,
                 'client_name' => $this->pet->client->name,
                 'species_name' => $this->pet->breed->species->name ?? 'Не указан вид',
                 'breed_name' => $this->pet->breed->name ?? 'Не указана порода',

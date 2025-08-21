@@ -11,7 +11,11 @@ class OperationalStatisticsService
 {
     public function getVisitsData($startDate, $endDate)
     {
-        $visits = Visit::whereBetween('starts_at', [$startDate, $endDate])->get();
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $visits = Visit::select(['id', 'starts_at', 'status_id'])
+            ->whereBetween('starts_at', [$startDate, $endDate])
+            ->with(['status:id,name'])
+            ->get();
         
         $byDay = $visits->groupBy(function($visit) {
             return $visit->starts_at->format('Y-m-d');
@@ -31,10 +35,13 @@ class OperationalStatisticsService
 
     public function getEmployeeLoad($startDate, $endDate)
     {
-        $totalVisits = Visit::whereBetween('starts_at', [$startDate, $endDate])->count();
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $totalVisits = Visit::select(['id'])->whereBetween('starts_at', [$startDate, $endDate])->count();
         
-        $employeeData = Visit::whereBetween('starts_at', [$startDate, $endDate])
-            ->with('schedule.veterinarian')
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $employeeData = Visit::select(['id', 'starts_at', 'schedule_id'])
+            ->whereBetween('starts_at', [$startDate, $endDate])
+            ->with(['schedule:id,veterinarian_id', 'schedule.veterinarian:id,name,email'])
             ->get()
             ->groupBy('schedule.veterinarian_id')
             ->map(function($visits, $employeeId) use ($startDate, $endDate, $totalVisits) {
@@ -95,7 +102,9 @@ class OperationalStatisticsService
             $employee = $data['employee'];
             
             // Рассчитываем теоретический максимум на основе расписания ветеринара
-            $schedules = Schedule::where('veterinarian_id', $employee->id)
+            // Оптимизация: используем индексы на veterinarian_id и shift_starts_at, select для выбора только нужных полей
+            $schedules = Schedule::select(['id', 'shift_starts_at', 'shift_ends_at'])
+                ->where('veterinarian_id', $employee->id)
                 ->whereBetween('shift_starts_at', [$startDate, $endDate])
                 ->get();
             
@@ -151,8 +160,10 @@ class OperationalStatisticsService
 
     public function getStatusStats($startDate, $endDate)
     {
-        $statusStats = Visit::whereBetween('starts_at', [$startDate, $endDate])
-            ->with('status')
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $statusStats = Visit::select(['id', 'status_id'])
+            ->whereBetween('starts_at', [$startDate, $endDate])
+            ->with(['status:id,name'])
             ->get()
             ->groupBy(function($visit) {
                 return $visit->status ? $visit->status->name : 'Без статуса';
@@ -171,9 +182,15 @@ class OperationalStatisticsService
 
     public function getScheduleStats($startDate, $endDate)
     {
-        $totalSchedules = Schedule::whereBetween('shift_starts_at', [$startDate, $endDate])->count();
-        $schedulesWithVisits = Schedule::whereBetween('shift_starts_at', [$startDate, $endDate])
-            ->whereHas('visits')
+        // Оптимизация: используем индекс на shift_starts_at и select для выбора только нужных полей
+        $totalSchedules = Schedule::select(['id'])->whereBetween('shift_starts_at', [$startDate, $endDate])->count();
+        
+        // Оптимизация: используем индекс на shift_starts_at и select для выбора только нужных полей
+        $schedulesWithVisits = Schedule::select(['id'])
+            ->whereBetween('shift_starts_at', [$startDate, $endDate])
+            ->whereHas('visits', function($query) {
+                $query->select(['id', 'schedule_id']);
+            })
             ->count();
         
         return [

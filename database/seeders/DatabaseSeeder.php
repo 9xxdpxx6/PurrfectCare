@@ -91,7 +91,7 @@ class DatabaseSeeder extends Seeder
         LabTestResult::factory(300)->create();
 
         // Создаем расписание
-        Schedule::factory(200)->create();
+        Schedule::factory(600)->create();
 
         // Создаем приемы
         Visit::factory(800)->create();

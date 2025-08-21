@@ -24,6 +24,16 @@ class Vaccination extends Model
         'next_due' => 'date'
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'pet_id',
+        'veterinarian_id',
+        'administered_at',
+        'next_due'
+    ];
+
     protected $deleteDependencies = [
         'orders' => 'Невозможно удалить вакцинацию, так как она используется в заказах',
     ];

@@ -2,16 +2,22 @@
 
 @section('title', 'Уведомления')
 
+@push('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endpush
+
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Уведомления</h1>
-        <div>
-            <button class="btn btn-outline-primary me-2" id="refreshNotifications">
-                <i class="bi bi-arrow-clockwise"></i> Обновить
+    <div class="d-flex justify-content-between align-items-start align-items-sm-center mb-4">
+        <h1 class="h3 mb-3 mb-sm-0">Уведомления</h1>
+        <div class="page-actions d-flex flex-row flex-nowrap gap-2 ms-sm-auto">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="refreshNotifications" data-bs-toggle="tooltip" data-bs-title="Обновить список уведомлений">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span class="d-none d-md-inline ms-1">Обновить</span>
             </button>
-            <button class="btn btn-primary" id="markAllAsRead">
-                <i class="bi bi-check-all"></i> Отметить все как прочитанные
+            <button type="button" class="btn btn-primary btn-sm" id="markAllAsRead" data-bs-toggle="tooltip" data-bs-title="Отметить все уведомления как прочитанные">
+                <i class="bi bi-check-all"></i>
+                <span class="d-none d-md-inline ms-1">Отметить все</span>
             </button>
         </div>
     </div>
@@ -19,28 +25,45 @@
     <!-- Фильтры -->
     <div class="card mb-4">
         <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <select class="form-select" id="statusFilter">
+            <div class="row g-3 justify-content-center">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <label for="statusFilter" class="form-label">Статус</label>
+                    <select class="form-select form-select-sm" id="statusFilter">
                         <option value="">Все уведомления</option>
                         <option value="unread">Непрочитанные</option>
                         <option value="read">Прочитанные</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <select class="form-select" id="typeFilter">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <label for="typeFilter" class="form-label">Тип</label>
+                    <select class="form-select form-select-sm" id="typeFilter">
                         <option value="">Все типы</option>
                         <option value="bot_booking">Записи через бота</option>
                         <option value="bot_registration">Регистрации через бота</option>
                         <option value="bot_pet_added">Питомцы через бота</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <input type="text" class="form-control" id="dateFilter" placeholder="дд.мм.гггг" readonly>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <label for="sortFilter" class="form-label">Сортировка</label>
+                    <select class="form-select form-select-sm" id="sortFilter">
+                        <option value="created_desc">Сначала новые</option>
+                        <option value="created_asc">Сначала старые</option>
+                        <option value="read_desc">Сначала прочитанные</option>
+                        <option value="read_asc">Сначала непрочитанные</option>
+                    </select>
                 </div>
-                <div class="col-md-3">
-                    <button class="btn btn-outline-secondary w-100" id="clearFilters">
-                        <i class="bi bi-x-circle"></i> Очистить фильтры
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <label for="dateFromFilter" class="form-label">Дата от</label>
+                    <input type="text" class="form-control form-control-sm" id="dateFromFilter" placeholder="дд.мм.гггг" readonly data-bs-toggle="tooltip" data-bs-title="Выберите начальную дату для фильтрации">
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <label for="dateToFilter" class="form-label">Дата до</label>
+                    <input type="text" class="form-control form-control-sm" id="dateToFilter" placeholder="дд.мм.гггг" readonly data-bs-toggle="tooltip" data-bs-title="Выберите конечную дату для фильтрации">
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="clearFilters">
+                        <i class="bi bi-x-circle"></i> 
+                        <span class="d-none d-lg-inline ms-2">Сбросить</span>
                     </button>
                 </div>
             </div>
@@ -65,21 +88,23 @@
 <!-- Шаблон уведомления -->
 <template id="notificationTemplate">
     <div class="notification-item border-bottom py-3" data-id="">
-        <div class="d-flex justify-content-between align-items-start">
-            <div class="flex-grow-1 px-3">
-                <div class="d-flex align-items-center mb-3">
-                    <span class="badge bg-primary me-3 notification-type"></span>
-                    <h6 class="mb-0 notification-title"></h6>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start w-100">
+            <div class="flex-grow-1 px-2 px-md-3 w-100">
+                <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center mb-3 w-100">
+                    <div class="d-flex align-items-center mb-2 mb-sm-0">
+                        <span class="badge bg-primary me-2 me-sm-3 notification-type"></span>
+                        <h6 class="mb-0 notification-title"></h6>
+                    </div>
                     <small class="text-muted ms-auto notification-time"></small>
                 </div>
                 <p class="mb-3 notification-message"></p>
                 <div class="notification-details small text-muted mb-3"></div>
-                <div class="notification-links">
+                <div class="notification-links d-flex flex-column flex-sm-row gap-2 w-100">
                     <!-- Ссылки будут добавлены динамически -->
                 </div>
             </div>
-            <div class="mx-3">
-                <button class="btn btn-sm btn-outline-primary mark-read-btn" title="Отметить как прочитанное">
+            <div class="ms-0 ms-md-3 mt-2 mt-md-0 flex-shrink-0">
+                <button type="button" class="btn btn-sm btn-outline-primary mark-read-btn" data-bs-toggle="tooltip" data-bs-title="Отметить как прочитанное">
                     <i class="bi bi-check"></i>
                 </button>
             </div>
@@ -89,7 +114,7 @@
 
 <!-- Модальное окно для деталей уведомления -->
 <div class="modal fade" id="notificationModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Детали уведомления</h5>
@@ -111,111 +136,156 @@
 class NotificationsPage {
     constructor() {
         this.currentPage = 1;
-        this.perPage = 20;
+        this.perPage = 25; // Увеличиваем до 25 элементов на страницу
         this.filters = {
             status: '',
             type: '',
-            date: ''
+            dateFrom: '',
+            dateTo: '',
+            sort: 'created_desc'
         };
+        this.csrfToken = this.getCsrfToken();
         this.init();
     }
 
     init() {
+        if (!this.csrfToken) {
+            this.showErrorMessage('Ошибка безопасности: CSRF токен не найден. Уведомления могут работать некорректно.');
+        }
+        
         this.setupEventListeners();
         this.initDatepicker();
         this.loadNotifications();
-                        this.startPolling();
-            }
+        this.startPolling();
+        this.initTooltips();
+    }
 
-            initDatepicker() {
-                try {
-                    // Инициализируем Air Datepicker
-                    if (typeof createDatepicker === 'function') {
-                        this.datepicker = createDatepicker('#dateFilter', 'ru', {
-                            dateFormat: 'dd.mm.yyyy',
-                            autoClose: true,
-                            onSelect: (formattedDate, date, inst) => {
-                                if (date) {
-                                    this.filters.date = date.toISOString().split('T')[0];
-                                } else {
-                                    this.filters.date = '';
-                                }
-                                this.currentPage = 1;
-                                this.loadNotifications();
-                            }
-                        });
-                    } else if (typeof AirDatepicker === 'function') {
-                        // Альтернативный способ - прямой вызов AirDatepicker
-                        this.datepicker = new AirDatepicker('#dateFilter', {
-                            locale: 'ru',
-                            dateFormat: 'dd.mm.yyyy',
-                            autoClose: true,
-                            onSelect: ({formattedDate, date, datepicker}) => {
-                                if (date) {
-                                    this.filters.date = date.toISOString().split('T')[0];
-                                } else {
-                                    this.filters.date = '';
-                                }
-                                this.currentPage = 1;
-                                this.loadNotifications();
-                            }
-                        });
+    initTooltips() {
+        // Инициализируем Bootstrap тултипы
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    getCsrfToken() {
+        const token = document.querySelector('meta[name="csrf-token"]');
+        if (!token) {
+            console.error('CSRF token not found!');
+            return null;
+        }
+        return token.getAttribute('content');
+    }
+
+    initDatepicker() {
+        if (typeof window.createDatepicker === 'function') {
+            // Datepicker для даты "от"
+            this.datepickerFrom = createDatepicker('#dateFromFilter', {
+                dateFormat: 'dd.MM.yyyy',
+                autoClose: true,
+                onSelect: ({formattedDate, date, datepicker}) => {
+                    if (date) {
+                        this.filters.dateFrom = date.toISOString().split('T')[0];
                     } else {
-                        console.warn('Air Datepicker не найден, используем стандартный input');
-                        // Fallback на стандартный input
-                        const dateInput = document.getElementById('dateFilter');
-                        dateInput.type = 'date';
-                        dateInput.addEventListener('change', (e) => {
-                            this.filters.date = e.target.value;
-                            this.currentPage = 1;
-                            this.loadNotifications();
-                        });
+                        this.filters.dateFrom = '';
                     }
-                } catch (error) {
-                    console.error('Ошибка инициализации datepicker:', error);
-                    // Fallback на стандартный input
-                    const dateInput = document.getElementById('dateFilter');
-                    dateInput.type = 'date';
-                    dateInput.addEventListener('change', (e) => {
-                        this.filters.date = e.target.value;
-                        this.currentPage = 1;
-                        this.loadNotifications();
-                    });
+                    this.currentPage = 1;
+                    this.loadNotifications();
                 }
+            });
+            
+            // Datepicker для даты "до"
+            this.datepickerTo = createDatepicker('#dateToFilter', {
+                dateFormat: 'dd.MM.yyyy',
+                autoClose: true,
+                onSelect: ({formattedDate, date, datepicker}) => {
+                    if (date) {
+                        this.filters.dateTo = date.toISOString().split('T')[0];
+                    } else {
+                        this.filters.dateTo = '';
+                    }
+                    this.currentPage = 1;
+                    this.loadNotifications();
+                }
+            });
+        } else {
+            // Fallback для стандартных input
+            const dateFromInput = document.getElementById('dateFromFilter');
+            const dateToInput = document.getElementById('dateToFilter');
+            
+            if (dateFromInput) {
+                dateFromInput.addEventListener('change', () => {
+                    this.filters.dateFrom = dateFromInput.value;
+                    this.currentPage = 1;
+                    this.loadNotifications();
+                });
             }
+            
+            if (dateToInput) {
+                dateToInput.addEventListener('change', () => {
+                    this.filters.dateTo = dateToInput.value;
+                    this.currentPage = 1;
+                    this.loadNotifications();
+                });
+            }
+        }
+    }
 
-            setupEventListeners() {
+    setupEventListeners() {
+        
         // Фильтры
-        document.getElementById('statusFilter').addEventListener('change', (e) => {
-            this.filters.status = e.target.value;
-            this.currentPage = 1;
-            this.loadNotifications();
-        });
+        const statusFilter = document.getElementById('statusFilter');
+        const typeFilter = document.getElementById('typeFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const clearFiltersBtn = document.getElementById('clearFilters');
+        
+        if (statusFilter) {
+            statusFilter.addEventListener('change', (e) => {
+                this.filters.status = e.target.value;
+                this.currentPage = 1;
+                this.loadNotifications();
+            });
+        }
+        
+        if (typeFilter) {
+            typeFilter.addEventListener('change', (e) => {
+                this.filters.type = e.target.value;
+                this.currentPage = 1;
+                this.loadNotifications();
+            });
+        }
 
-        document.getElementById('typeFilter').addEventListener('change', (e) => {
-            this.filters.type = e.target.value;
-            this.currentPage = 1;
-            this.loadNotifications();
-        });
-
-        document.getElementById('dateFilter').addEventListener('change', (e) => {
-            this.filters.date = e.target.value;
-            this.currentPage = 1;
-            this.loadNotifications();
-        });
-
-        document.getElementById('clearFilters').addEventListener('click', () => {
-            this.clearFilters();
-        });
+        if (sortFilter) {
+            sortFilter.addEventListener('change', (e) => {
+                this.filters.sort = e.target.value;
+                this.currentPage = 1;
+                this.loadNotifications();
+            });
+        }
+        
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                this.clearFilters();
+            });
+        }
 
         // Кнопки
-        document.getElementById('refreshNotifications').addEventListener('click', () => {
-            this.loadNotifications();
-        });
-
-        document.getElementById('markAllAsRead').addEventListener('click', () => {
-            this.markAllAsRead();
-        });
+        const refreshBtn = document.getElementById('refreshNotifications');
+        const markAllBtn = document.getElementById('markAllAsRead');
+        
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadNotifications();
+            });
+        }
+        
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.markAllAsRead();
+            });
+        }
 
         // Обработка кликов по уведомлениям
         document.addEventListener('click', (e) => {
@@ -232,6 +302,7 @@ class NotificationsPage {
                 this.markAsRead(notificationId);
             }
         });
+        
     }
 
     async loadNotifications() {
@@ -255,7 +326,7 @@ class NotificationsPage {
             const response = await fetch(`/admin/notifications?${params}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': this.csrfToken
                 }
             });
 
@@ -264,6 +335,23 @@ class NotificationsPage {
             }
 
             const data = await response.json();
+            
+            // Проверяем, что получили данные
+            if (!data.notifications || !Array.isArray(data.notifications)) {
+                throw new Error('Неверный формат данных уведомлений');
+            }
+
+            // Отладочная информация для пагинации
+            console.log('Pagination debug:', {
+                total: data.pagination?.total,
+                current_page: data.pagination?.current_page,
+                last_page: data.pagination?.last_page,
+                per_page: data.pagination?.per_page,
+                notifications_count: data.notifications.length,
+                first_date: data.notifications[0]?.created_at,
+                last_date: data.notifications[data.notifications.length - 1]?.created_at
+            });
+
             this.renderNotifications(data.notifications);
             this.updatePagination(data.pagination);
 
@@ -278,6 +366,35 @@ class NotificationsPage {
                     </button>
                 </div>
             `;
+        }
+    }
+    
+    // Метод для загрузки только недавних уведомлений (для попапа)
+    async loadRecentNotifications(limit = 5) {
+        try {
+            const params = new URLSearchParams({
+                page: 1,
+                per_page: limit,
+                sort: 'created_desc'
+            });
+
+            const response = await fetch(`/admin/notifications?${params}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': this.csrfToken
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки недавних уведомлений');
+            }
+
+            const data = await response.json();
+            return data.notifications;
+
+        } catch (error) {
+            console.error('Error loading recent notifications:', error);
+            return [];
         }
     }
 
@@ -312,6 +429,15 @@ class NotificationsPage {
             item.querySelector('.notification-type').textContent = this.getTypeLabel(notification.data.type);
             item.querySelector('.notification-title').textContent = notification.data.title;
             item.querySelector('.notification-message').textContent = notification.data.message;
+            
+            // Отладочная информация для дат
+            console.log('Notification date debug:', {
+                id: notification.id,
+                created_at: notification.created_at,
+                read_at: notification.read_at,
+                type: notification.data.type
+            });
+            
             item.querySelector('.notification-time').textContent = this.formatTime(notification.created_at);
             
             // Детали уведомления
@@ -329,6 +455,9 @@ class NotificationsPage {
 
             container.appendChild(clone);
         });
+        
+        // Инициализируем тултипы для новых элементов
+        this.initTooltips();
     }
 
     getTypeLabel(type) {
@@ -344,6 +473,16 @@ class NotificationsPage {
         const date = new Date(timestamp);
         const now = new Date();
         const diff = now - date;
+        
+        // Отладочная информация
+        console.log('FormatTime debug:', {
+            original: timestamp,
+            parsed: date,
+            now: now,
+            diff: diff,
+            diffHours: diff / 3600000,
+            diffDays: diff / 86400000
+        });
         
         if (diff < 60000) { // меньше минуты
             return 'Только что';
@@ -363,7 +502,14 @@ class NotificationsPage {
         
         if (data.data) {
             Object.entries(data.data).forEach(([key, value]) => {
-                if (key !== 'type' && value) {
+                // Пропускаем технические поля, ID и пустые значения
+                if (key !== 'type' && 
+                    value && 
+                    !key.endsWith('_id') && 
+                    !key.includes('id') &&
+                    key !== 'visit_id' &&
+                    key !== 'pet_id' &&
+                    key !== 'user_id') {
                     const label = this.getFieldLabel(key);
                     details += `<div class="mb-1"><strong>${label}:</strong> ${value}</div>`;
                 }
@@ -380,7 +526,13 @@ class NotificationsPage {
             'appointment_time': 'Время приема',
             'appointment_date': 'Дата приема',
             'branch_name': 'Филиал',
-            'pet_name': 'Питомец'
+            'pet_name': 'Питомец',
+            'species_name': 'Вид животного',
+            'breed_name': 'Порода',
+            'phone': 'Телефон',
+            'email': 'Email',
+            'address': 'Адрес',
+            'telegram': 'Telegram'
         };
         return labels[key] || key;
     }
@@ -388,40 +540,46 @@ class NotificationsPage {
     generateNotificationLinks(data) {
         let links = '';
         
-        if (data.data) {
-            // Ссылка на клиента
-            if (data.data.client_id) {
-                links += `<a href="/admin/users/${data.data.client_id}" class="btn btn-sm btn-outline-primary me-2 mb-2">
-                    <i class="bi bi-person"></i> Клиент
-                </a>`;
-            }
-            
-            // Ссылка на питомца
-            if (data.data.pet_id) {
-                links += `<a href="/admin/pets/${data.data.pet_id}" class="btn btn-sm btn-outline-success me-2 mb-2">
-                    <i class="bi bi-heart"></i> Питомец
-                </a>`;
-            }
-            
-            // Ссылка на приём
-            if (data.data.visit_id) {
-                links += `<a href="/admin/visits/${data.data.visit_id}" class="btn btn-sm btn-outline-info me-2 mb-2">
-                    <i class="bi bi-calendar-check"></i> Приём
-                </a>`;
-            }
-            
-            // Ссылка на ветеринара
-            if (data.data.veterinarian_id) {
-                links += `<a href="/admin/employees/${data.data.veterinarian_id}" class="btn btn-sm btn-outline-warning me-2 mb-2">
-                    <i class="bi bi-stethoscope"></i> Ветеринар
-                </a>`;
-            }
-            
-            // Ссылка на филиал
-            if (data.data.branch_id) {
-                links += `<a href="/admin/branches/${data.data.branch_id}" class="btn btn-sm btn-outline-secondary me-2 mb-2">
-                    <i class="bi bi-building"></i> Филиал
-                </a>`;
+        if (data.data && data.type) {
+            switch (data.type) {
+                case 'bot_booking':
+                    // Для записи через бота - ссылка на конкретный приём
+                    if (data.data.visit_id) {
+                        links += `<a href="/admin/visits/${data.data.visit_id}" class="btn btn-sm btn-outline-info me-2 mb-2">
+                            <i class="bi bi-calendar-check"></i> Просмотр приёма
+                        </a>`;
+                    }
+                    // Общая ссылка на все приёмы
+                    links += `<a href="/admin/visits" class="btn btn-sm btn-outline-secondary me-2 mb-2">
+                        <i class="bi bi-list"></i> Все приёмы
+                    </a>`;
+                    break;
+                    
+                case 'bot_pet_added':
+                    // Для добавления питомца - ссылка на конкретного питомца
+                    if (data.data.pet_id) {
+                        links += `<a href="/admin/pets/${data.data.pet_id}" class="btn btn-sm btn-outline-success me-2 mb-2">
+                            <i class="bi bi-heart"></i> Просмотр питомца
+                        </a>`;
+                    }
+                    // Общая ссылка на всех питомцев
+                    links += `<a href="/admin/pets" class="btn btn-sm btn-outline-secondary me-2 mb-2">
+                        <i class="bi bi-list"></i> Все питомцы
+                    </a>`;
+                    break;
+                    
+                case 'bot_registration':
+                    // Для регистрации - ссылка на конкретного пользователя
+                    if (data.data.user_id) {
+                        links += `<a href="/admin/users/${data.data.user_id}" class="btn btn-sm btn-outline-primary me-2 mb-2">
+                            <i class="bi bi-person"></i> Просмотр пользователя
+                        </a>`;
+                    }
+                    // Общая ссылка на всех пользователей
+                    links += `<a href="/admin/users" class="btn btn-sm btn-outline-secondary me-2 mb-2">
+                        <i class="bi bi-list"></i> Все пользователи
+                    </a>`;
+                    break;
             }
         }
         
@@ -430,39 +588,90 @@ class NotificationsPage {
 
     async markAsRead(notificationId) {
         try {
+            // Проверяем CSRF токен
+            if (!this.csrfToken) {
+                this.showErrorMessage('Ошибка безопасности: CSRF токен не найден');
+                return;
+            }
+
+            const item = document.querySelector(`[data-id="${notificationId}"]`);
+            if (!item) return;
+
+            // Показываем индикатор загрузки на кнопке
+            const markReadBtn = item.querySelector('.mark-read-btn');
+            if (markReadBtn) {
+                const originalContent = markReadBtn.innerHTML;
+                markReadBtn.disabled = true;
+                markReadBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+            }
+
             const response = await fetch(`/admin/notifications/${notificationId}/mark-read`, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': this.csrfToken
                 }
             });
-
+            
             if (response.ok) {
-                const item = document.querySelector(`[data-id="${notificationId}"]`);
                 if (item) {
                     item.classList.remove('unread');
                     item.classList.add('opacity-75');
-                    item.querySelector('.mark-read-btn').style.display = 'none';
+                    if (markReadBtn) {
+                        markReadBtn.style.display = 'none';
+                    }
                 }
                 
                 // Обновляем счетчик в header
                 if (window.notificationManager) {
                     window.notificationManager.loadNotifications();
                 }
+            } else {
+                // Если ответ не успешный, показываем ошибку
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.message || 'Ошибка при отметке уведомления';
+                this.showErrorMessage(errorMessage);
             }
         } catch (error) {
             console.error('Error marking notification as read:', error);
+            this.showErrorMessage('Ошибка при отметке уведомления: ' + error.message);
+        } finally {
+            // Восстанавливаем кнопку в случае ошибки
+            const item = document.querySelector(`[data-id="${notificationId}"]`);
+            if (item) {
+                const markReadBtn = item.querySelector('.mark-read-btn');
+                if (markReadBtn) {
+                    markReadBtn.disabled = false;
+                    markReadBtn.innerHTML = '<i class="bi bi-check"></i>';
+                }
+            }
         }
     }
 
     async markAllAsRead() {
         try {
+            // Проверяем CSRF токен
+            if (!this.csrfToken) {
+                this.showErrorMessage('Ошибка безопасности: CSRF токен не найден');
+                return;
+            }
+
+            // Показываем индикатор загрузки
+            const button = document.getElementById('markAllAsRead');
+            if (!button) {
+                console.error('Button markAllAsRead not found!');
+                return;
+            }
+            
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="bi bi-hourglass-split"></i> Обработка...';
+
             const response = await fetch('/admin/notifications/mark-all-read', {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': this.csrfToken
                 }
             });
 
@@ -471,7 +680,10 @@ class NotificationsPage {
                 document.querySelectorAll('.notification-item').forEach(item => {
                     item.classList.remove('unread');
                     item.classList.add('opacity-75');
-                    item.querySelector('.mark-read-btn').style.display = 'none';
+                    const markReadBtn = item.querySelector('.mark-read-btn');
+                    if (markReadBtn) {
+                        markReadBtn.style.display = 'none';
+                    }
                 });
 
                 // Обновляем счетчик в header
@@ -481,35 +693,64 @@ class NotificationsPage {
 
                 // Показываем уведомление об успехе
                 this.showSuccessMessage('Все уведомления отмечены как прочитанные');
+                
+                // Перезагружаем список уведомлений для обновления данных
+                this.loadNotifications();
+            } else {
+                // Если ответ не успешный, показываем ошибку
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.message || 'Ошибка при отметке уведомлений';
+                this.showErrorMessage(errorMessage);
             }
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
-            this.showErrorMessage('Ошибка при отметке уведомлений');
+            this.showErrorMessage('Ошибка при отметке уведомлений: ' + error.message);
+        } finally {
+            // Восстанавливаем кнопку
+            const button = document.getElementById('markAllAsRead');
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-check-all"></i> Отметить все как прочитанные';
+            }
         }
     }
 
     clearFilters() {
+        // Сбрасываем значения фильтров
         document.getElementById('statusFilter').value = '';
         document.getElementById('typeFilter').value = '';
-        document.getElementById('dateFilter').value = '';
+        document.getElementById('sortFilter').value = 'created_desc';
+        document.getElementById('dateFromFilter').value = '';
+        document.getElementById('dateToFilter').value = '';
         
-        // Сбрасываем дату в datepicker
-        if (this.datepicker) {
-            if (typeof this.datepicker.clear === 'function') {
-                this.datepicker.clear();
-            } else if (typeof this.datepicker.destroy === 'function') {
-                // Если нет метода clear, пересоздаем datepicker
-                this.datepicker.destroy();
+        // Сбрасываем даты в datepicker'ах
+        if (this.datepickerFrom) {
+            if (typeof this.datepickerFrom.clear === 'function') {
+                this.datepickerFrom.clear();
+            } else if (typeof this.datepickerFrom.destroy === 'function') {
+                this.datepickerFrom.destroy();
+                this.initDatepicker();
+            }
+        }
+        if (this.datepickerTo) {
+            if (typeof this.datepickerTo.clear === 'function') {
+                this.datepickerTo.clear();
+            } else if (typeof this.datepickerTo.destroy === 'function') {
+                this.datepickerTo.destroy();
                 this.initDatepicker();
             }
         }
         
+        // Сбрасываем фильтры в объекте
         this.filters = {
             status: '',
             type: '',
-            date: ''
+            dateFrom: '',
+            dateTo: '',
+            sort: 'created_desc'
         };
         
+        // Сбрасываем на первую страницу и загружаем уведомления
         this.currentPage = 1;
         this.loadNotifications();
     }
@@ -517,11 +758,133 @@ class NotificationsPage {
     showNotificationDetails(notificationId) {
         // Здесь можно добавить логику для показа деталей уведомления
         // Например, открыть модальное окно с подробной информацией
-        console.log('Show details for notification:', notificationId);
     }
 
     updatePagination(pagination) {
-        // Здесь можно добавить пагинацию, если нужно
+        const container = document.getElementById('notificationsContainer');
+        
+        if (!pagination || pagination.total <= this.perPage) {
+            return; // Пагинация не нужна
+        }
+        
+        // Создаем пагинацию
+        const paginationHtml = this.createPaginationHTML(pagination);
+        
+        // Добавляем после списка уведомлений
+        const paginationContainer = document.createElement('div');
+        paginationContainer.className = 'mt-4';
+        paginationContainer.innerHTML = paginationHtml;
+        
+        // Удаляем старую пагинацию если есть
+        const oldPagination = container.nextElementSibling;
+        if (oldPagination && oldPagination.classList.contains('mt-4')) {
+            oldPagination.remove();
+        }
+        
+        container.after(paginationContainer);
+        
+        // Добавляем обработчики для кнопок пагинации
+        this.setupPaginationHandlers(pagination);
+    }
+    
+    createPaginationHTML(pagination) {
+        const { current_page, last_page, total, from, to } = pagination;
+        
+        let paginationHtml = `
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
+                <div class="text-muted mb-2 mb-sm-0 small">
+                    Показано ${from}-${to} из ${total} уведомлений
+                </div>
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination pagination-sm mb-0">
+        `;
+        
+        // Кнопка "Предыдущая"
+        if (current_page > 1) {
+            paginationHtml += `
+                <li class="page-item">
+                    <button class="page-link" data-page="${current_page - 1}" aria-label="Предыдущая">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                </li>
+            `;
+        }
+        
+        // Номера страниц
+        const startPage = Math.max(1, current_page - 2);
+        const endPage = Math.min(last_page, current_page + 2);
+        
+        if (startPage > 1) {
+            paginationHtml += `
+                <li class="page-item">
+                    <button class="page-link" data-page="1">1</button>
+                </li>
+            `;
+            if (startPage > 2) {
+                paginationHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            paginationHtml += `
+                <li class="page-item ${i === current_page ? 'active' : ''}">
+                    <button class="page-link" data-page="${i}">${i}</button>
+                </li>
+            `;
+        }
+        
+        if (endPage < last_page) {
+            if (endPage < last_page - 1) {
+                paginationHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+            paginationHtml += `
+                <li class="page-item">
+                    <button class="page-link" data-page="${last_page}">${last_page}</button>
+                </li>
+            `;
+        }
+        
+        // Кнопка "Следующая"
+        if (current_page < last_page) {
+            paginationHtml += `
+                <li class="page-item">
+                    <button class="page-link" data-page="${current_page + 1}" aria-label="Следующая">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+            `;
+        }
+        
+        paginationHtml += `
+                    </ul>
+                </nav>
+            </div>
+        `;
+        
+        return paginationHtml;
+    }
+    
+    setupPaginationHandlers(pagination) {
+        const paginationContainer = document.querySelector('.pagination');
+        if (!paginationContainer) return;
+        
+        paginationContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.page-link') && !e.target.closest('.page-item.disabled')) {
+                e.preventDefault();
+                const pageLink = e.target.closest('.page-link');
+                const page = pageLink.dataset.page;
+                
+                if (page && page !== this.currentPage.toString()) {
+                    this.currentPage = parseInt(page);
+                    this.loadNotifications();
+                    
+                    // Прокручиваем к началу списка
+                    document.getElementById('notificationsContainer').scrollIntoView({ 
+                        behavior: 'smooth' 
+                    });
+                }
+            }
+        });
     }
 
     startPolling() {
@@ -568,11 +931,20 @@ class NotificationsPage {
 document.addEventListener('DOMContentLoaded', () => {
     window.notificationsPage = new NotificationsPage();
 });
+
+// Глобальный метод для получения недавних уведомлений (для попапа)
+window.getRecentNotifications = async function(limit = 5) {
+    if (window.notificationsPage) {
+        return await window.notificationsPage.loadRecentNotifications(limit);
+    }
+    return [];
+};
 </script>
 @endpush
 
 @push('styles')
 <style>
+/* Основные стили уведомлений */
 .notification-item {
     transition: all 0.2s ease;
     cursor: pointer;
@@ -591,32 +963,47 @@ document.addEventListener('DOMContentLoaded', () => {
     background-color: rgba(13, 110, 253, 0.1);
 }
 
-.notification-details div {
-    margin-bottom: 0.25rem;
+/* Анимации */
+.notification-item {
+    animation: fadeIn 0.3s ease-in;
 }
 
-.badge.notification-type {
-    font-size: 0.75rem;
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.notification-links .btn {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-}
-
+/* Hover эффекты для кнопок */
 .notification-links .btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: 768px) {
-    .notification-item {
-        padding: 1rem 0.5rem;
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+    .notification-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
     }
     
-    .d-flex.justify-content-between {
-        flex-direction: column;
-        gap: 1rem;
+    .notification-item.unread {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+    
+    .notification-item.unread:hover {
+        background-color: rgba(13, 110, 253, 0.15);
+    }
+}
+
+/* Компактные кнопки в шапке на мобильных */
+@media (max-width: 767.98px) {
+    .page-actions .btn {
+        padding: 0.35rem 0.5rem;
     }
 }
 </style>

@@ -18,13 +18,21 @@ class DashboardStatisticsService
         $overallConversion = $conversionService->getOverallConversion($startDate, $endDate);
         
         return [
-            'total_visits' => Visit::whereBetween('starts_at', [$startDate, $endDate])->count(),
-            'total_orders' => Order::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'total_revenue' => Order::whereBetween('created_at', [$startDate, $endDate])
+            // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+            'total_visits' => Visit::select(['id'])->whereBetween('starts_at', [$startDate, $endDate])->count(),
+            
+            // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+            'total_orders' => Order::select(['id'])->whereBetween('created_at', [$startDate, $endDate])->count(),
+            
+            // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+            'total_revenue' => Order::select(['total'])
+                ->whereBetween('created_at', [$startDate, $endDate])
                 ->where('is_paid', true) // Только оплаченные заказы
                 ->sum('total'),
-            'total_services' => Service::count(),
-            'total_veterinarians' => Employee::count(),
+                
+            // Оптимизация: используем select для выбора только нужных полей
+            'total_services' => Service::select(['id'])->count(),
+            'total_veterinarians' => Employee::select(['id'])->count(),
             'conversion_rate' => $overallConversion['conversion_rate'],
             'visits_with_orders' => $overallConversion['visits_with_orders'],
         ];
@@ -44,9 +52,15 @@ class DashboardStatisticsService
             $dateKey = $current->format($dateFormat);
             
             $stats[$dateKey] = [
-                'visits' => Visit::whereDate('starts_at', $current)->count(),
-                'orders' => Order::whereDate('created_at', $current)->count(),
-                'revenue' => Order::whereDate('created_at', $current)
+                // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+                'visits' => Visit::select(['id'])->whereDate('starts_at', $current)->count(),
+                
+                // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+                'orders' => Order::select(['id'])->whereDate('created_at', $current)->count(),
+                
+                // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+                'revenue' => Order::select(['total'])
+                    ->whereDate('created_at', $current)
                     ->where('is_paid', true) // Только оплаченные заказы
                     ->sum('total'),
             ];
@@ -59,10 +73,13 @@ class DashboardStatisticsService
 
     public function getTopServices($startDate)
     {
-        return Order::where('created_at', '>=', $startDate)
+        // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+        return Order::select(['id', 'created_at'])
+            ->where('created_at', '>=', $startDate)
             ->where('is_paid', true) // Только оплаченные заказы
             ->with(['items' => function($query) {
-                $query->where('item_type', Service::class);
+                $query->select(['id', 'order_id', 'item_type', 'item_id', 'quantity', 'unit_price'])
+                    ->where('item_type', Service::class);
             }])
             ->get()
             ->flatMap(function($order) {
@@ -89,7 +106,9 @@ class DashboardStatisticsService
         $end = Carbon::now();
         
         while ($current <= $end) {
-            $data[$current->format('Y-m-d')] = Order::whereDate('created_at', $current)
+            // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+            $data[$current->format('Y-m-d')] = Order::select(['total'])
+                ->whereDate('created_at', $current)
                 ->where('is_paid', true) // Только оплаченные заказы
                 ->sum('total');
             $current->addDay();

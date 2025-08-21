@@ -21,6 +21,16 @@ class Notification extends Model
         'read_at' => 'datetime'
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'notifiable_type',
+        'notifiable_id',
+        'read_at',
+        'type'
+    ];
+
     public function notifiable()
     {
         return $this->morphTo();

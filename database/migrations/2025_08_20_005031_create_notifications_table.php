@@ -18,6 +18,12 @@ return new class extends Migration
             $table->text('data');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('notifiable_type'); // Быстрый поиск по типу получателя
+            $table->index('notifiable_id'); // Быстрый поиск по ID получателя
+            $table->index('read_at'); // Быстрый поиск прочитанных/непрочитанных уведомлений
+            $table->index('type'); // Быстрый поиск по типу уведомления
         });
     }
 

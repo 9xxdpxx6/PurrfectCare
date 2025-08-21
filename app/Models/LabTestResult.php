@@ -11,6 +11,19 @@ class LabTestResult extends Model
 {
     use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
+    /**
+     * Документация индексов таблицы lab_test_results
+     *
+     * - lab_test_id (FK)
+     * - lab_test_param_id (FK)
+     * - value (decimal)
+     */
+    protected array $indexes = [
+        'lab_test_id',
+        'lab_test_param_id',
+        'value',
+    ];
+
     protected $fillable = [
         'lab_test_id',
         'lab_test_param_id',

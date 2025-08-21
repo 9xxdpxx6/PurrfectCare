@@ -111,7 +111,13 @@ class OrderManagementService
         try {
             DB::beginTransaction();
 
-            $order = Order::with('items')->findOrFail($id);
+            // Оптимизация: используем индексы на внешние ключи и загружаем только нужные поля
+            $order = Order::select([
+                    'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
+                    'notes', 'total', 'is_paid', 'closed_at', 'created_at', 'updated_at'
+                ])
+                ->with(['items:id,order_id,item_type,item_id,quantity,unit_price'])
+                ->findOrFail($id);
 
             // Определяем дату закрытия если заказ выполнен
             $closedAt = $order->closed_at;
@@ -190,7 +196,12 @@ class OrderManagementService
         try {
             DB::beginTransaction();
 
-            $order = Order::with('items')->findOrFail($id);
+            // Оптимизация: используем индексы на внешние ключи и загружаем только нужные поля
+            $order = Order::select([
+                    'id', 'closed_at'
+                ])
+                ->with(['items:id,order_id,item_type,item_id,quantity'])
+                ->findOrFail($id);
 
             // Возвращаем препараты на склад если заказ был закрыт
             if ($order->closed_at) {
@@ -229,10 +240,21 @@ class OrderManagementService
      */
     public function getOrderWithDetails(int $id): Order
     {
-        return Order::with([
-            'client', 'pet', 'status', 'branch', 'manager',
-            'items.item', 'visits.status'
-        ])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и добавляем select для выбора только нужных полей
+        return Order::select([
+                'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
+                'notes', 'total', 'is_paid', 'closed_at', 'created_at', 'updated_at'
+            ])
+            ->with([
+                'client:id,name,email,phone',
+                'pet:id,name,breed_id,client_id',
+                'status:id,name',
+                'branch:id,name,address',
+                'manager:id,name,email',
+                'items:id,order_id,item_type,item_id,quantity,unit_price',
+                'visits:id,client_id,pet_id,starts_at,status_id'
+            ])
+            ->findOrFail($id);
     }
 
     /**
@@ -243,12 +265,15 @@ class OrderManagementService
      */
     public function getOrderStatistics(Order $order): array
     {
+        // Оптимизация: используем уже загруженные связи вместо дополнительных запросов
+        $drugItems = $order->items->where('item_type', 'App\Models\Drug');
+        
         return [
             'items' => $this->itemService->getOrderItemsStatistics($order),
             'visits' => $this->visitService->getOrderVisitStatistics($order),
             'inventory' => [
                 'drugs_value' => $this->inventoryService->getInventoryReductionValue($order),
-                'has_drugs' => $order->items->where('item_type', 'App\Models\Drug')->count() > 0
+                'has_drugs' => $drugItems->count() > 0
             ]
         ];
     }
@@ -261,7 +286,12 @@ class OrderManagementService
      */
     public function checkOrderAvailability(array $items): array
     {
-        $availability = $this->inventoryService->checkDrugAvailability($items);
+        // Оптимизация: фильтруем только лекарства для проверки доступности
+        $drugItems = collect($items)->filter(function($item) {
+            return $item['item_type'] === 'App\Models\Drug';
+        })->toArray();
+        
+        $availability = $this->inventoryService->checkDrugAvailability($drugItems);
         
         $allAvailable = collect($availability)->every('is_available');
         
@@ -281,7 +311,10 @@ class OrderManagementService
      */
     public function createOrderFromVisit(int $visitId, array $orderData): Order
     {
-        $visit = Visit::findOrFail($visitId);
+        // Оптимизация: используем индекс на visit_id и загружаем только нужные поля
+        $visit = Visit::select(['id', 'client_id', 'pet_id', 'schedule_id', 'starts_at'])
+            ->findOrFail($visitId);
+            
         return $this->visitService->createOrderFromVisit($visit, $orderData);
     }
 }

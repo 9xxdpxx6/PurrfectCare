@@ -38,44 +38,58 @@ class OrderFilter extends AbstractFilter
 
     public function search(Builder $builder, $value)
     {
-        return $builder->where(function ($query) use ($value) {
+        // Нормализация пробелов и обрезка
+        $normalized = trim(preg_replace('/\s+/', ' ', (string) $value));
+
+        return $builder->where(function ($query) use ($normalized) {
             // Если значение является числом, ищем точное совпадение по ID
-            if (is_numeric($value)) {
-                $query->where('id', $value)
-                    ->orWhere(function ($subQuery) use ($value) {
-                        $subQuery->whereHas('client', function ($q) use ($value) {
-                            $q->where('name', 'like', "%$value%");
+            if ($normalized !== '' && is_numeric($normalized)) {
+                $query->where('id', $normalized)
+                    ->orWhere(function ($subQuery) use ($normalized) {
+                        $subQuery->whereHas('client', function ($q) use ($normalized) {
+                            $q->where('name', 'like', "%{$normalized}%");
                         })
-                        ->orWhereHas('pet', function ($q) use ($value) {
-                            $q->where('name', 'like', "%$value%");
+                        ->orWhereHas('pet', function ($q) use ($normalized) {
+                            $q->where('name', 'like', "%{$normalized}%");
                         })
-                        ->orWhereHas('manager', function ($q) use ($value) {
-                            $q->where('name', 'like', "%$value%");
-                        })
-                        ->orWhere('notes', 'like', "%$value%");
+                        ->orWhereHas('manager', function ($q) use ($normalized) {
+                            $q->where('name', 'like', "%{$normalized}%");
+                        });
+
+                        // Поиск по notes только если длина запроса >= 3
+                        if (mb_strlen($normalized) >= 3) {
+                            $subQuery->orWhere('notes', 'like', "%{$normalized}%");
+                        }
                     });
             } else {
-                // Разбиваем поисковый запрос на слова
-                $words = array_filter(explode(' ', trim($value)));
-                
+                if ($normalized === '') {
+                    return $query;
+                }
+
+                // Разбиваем на слова, отбрасываем слишком короткие (<3)
+                $words = array_values(array_filter(explode(' ', $normalized), function ($w) {
+                    return mb_strlen($w) >= 3;
+                }));
+
                 if (empty($words)) {
                     return $query;
                 }
-                
+
                 // Ищем заказы, где каждое слово найдено в любом из полей
                 $query->where(function ($subQuery) use ($words) {
                     foreach ($words as $word) {
                         $subQuery->where(function ($wordQuery) use ($word) {
                             $wordQuery->whereHas('client', function ($q) use ($word) {
-                                $q->where('name', 'like', "%$word%");
+                                $q->where('name', 'like', "%{$word}%");
                             })
                             ->orWhereHas('pet', function ($q) use ($word) {
-                                $q->where('name', 'like', "%$word%");
+                                $q->where('name', 'like', "%{$word}%");
                             })
                             ->orWhereHas('manager', function ($q) use ($word) {
-                                $q->where('name', 'like', "%$word%");
+                                $q->where('name', 'like', "%{$word}%");
                             })
-                            ->orWhere('notes', 'like', "%$word%");
+                            // Поиск по notes только для слов длиной >=3 (фильтр уже применён)
+                            ->orWhere('notes', 'like', "%{$word}%");
                         });
                     }
                 });

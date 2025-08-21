@@ -20,6 +20,10 @@ return new class extends Migration
             $table->rememberToken();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('email'); // Быстрый поиск по email
+            $table->index('is_active'); // Быстрый поиск по активности
         });
     }
 

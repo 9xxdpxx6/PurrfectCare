@@ -19,6 +19,12 @@ return new class extends Migration
             $table->date('administered_at');
             $table->date('next_due')->nullable();
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('pet_id'); // Быстрый поиск вакцинаций питомца
+            $table->index('veterinarian_id'); // Быстрый поиск вакцинаций ветеринара
+            $table->index('administered_at'); // Быстрый поиск по дате введения
+            $table->index('next_due'); // Быстрый поиск предстоящих вакцинаций
         });
     }
 

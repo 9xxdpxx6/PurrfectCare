@@ -13,8 +13,16 @@ class DashboardDataService
      */
     public function getTodayVisits()
     {
-        return Visit::whereDate('starts_at', Carbon::today())
-            ->with(['pet.client', 'schedule.veterinarian', 'status'])
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        return Visit::select(['id', 'starts_at', 'pet_id', 'schedule_id', 'status_id'])
+            ->whereDate('starts_at', Carbon::today())
+            ->with([
+                'pet:id,name,client_id',
+                'pet.client:id,name,email',
+                'schedule:id,veterinarian_id',
+                'schedule.veterinarian:id,name',
+                'status:id,name'
+            ])
             ->orderBy('starts_at')
             ->get();
     }
@@ -24,8 +32,16 @@ class DashboardDataService
      */
     public function getTomorrowVisits($limit = 5)
     {
-        return Visit::whereDate('starts_at', Carbon::tomorrow())
-            ->with(['pet.client', 'schedule.veterinarian', 'status'])
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        return Visit::select(['id', 'starts_at', 'pet_id', 'schedule_id', 'status_id'])
+            ->whereDate('starts_at', Carbon::tomorrow())
+            ->with([
+                'pet:id,name,client_id',
+                'pet.client:id,name,email',
+                'schedule:id,veterinarian_id',
+                'schedule.veterinarian:id,name',
+                'status:id,name'
+            ])
             ->orderBy('starts_at')
             ->limit($limit)
             ->get();
@@ -36,7 +52,13 @@ class DashboardDataService
      */
     public function getRecentOrders($limit = 5)
     {
-        return Order::with(['client', 'pet', 'status'])
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        return Order::select(['id', 'client_id', 'pet_id', 'status_id', 'total', 'created_at'])
+            ->with([
+                'client:id,name,email',
+                'pet:id,name',
+                'status:id,name'
+            ])
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();

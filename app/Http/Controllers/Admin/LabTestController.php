@@ -63,9 +63,22 @@ class LabTestController extends AdminController
         }
         
         $filter = app(LabTestFilter::class, ['queryParams' => $queryParams]);
-        $query = $this->model::with([
-            'pet.client', 'veterinarian', 'labTestType', 'results.labTestParam'
-        ])->filter($filter);
+        
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $query = $this->model::select([
+                'id', 'pet_id', 'veterinarian_id', 'lab_test_type_id', 'received_at', 'completed_at',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'pet:id,name,client_id',
+                'pet.client:id,name,email',
+                'veterinarian:id,name,email',
+                'labTestType:id,name',
+                'results:id,lab_test_id,lab_test_param_id,value,notes',
+                'results.labTestParam:id,name,unit,normal_range'
+            ])
+            ->filter($filter);
+            
         $items = $query->paginate(25)->withQueryString();
         
         return view("admin.{$this->viewPath}.index", compact('items'));
@@ -73,7 +86,10 @@ class LabTestController extends AdminController
 
     public function create(): View
     {
-        $labTestTypes = LabTestType::with('params')->get();
+        // Оптимизация: используем select для выбора только нужных полей
+        $labTestTypes = LabTestType::select(['id', 'name', 'description'])
+            ->with(['params:id,name,unit,normal_range'])
+            ->get();
         
         // Получаем ID питомца из параметра запроса
         $selectedPetId = request('pet');
@@ -111,20 +127,45 @@ class LabTestController extends AdminController
 
     public function show($id): View
     {
-        $item = $this->model::with([
-            'pet.client', 'veterinarian', 'labTestType', 'results.labTestParam'
-        ])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'pet_id', 'veterinarian_id', 'lab_test_type_id', 'received_at', 'completed_at',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'pet:id,name,client_id,birthdate,gender',
+                'pet.client:id,name,email,phone',
+                'veterinarian:id,name,email,phone',
+                'labTestType:id,name,description',
+                'results:id,lab_test_id,lab_test_param_id,value,notes,created_at',
+                'results.labTestParam:id,name,unit,normal_range,description'
+            ])
+            ->findOrFail($id);
         
         return view("admin.{$this->viewPath}.show", compact('item'));
     }
 
     public function edit($id): View
     {
-        $item = $this->model::with([
-            'pet.client', 'veterinarian', 'labTestType', 'results.labTestParam'
-        ])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'pet_id', 'veterinarian_id', 'lab_test_type_id', 'received_at', 'completed_at',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'pet:id,name,client_id',
+                'pet.client:id,name,email',
+                'veterinarian:id,name,email',
+                'labTestType:id,name,description',
+                'results:id,lab_test_id,lab_test_param_id,value,notes',
+                'results.labTestParam:id,name,unit,normal_range'
+            ])
+            ->findOrFail($id);
         
-        $labTestTypes = LabTestType::with('params')->get();
+        // Оптимизация: используем select для выбора только нужных полей
+        $labTestTypes = LabTestType::select(['id', 'name', 'description'])
+            ->with(['params:id,name,unit,normal_range'])
+            ->get();
         
         return view("admin.{$this->viewPath}.edit", compact('item', 'labTestTypes'));
     }
@@ -134,7 +175,12 @@ class LabTestController extends AdminController
         try {
             DB::beginTransaction();
             
-            $labTest = $this->model::findOrFail($id);
+            // Оптимизация: используем select для выбора только нужных полей
+            $labTest = $this->model::select([
+                    'id', 'pet_id', 'veterinarian_id', 'lab_test_type_id', 'received_at', 'completed_at'
+                ])
+                ->findOrFail($id);
+                
             $validated = $request->validated();
             
             $labTest->update([
@@ -193,7 +239,15 @@ class LabTestController extends AdminController
         try {
             DB::beginTransaction();
             
-            $labTest = $this->model::findOrFail($id);
+            // Оптимизация: используем select для выбора только нужных полей
+            $labTest = $this->model::select([
+                    'id', 'lab_test_type_id', 'pet_id'
+                ])
+                ->with([
+                    'labTestType:id,name',
+                    'pet:id,name'
+                ])
+                ->findOrFail($id);
             
             // Убираем проверку зависимостей - результаты удаляются каскадно
             $labTestName = $labTest->labTestType->name ?? 'Неизвестный анализ';

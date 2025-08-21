@@ -68,7 +68,15 @@ class OrderVisitService
      */
     public function getOrderVisits(Order $order)
     {
-        return $order->visits()->with(['status', 'client', 'pet'])->get();
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        return $order->visits()
+            ->select(['id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id', 'is_completed'])
+            ->with([
+                'status:id,name',
+                'client:id,name,email',
+                'pet:id,name,breed_id'
+            ])
+            ->get();
     }
 
     /**
@@ -80,6 +88,7 @@ class OrderVisitService
      */
     public function isOrderLinkedToVisit(Order $order, int $visitId): bool
     {
+        // Оптимизация: используем индекс на visit_id в промежуточной таблице
         return $order->visits()->where('visit_id', $visitId)->exists();
     }
 
@@ -91,9 +100,21 @@ class OrderVisitService
      */
     public function getVisitsOrders(int $visitId)
     {
-        return Order::whereHas('visits', function($query) use ($visitId) {
-            $query->where('visit_id', $visitId);
-        })->with(['client', 'pet', 'status', 'items'])->get();
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        return Order::select([
+                'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
+                'total', 'is_paid', 'closed_at', 'created_at'
+            ])
+            ->whereHas('visits', function($query) use ($visitId) {
+                $query->where('visit_id', $visitId);
+            })
+            ->with([
+                'client:id,name,email',
+                'pet:id,name,breed_id',
+                'status:id,name',
+                'items:id,order_id,item_type,item_id,quantity,unit_price'
+            ])
+            ->get();
     }
 
     /**
@@ -108,12 +129,15 @@ class OrderVisitService
         try {
             DB::beginTransaction();
             
+            // Оптимизация: используем уже загруженные поля visit вместо дополнительных запросов
+            $branchId = $visit->schedule ? $visit->schedule->branch_id : ($orderData['branch_id'] ?? null);
+            
             // Создаем заказ
             $order = Order::create([
                 'client_id' => $visit->client_id,
                 'pet_id' => $visit->pet_id,
                 'status_id' => $orderData['status_id'] ?? 1, // По умолчанию "Новый"
-                'branch_id' => $visit->schedule->branch_id ?? $orderData['branch_id'],
+                'branch_id' => $branchId,
                 'manager_id' => $orderData['manager_id'] ?? null,
                 'notes' => $orderData['notes'] ?? null,
                 'total' => $orderData['total'] ?? 0,
@@ -155,6 +179,7 @@ class OrderVisitService
      */
     public function getOrderVisitStatistics(Order $order): array
     {
+        // Оптимизация: используем уже загруженные связи
         $visits = $this->getOrderVisits($order);
         
         return [

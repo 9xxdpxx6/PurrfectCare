@@ -29,6 +29,18 @@ class Order extends Model
         'closed_at' => 'datetime'
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'client_id',
+        'pet_id',
+        'status_id',
+        'branch_id',
+        'manager_id',
+        'closed_at'
+    ];
+
     protected $deleteDependencies = [
         // Убираем проверку на items - они будут удаляться каскадно
     ];

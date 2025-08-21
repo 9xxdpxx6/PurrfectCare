@@ -24,6 +24,15 @@ class OrderItem extends Model
         'unit_price' => 'decimal:2'
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'order_id',
+        'item_type',
+        'item_id'
+    ];
+
     protected $deleteDependencies = [
         // Убираем проверку на order - элементы заказа будут удаляться каскадно при удалении заказа
     ];

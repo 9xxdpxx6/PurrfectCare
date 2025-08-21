@@ -46,7 +46,13 @@ class OrderController extends AdminController
         
         // Если передан visit_id, получаем данные из приема
         if ($selectedVisitId && !$selectedClientId && !$selectedPetId) {
-            $visit = \App\Models\Visit::with(['client', 'pet'])->find($selectedVisitId);
+            // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+            $visit = \App\Models\Visit::select(['id', 'client_id', 'pet_id'])
+                ->with([
+                    'client:id,name,email',
+                    'pet:id,name,breed_id'
+                ])
+                ->find($selectedVisitId);
             if ($visit) {
                 $selectedClientId = $visit->client_id;
                 $selectedPetId = $visit->pet_id;
@@ -55,7 +61,10 @@ class OrderController extends AdminController
         
         // Если передан pet_id, но не передан client_id, получаем владельца питомца
         if ($selectedPetId && !$selectedClientId) {
-            $pet = Pet::with('client')->find($selectedPetId);
+            // Оптимизация: используем индекс на client_id и select для выбора нужных полей
+            $pet = Pet::select(['id', 'client_id'])
+                ->with(['client:id,name,email'])
+                ->find($selectedPetId);
             if ($pet && $pet->client) {
                 $selectedClientId = $pet->client->id;
             }
@@ -66,7 +75,16 @@ class OrderController extends AdminController
 
     public function edit($id): View
     {
-        $item = $this->model::with(['items.item'])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
+                'notes', 'total', 'is_paid', 'closed_at', 'created_at', 'updated_at'
+            ])
+            ->with([
+                'items:id,order_id,item_type,item_id,quantity,unit_price',
+                'items.item:id,name'
+            ])
+            ->findOrFail($id);
         return view("admin.{$this->viewPath}.edit", compact('item'));
     }
 
@@ -90,9 +108,22 @@ class OrderController extends AdminController
         }
         
         $filter = app(OrderFilter::class, ['queryParams' => $queryParams]);
-        $query = $this->model::with([
-            'client', 'pet', 'status', 'branch', 'manager', 'items.item', 'visits'
-        ])->filter($filter);
+        
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $query = $this->model::select([
+                'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
+                'total', 'is_paid', 'closed_at', 'created_at'
+            ])
+            ->with([
+                'client:id,name,email',
+                'pet:id,name,breed_id',
+                'status:id,name',
+                'branch:id,name',
+                'manager:id,name',
+                'items:id,order_id,item_type,item_id,quantity,unit_price',
+                'visits:id,client_id,pet_id,starts_at,status_id'
+            ])
+            ->filter($filter);
         
         // Если есть поиск и это число, сортируем результаты
         $search = $request->input('search');
@@ -108,10 +139,21 @@ class OrderController extends AdminController
 
     public function show($id): View
     {
-        $item = $this->model::with([
-            'client', 'pet', 'status', 'branch', 'manager',
-            'items.item', 'visits.status'
-        ])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
+                'notes', 'total', 'is_paid', 'closed_at', 'created_at', 'updated_at'
+            ])
+            ->with([
+                'client:id,name,email,phone,address',
+                'pet:id,name,breed_id,client_id,birthdate,gender',
+                'status:id,name',
+                'branch:id,name,address',
+                'manager:id,name,email',
+                'items:id,order_id,item_type,item_id,quantity,unit_price',
+                'visits:id,client_id,pet_id,starts_at,status_id,is_completed'
+            ])
+            ->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('item'));
     }
 

@@ -24,6 +24,17 @@ class LabTest extends Model
         'completed_at' => 'datetime'
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'pet_id',
+        'veterinarian_id',
+        'lab_test_type_id',
+        'received_at',
+        'completed_at'
+    ];
+
     protected $deleteDependencies = [
         // Убираем проверку на results - они будут удаляться каскадно
         'orders' => 'Невозможно удалить лабораторное исследование, так как оно используется в заказах',

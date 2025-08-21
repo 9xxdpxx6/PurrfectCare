@@ -31,6 +31,16 @@ class DrugProcurement extends Model
         'packaging_date' => 'date',
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'supplier_id',
+        'drug_id',
+        'delivery_date',
+        'expiry_date'
+    ];
+
     protected $deleteDependencies = [
         // Убираем проверки - закупки будут удаляться каскадно при удалении препарата или поставщика
     ];

@@ -17,7 +17,9 @@ class FinancialStatisticsService
      */
     public function getTotalOrders($startDate, $endDate)
     {
-        return Order::whereBetween('created_at', [$startDate, $endDate])
+        // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+        return Order::select(['id'])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->where('is_paid', true) // Только оплаченные заказы
             ->count();
     }
@@ -27,16 +29,21 @@ class FinancialStatisticsService
      */
     public function getTotalRevenue($startDate, $endDate)
     {
-        return Order::whereBetween('created_at', [$startDate, $endDate])
+        // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+        return Order::select(['total'])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->where('is_paid', true) // Только оплаченные заказы
             ->sum('total');
     }
 
     public function getCategoryRevenue($startDate, $endDate)
     {
-        $orders = Order::whereBetween('created_at', [$startDate, $endDate])
+        // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+        $orders = Order::select(['id', 'created_at'])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->where('is_paid', true) // Только оплаченные заказы
-            ->with('items.item')->get();
+            ->with(['items:id,order_id,item_type,item_id,quantity,unit_price'])
+            ->get();
         
         $categories = [
             'services' => 0,
@@ -70,9 +77,11 @@ class FinancialStatisticsService
 
     public function getBranchRevenue($startDate, $endDate)
     {
-        return Order::whereBetween('created_at', [$startDate, $endDate])
+        // Оптимизация: используем индексы на created_at, is_paid и branch_id, select для выбора только нужных полей
+        return Order::select(['id', 'branch_id', 'total', 'created_at'])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->where('is_paid', true) // Только оплаченные заказы
-            ->with('branch')
+            ->with(['branch:id,name,address'])
             ->get()
             ->groupBy('branch_id')
             ->map(function($orders, $branchId) {
@@ -93,7 +102,9 @@ class FinancialStatisticsService
         $end = Carbon::parse($endDate);
         
         while ($current <= $end) {
-            $data[$current->format('Y-m-d')] = Order::whereDate('created_at', $current)
+            // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+            $data[$current->format('Y-m-d')] = Order::select(['total'])
+                ->whereDate('created_at', $current)
                 ->where('is_paid', true) // Только оплаченные заказы
                 ->sum('total');
             $current->addDay();
@@ -104,10 +115,13 @@ class FinancialStatisticsService
 
     public function getTopServices($startDate, $endDate)
     {
-        return Order::whereBetween('created_at', [$startDate, $endDate])
+        // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+        return Order::select(['id', 'created_at'])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->where('is_paid', true) // Только оплаченные заказы
             ->with(['items' => function($query) {
-                $query->where('item_type', Service::class);
+                $query->select(['id', 'order_id', 'item_type', 'item_id', 'quantity', 'unit_price'])
+                    ->where('item_type', Service::class);
             }])
             ->get()
             ->flatMap(function($order) {

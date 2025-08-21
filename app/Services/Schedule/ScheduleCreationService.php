@@ -183,7 +183,12 @@ class ScheduleCreationService
      */
     public function updateSchedule(int $id, array $validated): Schedule
     {
-        $schedule = Schedule::findOrFail($id);
+        // Оптимизация: используем select для выбора только нужных полей
+        $schedule = Schedule::select([
+                'id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at',
+                'created_at', 'updated_at'
+            ])
+            ->findOrFail($id);
         $schedule->update($validated);
         return $schedule;
     }
@@ -196,7 +201,8 @@ class ScheduleCreationService
      */
     public function deleteSchedule(int $id): bool
     {
-        $schedule = Schedule::findOrFail($id);
+        // Оптимизация: используем select для выбора только нужных полей
+        $schedule = Schedule::select(['id'])->findOrFail($id);
         return $schedule->delete();
     }
 }

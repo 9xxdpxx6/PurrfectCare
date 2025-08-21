@@ -30,12 +30,23 @@ class DrugProcurementController extends AdminController
     {
         $filter = app()->make(DrugProcurementFilter::class, ['queryParams' => array_filter($request->all())]);
 
-        $query = $this->model::with(['drug', 'supplier']);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $query = $this->model::select([
+                'id', 'drug_id', 'supplier_id', 'quantity', 'unit_price', 'delivery_date', 'expiry_date',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'drug:id,name,description,unit_id',
+                'supplier:id,name,contact_person,phone'
+            ]);
+            
         $filter->apply($query);
         
         $items = $query->paginate(25)->appends($request->query());
-        $drugs = Drug::orderBy('name')->get();
-        $suppliers = Supplier::orderBy('name')->get();
+        
+        // Оптимизация: используем select для выбора только нужных полей
+        $drugs = Drug::select(['id', 'name', 'description'])->orderBy('name')->get();
+        $suppliers = Supplier::select(['id', 'name', 'contact_person', 'phone'])->orderBy('name')->get();
         
         return view("admin.{$this->viewPath}.index", compact('items', 'drugs', 'suppliers'));
     }
@@ -50,13 +61,33 @@ class DrugProcurementController extends AdminController
 
     public function edit($id): View
     {
-        $item = $this->model::with(['drug.unit', 'supplier'])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'drug_id', 'supplier_id', 'quantity', 'unit_price', 'delivery_date', 'expiry_date',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'drug:id,name,description,unit_id',
+                'drug.unit:id,name,abbreviation',
+                'supplier:id,name,contact_person,phone,email'
+            ])
+            ->findOrFail($id);
         return view("admin.{$this->viewPath}.edit", compact('item'));
     }
 
     public function show($id): View
     {
-        $item = $this->model::with(['drug.unit', 'supplier'])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'drug_id', 'supplier_id', 'quantity', 'unit_price', 'delivery_date', 'expiry_date',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'drug:id,name,description,unit_id,manufacturer',
+                'drug.unit:id,name,abbreviation',
+                'supplier:id,name,contact_person,phone,email,address'
+            ])
+            ->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('item'));
     }
 
@@ -70,7 +101,8 @@ class DrugProcurementController extends AdminController
                 $procurement = $this->model::create($validated);
                 
                 // Увеличиваем количество на складе
-                $drug = Drug::find($validated['drug_id']);
+                // Оптимизация: используем select для выбора только нужных полей
+                $drug = Drug::select(['id', 'quantity'])->find($validated['drug_id']);
                 $drug->increment('quantity', $validated['quantity']);
             });
 
@@ -104,7 +136,9 @@ class DrugProcurementController extends AdminController
 
             DB::transaction(function () use ($validated, $id) {
                 // Получаем старую поставку
-                $oldProcurement = $this->model::findOrFail($id);
+                // Оптимизация: используем select для выбора только нужных полей
+                $oldProcurement = $this->model::select(['id', 'drug_id', 'quantity'])
+                    ->findOrFail($id);
                 $oldQuantity = $oldProcurement->quantity;
                 $oldDrugId = $oldProcurement->drug_id;
                 
@@ -114,17 +148,20 @@ class DrugProcurementController extends AdminController
                 // Если изменился препарат или количество
                 if ($oldDrugId != $validated['drug_id'] || $oldQuantity != $validated['quantity']) {
                     // Откатываем старое изменение (уменьшаем количество старого препарата)
-                    $oldDrug = Drug::find($oldDrugId);
+                    // Оптимизация: используем select для выбора только нужных полей
+                    $oldDrug = Drug::select(['id', 'quantity'])->find($oldDrugId);
                     $oldDrug->decrement('quantity', $oldQuantity);
                     
                     // Применяем новое изменение (увеличиваем количество нового препарата)
-                    $newDrug = Drug::find($validated['drug_id']);
+                    // Оптимизация: используем select для выбора только нужных полей
+                    $newDrug = Drug::select(['id', 'quantity'])->find($validated['drug_id']);
                     $newDrug->increment('quantity', $validated['quantity']);
                 } else {
                     // Если препарат не изменился, но изменилось количество
                     $quantityDiff = $validated['quantity'] - $oldQuantity;
                     if ($quantityDiff != 0) {
-                        $drug = Drug::find($validated['drug_id']);
+                        // Оптимизация: используем select для выбора только нужных полей
+                        $drug = Drug::select(['id', 'quantity'])->find($validated['drug_id']);
                         $drug->increment('quantity', $quantityDiff);
                     }
                 }
@@ -158,7 +195,8 @@ class DrugProcurementController extends AdminController
     public function destroy($id): RedirectResponse
     {
         try {
-            $procurement = $this->model::findOrFail($id);
+            // Оптимизация: используем select для выбора только нужных полей
+            $procurement = $this->model::select(['id', 'drug_id', 'quantity'])->findOrFail($id);
             
             // Убираем проверку зависимостей - поставка не имеет зависимостей для проверки
             
@@ -170,7 +208,8 @@ class DrugProcurementController extends AdminController
                 $procurement->delete();
                 
                 // Уменьшаем количество на складе
-                $drug = Drug::find($drugId);
+                // Оптимизация: используем select для выбора только нужных полей
+                $drug = Drug::select(['id', 'quantity'])->find($drugId);
                 $drug->decrement('quantity', $quantity);
             });
 

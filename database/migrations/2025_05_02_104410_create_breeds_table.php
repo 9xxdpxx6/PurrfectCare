@@ -16,6 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('species_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск пород по названию
+            $table->index('species_id'); // Быстрый поиск пород по виду
         });
     }
 

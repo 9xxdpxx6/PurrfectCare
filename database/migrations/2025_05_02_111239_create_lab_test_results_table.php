@@ -18,6 +18,12 @@ return new class extends Migration
             $table->decimal('value', 8, 2)->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('lab_test_id'); // Быстрый поиск результатов по исследованию
+            $table->index('lab_test_param_id'); // Быстрый поиск результатов по параметру
+            $table->index('value'); // Быстрый поиск результатов по значению
+            // Удалён индекс по notes: TEXT не индексируется без длины; для MySQL нельзя
         });
     }
 

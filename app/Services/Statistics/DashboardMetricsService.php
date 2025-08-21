@@ -32,7 +32,8 @@ class DashboardMetricsService
      */
     private function getTotalClients($startDate, $endDate)
     {
-        return User::whereBetween('created_at', [$startDate, $endDate])->count();
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        return User::select(['id'])->whereBetween('created_at', [$startDate, $endDate])->count();
     }
 
     /**
@@ -40,7 +41,8 @@ class DashboardMetricsService
      */
     private function getTotalPets($startDate, $endDate)
     {
-        return Pet::whereBetween('created_at', [$startDate, $endDate])->count();
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        return Pet::select(['id'])->whereBetween('created_at', [$startDate, $endDate])->count();
     }
 
     /**
@@ -48,7 +50,8 @@ class DashboardMetricsService
      */
     private function getTotalBranches()
     {
-        return Branch::count();
+        // Оптимизация: используем select для выбора только нужных полей
+        return Branch::select(['id'])->count();
     }
 
     /**
@@ -56,7 +59,8 @@ class DashboardMetricsService
      */
     private function getTotalEmployees()
     {
-        return Employee::count();
+        // Оптимизация: используем select для выбора только нужных полей
+        return Employee::select(['id'])->count();
     }
 
     /**
@@ -72,14 +76,17 @@ class DashboardMetricsService
      */
     private function calculateConversionRate($startDate, $endDate)
     {
-        $totalVisits = Visit::whereBetween('starts_at', [$startDate, $endDate])->count();
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $totalVisits = Visit::select(['id'])->whereBetween('starts_at', [$startDate, $endDate])->count();
         
         if ($totalVisits === 0) {
             return 0;
         }
         
         // Считаем количество уникальных приёмов, которые связаны с заказами
-        $visitsWithOrders = Visit::whereBetween('starts_at', [$startDate, $endDate])
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $visitsWithOrders = Visit::select(['id'])
+            ->whereBetween('starts_at', [$startDate, $endDate])
             ->whereHas('orders')
             ->count();
         

@@ -104,9 +104,15 @@ class WeekStatisticsService
             
             // Проверяем, что дата попадает в текущий месяц
             if ($targetDate->between($startOfMonth, $endOfMonth)) {
-                $totalVisits += Visit::whereDate('starts_at', $targetDate)->count();
-                $totalOrders += Order::whereDate('created_at', $targetDate)->count();
-                $totalRevenue += Order::whereDate('created_at', $targetDate)
+                // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+                $totalVisits += Visit::select(['id'])->whereDate('starts_at', $targetDate)->count();
+                
+                // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+                $totalOrders += Order::select(['id'])->whereDate('created_at', $targetDate)->count();
+                
+                // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+                $totalRevenue += Order::select(['total'])
+                    ->whereDate('created_at', $targetDate)
                     ->where('is_paid', true)
                     ->sum('total');
                 $weekCount++;
@@ -176,7 +182,9 @@ class WeekStatisticsService
         $current = $startOfPeriod->copy();
         
         while ($current <= $endOfPeriod) {
-            $revenue = Order::whereDate('created_at', $current)
+            // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
+            $revenue = Order::select(['total'])
+                ->whereDate('created_at', $current)
                 ->where('is_paid', true)
                 ->sum('total');
             
@@ -184,8 +192,10 @@ class WeekStatisticsService
                 $topDays[] = [
                     'date' => $current->copy(),
                     'revenue' => $revenue,
-                    'visits' => Visit::whereDate('starts_at', $current)->count(),
-                    'orders' => Order::whereDate('created_at', $current)->count(),
+                    // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+                    'visits' => Visit::select(['id'])->whereDate('starts_at', $current)->count(),
+                    // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+                    'orders' => Order::select(['id'])->whereDate('created_at', $current)->count(),
                 ];
             }
             

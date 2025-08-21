@@ -18,6 +18,12 @@ return new class extends Migration
             $table->string('custom_symptom')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('visit_id'); // Быстрый поиск симптомов по приёму
+            $table->index('dictionary_symptom_id'); // Быстрый поиск симптомов по словарю
+            $table->index('custom_symptom'); // Быстрый поиск симптомов по пользовательскому симптому
+            // Удалён индекс по notes: TEXT не индексируется без длины; для MySQL нельзя
         });
     }
 

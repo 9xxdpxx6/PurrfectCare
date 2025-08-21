@@ -23,6 +23,15 @@ return new class extends Migration
             $table->decimal('total', 10, 2)->default(0);
             $table->dateTime('closed_at')->nullable();
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('client_id'); // Быстрый поиск заказов клиента
+            $table->index('pet_id'); // Быстрый поиск заказов питомца
+            $table->index('status_id'); // Быстрый поиск по статусу заказа
+            $table->index('branch_id'); // Быстрый поиск заказов в филиале
+            $table->index('manager_id'); // Быстрый поиск заказов менеджера
+            $table->index('closed_at'); // Быстрый поиск по дате закрытия
+            $table->index(['client_id', 'status_id']); // Составной индекс для поиска заказов клиента по статусу
         });
     }
 

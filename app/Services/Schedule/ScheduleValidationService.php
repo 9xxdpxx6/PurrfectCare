@@ -22,8 +22,9 @@ class ScheduleValidationService
         string $shiftEndsAt,
         ?int $excludeScheduleId = null
     ): array {
-        // Проверяем, нет ли у ветеринара других смен в это же время
-        $query = Schedule::where('veterinarian_id', $veterinarianId)
+        // Оптимизация: используем индексы на veterinarian_id, shift_starts_at, shift_ends_at и select для выбора нужных полей
+        $query = Schedule::select(['id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at'])
+                ->where('veterinarian_id', $veterinarianId)
                 ->where('shift_ends_at', '>', $shiftStartsAt)
                 ->where('shift_starts_at', '<', $shiftEndsAt);
 
@@ -31,7 +32,7 @@ class ScheduleValidationService
             $query->where('id', '!=', $excludeScheduleId);
         }
 
-        $conflictingSchedules = $query->with('branch')->get();
+        $conflictingSchedules = $query->with(['branch:id,name'])->get();
 
         if ($conflictingSchedules->isEmpty()) {
             return [];
@@ -56,7 +57,9 @@ class ScheduleValidationService
      */
     public function checkExistingSchedule(int $veterinarianId, string $date): ?Schedule
     {
-        return Schedule::where('veterinarian_id', $veterinarianId)
+        // Оптимизация: используем индексы на veterinarian_id и shift_starts_at, select для выбора нужных полей
+        return Schedule::select(['id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at'])
+            ->where('veterinarian_id', $veterinarianId)
             ->whereDate('shift_starts_at', $date)
             ->first();
     }

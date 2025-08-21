@@ -34,25 +34,29 @@ class DateRangeService
         $dates = [];
         
         // Заказы
-        $earliestOrder = Order::orderBy('created_at')->first();
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        $earliestOrder = Order::select(['created_at'])->orderBy('created_at')->first();
         if ($earliestOrder) {
             $dates[] = $earliestOrder->created_at;
         }
         
         // Приемы
-        $earliestVisit = Visit::orderBy('starts_at')->first();
+        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
+        $earliestVisit = Visit::select(['starts_at'])->orderBy('starts_at')->first();
         if ($earliestVisit) {
             $dates[] = $earliestVisit->starts_at;
         }
         
         // Клиенты
-        $earliestUser = User::orderBy('created_at')->first();
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        $earliestUser = User::select(['created_at'])->orderBy('created_at')->first();
         if ($earliestUser) {
             $dates[] = $earliestUser->created_at;
         }
         
         // Питомцы
-        $earliestPet = Pet::orderBy('created_at')->first();
+        // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
+        $earliestPet = Pet::select(['created_at'])->orderBy('created_at')->first();
         if ($earliestPet) {
             $dates[] = $earliestPet->created_at;
         }

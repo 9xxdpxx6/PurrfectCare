@@ -19,6 +19,13 @@ return new class extends Migration
             $table->dateTime('received_at');
             $table->dateTime('completed_at')->nullable();
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('pet_id'); // Быстрый поиск тестов питомца
+            $table->index('veterinarian_id'); // Быстрый поиск тестов ветеринара
+            $table->index('lab_test_type_id'); // Быстрый поиск по типу теста
+            $table->index('received_at'); // Быстрый поиск по дате получения
+            $table->index('completed_at'); // Быстрый поиск завершенных тестов
         });
     }
 

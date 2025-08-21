@@ -38,13 +38,16 @@ class VisitController extends AdminController
 
     public function create() : View
     {
-        $clients = User::all();
-        $pets = Pet::all();
-        $schedules = Schedule::all();
-        $statuses = Status::all();
-        $symptoms = DictionarySymptom::all();
-        $diagnoses = DictionaryDiagnosis::all();
-        $default_status = Status::where('name', 'Новый')->first();
+        // Оптимизация: используем select для выбора только нужных полей
+        $clients = User::select(['id', 'name', 'email', 'phone'])->get();
+        $pets = Pet::select(['id', 'name', 'breed_id', 'client_id'])->get();
+        $schedules = Schedule::select(['id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at'])->get();
+        $statuses = Status::select(['id', 'name'])->get();
+        $symptoms = DictionarySymptom::select(['id', 'name'])->get();
+        $diagnoses = DictionaryDiagnosis::select(['id', 'name'])->get();
+        
+        // Оптимизация: используем select для выбора только нужных полей
+        $default_status = Status::select(['id', 'name'])->where('name', 'Новый')->first();
         $default_status_id = $default_status ? $default_status->id : null;
         
         // Получаем ID клиента, питомца и расписания из параметров запроса
@@ -54,7 +57,10 @@ class VisitController extends AdminController
         
         // Если передан pet_id, но не передан client_id, получаем владельца питомца
         if ($selectedPetId && !$selectedClientId) {
-            $pet = Pet::with('client')->find($selectedPetId);
+            // Оптимизация: используем индекс на client_id и select для выбора нужных полей
+            $pet = Pet::select(['id', 'client_id'])
+                ->with(['client:id,name,email'])
+                ->find($selectedPetId);
             if ($pet && $pet->client) {
                 $selectedClientId = $pet->client->id;
             }
@@ -68,15 +74,26 @@ class VisitController extends AdminController
 
     public function edit($id) : View
     {
-        $item = $this->model::with([
-            'diagnoses.dictionaryDiagnosis', 'symptoms.dictionarySymptom'
-        ])->findOrFail($id);
-        $clients = User::all();
-        $pets = Pet::all();
-        $schedules = Schedule::all();
-        $statuses = Status::all();
-        $symptoms = DictionarySymptom::all();
-        $diagnoses = DictionaryDiagnosis::all();
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
+                'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
+            ])
+            ->with([
+                'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis,treatment_plan',
+                'diagnoses.dictionaryDiagnosis:id,name',
+                'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom,notes',
+                'symptoms.dictionarySymptom:id,name'
+            ])
+            ->findOrFail($id);
+            
+        // Оптимизация: используем select для выбора только нужных полей
+        $clients = User::select(['id', 'name', 'email', 'phone'])->get();
+        $pets = Pet::select(['id', 'name', 'breed_id', 'client_id'])->get();
+        $schedules = Schedule::select(['id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at'])->get();
+        $statuses = Status::select(['id', 'name'])->get();
+        $symptoms = DictionarySymptom::select(['id', 'name'])->get();
+        $diagnoses = DictionaryDiagnosis::select(['id', 'name'])->get();
         
         // Подготавливаем выбранные симптомы
         $selectedSymptoms = $item->symptoms->map(function($symptom) {
@@ -138,11 +155,25 @@ class VisitController extends AdminController
         }
         
         $filter = app(VisitFilter::class, ['queryParams' => $queryParams]);
-        $query = $this->model::with([
-            'client', 'pet', 'schedule', 'status',
-            'symptoms.dictionarySymptom', 'diagnoses.dictionaryDiagnosis',
-            'orders'
-        ])->filter($filter);
+        
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $query = $this->model::select([
+                'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
+                'complaints', 'notes', 'is_completed', 'created_at'
+            ])
+            ->with([
+                'client:id,name,email',
+                'pet:id,name,breed_id',
+                'schedule:id,veterinarian_id,branch_id,shift_starts_at',
+                'status:id,name',
+                'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom',
+                'symptoms.dictionarySymptom:id,name',
+                'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis',
+                'diagnoses.dictionaryDiagnosis:id,name',
+                'orders:id,client_id,pet_id,total,is_paid'
+            ])
+            ->filter($filter);
+            
         $items = $query->paginate(25)->withQueryString();
         
         // Подготавливаем данные для каждого приёма
@@ -152,18 +183,32 @@ class VisitController extends AdminController
             $visit->diagnoses_display = $formattedData['diagnoses']['display'];
         }
         
-        $statuses = Status::orderBy('name')->get();
+        // Оптимизация: используем select для выбора только нужных полей
+        $statuses = Status::select(['id', 'name'])->orderBy('name')->get();
         
         return view("admin.{$this->viewPath}.index", compact('items', 'statuses'));
     }
 
     public function show($id) : View
     {
-        $item = $this->model::with([
-            'client', 'pet', 'schedule.veterinarian', 'status',
-            'symptoms.dictionarySymptom', 'diagnoses.dictionaryDiagnosis',
-            'orders.status'
-        ])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
+                'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
+            ])
+            ->with([
+                'client:id,name,email,phone,address',
+                'pet:id,name,breed_id,client_id,birthdate,gender',
+                'schedule:id,veterinarian_id,branch_id,shift_starts_at,shift_ends_at',
+                'schedule.veterinarian:id,name,email',
+                'status:id,name',
+                'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom,notes',
+                'symptoms.dictionarySymptom:id,name',
+                'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis,treatment_plan',
+                'diagnoses.dictionaryDiagnosis:id,name',
+                'orders:id,client_id,pet_id,status_id,total,is_paid,closed_at'
+            ])
+            ->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('item'));
     }
 

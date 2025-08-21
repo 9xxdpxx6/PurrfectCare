@@ -19,9 +19,15 @@ return new class extends Migration
             $table->date('expiry_date');
             $table->date('manufacture_date');
             $table->date('packaging_date')->nullable();
-            $table->decimal('price', 8, 2);
+            $table->decimal('price', 10, 2);
             $table->integer('quantity');
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('supplier_id'); // Быстрый поиск закупок поставщика
+            $table->index('drug_id'); // Быстрый поиск закупок лекарства
+            $table->index('delivery_date'); // Быстрый поиск по дате доставки
+            $table->index('expiry_date'); // Быстрый поиск по сроку годности
         });
     }
 

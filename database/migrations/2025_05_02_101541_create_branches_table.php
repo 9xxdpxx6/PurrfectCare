@@ -19,6 +19,10 @@ return new class extends Migration
             $table->time('opens_at');
             $table->time('closes_at');
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск филиалов по названию
+            $table->index('phone'); // Быстрый поиск филиалов по телефону
         });
     }
 

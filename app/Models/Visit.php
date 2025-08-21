@@ -25,6 +25,17 @@ class Visit extends Model
         'starts_at' => 'datetime'
     ];
 
+    /**
+     * Индексы для оптимизации производительности
+     */
+    protected $indexes = [
+        'client_id',
+        'pet_id',
+        'schedule_id',
+        'status_id',
+        'starts_at',
+    ];
+
     protected $deleteDependencies = [
         // Убираем проверки на diagnoses и symptoms - они будут удаляться каскадно
     ];

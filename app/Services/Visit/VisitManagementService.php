@@ -96,7 +96,12 @@ class VisitManagementService
         try {
             DB::beginTransaction();
 
-            $visit = Visit::findOrFail($id);
+            // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+            $visit = Visit::select([
+                    'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
+                    'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
+                ])
+                ->findOrFail($id);
 
             // Обработка полей даты и времени
             $this->dateTimeProcessingService->processDateTimeFields($request);
@@ -149,7 +154,8 @@ class VisitManagementService
         try {
             DB::beginTransaction();
 
-            $visit = Visit::findOrFail($id);
+            // Оптимизация: используем select для выбора только нужных полей
+            $visit = Visit::select(['id'])->findOrFail($id);
             
             // Симптомы и диагнозы удалятся каскадно
             $visit->delete();
@@ -182,11 +188,24 @@ class VisitManagementService
      */
     public function getVisitWithDetails(int $id): Visit
     {
-        return Visit::with([
-            'client', 'pet', 'schedule.veterinarian', 'status',
-            'symptoms.dictionarySymptom', 'diagnoses.dictionaryDiagnosis',
-            'orders.status'
-        ])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        return Visit::select([
+                'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
+                'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
+            ])
+            ->with([
+                'client:id,name,email,phone',
+                'pet:id,name,breed_id,client_id',
+                'schedule:id,veterinarian_id,branch_id,shift_starts_at,shift_ends_at',
+                'schedule.veterinarian:id,name,email',
+                'status:id,name',
+                'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom',
+                'symptoms.dictionarySymptom:id,name',
+                'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis,treatment_plan',
+                'diagnoses.dictionaryDiagnosis:id,name',
+                'orders:id,client_id,pet_id,status_id,total,is_paid'
+            ])
+            ->findOrFail($id);
     }
 
     /**

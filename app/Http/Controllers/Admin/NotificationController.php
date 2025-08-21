@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\NotificationService;
+use App\Http\Filters\NotificationFilter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use App\Models\Notification;
@@ -25,38 +26,29 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Notification::where('notifiable_type', \App\Models\Employee::class)
-                ->where('notifiable_id', Auth::guard('admin')->id());
-
-            // Фильтр по статусу
-            if ($request->filled('status')) {
-                if ($request->status === 'unread') {
-                    $query->whereNull('read_at');
-                } elseif ($request->status === 'read') {
-                    $query->whereNotNull('read_at');
-                }
-            }
-
-            // Фильтр по типу
-            if ($request->filled('type')) {
-                $query->whereJsonContains('data->type', $request->type);
-            }
-
-            // Фильтр по дате
-            if ($request->filled('date')) {
-                $query->whereDate('created_at', $request->date);
-            }
-
-            $notifications = $query->orderBy('created_at', 'desc')
-                ->paginate($request->get('per_page', 20));
+            $filters = $request->only(['status', 'type', 'dateFrom', 'dateTo', 'sort']);
+            $perPage = $request->get('per_page', 25);
+            
+            // Отладочная информация
+            \Log::info('NotificationController::index', [
+                'request_all' => $request->all(),
+                'filters' => $filters,
+                'per_page' => $perPage,
+                'user_id' => Auth::guard('admin')->id() // Добавляем ID пользователя для отслеживания
+            ]);
+            
+            // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
+            $result = $this->notificationService->getAllNotifications($perPage, $filters);
 
             return response()->json([
-                'notifications' => $notifications->items(),
+                'notifications' => $result->items(),
                 'pagination' => [
-                    'current_page' => $notifications->currentPage(),
-                    'last_page' => $notifications->lastPage(),
-                    'per_page' => $notifications->perPage(),
-                    'total' => $notifications->total(),
+                    'current_page' => $result->currentPage(),
+                    'last_page' => $result->lastPage(),
+                    'per_page' => $result->perPage(),
+                    'total' => $result->total(),
+                    'from' => $result->firstItem(),
+                    'to' => $result->lastItem(),
                 ]
             ]);
         }
@@ -69,6 +61,7 @@ class NotificationController extends Controller
      */
     public function getRecentNotifications(): JsonResponse
     {
+        // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
         $unreadCount = $this->notificationService->getUnreadCount();
         $notifications = $this->notificationService->getRecentNotifications(10);
 
@@ -83,7 +76,15 @@ class NotificationController extends Controller
      */
     public function markAsRead(string $notificationId): JsonResponse
     {
+        // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
         $success = $this->notificationService->markAsRead($notificationId);
+
+        // Логируем результат для отслеживания производительности
+        \Log::info('Notification marked as read', [
+            'notification_id' => $notificationId,
+            'user_id' => Auth::guard('admin')->id(),
+            'success' => $success
+        ]);
 
         return response()->json([
             'success' => $success
@@ -95,7 +96,14 @@ class NotificationController extends Controller
      */
     public function markAllAsRead(): JsonResponse
     {
+        // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
         $success = $this->notificationService->markAllAsRead();
+
+        // Логируем результат для отслеживания производительности
+        \Log::info('All notifications marked as read', [
+            'user_id' => Auth::guard('admin')->id(),
+            'success' => $success
+        ]);
 
         return response()->json([
             'success' => $success

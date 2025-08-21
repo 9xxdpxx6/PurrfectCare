@@ -19,7 +19,8 @@ class VisitDateTimeProcessingService
     {
         if ($request->has('schedule_id') && $request->has('visit_time')) {
             try {
-                $schedule = Schedule::find($request->schedule_id);
+                // Оптимизация: используем select для выбора только нужных полей и индексы на id
+                $schedule = Schedule::select(['id', 'shift_starts_at', 'shift_ends_at'])->find($request->schedule_id);
                 if ($schedule) {
                     $fullDateTime = $this->createFullDateTime($schedule, $request->visit_time);
                     
@@ -238,7 +239,9 @@ class VisitDateTimeProcessingService
         $start = Carbon::createFromFormat('H:i', $startTime);
         $end = $start->copy()->addMinutes($duration);
         
-        $query = \App\Models\Visit::where('schedule_id', $scheduleId)
+        // Оптимизация: используем индексы на schedule_id и starts_at, select для выбора нужных полей
+        $query = \App\Models\Visit::select(['id', 'starts_at'])
+            ->where('schedule_id', $scheduleId)
             ->where(function($q) use ($start, $end) {
                 $q->where(function($subQ) use ($start, $end) {
                     $subQ->where('starts_at', '<', $end)

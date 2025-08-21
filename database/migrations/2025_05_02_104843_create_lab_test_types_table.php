@@ -17,6 +17,10 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->default(0);
             $table->string('description')->nullable();
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск типов лабораторных исследований по названию
+            $table->index('price'); // Быстрый поиск типов лабораторных исследований по цене
         });
     }
 

@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId('branch_id')->constrained()->onDelete('cascade');
             $table->foreignId('service_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('branch_id'); // Быстрый поиск услуг филиала
+            $table->index('service_id'); // Быстрый поиск филиалов с услугой
         });
     }
 

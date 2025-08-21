@@ -50,24 +50,47 @@ class ScheduleController extends AdminController
     public function index(Request $request) : View
     {
         $filter = app(ScheduleFilter::class, ['queryParams' => $request->query()]);
-        $query = $this->model::with(['veterinarian', 'branch'])->filter($filter);
+        
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $query = $this->model::select([
+                'id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'veterinarian:id,name,email',
+                'branch:id,name,address'
+            ])
+            ->filter($filter);
+            
         $items = $query->paginate(25)->withQueryString();
         
-        $veterinarians = Employee::whereHas('specialties', function($query) {
-            $query->where('is_veterinarian', true);
-        })->orderBy('name')->get();
-        $branches = Branch::orderBy('name')->get();
-        $specialties = \App\Models\Specialty::orderBy('name')->get();
+        // Оптимизация: используем select для выбора только нужных полей
+        $veterinarians = Employee::select(['id', 'name', 'email'])
+            ->whereHas('specialties', function($query) {
+                $query->where('is_veterinarian', true);
+            })
+            ->orderBy('name')
+            ->get();
+            
+        $branches = Branch::select(['id', 'name', 'address'])->orderBy('name')->get();
+        
+        // Оптимизация: используем select для выбора только нужных полей
+        $specialties = \App\Models\Specialty::select(['id', 'name', 'is_veterinarian'])->orderBy('name')->get();
         
         return view("admin.{$this->viewPath}.index", compact('items', 'veterinarians', 'branches', 'specialties'));
     }
 
     public function create() : View
     {
-        $veterinarians = Employee::whereHas('specialties', function($query) {
-            $query->where('is_veterinarian', true);
-        })->orderBy('name')->get();
-        $branches = Branch::orderBy('name')->get();
+        // Оптимизация: используем select для выбора только нужных полей
+        $veterinarians = Employee::select(['id', 'name', 'email'])
+            ->whereHas('specialties', function($query) {
+                $query->where('is_veterinarian', true);
+            })
+            ->orderBy('name')
+            ->get();
+            
+        $branches = Branch::select(['id', 'name', 'address'])->orderBy('name')->get();
         
         // Получаем предвыбранного ветеринара из параметра запроса
         $selectedVeterinarian = request()->get('veterinarian_id');
@@ -75,7 +98,10 @@ class ScheduleController extends AdminController
         
         // Если выбран ветеринар, получаем его первый филиал
         if ($selectedVeterinarian) {
-            $employee = Employee::with('branches')->find($selectedVeterinarian);
+            // Оптимизация: используем select для выбора только нужных полей
+            $employee = Employee::select(['id'])
+                ->with(['branches:id,name'])
+                ->find($selectedVeterinarian);
             if ($employee && $employee->branches->count() > 0) {
                 $selectedBranch = $employee->branches->first()->id;
             }
@@ -112,17 +138,37 @@ class ScheduleController extends AdminController
 
     public function show($id) : View
     {
-        $item = $this->model::with(['veterinarian', 'branch'])->findOrFail($id);
+        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at',
+                'created_at', 'updated_at'
+            ])
+            ->with([
+                'veterinarian:id,name,email,phone',
+                'branch:id,name,address'
+            ])
+            ->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('item'));
     }
 
     public function edit($id) : View
     {
-        $item = $this->model::findOrFail($id);
-        $veterinarians = Employee::whereHas('specialties', function($query) {
-            $query->where('is_veterinarian', true);
-        })->orderBy('name')->get();
-        $branches = Branch::orderBy('name')->get();
+        // Оптимизация: используем select для выбора нужных полей
+        $item = $this->model::select([
+                'id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at',
+                'created_at', 'updated_at'
+            ])
+            ->findOrFail($id);
+            
+        // Оптимизация: используем select для выбора только нужных полей
+        $veterinarians = Employee::select(['id', 'name', 'email'])
+            ->whereHas('specialties', function($query) {
+                $query->where('is_veterinarian', true);
+            })
+            ->orderBy('name')
+            ->get();
+            
+        $branches = Branch::select(['id', 'name', 'address'])->orderBy('name')->get();
         return view("admin.{$this->viewPath}.edit", compact('item', 'veterinarians', 'branches'));
     }
 
@@ -168,10 +214,15 @@ class ScheduleController extends AdminController
      */
     public function createWeek() : View
     {
-        $veterinarians = Employee::whereHas('specialties', function($query) {
-            $query->where('is_veterinarian', true);
-        })->orderBy('name')->get();
-        $branches = Branch::orderBy('name')->get();
+        // Оптимизация: используем select для выбора только нужных полей
+        $veterinarians = Employee::select(['id', 'name', 'email'])
+            ->whereHas('specialties', function($query) {
+                $query->where('is_veterinarian', true);
+            })
+            ->orderBy('name')
+            ->get();
+            
+        $branches = Branch::select(['id', 'name', 'address'])->orderBy('name')->get();
         
         // Получаем предвыбранного ветеринара из параметра запроса
         $selectedVeterinarian = request()->get('veterinarian_id');
@@ -179,7 +230,10 @@ class ScheduleController extends AdminController
         
         // Если выбран ветеринар, получаем его первый филиал
         if ($selectedVeterinarian) {
-            $employee = Employee::with('branches')->find($selectedVeterinarian);
+            // Оптимизация: используем select для выбора только нужных полей
+            $employee = Employee::select(['id'])
+                ->with(['branches:id,name'])
+                ->find($selectedVeterinarian);
             if ($employee && $employee->branches->count() > 0) {
                 $selectedBranch = $employee->branches->first()->id;
             }

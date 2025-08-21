@@ -12,8 +12,10 @@ class ClientStatisticsService
     public function getClientsData($startDate, $endDate)
     {
         // Получаем всех клиентов, которые делали заказы в выбранном периоде
-        $clientsWithOrders = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->with('client')
+        // Оптимизация: используем индексы на created_at и client_id, select для выбора только нужных полей
+        $clientsWithOrders = Order::select(['id', 'client_id', 'total', 'is_paid', 'created_at'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['client:id,name,email'])
             ->get()
             ->groupBy('client_id');
         
@@ -28,7 +30,9 @@ class ClientStatisticsService
             $totalClientRevenue = $orders->where('is_paid', true)->sum('total');
             
             // Проверяем, есть ли у клиента заказы до выбранного периода
-            $hasOrdersBeforePeriod = Order::where('client_id', $clientId)
+            // Оптимизация: используем индекс на client_id и created_at, select для выбора только нужных полей
+            $hasOrdersBeforePeriod = Order::select(['id'])
+                ->where('client_id', $clientId)
                 ->where('created_at', '<', $startDate)
                 ->exists();
             
@@ -71,9 +75,14 @@ class ClientStatisticsService
 
     public function getPetsData($startDate, $endDate)
     {
-        $pets = Pet::whereHas('visits', function($query) use ($startDate, $endDate) {
-            $query->whereBetween('starts_at', [$startDate, $endDate]);
-        })->with('breed.species')->get();
+        // Оптимизация: используем индексы на starts_at и select для выбора только нужных полей
+        $pets = Pet::select(['id', 'breed_id'])
+            ->whereHas('visits', function($query) use ($startDate, $endDate) {
+                $query->select(['id', 'pet_id', 'starts_at']);
+                $query->whereBetween('starts_at', [$startDate, $endDate]);
+            })
+            ->with(['breed:id,name,species_id', 'breed.species:id,name'])
+            ->get();
 
         // Группируем по видам животных
         $bySpecies = $pets->groupBy(function($pet) {
@@ -105,22 +114,28 @@ class ClientStatisticsService
 
     public function getTopClients($startDate, $endDate)
     {
-        return User::whereHas('orders', function($query) use ($startDate, $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate]);
-        })->with(['orders' => function($query) use ($startDate, $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate]);
-        }])->get()
-        ->map(function($user) {
-            // Фильтруем только оплаченные заказы для подсчета доходов
-            $paidOrders = $user->orders->where('is_paid', true);
-            return [
-                'user' => $user,
-                'orders_count' => $user->orders->count(),
-                'total_spent' => $paidOrders->sum('total'),
-                'average_order' => $paidOrders->count() > 0 ? round($paidOrders->sum('total') / $paidOrders->count(), 0) : 0,
-            ];
-        })
-        ->sortByDesc('total_spent')
-        ->take(10);
+        // Оптимизация: используем индексы на created_at и select для выбора только нужных полей
+        return User::select(['id', 'name', 'email'])
+            ->whereHas('orders', function($query) use ($startDate, $endDate) {
+                $query->select(['id', 'client_id', 'created_at']);
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->with(['orders' => function($query) use ($startDate, $endDate) {
+                $query->select(['id', 'client_id', 'total', 'is_paid', 'created_at']);
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            }])
+            ->get()
+            ->map(function($user) {
+                // Фильтруем только оплаченные заказы для подсчета доходов
+                $paidOrders = $user->orders->where('is_paid', true);
+                return [
+                    'user' => $user,
+                    'orders_count' => $user->orders->count(),
+                    'total_spent' => $paidOrders->sum('total'),
+                    'average_order' => $paidOrders->count() > 0 ? round($paidOrders->sum('total') / $paidOrders->count(), 0) : 0,
+                ];
+            })
+            ->sortByDesc('total_spent')
+            ->take(10);
     }
 }

@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('color', 10);
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск статусов по названию
         });
     }
 

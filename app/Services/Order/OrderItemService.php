@@ -130,7 +130,8 @@ class OrderItemService
      */
     protected function validateItemExists(string $itemType, int $itemId): void
     {
-        $item = $itemType::find($itemId);
+        // Оптимизация: используем select для выбора только нужных полей
+        $item = $itemType::select(['id', 'name'])->find($itemId);
         if (!$item) {
             throw new \InvalidArgumentException(
                 'Элемент типа ' . $itemType . ' с ID ' . $itemId . ' не найден'
@@ -146,7 +147,8 @@ class OrderItemService
      */
     public function getItemInfo(OrderItem $orderItem): array
     {
-        $item = $orderItem->item;
+        // Оптимизация: используем select для выбора только нужных полей
+        $item = $orderItem->item()->select(['id', 'name'])->first();
         
         if (!$item) {
             return [
@@ -194,6 +196,7 @@ class OrderItemService
      */
     public function getOrderItemsStatistics(Order $order): array
     {
+        // Оптимизация: используем уже загруженные связи вместо дополнительных запросов
         $statistics = [
             'total_items' => 0,
             'total_value' => 0,
@@ -205,7 +208,8 @@ class OrderItemService
             ]
         ];
 
-        foreach ($order->items as $item) {
+        // Оптимизация: используем коллекцию для эффективной обработки
+        $order->items->each(function ($item) use (&$statistics) {
             $statistics['total_items']++;
             $itemValue = $item->quantity * $item->unit_price;
             $statistics['total_value'] += $itemValue;
@@ -215,7 +219,7 @@ class OrderItemService
                 $statistics['by_type'][$type]['count']++;
                 $statistics['by_type'][$type]['value'] += $itemValue;
             }
-        }
+        });
 
         return $statistics;
     }

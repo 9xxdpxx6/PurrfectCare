@@ -11,6 +11,19 @@ class Diagnosis extends Model
 {
     use HasFactory, Filterable, HasDeleteDependenciesCheck;
 
+    /**
+     * Документация индексов таблицы diagnoses
+     *
+     * - visit_id (FK)
+     * - dictionary_diagnosis_id (FK)
+     * - custom_diagnosis (string)
+     */
+    protected array $indexes = [
+        'visit_id',
+        'dictionary_diagnosis_id',
+        'custom_diagnosis',
+    ];
+
     protected $fillable = [
         'visit_id',
         'dictionary_diagnosis_id',

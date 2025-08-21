@@ -36,6 +36,12 @@
             animation: overlaySlideIn 0.2s ease-out;
         }
 
+        /* Специальные стили для оверлея уведомлений */
+        .notifications-overlay.overlay-content {
+            display: flex;
+            flex-direction: column;
+        }
+
         @keyframes overlaySlideIn {
             from {
                 opacity: 0;
@@ -49,6 +55,76 @@
 
         .notifications-overlay {
             width: 350px;
+        }
+
+        .notifications-overlay .overlay-content {
+            max-height: 500px;
+            overflow: hidden;
+        }
+
+        .notifications-overlay .overlay-header {
+            flex-shrink: 0;
+            padding: 1rem;
+            border-bottom: 1px solid var(--bs-border-color);
+        }
+
+        .notifications-overlay #notificationsList {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 350px;
+            padding: 0;
+        }
+
+        .notifications-overlay .notification-item {
+            border-bottom: 1px solid var(--bs-border-color);
+            padding: 1rem;
+            margin: 0;
+            background: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .notifications-overlay .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notifications-overlay .notification-item:hover {
+            background-color: var(--bs-light);
+        }
+
+        [data-bs-theme="dark"] .notifications-overlay .notification-item:hover {
+            background-color: var(--bs-dark);
+        }
+
+        /* Фиксируем кнопку "Все уведомления" внизу */
+        .notifications-overlay .overlay-item:last-child {
+            flex-shrink: 0;
+            border-top: 1px solid var(--bs-border-color);
+            margin-top: auto;
+            background-color: var(--bs-body-bg);
+        }
+
+        /* Стили для скроллбара */
+        .notifications-overlay #notificationsList::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .notifications-overlay #notificationsList::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .notifications-overlay #notificationsList::-webkit-scrollbar-thumb {
+            background: var(--bs-border-color);
+            border-radius: 3px;
+        }
+
+        .notifications-overlay #notificationsList::-webkit-scrollbar-thumb:hover {
+            background: var(--bs-secondary);
+        }
+
+        /* Стили для Firefox */
+        .notifications-overlay #notificationsList {
+            scrollbar-width: thin;
+            scrollbar-color: var(--bs-border-color) transparent;
         }
 
         .user-overlay {
@@ -85,6 +161,8 @@
         [data-bs-theme="dark"] .overlay-item:hover {
             background-color: var(--bs-dark);
         }
+
+
 
         .overlay-item a {
             color: var(--bs-body-color);
@@ -323,7 +401,7 @@
             </div>
             <div class="nav-item text-nowrap">
                 <button class="btn btn-link nav-link px-3 text-white" type="button" id="userToggle">
-                    <i class="bi bi-person-fill"></i> {{ Auth::guard('admin')->user()?->name }}
+                    <span class="fs-5"><i class="bi bi-person-fill"></i></span> {{ Auth::guard('admin')->user()?->name }}
                 </button>
                 <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
                     @csrf
@@ -341,14 +419,12 @@
                     Отметить все как прочитанные
                 </button>
             </div>
-            <div class="overlay-divider"></div>
             <div id="notificationsList">
                 <div class="text-center text-muted py-3">
                     <i class="bi bi-bell-slash"></i>
                     <p class="mb-0">Нет новых уведомлений</p>
                 </div>
             </div>
-            <div class="overlay-divider"></div>
             <div class="overlay-item">
                 <a href="{{ route('admin.notifications.index') }}" class="text-decoration-none">
                     <i class="bi bi-list-ul me-2"></i>Все уведомления
@@ -928,6 +1004,11 @@
                         }
                     });
 
+                    // Предотвращаем закрытие при скроллинге
+                    this.list.addEventListener('scroll', (e) => {
+                        e.stopPropagation();
+                    });
+
                     // Закрытие при нажатии Escape
                     document.addEventListener('keydown', (e) => {
                         if (e.key === 'Escape') {
@@ -970,7 +1051,7 @@
                     }
 
                     this.list.innerHTML = notifications.map(notification => `
-                        <div class="overlay-item notification-item ${notification.read_at ? 'text-muted' : ''}" 
+                        <div class="notification-item ${notification.read_at ? 'text-muted' : ''}" 
                              data-notification-id="${notification.id}">
                             <div class="d-flex align-items-start">
                                 <div class="flex-grow-1">

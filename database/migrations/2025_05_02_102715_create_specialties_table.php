@@ -16,6 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->boolean('is_veterinarian')->default(false);
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск специализаций по названию
+            $table->index('is_veterinarian'); // Быстрый поиск специализаций по наличию ветеринара
         });
     }
 

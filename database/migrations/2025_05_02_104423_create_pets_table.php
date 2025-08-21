@@ -17,10 +17,16 @@ return new class extends Migration
             $table->foreignId('breed_id')->constrained()->onDelete('cascade');
             $table->date('birthdate')->nullable();
             $table->foreignId('client_id')->constrained('users')->onDelete('cascade');
-            $table->decimal('temperature', 5, 2)->nullable();
-            $table->decimal('weight', 5, 2)->nullable();
+            $table->decimal('temperature', 8, 2)->nullable();
+            $table->decimal('weight', 8, 2)->nullable();
             $table->enum('gender', ['male', 'female', 'unknown'])->default('unknown');
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('client_id'); // Быстрый поиск питомцев клиента
+            $table->index('breed_id'); // Быстрый поиск питомцев по породе
+            $table->index('gender'); // Быстрый поиск питомцев по полу
+            $table->index('birthdate'); // Быстрый поиск питомцев по дате рождения
         });
     }
 

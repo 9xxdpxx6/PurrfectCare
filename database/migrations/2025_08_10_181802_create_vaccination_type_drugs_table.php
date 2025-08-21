@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('vaccination_type_id')->constrained()->onDelete('cascade');
             $table->foreignId('drug_id')->constrained()->onDelete('cascade');
-            $table->decimal('dosage', 5, 2);
+            $table->decimal('dosage', 8, 2);
             $table->timestamps();
         });
     }

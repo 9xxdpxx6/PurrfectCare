@@ -18,6 +18,12 @@ return new class extends Migration
             $table->string('custom_diagnosis')->nullable();
             $table->text('treatment_plan')->nullable();
             $table->timestamps();
+
+            // Индексы для оптимизации производительности
+            $table->index('visit_id'); // Быстрый поиск диагнозов по приёму
+            $table->index('dictionary_diagnosis_id'); // Быстрый поиск диагнозов по словарю
+            $table->index('custom_diagnosis'); // Быстрый поиск диагнозов по пользовательскому диагнозу
+            // Удалён индекс по treatment_plan: TEXT не индексируется без длины; для MySQL нельзя
         });
     }
 

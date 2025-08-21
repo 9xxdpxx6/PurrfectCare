@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId('employee_id')->constrained()->onDelete('cascade');
             $table->foreignId('specialty_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+            
+            // Индексы для оптимизации производительности
+            $table->index('employee_id'); // Быстрый поиск специализаций сотрудника
+            $table->index('specialty_id'); // Быстрый поиск сотрудников по специализации
         });
     }
 

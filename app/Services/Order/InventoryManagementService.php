@@ -90,7 +90,8 @@ class InventoryManagementService
     protected function reduceDrugQuantity($orderItem): void
     {
         try {
-            $drug = Drug::find($orderItem->item_id);
+            // Оптимизация: используем select для выбора только нужных полей и индекс на id
+            $drug = Drug::select(['id', 'name', 'quantity'])->find($orderItem->item_id);
             if ($drug) {
                 // Проверяем, достаточно ли препарата на складе
                 if ($drug->quantity >= $orderItem->quantity) {
@@ -129,7 +130,8 @@ class InventoryManagementService
     protected function returnDrugQuantity($orderItem): void
     {
         try {
-            $drug = Drug::find($orderItem->item_id);
+            // Оптимизация: используем select для выбора только нужных полей и индекс на id
+            $drug = Drug::select(['id', 'name', 'quantity'])->find($orderItem->item_id);
             if ($drug) {
                 $drug->increment('quantity', $orderItem->quantity);
                 
@@ -159,19 +161,33 @@ class InventoryManagementService
     {
         $availability = [];
         
-        foreach ($items as $item) {
-            if ($item['item_type'] === 'App\Models\Drug') {
-                $drug = Drug::find($item['item_id']);
-                if ($drug) {
-                    $available = $drug->quantity >= $item['quantity'];
-                    $availability[] = [
-                        'drug_id' => $drug->id,
-                        'drug_name' => $drug->name,
-                        'requested_quantity' => $item['quantity'],
-                        'available_quantity' => $drug->quantity,
-                        'is_available' => $available
-                    ];
-                }
+        // Оптимизация: группируем запросы по типам для уменьшения количества обращений к БД
+        $drugItems = collect($items)->filter(function($item) {
+            return $item['item_type'] === 'App\Models\Drug';
+        });
+        
+        if ($drugItems->isEmpty()) {
+            return $availability;
+        }
+        
+        // Оптимизация: получаем все нужные препараты одним запросом
+        $drugIds = $drugItems->pluck('item_id')->toArray();
+        $drugs = Drug::select(['id', 'name', 'quantity'])
+            ->whereIn('id', $drugIds)
+            ->get()
+            ->keyBy('id');
+        
+        foreach ($drugItems as $item) {
+            $drug = $drugs->get($item['item_id']);
+            if ($drug) {
+                $available = $drug->quantity >= $item['quantity'];
+                $availability[] = [
+                    'drug_id' => $drug->id,
+                    'drug_name' => $drug->name,
+                    'requested_quantity' => $item['quantity'],
+                    'available_quantity' => $drug->quantity,
+                    'is_available' => $available
+                ];
             }
         }
         
