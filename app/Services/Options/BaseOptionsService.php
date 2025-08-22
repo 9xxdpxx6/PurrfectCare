@@ -41,9 +41,8 @@ abstract class BaseOptionsService
         }
 
         // Основной запрос для поиска/загрузки
-        if ($search) {
-            $query->where('name', 'like', "%$search%");
-        } else {
+        // Поиск уже должен быть применен в дочернем классе
+        if (!$search) {
             // Если нет поиска, загружаем только последние 20 записей
             $query->orderBy('id', 'desc');
         }

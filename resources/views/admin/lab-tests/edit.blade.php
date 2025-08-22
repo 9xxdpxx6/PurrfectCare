@@ -290,7 +290,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const selectedPetId = '{{ old("pet_id", $item->pet_id) }}';
         new createTomSelect('#pet_id', {
-            placeholder: 'Выберите питомца...',
+            placeholder: 'Введите кличку питомца или ФИО владельца...',
             valueField: 'value',
             labelField: 'text',
             searchField: 'text',
@@ -300,10 +300,20 @@
                 if (selectedPetId && !query) {
                     url += '&selected=' + encodeURIComponent(selectedPetId);
                 }
+                console.log('Загружаем опции для питомца:', url);
                 fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
+                    .then(response => {
+                        console.log('Ответ для питомца получен:', response.status);
+                        return response.json();
+                    })
+                    .then(json => {
+                        console.log('Опции питомца загружены:', json);
+                        callback(json);
+                    })
+                    .catch((error) => {
+                        console.error('Ошибка загрузки опций питомца:', error);
+                        callback();
+                    });
             },
             onItemAdd: function() {
                 this.setTextboxValue('');
@@ -507,11 +517,21 @@
                 searchField: 'text',
                 preload: true,
                 load: function(query, callback) {
-                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                    console.log('Загружаем опции для параметра:', url);
                     fetch(url)
-                        .then(response => response.json())
-                        .then(json => callback(json))
-                        .catch(() => callback());
+                        .then(response => {
+                            console.log('Ответ получен:', response.status);
+                            return response.json();
+                        })
+                        .then(json => {
+                            console.log('Опции загружены:', json);
+                            callback(json);
+                        })
+                        .catch((error) => {
+                            console.error('Ошибка загрузки опций:', error);
+                            callback();
+                        });
                 },
                 onItemAdd: function() {
                     this.setTextboxValue('');

@@ -149,44 +149,44 @@
                                 @foreach(old('results') as $index => $result)
                                     <div class="result-item border p-3 mb-3 rounded">
                                         <div class="row gy-2 flex-row align-items-start">
-                                        <div class="col-12 col-lg d-flex flex-column">
-                                            <label class="form-label">Параметр</label>
-                                            <select name="results[{{ $index }}][lab_test_param_id]" class="form-select result-select w-100 @error('results.'.$index.'.lab_test_param_id') is-invalid @enderror" 
-                                                    data-url="{{ route('admin.lab-tests.lab-test-param-options') }}">
-                                                @if($result['lab_test_param_id'])
-                                                    @php
-                                                        $selectedParam = \App\Models\LabTestParam::find($result['lab_test_param_id']);
-                                                    @endphp
-                                                    @if($selectedParam)
-                                                        <option value="{{ $selectedParam->id }}" selected>
-                                                            {{ $selectedParam->name }}
-                                                        </option>
+                                            <div class="col-12 col-lg d-flex flex-column">
+                                                <label class="form-label">Параметр</label>
+                                                <select name="results[{{ $index }}][lab_test_param_id]" class="form-select result-select w-100 @error('results.'.$index.'.lab_test_param_id') is-invalid @enderror" 
+                                                        data-url="{{ route('admin.lab-tests.lab-test-param-options') }}">
+                                                    @if($result['lab_test_param_id'])
+                                                        @php
+                                                            $selectedParam = \App\Models\LabTestParam::find($result['lab_test_param_id']);
+                                                        @endphp
+                                                        @if($selectedParam)
+                                                            <option value="{{ $selectedParam->id }}" selected>
+                                                                {{ $selectedParam->name }}
+                                                            </option>
+                                                        @endif
                                                     @endif
+                                                </select>
+                                                @error('results.'.$index.'.lab_test_param_id')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                                @if(!$errors->has('results.'.$index.'.lab_test_param_id'))
+                                                    <div class="invalid-feedback d-block invisible">&nbsp;</div>
                                                 @endif
-                                            </select>
-                                            @error('results.'.$index.'.lab_test_param_id')
-                                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                            @enderror
-                                            @if(!$errors->has('results.'.$index.'.lab_test_param_id'))
-                                                <div class="invalid-feedback d-block invisible">&nbsp;</div>
-                                            @endif
-                                        </div>
-                                        <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
-                                            <label class="form-label">Значение</label>
-                                            <input type="text" name="results[{{ $index }}][value]" class="form-control @error('results.'.$index.'.value') is-invalid @enderror" value="{{ $result['value'] }}" autocomplete="off">
-                                            @error('results.'.$index.'.value')
-                                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                            @enderror
-                                            @if(!$errors->has('results.'.$index.'.value'))
-                                                <div class="invalid-feedback d-block invisible">&nbsp;</div>
-                                            @endif
-                                        </div>
+                                            </div>
+                                            <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
+                                                <label class="form-label">Значение</label>
+                                                <input type="text" name="results[{{ $index }}][value]" class="form-control @error('results.'.$index.'.value') is-invalid @enderror" value="{{ $result['value'] }}" autocomplete="off">
+                                                @error('results.'.$index.'.value')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                                @if(!$errors->has('results.'.$index.'.value'))
+                                                    <div class="invalid-feedback d-block invisible">&nbsp;</div>
+                                                @endif
+                                            </div>
                                         <div class="col-4 col-md-6 col-lg-auto d-flex justify-content-end align-items-center" style="min-width:48px;">
                                             <button type="button" class="btn btn-outline-danger remove-result ms-md-2">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
                                         <div class="row mt-2">
                                             <div class="col-12">
                                                 <label class="form-label">Заметки</label>
@@ -198,7 +198,7 @@
                             @else
                                 <div class="result-item border p-3 mb-3 rounded">
                                     <div class="row gy-2 flex-row align-items-start">
-                                        <div class="col-12 col-lg d-flex flex-column">
+                                                                                    <div class="col-12 col-lg d-flex flex-column">
                                                 <label class="form-label">Параметр</label>
                                                 <select name="results[0][lab_test_param_id]" class="form-select result-select w-100 @error('results.0.lab_test_param_id') is-invalid @enderror" 
                                                         data-url="{{ route('admin.lab-tests.lab-test-param-options') }}">
@@ -285,7 +285,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const selectedPetId = '{{ old("pet_id") }}';
         new createTomSelect('#pet_id', {
-            placeholder: 'Выберите питомца...',
+            placeholder: 'Введите кличку питомца или ФИО владельца...',
             valueField: 'value',
             labelField: 'text',
             searchField: 'text',
@@ -295,10 +295,20 @@
                 if (selectedPetId && !query) {
                     url += '&selected=' + encodeURIComponent(selectedPetId);
                 }
+                console.log('Загружаем опции для питомца:', url);
                 fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
+                    .then(response => {
+                        console.log('Ответ для питомца получен:', response.status);
+                        return response.json();
+                    })
+                    .then(json => {
+                        console.log('Опции питомца загружены:', json);
+                        callback(json);
+                    })
+                    .catch((error) => {
+                        console.error('Ошибка загрузки опций питомца:', error);
+                        callback();
+                    });
             },
             onItemAdd: function() {
                 this.setTextboxValue('');
@@ -322,10 +332,20 @@
                 if (selectedVetId && !query) {
                     url += '&selected=' + encodeURIComponent(selectedVetId);
                 }
+                console.log('Загружаем опции для ветеринара:', url);
                 fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
+                    .then(response => {
+                        console.log('Ответ для ветеринара получен:', response.status);
+                        return response.json();
+                    })
+                    .then(json => {
+                        console.log('Опции ветеринара загружены:', json);
+                        callback(json);
+                    })
+                    .catch((error) => {
+                        console.error('Ошибка загрузки опций ветеринара:', error);
+                        callback();
+                    });
             },
             onItemAdd: function() {
                 this.setTextboxValue('');
@@ -349,10 +369,20 @@
                 if (selectedLabTestTypeId && !query) {
                     url += '&selected=' + encodeURIComponent(selectedLabTestTypeId);
                 }
+                console.log('Загружаем опции для типа анализа:', url);
                 fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
+                    .then(response => {
+                        console.log('Ответ для типа анализа получен:', response.status);
+                        return response.json();
+                    })
+                    .then(json => {
+                        console.log('Опции типа анализа загружены:', json);
+                        callback(json);
+                    })
+                    .catch((error) => {
+                        console.error('Ошибка загрузки опций типа анализа:', error);
+                        callback();
+                    });
             },
             onItemAdd: function() {
                 this.setTextboxValue('');
@@ -502,11 +532,21 @@
                 searchField: 'text',
                 preload: true,
                 load: function(query, callback) {
-                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                    console.log('Загружаем опции для параметра:', url);
                     fetch(url)
-                        .then(response => response.json())
-                        .then(json => callback(json))
-                        .catch(() => callback());
+                        .then(response => {
+                            console.log('Ответ получен:', response.status);
+                            return response.json();
+                        })
+                        .then(json => {
+                            console.log('Опции загружены:', json);
+                            callback(json);
+                        })
+                        .catch((error) => {
+                            console.error('Ошибка загрузки опций:', error);
+                            callback();
+                        });
                 },
                 onItemAdd: function() {
                     this.setTextboxValue('');
