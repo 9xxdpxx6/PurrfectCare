@@ -1050,7 +1050,11 @@
                         return;
                     }
 
-                    this.list.innerHTML = notifications.map(notification => `
+                    this.list.innerHTML = notifications.map(notification => {
+                        // Отладочная информация в консоль
+                        console.log('Notification data structure:', notification.data);
+                        
+                        return `
                         <div class="notification-item ${notification.read_at ? 'text-muted' : ''}" 
                              data-notification-id="${notification.id}">
                             <div class="d-flex align-items-start">
@@ -1067,7 +1071,8 @@
                                 ${!notification.read_at ? '<span class="badge bg-primary ms-2">Новое</span>' : ''}
                             </div>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
 
                     // Добавляем обработчики кликов
                     this.list.querySelectorAll('.notification-item').forEach(item => {
@@ -1145,23 +1150,45 @@
                     let links = '';
                     
                     if (data && data.data) {
-                        // Ссылка на клиента
+                        // Отладочная информация
+                        console.log('Generating links for data:', data.data);
+                        
+                        // Ссылка на клиента - проверяем разные возможные ключи
+                        let clientId = null;
+                        
+                        // Ищем ID клиента в разных возможных местах
                         if (data.data.client_id) {
-                            links += `<a href="/admin/users/${data.data.client_id}" class="btn btn-sm btn-outline-primary me-2 mb-2">
+                            clientId = data.data.client_id;
+                            console.log('Found client_id:', clientId);
+                        } else if (data.data.user_id) {
+                            clientId = data.data.user_id;
+                            console.log('Found user_id:', clientId);
+                        } else if (data.data.user && data.data.user.id) {
+                            clientId = data.data.user.id;
+                            console.log('Found user.id:', clientId);
+                        } else if (data.data.client && data.data.client.id) {
+                            clientId = data.data.client.id;
+                            console.log('Found client.id:', clientId);
+                        } else {
+                            console.log('No client ID found in:', data.data);
+                        }
+                        
+                        if (clientId) {
+                            links += `<a href="/admin/users/${clientId}" class="btn btn-sm btn-outline-primary me-2 mb-2" title="Просмотр клиента">
                                 <i class="bi bi-person"></i>
                             </a>`;
                         }
                         
                         // Ссылка на питомца
                         if (data.data.pet_id) {
-                            links += `<a href="/admin/pets/${data.data.pet_id}" class="btn btn-sm btn-outline-success me-2 mb-2">
+                            links += `<a href="/admin/pets/${data.data.pet_id}" class="btn btn-sm btn-outline-success me-2 mb-2" title="Просмотр питомца">
                                 <i class="bi bi-heart"></i>
                             </a>`;
                         }
                         
                         // Ссылка на приём
                         if (data.data.visit_id) {
-                            links += `<a href="/admin/visits/${data.data.visit_id}" class="btn btn-sm btn-outline-info me-2 mb-2">
+                            links += `<a href="/admin/visits/${data.data.visit_id}" class="btn btn-sm btn-outline-info me-2 mb-2" title="Просмотр приёма">
                                 <i class="bi bi-calendar-check"></i>
                             </a>`;
                         }

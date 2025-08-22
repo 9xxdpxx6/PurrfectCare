@@ -569,15 +569,15 @@ class NotificationsPage {
                     break;
                     
                 case 'bot_registration':
-                    // Для регистрации - ссылка на конкретного пользователя
+                    // Для регистрации - ссылка на конкретного клиента
                     if (data.data.user_id) {
                         links += `<a href="/admin/users/${data.data.user_id}" class="btn btn-sm btn-outline-primary me-2 mb-2">
-                            <i class="bi bi-person"></i> Просмотр пользователя
+                            <i class="bi bi-person"></i> Просмотр клиента
                         </a>`;
                     }
-                    // Общая ссылка на всех пользователей
+                    // Общая ссылка на всех клиентов
                     links += `<a href="/admin/users" class="btn btn-sm btn-outline-secondary me-2 mb-2">
-                        <i class="bi bi-list"></i> Все пользователи
+                        <i class="bi bi-list"></i> Все клиенты
                     </a>`;
                     break;
             }
