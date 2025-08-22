@@ -30,7 +30,7 @@ class PetController extends AdminController
     {
         // Оптимизация: используем select для выбора только нужных полей
         $clients = User::select(['id', 'name', 'email', 'phone'])->get();
-        $breeds = Breed::select(['id', 'name', 'species_id'])->get();
+        $breeds = Breed::select(['id', 'name'])->get();
         
         // Получаем ID клиента из параметра запроса
         $selectedClientId = request('owner');
@@ -42,14 +42,14 @@ class PetController extends AdminController
     {
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $item = $this->model::select([
-                'id', 'name', 'client_id', 'breed_id', 'species_id', 'gender', 'birthdate',
-                'weight', 'color', 'microchip', 'notes', 'created_at', 'updated_at'
+                'id', 'name', 'client_id', 'breed_id', 'gender', 'birthdate',
+                'temperature', 'weight', 'created_at', 'updated_at'
             ])
             ->findOrFail($id);
             
         // Оптимизация: используем select для выбора только нужных полей
         $clients = User::select(['id', 'name', 'email', 'phone'])->get();
-        $breeds = Breed::select(['id', 'name', 'species_id'])->get();
+        $breeds = Breed::select(['id', 'name'])->get();
         return view("admin.{$this->viewPath}.edit", compact('item', 'clients', 'breeds'));
     }
 
@@ -140,13 +140,12 @@ class PetController extends AdminController
         
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $query = $this->model::select([
-                'id', 'name', 'client_id', 'breed_id', 'species_id', 'gender', 'birthdate',
-                'weight', 'color', 'microchip', 'created_at'
+                'id', 'name', 'client_id', 'breed_id', 'gender', 'birthdate',
+                'temperature', 'weight', 'created_at'
             ])
             ->with([
                 'client:id,name,email,phone',
-                'breed:id,name,species_id',
-                'breed.species:id,name',
+                'breed:id,name',
                 'visits:id,pet_id,starts_at,status_id',
                 'orders:id,pet_id,total,is_paid,closed_at',
                 'vaccinations:id,pet_id,administered_at,next_due',
@@ -167,8 +166,7 @@ class PetController extends AdminController
         
         // Оптимизация: используем select для выбора только нужных полей
         $clients = User::select(['id', 'name', 'email'])->orderBy('name')->get();
-        $breeds = Breed::select(['id', 'name', 'species_id'])
-            ->with(['species:id,name'])
+        $breeds = Breed::select(['id', 'name'])
             ->orderBy('name')
             ->get();
         
@@ -179,13 +177,12 @@ class PetController extends AdminController
     {
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $pet = $this->model::select([
-                'id', 'name', 'client_id', 'breed_id', 'species_id', 'gender', 'birthdate',
-                'weight', 'color', 'microchip', 'notes', 'created_at', 'updated_at'
+                'id', 'name', 'client_id', 'breed_id', 'gender', 'birthdate',
+                'temperature', 'weight', 'created_at', 'updated_at'
             ])
             ->with([
                 'client:id,name,email,phone,address',
-                'breed:id,name,species_id',
-                'breed.species:id,name'
+                'breed:id,name'
             ])
             ->findOrFail($id);
         

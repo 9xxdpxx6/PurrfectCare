@@ -32,12 +32,12 @@ class DrugProcurementController extends AdminController
 
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $query = $this->model::select([
-                'id', 'drug_id', 'supplier_id', 'quantity', 'unit_price', 'delivery_date', 'expiry_date',
-                'created_at', 'updated_at'
+                'id', 'drug_id', 'supplier_id', 'quantity', 'price', 'delivery_date', 'expiry_date',
+                'manufacture_date', 'packaging_date', 'created_at', 'updated_at'
             ])
             ->with([
-                'drug:id,name,description,unit_id',
-                'supplier:id,name,contact_person,phone'
+                'drug:id,name,unit_id',
+                'supplier:id,name'
             ]);
             
         $filter->apply($query);
@@ -45,8 +45,8 @@ class DrugProcurementController extends AdminController
         $items = $query->paginate(25)->appends($request->query());
         
         // Оптимизация: используем select для выбора только нужных полей
-        $drugs = Drug::select(['id', 'name', 'description'])->orderBy('name')->get();
-        $suppliers = Supplier::select(['id', 'name', 'contact_person', 'phone'])->orderBy('name')->get();
+        $drugs = Drug::select(['id', 'name'])->orderBy('name')->get();
+        $suppliers = Supplier::select(['id', 'name'])->orderBy('name')->get();
         
         return view("admin.{$this->viewPath}.index", compact('items', 'drugs', 'suppliers'));
     }
@@ -63,13 +63,13 @@ class DrugProcurementController extends AdminController
     {
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $item = $this->model::select([
-                'id', 'drug_id', 'supplier_id', 'quantity', 'unit_price', 'delivery_date', 'expiry_date',
-                'created_at', 'updated_at'
+                'id', 'drug_id', 'supplier_id', 'quantity', 'price', 'delivery_date', 'expiry_date',
+                'manufacture_date', 'packaging_date', 'created_at', 'updated_at'
             ])
             ->with([
-                'drug:id,name,description,unit_id',
-                'drug.unit:id,name,abbreviation',
-                'supplier:id,name,contact_person,phone,email'
+                'drug:id,name,unit_id',
+                'drug.unit:id,name,symbol',
+                'supplier:id,name'
             ])
             ->findOrFail($id);
         return view("admin.{$this->viewPath}.edit", compact('item'));
@@ -79,13 +79,12 @@ class DrugProcurementController extends AdminController
     {
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $item = $this->model::select([
-                'id', 'drug_id', 'supplier_id', 'quantity', 'unit_price', 'delivery_date', 'expiry_date',
-                'created_at', 'updated_at'
+                'id', 'drug_id', 'supplier_id', 'quantity', 'price', 'delivery_date', 'expiry_date',
+                'manufacture_date', 'packaging_date', 'created_at', 'updated_at'
             ])
             ->with([
-                'drug:id,name,description,unit_id,manufacturer',
-                'drug.unit:id,name,abbreviation',
-                'supplier:id,name,contact_person,phone,email,address'
+                'drug:id,name,unit_id',
+                'drug.unit:id,name,symbol'
             ])
             ->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('item'));

@@ -33,8 +33,8 @@ class VaccinationFactory extends Factory
             'veterinarian_id' => Employee::inRandomOrder()->first()->id,
             'administered_at' => $administeredAt,
             'next_due' => $nextDue,
-            'created_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
         ];
     }
 } 

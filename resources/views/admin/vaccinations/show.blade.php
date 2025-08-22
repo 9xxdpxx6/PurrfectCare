@@ -60,7 +60,7 @@
                         @if($item->pet)
                             <p class="mb-1 text-wrap"><strong>Питомец:</strong> {{ $item->pet->name }}
                                 @if($item->pet->breed)
-                                    ({{ $item->pet->breed->species->name ?? '' }} - {{ $item->pet->breed->name ?? '' }})
+                                    ({{ $item->pet->breed->name ?? '' }})
                                 @endif
                             </p>
                             @if($item->pet->client)
@@ -193,7 +193,7 @@
                 <div class="card-body">
                     <p class="mb-1"><strong>Кличка:</strong> {{ $item->pet->name }}</p>
                     @if($item->pet->breed)
-                        <p class="mb-1"><strong>Вид:</strong> {{ $item->pet->breed->species->name ?? 'Не указан' }}</p>
+                        <p class="mb-1"><strong>Вид:</strong> <span class="text-muted">Не указан</span></p>
                         <p class="mb-1"><strong>Порода:</strong> {{ $item->pet->breed->name ?? 'Не указана' }}</p>
                     @endif
                     @if($item->pet->birthdate)

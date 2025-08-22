@@ -67,7 +67,18 @@
             <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
                 <div class="card-body flex-grow-1 d-flex flex-column flex-lg-row align-items-lg-center">
                     <div class="flex-grow-1">
-                        <h5 class="card-title mb-3">{{ $employee->name }}</h5>
+                        <h5 class="card-title mb-3">
+                            {{ $employee->name }}
+                            @if($employee->specialties->where('is_veterinarian', true)->count() > 0)
+                                <span class="text-success ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Медицинский персонал">
+                                    <i class="bi bi-heart-pulse"></i>
+                                </span>
+                            @else
+                                <span class="text-secondary ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Сервисный персонал">
+                                    <i class="bi bi-person-vcard"></i>
+                                </span>
+                            @endif
+                        </h5>
                         <h6 class="card-subtitle mb-2 text-muted">
                             {{ $employee->specialties->pluck('name')->join(', ') ?: '—' }}
                         </h6>
@@ -124,6 +135,12 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Инициализация тултипов
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
         const selectedValue = '{{ request("specialty") }}';
         
         const specialtySelect = new createTomSelect('#specialty', {

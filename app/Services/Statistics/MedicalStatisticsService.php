@@ -19,8 +19,12 @@ class MedicalStatisticsService
             ->flatMap(function($visit) {
                 return $visit->diagnoses;
             })
+            ->filter(function($diagnosis) {
+                // Исключаем диагнозы без названия
+                return $diagnosis->getName() && trim($diagnosis->getName()) !== '';
+            })
             ->groupBy(function($diagnosis) {
-                return $diagnosis->getName() ?: 'Неизвестный диагноз';
+                return $diagnosis->getName();
             })
             ->map->count()
             ->sortByDesc(function($count) {
@@ -102,8 +106,12 @@ class MedicalStatisticsService
             ->flatMap(function($visit) {
                 return $visit->diagnoses;
             })
+            ->filter(function($diagnosis) {
+                // Исключаем диагнозы без названия
+                return $diagnosis->getName() && trim($diagnosis->getName()) !== '';
+            })
             ->groupBy(function($diagnosis) {
-                return $diagnosis->getName() ?: 'Неизвестный диагноз';
+                return $diagnosis->getName();
             })
             ->count();
     }

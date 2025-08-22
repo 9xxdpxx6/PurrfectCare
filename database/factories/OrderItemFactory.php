@@ -44,6 +44,8 @@ class OrderItemFactory extends Factory
             'item_id' => $item->id,
             'quantity' => $this->faker->numberBetween(1, 5),
             'unit_price' => $unitPrice,
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
         ];
     }
 } 

@@ -75,7 +75,7 @@ class LabTestController extends AdminController
                 'veterinarian:id,name,email',
                 'labTestType:id,name',
                 'results:id,lab_test_id,lab_test_param_id,value,notes',
-                'results.labTestParam:id,name,unit,normal_range'
+                'results.labTestParam:id,name,unit_id,description'
             ])
             ->filter($filter);
             
@@ -88,7 +88,7 @@ class LabTestController extends AdminController
     {
         // Оптимизация: используем select для выбора только нужных полей
         $labTestTypes = LabTestType::select(['id', 'name', 'description'])
-            ->with(['params:id,name,unit,normal_range'])
+            ->with(['params:id,name,unit_id,description'])
             ->get();
         
         // Получаем ID питомца из параметра запроса
@@ -138,7 +138,7 @@ class LabTestController extends AdminController
                 'veterinarian:id,name,email,phone',
                 'labTestType:id,name,description',
                 'results:id,lab_test_id,lab_test_param_id,value,notes,created_at',
-                'results.labTestParam:id,name,unit,normal_range,description'
+                'results.labTestParam:id,name,unit_id,description'
             ])
             ->findOrFail($id);
         
@@ -158,13 +158,13 @@ class LabTestController extends AdminController
                 'veterinarian:id,name,email',
                 'labTestType:id,name,description',
                 'results:id,lab_test_id,lab_test_param_id,value,notes',
-                'results.labTestParam:id,name,unit,normal_range'
+                'results.labTestParam:id,name,unit_id,description'
             ])
             ->findOrFail($id);
         
         // Оптимизация: используем select для выбора только нужных полей
         $labTestTypes = LabTestType::select(['id', 'name', 'description'])
-            ->with(['params:id,name,unit,normal_range'])
+            ->with(['params:id,name,unit_id,description'])
             ->get();
         
         return view("admin.{$this->viewPath}.edit", compact('item', 'labTestTypes'));

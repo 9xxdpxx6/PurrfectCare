@@ -103,9 +103,9 @@
                             <div class="text-muted">
                                 <span>Тип:</span> 
                                 @if($specialty->is_veterinarian)
-                                    <span class="badge bg-success">Ветеринар</span>
+                                    <span class="badge bg-success">Медицинский</span>
                                 @else
-                                    <span class="badge bg-secondary">Административный</span>
+                                    <span class="badge bg-secondary">Сервисный</span>
                                 @endif
                             </div>
                         </div>
@@ -122,8 +122,8 @@
                             <div class="col-12">
                                 <label class="form-label small text-muted">Тип специальности</label>
                                 <select class="form-control" data-field="is_veterinarian" onchange="markAsChanged(this)">
-                                    <option value="1" {{ $specialty->is_veterinarian ? 'selected' : '' }}>Ветеринар</option>
-                                    <option value="0" {{ !$specialty->is_veterinarian ? 'selected' : '' }}>Административный</option>
+                                    <option value="1" {{ $specialty->is_veterinarian ? 'selected' : '' }}>Медицинский</option>
+                                    <option value="0" {{ !$specialty->is_veterinarian ? 'selected' : '' }}>Сервисный</option>
                                 </select>
                             </div>
                         </div>

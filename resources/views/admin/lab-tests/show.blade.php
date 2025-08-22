@@ -110,9 +110,9 @@
                                         <div class="d-md-none text-muted small mb-1">Параметр:</div>
                                         <div>
                                             <strong>{{ $result->labTestParam->name }}</strong>
-                                            @if($result->labTestParam->unit)
-                                                <br><small class="text-muted">{{ $result->labTestParam->unit->symbol }}</small>
-                                            @endif
+                                                                    @if($result->labTestParam->unit_id)
+                            <br><small class="text-muted">ID единицы: {{ $result->labTestParam->unit_id }}</small>
+                        @endif
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-2 mb-md-0">

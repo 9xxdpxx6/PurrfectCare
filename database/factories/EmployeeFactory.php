@@ -20,7 +20,9 @@ class EmployeeFactory extends Factory
             'name' => $this->faker->firstName . ' ' . $this->faker->lastName,
             'email' => $this->faker->unique()->safeEmail,
             'phone' => '+7' . $this->faker->numerify('##########'),  
-            'password' => Hash::make('password'),  
+            'password' => Hash::make('password'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
         ];
     }
 }

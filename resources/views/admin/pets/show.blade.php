@@ -41,7 +41,7 @@
                         </p>
                         <p class="mb-2">
                             <strong><i class="bi bi-collection"></i> Вид:</strong>
-                            {{ $pet->breed->species->name ?? '—' }}
+                            <span class="text-muted">Не указан</span>
                         </p>
                         <p class="mb-2">
                             <strong>
@@ -78,7 +78,11 @@
                         </p>
                         <p class="mb-2">
                             <strong><i class="bi bi-calendar-plus"></i> Добавлен:</strong>
-                            {{ $pet->created_at->format('d.m.Y H:i') }}
+                            @if($pet->created_at)
+                                {{ $pet->created_at->format('d.m.Y H:i') }}
+                            @else
+                                <span class="text-muted">Дата не указана</span>
+                            @endif
                         </p>
                     </div>
                 </div>
@@ -108,8 +112,10 @@
                                                         <p class="text-muted small mb-2">
                                                             @if($visit->schedule && $visit->schedule->shift_starts_at)
                                                                 {{ $visit->schedule->shift_starts_at->format('d.m.Y H:i') }}
-                                                            @else
+                                                            @elseif($visit->created_at)
                                                                 {{ $visit->created_at->format('d.m.Y H:i') }}
+                                                            @else
+                                                                <span class="text-muted">Дата не указана</span>
                                                             @endif
                                                         </p>
                                                     </div>
@@ -177,7 +183,13 @@
                                                 <div class="row align-items-center">
                                                     <div class="col-md-6">
                                                         <h6 class="mb-1">{{ $vaccination->vaccinationType->name ?? 'Вакцинация' }}</h6>
-                                                        <p class="text-muted small mb-2">{{ $vaccination->administered_at->format('d.m.Y') }}</p>
+                                                        <p class="text-muted small mb-2">
+                                                            @if($vaccination->administered_at)
+                                                                {{ $vaccination->administered_at->format('d.m.Y') }}
+                                                            @else
+                                                                <span class="text-muted">Дата не указана</span>
+                                                            @endif
+                                                        </p>
                                                     </div>
                                                     
                                                     <div class="col-md-6 text-md-end">
@@ -234,7 +246,11 @@
                                                     <div class="col-md-6">
                                                         <h6 class="mb-1">Анализ #{{ $labTest->id }}</h6>
                                                         <p class="text-muted small mb-2">
-                                                            Получен: {{ $labTest->created_at->format('d.m.Y') }}
+                                                            @if($labTest->created_at)
+                                                                Получен: {{ $labTest->created_at->format('d.m.Y') }}
+                                                            @else
+                                                                <span class="text-muted">Дата получения не указана</span>
+                                                            @endif
                                                             @if($labTest->completed_at)
                                                                 <br><span class="text-success">Завершён: {{ $labTest->completed_at->format('d.m.Y') }}</span>
                                                             @endif
@@ -306,7 +322,13 @@
                                                                 <i class="bi bi-cash text-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Не оплачен"></i>
                                                             @endif
                                                         </div>
-                                                        <p class="text-muted small mb-0">{{ $order->created_at->format('d.m.Y') }}</p>
+                                                        <p class="text-muted small mb-0">
+                                                            @if($order->created_at)
+                                                                {{ $order->created_at->format('d.m.Y') }}
+                                                            @else
+                                                                <span class="text-muted">Дата не указана</span>
+                                                            @endif
+                                                        </p>
                                                         
                                                         @if($order->branch)
                                                             <p class="text-muted small mb-0">
@@ -412,18 +434,18 @@
                         </strong>
         </div>
                 @endif
-                                @if($visits->count() > 0)
+                                @if($visits->count() > 0 && $visits->first()->created_at)
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span>Последний приём:</span>
                         <strong>{{ $visits->first()->created_at->format('d.m.Y') }}</strong>
-    </div>
+                    </div>
                 @endif
-                @if($orders->count() > 0)
+                @if($orders->count() > 0 && $orders->first()->created_at)
                     <div class="d-flex justify-content-between">
                         <span>Последний заказ:</span>
                         <strong>{{ $orders->first()->created_at->format('d.m.Y') }}</strong>
-</div>
+                    </div>
                 @endif
             </div>
         </div>

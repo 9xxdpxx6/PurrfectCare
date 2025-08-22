@@ -147,11 +147,10 @@ class VaccinationController extends AdminController
             ->with([
                 'pet:id,name,client_id,birthdate,gender',
                 'pet.client:id,name,email,phone',
-                'pet.breed:id,name,species_id',
-                'pet.breed.species:id,name',
+                'pet.breed:id,name',
                 'veterinarian:id,name,email,phone',
                 'vaccinationType:id,name,description',
-                'vaccinationType.drugs:id,name,price,dosage'
+                'vaccinationType.drugs:id,name,price'
             ])
             ->findOrFail($id);
         
@@ -295,7 +294,7 @@ class VaccinationController extends AdminController
         $vaccination = Vaccination::select(['id', 'vaccination_type_id'])
             ->with([
                 'vaccinationType:id,name',
-                'vaccinationType.drugs:id,name,price,dosage'
+                'vaccinationType.drugs:id,name,price'
             ])
             ->findOrFail($id);
         
@@ -304,7 +303,7 @@ class VaccinationController extends AdminController
                 return [
                     'id' => $drug->id,
                     'name' => $drug->name,
-                    'dosage' => $drug->pivot->dosage,
+                    'dosage' => $drug->pivot->dosage ?? null,
                     'price' => $drug->price ?? 0
                 ];
             })

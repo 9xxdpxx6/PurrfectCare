@@ -94,6 +94,8 @@ class DrugFactory extends Factory
             'quantity' => $this->faker->numberBetween(0, 1000),
             'prescription_required' => $this->faker->boolean(30),
             'unit_id' => Unit::inRandomOrder()->first()->id ?? Unit::factory()->create()->id,
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
         ];
     }
 }

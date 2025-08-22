@@ -318,7 +318,7 @@
                                                 $trophyColors = ['warning', 'secondary', 'danger'];
                                                 $trophyColor = $trophyColors[$stats['rank'] - 1] ?? 'secondary';
                                             @endphp
-                                            <i class="bi bi-trophy-fill text-{{ $trophyColor }} me-2"></i>
+                                            <i class="bi bi-trophy text-{{ $trophyColor }} me-2"></i>
                                         @endif
                                         <h6 class="card-title text-muted mb-0">{{ $day }}</h6>
                                     </div>
@@ -346,7 +346,7 @@
                             <div class="card border h-100">
                                 <div class="card-body text-center">
                                     <div class="d-flex align-items-center justify-content-center mb-2">
-                                        <i class="bi bi-star-fill text-warning me-2"></i>
+                                        <i class="bi bi-star text-warning me-2"></i>
                                         <h6 class="card-title text-muted mb-0">
                                             Лучший день ({{ $weekAverageStats['bestDay']['date']->format('d.m.Y') }})
                                         </h6>

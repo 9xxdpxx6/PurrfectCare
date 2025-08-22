@@ -30,6 +30,8 @@ class DrugProcurementFactory extends Factory
             'packaging_date' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'price' => $this->faker->randomFloat(2, 50, 4000),
             'quantity' => $this->faker->numberBetween(10, 500),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
         ];
     }
 }

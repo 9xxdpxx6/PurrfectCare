@@ -68,8 +68,8 @@ class OrderFactory extends Factory
             'total' => 0, // Будет рассчитано после добавления элементов
             'is_paid' => $isPaid,
             'closed_at' => $closedAt,
-            'created_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-3 years', 'now'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
         ];
     }
 

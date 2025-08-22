@@ -48,6 +48,8 @@ class ServiceFactory extends Factory
             'price' => $this->faker->numberBetween($priceRange[0], $priceRange[1]),
             'description' => $this->faker->paragraph(2),
             'duration' => $this->faker->numberBetween($durationRange[0], $durationRange[1]),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
         ];
     }
 } 

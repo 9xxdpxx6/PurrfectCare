@@ -126,6 +126,16 @@
                             </button>
                         </div>
                         
+                        @if($errors->has('results'))
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach($errors->get('results') as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                        
                         <div id="results-container">
                             @php
                                 $oldResults = old('results');
@@ -144,7 +154,7 @@
                                         <div class="row gy-2 flex-row align-items-end">
                                             <div class="col-12 col-lg d-flex flex-column">
                                                 <label class="form-label">Параметр</label>
-                                                <select name="results[{{ $index }}][lab_test_param_id]" class="form-select result-select w-100" 
+                                                <select name="results[{{ $index }}][lab_test_param_id]" class="form-select result-select w-100 @error('results.'.$index.'.lab_test_param_id') is-invalid @enderror" 
                                                         data-url="{{ route('admin.lab-tests.lab-test-param-options') }}">
                                                     @if($result['lab_test_param_id'])
                                                         @php
@@ -157,10 +167,22 @@
                                                         @endif
                                                     @endif
                                                 </select>
+                                                @error('results.'.$index.'.lab_test_param_id')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                                @if(!$errors->has('results.'.$index.'.lab_test_param_id'))
+                                                    <div class="invalid-feedback d-block invisible">&nbsp;</div>
+                                                @endif
                                             </div>
                                             <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
                                                 <label class="form-label">Значение</label>
-                                                <input type="text" name="results[{{ $index }}][value]" class="form-control" value="{{ $result['value'] }}" autocomplete="off">
+                                                <input type="text" name="results[{{ $index }}][value]" class="form-control @error('results.'.$index.'.value') is-invalid @enderror" value="{{ $result['value'] }}" autocomplete="off">
+                                                @error('results.'.$index.'.value')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                                @if(!$errors->has('results.'.$index.'.value'))
+                                                    <div class="invalid-feedback d-block invisible">&nbsp;</div>
+                                                @endif
                                             </div>
                                             <div class="col-4 col-md-6 col-lg-auto d-flex justify-content-end align-items-center" style="min-width:48px;">
                                                 <button type="button" class="btn btn-outline-danger remove-result ms-md-2">
@@ -179,16 +201,28 @@
                             @else
                                 <div class="result-item border p-3 mb-3 rounded">
                                     <div class="row gy-2 flex-row align-items-end">
-                                        <div class="col-12 col-lg d-flex flex-column">
+                                                                                <div class="col-12 col-lg d-flex flex-column">
                                             <label class="form-label">Параметр</label>
-                                            <select name="results[0][lab_test_param_id]" class="form-select result-select w-100" 
+                                            <select name="results[0][lab_test_param_id]" class="form-select result-select w-100 @error('results.0.lab_test_param_id') is-invalid @enderror" 
                                                     data-url="{{ route('admin.lab-tests.lab-test-param-options') }}">
-                                            </select>
-                                        </div>
-                                        <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
-                                            <label class="form-label">Значение</label>
-                                            <input type="text" name="results[0][value]" class="form-control" autocomplete="off">
-                                        </div>
+                                        </select>
+                                            @error('results.0.lab_test_param_id')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                            @if(!$errors->has('results.0.lab_test_param_id'))
+                                                <div class="invalid-feedback d-block invisible">&nbsp;</div>
+                                            @endif
+                                    </div>
+                                    <div class="col-8 col-md-6 col-lg-3 d-flex flex-column">
+                                        <label class="form-label">Значение</label>
+                                        <input type="text" name="results[0][value]" class="form-control @error('results.0.value') is-invalid @enderror" autocomplete="off">
+                                            @error('results.0.value')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                            @if(!$errors->has('results.0.value'))
+                                                <div class="invalid-feedback d-block invisible">&nbsp;</div>
+                                            @endif
+                                    </div>
                                         <div class="col-4 col-md-6 col-lg-auto d-flex justify-content-end align-items-center" style="min-width:48px;">
                                             <button type="button" class="btn btn-outline-danger remove-result ms-md-2">
                                                 <i class="bi bi-trash"></i>

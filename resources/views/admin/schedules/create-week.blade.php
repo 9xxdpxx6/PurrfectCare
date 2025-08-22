@@ -66,17 +66,21 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="veterinarian_id" class="form-label">Ветеринар</label>
-                            <select name="veterinarian_id" id="veterinarian_id" class="form-select @error('veterinarian_id') is-invalid @enderror">
-                                <option value="">Выберите ветеринара</option>
-                                @foreach($veterinarians as $veterinarian)
-                                    <option value="{{ $veterinarian->id }}" 
-                                        @if(old('veterinarian_id') == $veterinarian->id || (isset($selectedVeterinarian) && $selectedVeterinarian == $veterinarian->id)) selected @endif>
-                                        {{ $veterinarian->name }}
-                                        @if($veterinarian->specialization)
-                                            <small>({{ $veterinarian->specialization }})</small>
-                                        @endif
-                                    </option>
-                                @endforeach
+                            <select name="veterinarian_id" id="veterinarian_id" class="form-select @error('veterinarian_id') is-invalid @enderror" data-url="{{ route('admin.schedules.veterinarian-options') }}">
+                                @if(old('veterinarian_id') || isset($selectedVeterinarian))
+                                    @php
+                                        $selectedVetId = old('veterinarian_id', $selectedVeterinarian);
+                                        $selectedVet = \App\Models\Employee::find($selectedVetId);
+                                    @endphp
+                                    @if($selectedVet)
+                                        <option value="{{ $selectedVet->id }}" selected>
+                                            {{ $selectedVet->name }}
+                                            @if($selectedVet->specialization)
+                                                <small>({{ $selectedVet->specialization }})</small>
+                                            @endif
+                                        </option>
+                                    @endif
+                                @endif
                             </select>
                             @error('veterinarian_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -85,14 +89,18 @@
 
                         <div class="col-md-6">
                             <label for="branch_id" class="form-label">Филиал</label>
-                            <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
-                                <option value="">Выберите филиал</option>
-                                @foreach($branches as $branch)
-                                    <option value="{{ $branch->id }}" 
-                                        @if(old('branch_id') == $branch->id || (isset($selectedBranch) && $selectedBranch == $branch->id)) selected @endif>
-                                        {{ $branch->name }}
-                                    </option>
-                                @endforeach
+                            <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror" data-url="{{ route('admin.schedules.branch-options') }}">
+                                @if(old('branch_id') || isset($selectedBranch))
+                                    @php
+                                        $selectedBranchId = old('branch_id', $selectedBranch);
+                                        $selectedBranchObj = \App\Models\Branch::find($selectedBranchId);
+                                    @endphp
+                                    @if($selectedBranchObj)
+                                        <option value="{{ $selectedBranchObj->id }}" selected>
+                                            {{ $selectedBranchObj->name }}
+                                        </option>
+                                    @endif
+                                @endif
                             </select>
                             @error('branch_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -246,13 +254,63 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Инициализация TomSelect
+    // Инициализация TomSelect с динамической загрузкой опций
+    const selectedVetId = '{{ old('veterinarian_id', $selectedVeterinarian ?? '') }}';
     new createTomSelect('#veterinarian_id', {
         placeholder: 'Выберите ветеринара...',
+        valueField: 'value',
+        labelField: 'text',
+        searchField: 'text',
+        preload: true,
+        load: function(query, callback) {
+            let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+            
+            if (selectedVetId && !query) {
+                url += '&selected=' + encodeURIComponent(selectedVetId);
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(json => callback(json))
+                .catch(() => callback());
+        },
+        onItemAdd: function() {
+            this.setTextboxValue('');
+            this.refreshOptions();
+            setTimeout(() => {
+                this.close();
+                this.blur();
+            }, 50);
+        }
     });
     
+    const selectedBranchId = '{{ old('branch_id', $selectedBranch ?? '') }}';
     new createTomSelect('#branch_id', {
         placeholder: 'Выберите филиал...',
+        valueField: 'value',
+        labelField: 'text',
+        searchField: 'text',
+        preload: true,
+        load: function(query, callback) {
+            let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+            
+            if (selectedBranchId && !query) {
+                url += '&selected=' + encodeURIComponent(selectedBranchId);
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(json => callback(json))
+                .catch(() => callback());
+        },
+        onItemAdd: function() {
+            this.setTextboxValue('');
+            this.refreshOptions();
+            setTimeout(() => {
+                this.close();
+                this.blur();
+            }, 50);
+        }
     });
 
     // Инициализация Air Datepicker для начала недели

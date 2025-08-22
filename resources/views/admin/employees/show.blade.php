@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2 col-12 col-md-7 col-xl-8">Сотрудник: {{ $employee->name }}</h1>
+    <h1 class="h2">Сотрудник: {{ $employee->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
@@ -22,6 +22,15 @@
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-person"></i> {{ $employee->name }}
+                    @if($employee->specialties->where('is_veterinarian', true)->count() > 0)
+                        <span class="text-success ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Медицинский персонал">
+                            <i class="bi bi-heart-pulse"></i>
+                        </span>
+                    @else
+                        <span class="text-secondary ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Сервисный персонал">
+                            <i class="bi bi-person-vcard"></i>
+                        </span>
+                    @endif
                 </h5>
             </div>
             <div class="card-body">
@@ -376,4 +385,16 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Инициализация тултипов
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+@endpush 
