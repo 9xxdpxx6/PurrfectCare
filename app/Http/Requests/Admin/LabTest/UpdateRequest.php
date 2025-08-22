@@ -21,7 +21,7 @@ class UpdateRequest extends FormRequest
             'completed_at' => 'nullable|date_format:Y-m-d|after_or_equal:received_at',
             'results' => 'nullable|array',
             'results.*.lab_test_param_id' => 'required|exists:lab_test_params,id',
-            'results.*.value' => 'required|string|max:255',
+            'results.*.value' => 'required|numeric|decimal:0,2',
             'results.*.notes' => 'nullable|string|max:500',
         ];
     }
@@ -42,7 +42,8 @@ class UpdateRequest extends FormRequest
             'results.*.lab_test_param_id.required' => 'Параметр анализа обязателен',
             'results.*.lab_test_param_id.exists' => 'Выбранный параметр анализа не найден',
             'results.*.value.required' => 'Значение результата обязательно',
-            'results.*.value.max' => 'Значение результата не должно превышать 255 символов',
+            'results.*.value.numeric' => 'Значение результата должно быть числом',
+            'results.*.value.decimal' => 'Значение результата должно быть числом с максимум 2 знаками после запятой',
             'results.*.notes.max' => 'Заметки не должны превышать 500 символов',
         ];
     }
