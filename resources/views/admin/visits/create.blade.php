@@ -27,7 +27,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="client_id" class="form-label">Клиент</label>
-                            <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror">
+                            <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror" data-url="{{ route('admin.visits.client-options') }}">
                                 <option value="">Выберите клиента</option>
                                 @foreach($clients as $client)
                                     <option value="{{ $client->id }}" @if(old('client_id', $selectedClientId ?? '') == $client->id) selected @endif>
@@ -59,7 +59,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="schedule_id" class="form-label">Расписание</label>
-                            <select name="schedule_id" id="schedule_id" class="form-select @error('schedule_id') is-invalid @enderror">
+                            <select name="schedule_id" id="schedule_id" class="form-select @error('schedule_id') is-invalid @enderror" data-url="{{ route('admin.visits.schedule-options') }}">
                                 <option value="">Выберите расписание</option>
                                 @foreach($schedules as $schedule)
                                     <option value="{{ $schedule->id }}" 
@@ -241,6 +241,19 @@
         // Инициализация TomSelect
         const clientTomSelect = new createTomSelect('#client_id', {
             placeholder: 'Выберите клиента...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: false,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback([]));
+            },
             onItemAdd: function() {
                 setTimeout(() => {
                     this.close();
@@ -319,6 +332,19 @@
         
         const scheduleTomSelect = new createTomSelect('#schedule_id', {
             placeholder: 'Выберите расписание...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: false,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback([]));
+            },
             onItemAdd: function() {
                 setTimeout(() => {
                     this.close();

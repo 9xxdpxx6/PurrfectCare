@@ -261,6 +261,19 @@
         // Инициализация TomSelect
         const clientTomSelect = new createTomSelect('#client_id', {
             placeholder: 'Выберите клиента...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: false,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback([]));
+            },
             onItemAdd: function() {
                 setTimeout(() => {
                     this.close();
@@ -271,7 +284,33 @@
         
         const petTomSelect = new createTomSelect('#pet_id', {
             placeholder: 'Выберите питомца...',
-            onItemAdd: function() {
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: false,
+            load: function(query, callback) {
+                const clientId = clientTomSelect.getValue();
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                // Если выбран клиент, фильтруем по нему
+                if (clientId) {
+                    url += '&client_id=' + clientId;
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback([]));
+            },
+            onItemAdd: function(value) {
+                // При выборе питомца автоматически заполняем клиента
+                const selectedOption = this.options[value];
+                if (selectedOption && selectedOption.dataset && selectedOption.dataset.client) {
+                    const clientId = selectedOption.dataset.client;
+                    clientTomSelect.setValue(clientId);
+                }
+                
                 setTimeout(() => {
                     this.close();
                     this.blur();
@@ -279,8 +318,21 @@
             }
         });
         
-        new createTomSelect('#schedule_id', {
+        const scheduleTomSelect = new createTomSelect('#schedule_id', {
             placeholder: 'Выберите расписание...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: false,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback([]));
+            },
             onItemAdd: function() {
                 setTimeout(() => {
                     this.close();
