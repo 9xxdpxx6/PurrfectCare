@@ -42,14 +42,18 @@ class NotificationFilter extends AbstractFilter
     protected function dateFrom(Builder $builder, $value): void
     {
         if ($value) {
-            $builder->whereDate('created_at', '>=', $value);
+            // Добавляем время 00:00:00 к дате "от"
+            $dateFrom = $value . ' 00:00:00';
+            $builder->where('created_at', '>=', $dateFrom);
         }
     }
 
     protected function dateTo(Builder $builder, $value): void
     {
         if ($value) {
-            $builder->whereDate('created_at', '<=', $value);
+            // Добавляем время 23:59:59 к дате "до"
+            $dateTo = $value . ' 23:59:59';
+            $builder->where('created_at', '<=', $dateTo);
         }
     }
 

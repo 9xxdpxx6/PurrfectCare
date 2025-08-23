@@ -16,11 +16,7 @@ class UpdateRequest extends FormRequest
         $administered_at = null;
         $next_due = null;
 
-        // Логируем входящие данные для отладки
-        \Log::info('UpdateRequest prepareForValidation', [
-            'administered_at_raw' => $this->administered_at,
-            'next_due_raw' => $this->next_due,
-        ]);
+
 
         // Безопасное преобразование дат
         if ($this->administered_at && !empty(trim($this->administered_at))) {
@@ -55,10 +51,7 @@ class UpdateRequest extends FormRequest
             }
         }
 
-        \Log::info('UpdateRequest prepareForValidation result', [
-            'administered_at_processed' => $administered_at,
-            'next_due_processed' => $next_due,
-        ]);
+
 
         $this->merge([
             'administered_at' => $administered_at,
@@ -75,7 +68,7 @@ class UpdateRequest extends FormRequest
                 
                 // Проверяем формат дд.мм.гггг или Y-m-d
                 if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-                    $validator->errors()->add('administered_at', 'Неверный формат даты. Используйте формат дд.мм.гггг. Получено: ' . $date);
+                    $validator->errors()->add('administered_at', 'Неверный формат даты. Используйте формат дд.мм.гггг.');
                 } else {
                     // Проверяем корректность даты
                     try {
@@ -99,7 +92,7 @@ class UpdateRequest extends FormRequest
                 
                 // Проверяем формат дд.мм.гггг или Y-m-d
                 if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-                    $validator->errors()->add('next_due', 'Неверный формат даты. Используйте формат дд.мм.гггг. Получено: ' . $date);
+                    $validator->errors()->add('next_due', 'Неверный формат даты. Используйте формат дд.мм.гггг.');
                 } else {
                     // Проверяем корректность даты
                     try {

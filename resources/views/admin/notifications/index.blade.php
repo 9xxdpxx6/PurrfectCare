@@ -54,11 +54,11 @@
                 </div>
                 <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                     <label for="dateFromFilter" class="form-label">Дата от</label>
-                    <input type="text" class="form-control form-control-sm" id="dateFromFilter" placeholder="дд.мм.гггг" readonly data-bs-toggle="tooltip" data-bs-title="Выберите начальную дату для фильтрации">
+                    <input type="text" class="form-control form-control-sm" id="dateFromFilter" placeholder="дд.мм.гггг" readonly>
                 </div>
                 <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                     <label for="dateToFilter" class="form-label">Дата до</label>
-                    <input type="text" class="form-control form-control-sm" id="dateToFilter" placeholder="дд.мм.гггг" readonly data-bs-toggle="tooltip" data-bs-title="Выберите конечную дату для фильтрации">
+                    <input type="text" class="form-control form-control-sm" id="dateToFilter" placeholder="дд.мм.гггг" readonly>
                 </div>
                 <div class="col-12 col-sm-6 col-md-4 col-lg-2 d-flex align-items-end">
                     <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="clearFilters">
@@ -185,7 +185,11 @@ class NotificationsPage {
                 autoClose: true,
                 onSelect: ({formattedDate, date, datepicker}) => {
                     if (date) {
-                        this.filters.dateFrom = date.toISOString().split('T')[0];
+                        // Формируем дату в локальной временной зоне, чтобы избежать смещения UTC
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        this.filters.dateFrom = `${year}-${month}-${day}`;
                     } else {
                         this.filters.dateFrom = '';
                     }
@@ -200,7 +204,11 @@ class NotificationsPage {
                 autoClose: true,
                 onSelect: ({formattedDate, date, datepicker}) => {
                     if (date) {
-                        this.filters.dateTo = date.toISOString().split('T')[0];
+                        // Формируем дату в локальной временной зоне, чтобы избежать смещения UTC
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        this.filters.dateTo = `${year}-${month}-${day}`;
                     } else {
                         this.filters.dateTo = '';
                     }
@@ -341,17 +349,6 @@ class NotificationsPage {
                 throw new Error('Неверный формат данных уведомлений');
             }
 
-            // Отладочная информация для пагинации
-            console.log('Pagination debug:', {
-                total: data.pagination?.total,
-                current_page: data.pagination?.current_page,
-                last_page: data.pagination?.last_page,
-                per_page: data.pagination?.per_page,
-                notifications_count: data.notifications.length,
-                first_date: data.notifications[0]?.created_at,
-                last_date: data.notifications[data.notifications.length - 1]?.created_at
-            });
-
             this.renderNotifications(data.notifications);
             this.updatePagination(data.pagination);
 
@@ -430,14 +427,6 @@ class NotificationsPage {
             item.querySelector('.notification-title').textContent = notification.data.title;
             item.querySelector('.notification-message').textContent = notification.data.message;
             
-            // Отладочная информация для дат
-            console.log('Notification date debug:', {
-                id: notification.id,
-                created_at: notification.created_at,
-                read_at: notification.read_at,
-                type: notification.data.type
-            });
-            
             item.querySelector('.notification-time').textContent = this.formatTime(notification.created_at);
             
             // Детали уведомления
@@ -473,16 +462,6 @@ class NotificationsPage {
         const date = new Date(timestamp);
         const now = new Date();
         const diff = now - date;
-        
-        // Отладочная информация
-        console.log('FormatTime debug:', {
-            original: timestamp,
-            parsed: date,
-            now: now,
-            diff: diff,
-            diffHours: diff / 3600000,
-            diffDays: diff / 86400000
-        });
         
         if (diff < 60000) { // меньше минуты
             return 'Только что';

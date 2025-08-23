@@ -638,11 +638,8 @@ function initDrugSelectsSilently(container) {
     }
     
     const selects = container.querySelectorAll('.drug-select');
-    console.log('Found drug selects:', selects.length);
     
     selects.forEach((select, index) => {
-        console.log(`Processing select ${index}:`, select);
-        
         // Проверяем, что это действительно select элемент и он еще не инициализирован
         if (select && select.tagName === 'SELECT' && !select.tomselect) {
             try {
@@ -650,10 +647,6 @@ function initDrugSelectsSilently(container) {
             } catch (error) {
                 console.error('Error initializing TomSelect for drug:', error);
             }
-        } else if (select && select.tagName !== 'SELECT') {
-            console.log(`Skipping non-select element ${index}:`, select.tagName);
-        } else if (select && select.tomselect) {
-            console.log(`Select ${index} already initialized`);
         }
     });
 }
@@ -960,8 +953,6 @@ function saveRow(button) {
         drugs: []
     };
     
-    console.log('Saving data:', data);
-    
     // Собираем данные о препаратах
     const drugRows = card.querySelectorAll('.drug-row');
     let hasDrugWithoutDosage = false;
@@ -982,12 +973,7 @@ function saveRow(button) {
             
             const dosage = dosageField.value;
             
-            console.log('Drug data:', { drugId, dosage, drugSelect: drugSelect.outerHTML });
-            console.log('DrugId type:', typeof drugId, 'DrugId truthy:', !!drugId);
-            console.log('Dosage type:', typeof dosage, 'Dosage truthy:', !!dosage);
-            
             if (drugId && dosage) {
-                console.log('Adding drug to array');
                 data.drugs.push({
                     drug_id: parseInt(drugId),
                     dosage: parseFloat(dosage),
@@ -995,8 +981,6 @@ function saveRow(button) {
                 hasDrugWithDosage = true;
             } else if (drugId && !dosage) {
                 hasDrugWithoutDosage = true;
-            } else {
-                console.log('Drug not added - drugId:', drugId, 'dosage:', dosage);
             }
         }
     });
@@ -1024,9 +1008,7 @@ function saveRow(button) {
     // Получаем CSRF токен
     const csrfToken = '{{ csrf_token() }}';
     
-    console.log('Final drugs array:', data.drugs);
-    console.log('Sending request to:', url, 'with method:', method);
-    console.log('Request data:', data);
+
     
     // Для обновления добавляем _method: PATCH
     if (id !== 'new') {
@@ -1043,12 +1025,8 @@ function saveRow(button) {
         body: JSON.stringify(data)
     })
     .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        
         // Проверяем Content-Type
         const contentType = response.headers.get('content-type');
-        console.log('Content-Type:', contentType);
         
         if (contentType && contentType.includes('application/json')) {
             return response.json().then(data => {
@@ -1074,7 +1052,6 @@ function saveRow(button) {
         }
     })
     .then(data => {
-        console.log('Response data:', data);
         if (data.success) {
             // Закрываем поля редактирования перед перезагрузкой
             closeAllEditFields();
@@ -1109,8 +1086,6 @@ function deleteRow(id) {
         body: JSON.stringify({ _method: 'DELETE' })
     })
     .then(response => {
-        console.log('Delete response status:', response.status);
-        
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
             return response.json().then(data => {

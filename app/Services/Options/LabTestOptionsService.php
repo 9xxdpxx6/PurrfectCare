@@ -12,6 +12,31 @@ class LabTestOptionsService extends BaseOptionsService
     public function getLabTestTypeOptions(Request $request)
     {
         $query = LabTestType::query();
+        
+        // Если запрошены последние записи, загружаем их
+        if ($request->has('recent')) {
+            $limit = $request->input('recent', 20);
+            $query->orderBy('id', 'desc')->limit($limit);
+            
+            $items = $query->get();
+            $options = [];
+            
+            foreach ($items as $item) {
+                $option = [
+                    'value' => $item->id,
+                    'text' => $item->name
+                ];
+                
+                if ($request->input('include_price', false)) {
+                    $option['price'] = $item->price ?? 0;
+                }
+                
+                $options[] = $option;
+            }
+            
+            return response()->json($options);
+        }
+        
         return $this->buildOptions($request, $query, [
             'model' => LabTestType::class,
             'include_price' => $request->input('include_price', false)

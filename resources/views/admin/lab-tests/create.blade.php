@@ -295,14 +295,11 @@
                 if (selectedPetId && !query) {
                     url += '&selected=' + encodeURIComponent(selectedPetId);
                 }
-                console.log('Загружаем опции для питомца:', url);
                 fetch(url)
                     .then(response => {
-                        console.log('Ответ для питомца получен:', response.status);
                         return response.json();
                     })
                     .then(json => {
-                        console.log('Опции питомца загружены:', json);
                         callback(json);
                     })
                     .catch((error) => {
@@ -332,14 +329,11 @@
                 if (selectedVetId && !query) {
                     url += '&selected=' + encodeURIComponent(selectedVetId);
                 }
-                console.log('Загружаем опции для ветеринара:', url);
                 fetch(url)
                     .then(response => {
-                        console.log('Ответ для ветеринара получен:', response.status);
                         return response.json();
                     })
                     .then(json => {
-                        console.log('Опции ветеринара загружены:', json);
                         callback(json);
                     })
                     .catch((error) => {
@@ -369,14 +363,11 @@
                 if (selectedLabTestTypeId && !query) {
                     url += '&selected=' + encodeURIComponent(selectedLabTestTypeId);
                 }
-                console.log('Загружаем опции для типа анализа:', url);
                 fetch(url)
                     .then(response => {
-                        console.log('Ответ для типа анализа получен:', response.status);
                         return response.json();
                     })
                     .then(json => {
-                        console.log('Опции типа анализа загружены:', json);
                         callback(json);
                     })
                     .catch((error) => {
@@ -401,11 +392,8 @@
             const container = document.getElementById('results-container');
             const oldResults = @json(old('results', []));
             
-            console.log('restoreDynamicFields вызвана', oldResults);
-            
             // Если нет сохраненных данных - ничего не делаем
             if (!oldResults || oldResults.length === 0) {
-                console.log('Нет старых данных');
                 return;
             }
             
@@ -414,20 +402,14 @@
             for (let i = 0; i < oldResults.length; i++) {
                 if (oldResults[i] && oldResults[i].lab_test_param_id && oldResults[i].value && oldResults[i].value !== 'null' && oldResults[i].value !== '') {
                     hasValidData = true;
-                    console.log('Найдены валидные данные в поле', i, oldResults[i]);
                     break;
                 }
             }
             
-            console.log('hasValidData:', hasValidData);
-            
             // Если нет валидных данных - НЕ ТРОГАЕМ поля вообще
             if (!hasValidData) {
-                console.log('Нет валидных данных - поля НЕ восстанавливаются');
                 return;
             }
-            
-            console.log('Есть валидные данные - восстанавливаем поля');
             
             // Если есть валидные данные - восстанавливаем все поля
             // Удаляем все поля кроме первого
@@ -533,14 +515,11 @@
                 preload: true,
                 load: function(query, callback) {
                     let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
-                    console.log('Загружаем опции для параметра:', url);
                     fetch(url)
                         .then(response => {
-                            console.log('Ответ получен:', response.status);
                             return response.json();
                         })
                         .then(json => {
-                            console.log('Опции загружены:', json);
                             callback(json);
                         })
                         .catch((error) => {

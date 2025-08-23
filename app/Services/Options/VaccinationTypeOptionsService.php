@@ -13,6 +13,26 @@ class VaccinationTypeOptionsService extends BaseOptionsService
         $search = $request->input('q');
         $selectedId = $request->input('selected');
         
+        // Если запрошены последние записи, загружаем их
+        if ($request->has('recent')) {
+            $limit = $request->input('recent', 20);
+            $query->orderBy('id', 'desc')->limit($limit);
+            
+            $items = $query->get();
+            $options = [];
+            
+            foreach ($items as $item) {
+                $options[] = [
+                    'value' => $item->id,
+                    'text' => $item->name . ($item->price > 0 ? " (₽{$item->price})" : ''),
+                    'description' => $item->description,
+                    'price' => $item->price,
+                ];
+            }
+            
+            return response()->json($options);
+        }
+        
         // Добавляем выбранный элемент
         if ($selectedId && is_numeric($selectedId)) {
             $selected = VaccinationType::find($selectedId);

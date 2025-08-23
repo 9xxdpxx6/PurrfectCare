@@ -73,13 +73,7 @@ class VaccinationTypeController extends SettingsController
     public function update(UpdateRequest $request, VaccinationType $vaccinationType)
     {
         try {
-            \Log::info('Updating vaccination type', [
-                'id' => $vaccinationType->id,
-                'method' => $request->method(),
-                'content_type' => $request->header('Content-Type'),
-                'all_data' => $request->all(),
-                'validated_data' => $request->validated()
-            ]);
+
             
             $this->service->update($vaccinationType, $request->validated());
             return $this->successResponse();

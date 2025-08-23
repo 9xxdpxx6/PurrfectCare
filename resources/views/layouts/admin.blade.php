@@ -9,13 +9,10 @@
     @stack('styles')
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <style>
-        /* Стили для оверлеев */
+        /* Оверлеи */
         .overlay-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1050;
             display: none;
@@ -25,356 +22,84 @@
             position: absolute;
             top: 54px;
             right: 40px;
-            background: var(--bs-body-bg);
-            border: 1px solid var(--bs-border-color);
-            border-radius: 0.5rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
             min-width: 300px;
             max-width: 400px;
             max-height: 500px;
-            overflow: hidden;
             animation: overlaySlideIn 0.2s ease-out;
         }
 
-        /* Специальные стили для оверлея уведомлений */
-        .notifications-overlay.overlay-content {
-            display: flex;
-            flex-direction: column;
-        }
-
         @keyframes overlaySlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px) translateX(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) translateX(0);
-            }
+            from { opacity: 0; transform: translate(10px, -10px); }
+            to { opacity: 1; transform: translate(0, 0); }
         }
 
-        .notifications-overlay {
-            width: 350px;
-        }
-
-        .notifications-overlay .overlay-content {
-            max-height: 500px;
-            overflow: hidden;
-        }
-
-        .notifications-overlay .overlay-header {
-            flex-shrink: 0;
-            padding: 1rem;
-            border-bottom: 1px solid var(--bs-border-color);
-        }
-
+        /* Уведомления */
+        .notifications-overlay { width: 350px; }
+        .notifications-overlay.overlay-content { display: flex; flex-direction: column; }
         .notifications-overlay #notificationsList {
             flex-grow: 1;
             overflow-y: auto;
             max-height: 350px;
-            padding: 0;
-        }
-
-        .notifications-overlay .notification-item {
-            border-bottom: 1px solid var(--bs-border-color);
-            padding: 1rem;
-            margin: 0;
-            background: none;
-            transition: background-color 0.2s ease;
-        }
-
-        .notifications-overlay .notification-item:last-child {
-            border-bottom: none;
-        }
-
-        .notifications-overlay .notification-item:hover {
-            background-color: var(--bs-light);
-        }
-
-        [data-bs-theme="dark"] .notifications-overlay .notification-item:hover {
-            background-color: var(--bs-dark);
-        }
-
-        /* Фиксируем кнопку "Все уведомления" внизу */
-        .notifications-overlay .overlay-item:last-child {
-            flex-shrink: 0;
-            border-top: 1px solid var(--bs-border-color);
-            margin-top: auto;
-            background-color: var(--bs-body-bg);
-        }
-
-        /* Стили для скроллбара */
-        .notifications-overlay #notificationsList::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .notifications-overlay #notificationsList::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .notifications-overlay #notificationsList::-webkit-scrollbar-thumb {
-            background: var(--bs-border-color);
-            border-radius: 3px;
-        }
-
-        .notifications-overlay #notificationsList::-webkit-scrollbar-thumb:hover {
-            background: var(--bs-secondary);
-        }
-
-        /* Стили для Firefox */
-        .notifications-overlay #notificationsList {
             scrollbar-width: thin;
             scrollbar-color: var(--bs-border-color) transparent;
         }
-
-        .user-overlay {
-            width: 250px;
+        .notifications-overlay #notificationsList::-webkit-scrollbar { width: 6px; }
+        .notifications-overlay #notificationsList::-webkit-scrollbar-track { background: transparent; }
+        .notifications-overlay #notificationsList::-webkit-scrollbar-thumb { 
+            background: var(--bs-border-color); 
+            border-radius: 3px; 
+        }
+        .notifications-overlay #notificationsList::-webkit-scrollbar-thumb:hover { 
+            background: var(--bs-secondary); 
         }
 
-        .overlay-header {
-            padding: 1rem;
-            background-color: var(--bs-light);
-            border-bottom: 1px solid var(--bs-border-color);
-            font-weight: 600;
-        }
+        .user-overlay { width: 250px; }
 
-        [data-bs-theme="dark"] .overlay-header {
-            background-color: var(--bs-dark);
-            color: var(--bs-light);
-        }
-
-        .overlay-divider {
-            height: 1px;
-            background-color: var(--bs-border-color);
-            margin: 0;
-        }
-
-        .overlay-item {
-            padding: 0.75rem 1rem;
-            transition: background-color 0.2s ease;
-        }
-
-        .overlay-item:hover {
-            background-color: var(--bs-light);
-        }
-
-        [data-bs-theme="dark"] .overlay-item:hover {
-            background-color: var(--bs-dark);
-        }
-
-
-
-        .overlay-item a {
-            color: var(--bs-body-color);
-            text-decoration: none;
-            display: block;
-        }
-
-        .overlay-item a:hover {
-            color: var(--primary-color);
-        }
-
-        .overlay-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Стили для активного состояния кнопок */
-        .nav-link.active,
-        .btn.active {
-            background-color: var(--primary-color) !important;
-            color: white !important;
-        }
-
-        /* Устанавливаем высоту header для оверлеев */
-        header {
-            height: var(--header-height);
-        }
-
+        /* Сайдбар */
         .sidebar {
             height: 100vh;
             position: fixed;
             top: 0;
             left: 0;
             width: 250px;
-            background-color: var(--bs-body-bg);
             padding-top: 20px;
-            border-right: 1px solid var(--bs-border-color);
             overflow-y: auto;
             z-index: 1000;
         }
-        .sidebar a {
-            text-decoration: none;
-            color: var(--bs-body-color);
-        }
-        .sidebar .nav-link {
-            padding: 8px 15px;
-            font-size: 15px;
-        }
-        .sidebar .nav-link:hover {
-            background-color: var(--bs-secondary-bg);
-            border-radius: 4px;
-        }
-        .sidebar .collapse .nav-link {
-            padding-left: 30px;
-            font-size: 14px;
-        }
-        .sidebar .nav-link.active {
-            background-color: var(--bs-primary);
-            color: white !important;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-        .sidebar .collapse .nav-link.active {
-            background-color: var(--bs-primary);
-            color: white !important;
-            font-weight: 500;
-        }
-        .sidebar .nav-link:hover:not(.active) {
-            background-color: var(--bs-secondary-bg);
-            border-radius: 4px;
-        }
-        .sidebar .collapse .nav-link:hover:not(.active) {
-            background-color: var(--bs-secondary-bg);
-            border-radius: 4px;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-        .sidebar-toggle {
-            display: none;
-        }
+        
+        .main-content { margin-left: 250px; }
+        .sidebar-toggle { display: none; }
+        
         .collapse-arrow {
             transition: transform 0.3s ease;
             display: inline-block;
         }
-        .collapse-arrow.rotated {
-            transform: rotate(180deg);
+        .collapse-arrow.rotated { transform: rotate(180deg); }
+
+        /* Декоративные карточки */
+        .nav-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+            transition: transform .15s ease, box-shadow .15s ease;
         }
+        .nav-card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 24px rgba(0,0,0,.25); 
+        }
+
+        .kpi-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+        }
+
+        /* Мобильная адаптация */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
             }
-            .sidebar.show {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .sidebar-toggle {
-                display: block;
-            }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .sidebar-toggle { display: block; }
         }
-        
-        /* Адаптивные стили для таблиц */
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        @media (max-width: 576px) {
-            .table-responsive table {
-                font-size: 0.875rem;
-            }
-            
-            .table-responsive th,
-            .table-responsive td {
-                padding: 0.5rem 0.25rem;
-                white-space: nowrap;
-            }
-            
-            .table-responsive .table-sm th,
-            .table-responsive .table-sm td {
-                padding: 0.25rem 0.125rem;
-            }
-            
-            /* Скрываем менее важные колонки на мобильных */
-            .table-responsive .d-none-mobile {
-                display: none !important;
-            }
-            
-            /* Уменьшаем размеры карточек на мобильных */
-            .card-body {
-                padding: 1rem 0.75rem;
-            }
-            
-            .card-header {
-                padding: 0.75rem;
-            }
-            
-            /* Адаптируем кнопки на мобильных */
-            .btn-toolbar .btn-group {
-                flex-wrap: wrap;
-                gap: 0.25rem;
-            }
-            
-            .btn-toolbar .btn {
-                font-size: 0.875rem;
-                padding: 0.375rem 0.75rem;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            /* Скрываем некоторые колонки на планшетах */
-            .table-responsive .d-none-tablet {
-                display: none !important;
-            }
-            
-            /* Улучшение отображения графиков на планшетах */
-            canvas {
-                max-width: 100%;
-                height: auto !important;
-            }
-            
-            /* Адаптация метрик на планшетах */
-            .col-md-3 {
-                margin-bottom: 1rem;
-            }
-        }
-
-        /* Декоративные карточки навигации и KPI */
-        .nav-card {
-            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-            border-radius: 12px;
-            transition: transform .15s ease, box-shadow .15s ease;
-        }
-        .nav-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
-
-        .kpi-card {
-            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-            border-radius: 12px;
-        }
-        
-        /* Дополнительные стили для очень маленьких экранов */
-        @media (max-width: 480px) {
-            .h2 {
-                font-size: 1.25rem;
-            }
-            
-            .card-title {
-                font-size: 0.875rem;
-            }
-            
-            .card-body h3 {
-                font-size: 1rem;
-            }
-            
-            .card-body h4 {
-                font-size: 0.875rem;
-            }
-            
-            /* Уменьшение отступов на очень маленьких экранах */
-            .main-content {
-                padding: 10px;
-            }
-            
-            .card-body {
-                padding: 0.75rem;
-            }
-        }
-
-                 /* Перенесено в resources/sass/app.scss */
     </style>
 </head>
 <body>
@@ -412,8 +137,8 @@
 
     <!-- Оверлей уведомлений -->
     <div id="notificationsOverlay" class="overlay-overlay" style="display: none;">
-        <div class="overlay-content notifications-overlay">
-            <div class="overlay-header d-flex justify-content-between align-items-center">
+        <div class="overlay-content notifications-overlay bg-body border rounded shadow overflow-hidden">
+            <div class="p-3 border-bottom fw-semibold d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 col-6">Уведомления</h6>
                 <button class="btn btn-sm btn-link text-decoration-none col-6" id="markAllAsRead">
                     Отметить все как прочитанные
@@ -425,8 +150,8 @@
                     <p class="mb-0">Нет новых уведомлений</p>
                 </div>
             </div>
-            <div class="overlay-item">
-                <a href="{{ route('admin.notifications.index') }}" class="text-decoration-none">
+            <div class="px-3 py-2 border-top mt-auto bg-body">
+                <a href="{{ route('admin.notifications.index') }}" class="text-decoration-none d-block text-body">
                     <i class="bi bi-list-ul me-2"></i>Все уведомления
                 </a>
             </div>
@@ -435,44 +160,43 @@
 
     <!-- Оверлей пользователя -->
     <div id="userOverlay" class="overlay-overlay" style="display: none;">
-        <div class="overlay-content user-overlay">
-            <div class="overlay-header">
+        <div class="overlay-content user-overlay bg-body border rounded shadow overflow-hidden">
+            <div class="p-3 border-bottom fw-semibold">
                 <h6 class="mb-0">Профиль</h6>
             </div>
-            <div class="overlay-divider"></div>
-            <div class="overlay-item">
-                <a href="{{ route('admin.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <div class="px-3 py-2">
+                <a href="{{ route('admin.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="text-decoration-none d-block text-body">
                     <i class="bi bi-box-arrow-right me-2"></i>Выйти
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="sidebar" id="sidebarMenu">
+    <div class="sidebar bg-body border-end" id="sidebarMenu">
         <div class="px-3">
             <h4 class="mb-4">Админ-панель</h4>
 
             <!-- Основное -->
             <ul class="nav flex-column mb-4">
                 <li class="nav-item">
-                    <a class="nav-link d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#mainMenu" aria-expanded="true">
+                    <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#mainMenu" aria-expanded="true">
                         <span><i class="bi bi-house-door me-2"></i>Основное</span>
                         <i class="bi bi-chevron-down collapse-arrow"></i>
                     </a>
                     <div class="collapse show" id="mainMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.dashboard') }}">
                                     Главная
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.orders.index') }}">
                                     Заказы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}" href="{{ route('admin.services.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.services.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.services.index') }}">
                                     Услуги
                                 </a>
                             </li>
@@ -482,39 +206,39 @@
 
                 <!-- Статистика -->
                 <li class="nav-item">
-                    <a class="nav-link d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#statisticsMenu" aria-expanded="true">
+                    <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#statisticsMenu" aria-expanded="true">
                         <span><i class="bi bi-graph-up me-2"></i>Статистика</span>
                         <i class="bi bi-chevron-down collapse-arrow"></i>
                     </a>
                     <div class="collapse show" id="statisticsMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.statistics.dashboard') ? 'active' : '' }}" href="{{ route('admin.statistics.dashboard') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.dashboard') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.statistics.dashboard') }}">
                                     Общая статистика
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.statistics.financial') ? 'active' : '' }}" href="{{ route('admin.statistics.financial') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.financial') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.statistics.financial') }}">
                                     Финансы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.statistics.operational') ? 'active' : '' }}" href="{{ route('admin.statistics.operational') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.operational') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.statistics.operational') }}">
                                     Эффективность
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.statistics.clients') ? 'active' : '' }}" href="{{ route('admin.statistics.clients') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.clients') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.statistics.clients') }}">
                                     Клиенты
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.statistics.medical') ? 'active' : '' }}" href="{{ route('admin.statistics.medical') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.medical') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.statistics.medical') }}">
                                     Медицина
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.statistics.conversion') ? 'active' : '' }}" href="{{ route('admin.statistics.conversion') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.statistics.conversion') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.statistics.conversion') }}">
                                     Конверсия
                                 </a>
                             </li>
@@ -524,19 +248,19 @@
 
                 <!-- Пациенты -->
                 <li class="nav-item">
-                    <a class="nav-link d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#clientsMenu" aria-expanded="true">
+                    <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#clientsMenu" aria-expanded="true">
                         <span><i class="bi bi-people me-2"></i>Пациенты</span>
                         <i class="bi bi-chevron-down collapse-arrow"></i>
                     </a>
                     <div class="collapse show" id="clientsMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.users.index') }}">
                                     Клиенты
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.pets.*') ? 'active' : '' }}" href="{{ route('admin.pets.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.pets.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.pets.index') }}">
                                     Питомцы
                                 </a>
                             </li>
@@ -546,29 +270,29 @@
 
                 <!-- Медицина -->
                 <li class="nav-item">
-                    <a class="nav-link d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#medicineMenu" aria-expanded="true">
+                    <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#medicineMenu" aria-expanded="true">
                         <span><i class="bi bi-heart-pulse me-2"></i>Медицина</span>
                         <i class="bi bi-chevron-down collapse-arrow"></i>
                     </a>
                     <div class="collapse show" id="medicineMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.visits.*') ? 'active' : '' }}" href="{{ route('admin.visits.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.visits.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.visits.index') }}">
                                     Приемы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.vaccinations.*') ? 'active' : '' }}" href="{{ route('admin.vaccinations.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.vaccinations.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.vaccinations.index') }}">
                                     Вакцинации
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.*') ? 'active' : '' }}" href="{{ route('admin.lab-tests.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.lab-tests.index') }}">
                                     Анализы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.drugs.*') ? 'active' : '' }}" href="{{ route('admin.drugs.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.drugs.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.drugs.index') }}">
                                     Препараты
                                 </a>
                             </li>
@@ -578,24 +302,24 @@
 
                 <!-- Организация -->
                 <li class="nav-item">
-                    <a class="nav-link d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#organizationMenu" aria-expanded="true">
+                    <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#organizationMenu" aria-expanded="true">
                         <span><i class="bi bi-building me-2"></i>Организация</span>
                         <i class="bi bi-chevron-down collapse-arrow"></i>
                     </a>
                     <div class="collapse show" id="organizationMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}" href="{{ route('admin.employees.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.employees.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.employees.index') }}">
                                     Сотрудники
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}" href="{{ route('admin.schedules.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.schedules.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.schedules.index') }}">
                                     Расписания
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.drug-procurements.*') ? 'active' : '' }}" href="{{ route('admin.drug-procurements.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.drug-procurements.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.drug-procurements.index') }}">
                                     Поставки
                                 </a>
                             </li>
@@ -605,76 +329,76 @@
 
                 <!-- Уведомления -->
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.notifications.index') }}">
                         <i class="bi bi-bell me-2"></i>Уведомления
                     </a>
                 </li>
 
                 <!-- Настройки -->
                 <li class="nav-item">
-                    <a class="nav-link d-flex justify-content-between align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#settingsMenu" aria-expanded="true">
+                    <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#settingsMenu" aria-expanded="true">
                         <span><i class="bi bi-gear me-2"></i>Настройки</span>
                         <i class="bi bi-chevron-down collapse-arrow"></i>
                     </a>
                     <div class="collapse show" id="settingsMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.types.*') ? 'active' : '' }}" href="{{ route('admin.lab-tests.types.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.types.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.lab-tests.types.index') }}">
                                     Типы анализов
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.params.*') ? 'active' : '' }}" href="{{ route('admin.lab-tests.params.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.params.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.lab-tests.params.index') }}">
                                     Параметры анализов
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.vaccination-types.*') ? 'active' : '' }}" href="{{ route('admin.vaccination-types.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.vaccination-types.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.vaccination-types.index') }}">
                                     Типы вакцинаций
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.statuses.*') ? 'active' : '' }}" href="{{ route('admin.settings.statuses.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.statuses.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.statuses.index') }}">
                                     Статусы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.units.*') ? 'active' : '' }}" href="{{ route('admin.settings.units.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.units.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.units.index') }}">
                                     Единицы измерений
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.branches.*') ? 'active' : '' }}" href="{{ route('admin.settings.branches.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.branches.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.branches.index') }}">
                                     Филиалы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.specialties.*') ? 'active' : '' }}" href="{{ route('admin.settings.specialties.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.specialties.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.specialties.index') }}">
                                     Специальности
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.species.*') ? 'active' : '' }}" href="{{ route('admin.settings.species.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.species.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.species.index') }}">
                                     Виды животных
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.breeds.*') ? 'active' : '' }}" href="{{ route('admin.settings.breeds.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.breeds.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.breeds.index') }}">
                                     Породы
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.suppliers.*') ? 'active' : '' }}" href="{{ route('admin.settings.suppliers.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.suppliers.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.suppliers.index') }}">
                                     Поставщики
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.diagnoses.*') ? 'active' : '' }}" href="{{ route('admin.settings.diagnoses.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.diagnoses.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.diagnoses.index') }}">
                                     Диагнозы (словарь)
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.settings.symptoms.*') ? 'active' : '' }}" href="{{ route('admin.settings.symptoms.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.symptoms.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.symptoms.index') }}">
                                     Симптомы (словарь)
                                 </a>
                             </li>
@@ -685,7 +409,7 @@
         </div>
     </div>
 
-    <div class="main-content">
+    <div class="main-content p-4">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show"
                  role="alert"
@@ -1051,12 +775,10 @@
                     }
 
                     this.list.innerHTML = notifications.map(notification => {
-                        // Отладочная информация в консоль
-                        console.log('Notification data structure:', notification.data);
-                        
                         return `
-                        <div class="notification-item ${notification.read_at ? 'text-muted' : ''}" 
-                             data-notification-id="${notification.id}">
+                        <div class="border-bottom p-3 ${notification.read_at ? 'text-muted' : ''}" 
+                             data-notification-id="${notification.id}"
+                             style="cursor: pointer; transition: background-color 0.2s ease;">
                             <div class="d-flex align-items-start">
                                 <div class="flex-grow-1">
                                     <div class="fw-bold">${notification.data.title}</div>
@@ -1074,9 +796,18 @@
                     `;
                     }).join('');
 
-                    // Добавляем обработчики кликов
-                    this.list.querySelectorAll('.notification-item').forEach(item => {
+                    // Добавляем обработчики кликов и hover эффекты
+                    this.list.querySelectorAll('[data-notification-id]').forEach(item => {
                         item.addEventListener('click', () => this.markAsRead(item.dataset.notificationId));
+                        
+                        // Добавляем hover эффект с поддержкой темной темы
+                        item.addEventListener('mouseenter', () => {
+                            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                            item.classList.add(isDark ? 'bg-dark' : 'bg-light');
+                        });
+                        item.addEventListener('mouseleave', () => {
+                            item.classList.remove('bg-light', 'bg-dark');
+                        });
                     });
                 }
 
@@ -1150,27 +881,18 @@
                     let links = '';
                     
                     if (data && data.data) {
-                        // Отладочная информация
-                        console.log('Generating links for data:', data.data);
-                        
                         // Ссылка на клиента - проверяем разные возможные ключи
                         let clientId = null;
                         
                         // Ищем ID клиента в разных возможных местах
                         if (data.data.client_id) {
                             clientId = data.data.client_id;
-                            console.log('Found client_id:', clientId);
                         } else if (data.data.user_id) {
                             clientId = data.data.user_id;
-                            console.log('Found user_id:', clientId);
                         } else if (data.data.user && data.data.user.id) {
                             clientId = data.data.user.id;
-                            console.log('Found user.id:', clientId);
                         } else if (data.data.client && data.data.client.id) {
                             clientId = data.data.client.id;
-                            console.log('Found client.id:', clientId);
-                        } else {
-                            console.log('No client ID found in:', data.data);
                         }
                         
                         if (clientId) {

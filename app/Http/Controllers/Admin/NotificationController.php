@@ -29,13 +29,7 @@ class NotificationController extends Controller
             $filters = $request->only(['status', 'type', 'dateFrom', 'dateTo', 'sort']);
             $perPage = $request->get('per_page', 25);
             
-            // Отладочная информация
-            \Log::info('NotificationController::index', [
-                'request_all' => $request->all(),
-                'filters' => $filters,
-                'per_page' => $perPage,
-                'user_id' => Auth::guard('admin')->id() // Добавляем ID пользователя для отслеживания
-            ]);
+
             
             // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
             $result = $this->notificationService->getAllNotifications($perPage, $filters);
@@ -79,12 +73,7 @@ class NotificationController extends Controller
         // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
         $success = $this->notificationService->markAsRead($notificationId);
 
-        // Логируем результат для отслеживания производительности
-        \Log::info('Notification marked as read', [
-            'notification_id' => $notificationId,
-            'user_id' => Auth::guard('admin')->id(),
-            'success' => $success
-        ]);
+
 
         return response()->json([
             'success' => $success
@@ -99,11 +88,7 @@ class NotificationController extends Controller
         // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
         $success = $this->notificationService->markAllAsRead();
 
-        // Логируем результат для отслеживания производительности
-        \Log::info('All notifications marked as read', [
-            'user_id' => Auth::guard('admin')->id(),
-            'success' => $success
-        ]);
+
 
         return response()->json([
             'success' => $success

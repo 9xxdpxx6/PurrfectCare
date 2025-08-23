@@ -770,6 +770,10 @@
             }
         });
         
+        // Устанавливаем флаг инициализации для TomSelect элементов
+        clientTomSelect.isInitializing = true;
+        petTomSelect.isInitializing = true;
+        
         // Устанавливаем предустановленные значения с задержкой для полной инициализации
         setTimeout(() => {
             // Сначала устанавливаем клиента
@@ -786,14 +790,12 @@
                 // И с еще большей задержкой устанавливаем приемы
                 setTimeout(() => {
                     if (selectedVisits && selectedVisits.length > 0 && selectedClientId) {
-                        console.log('Restoring selected visits:', selectedVisits);
                         // Загружаем опции для выбранных приемов
                         const visitsUrl = document.getElementById('visits').dataset.url + '?selected=' + selectedVisits.join(',') + '&filter=false&client_id=' + selectedClientId;
                         
                         fetch(visitsUrl)
                             .then(response => response.json())
                             .then(options => {
-                                console.log('Loaded visit options for restoration:', options);
                                 // Добавляем опции в TomSelect
                                 options.forEach(option => {
                                     visitsTomSelect.addOption(option);
@@ -803,16 +805,27 @@
                                 selectedVisits.forEach(visitId => {
                                     visitsTomSelect.setValue(visitId, true); // silent = true, чтобы не вызывать событие
                                 });
-                                
-                                console.log('Visits restored successfully');
                             })
                             .catch(error => {
                                 console.error('Error loading selected visits:', error);
                             });
                     }
+                    
+                    // Убираем флаг инициализации после восстановления всех значений
+                    clientTomSelect.isInitializing = false;
+                    petTomSelect.isInitializing = false;
+                    
+                    console.log('Инициализация завершена, приемы сохранены');
                 }, 300);
             }, 200);
         }, 100);
+        
+        // Дополнительная проверка через 1 секунду для гарантии сохранения приемов
+        setTimeout(() => {
+            console.log('Финальная проверка приемов...');
+            const currentVisits = visitsTomSelect.getValue();
+            console.log('Текущие приемы после инициализации:', currentVisits);
+        }, 1000);
         
         // Обработчик изменения клиента
         clientTomSelect.on('change', function(value) {
@@ -820,6 +833,11 @@
             petTomSelect.clear();
             // Обновляем список питомцев
             petTomSelect.refreshOptions();
+            
+            // Обновляем приемы только если это не инициализация
+            if (!this.isInitializing) {
+                updateVisitOptions();
+            }
         });
 
         new createTomSelect('#status_id', {
@@ -888,7 +906,48 @@
             }
         });
 
-        // Фильтрация питомцев по клиенту
+        // Загрузка опций питомцев для клиента (без сброса текущего значения)
+        function loadPetOptionsForClient(clientId, isInitialization = false) {
+            if (!clientId) {
+                petTomSelect.disable();
+                return;
+            } else {
+                petTomSelect.enable();
+            }
+            
+            // Загружаем питомцев для выбранного клиента
+            fetch(`{{ route('admin.orders.pet-options') }}?client_id=${clientId}&filter=false`)
+                .then(response => response.json())
+                .then(data => {
+                    // Очищаем только опции, но не значение
+                    petTomSelect.clearOptions();
+                    
+                    data.forEach(option => {
+                        petTomSelect.addOption(option);
+                    });
+                    
+                    // При инициализации восстанавливаем значение питомца
+                    if (isInitialization) {
+                        const currentPetIdFromServer = '{{ old("pet_id", $selectedPetId ?? "") }}';
+                        const currentClientIdFromServer = '{{ old("client_id", $selectedClientId ?? "") }}';
+                        if (currentPetIdFromServer && clientId === currentClientIdFromServer) {
+                            petTomSelect.setValue(currentPetIdFromServer);
+                            
+                            // После установки питомца предзагружаем приемы
+                            setTimeout(() => {
+                                if (visitsTomSelect && visitsTomSelect.load) {
+                                    visitsTomSelect.load('');
+                                }
+                            }, 100);
+                        }
+                    }
+                })
+                .catch(() => {
+                    petTomSelect.disable();
+                });
+        }
+        
+        // Фильтрация питомцев по клиенту (с полным сбросом)
         function filterPetsByClient(clientId) {
             petTomSelect.clear();
             petTomSelect.clearOptions();
@@ -908,10 +967,13 @@
                         petTomSelect.addOption(option);
                     });
                     
-                    // Восстанавливаем выбранное значение питомца только если клиент совпадает
-                    const currentPetId = '{{ old("pet_id") }}';
-                    if (currentPetId && clientId === '{{ old("client_id") }}') {
-                        petTomSelect.setValue(currentPetId);
+                    // Проверяем, принадлежит ли текущий питомец новому клиенту
+                    const currentPetId = petTomSelect.getValue();
+                    if (currentPetId) {
+                        const currentPetOption = data.find(option => option.value == currentPetId);
+                        if (!currentPetOption) {
+                            petTomSelect.clear(); // Очищаем только если питомец не принадлежит клиенту
+                        }
                     }
                 })
                 .catch(() => {
@@ -927,7 +989,15 @@
         // Инициализация при загрузке страницы
         const initialClientId = clientTomSelect.getValue();
         if (initialClientId) {
-            filterPetsByClient(initialClientId);
+            // При инициализации не сбрасываем питомца, только загружаем опции
+            loadPetOptionsForClient(initialClientId, true);
+            
+            // Предзагружаем приемы для текущего клиента
+            setTimeout(() => {
+                if (visitsTomSelect && visitsTomSelect.load) {
+                    visitsTomSelect.load('');
+                }
+            }, 200);
         }
         
         // Управление кнопками анализов и вакцинаций
@@ -949,12 +1019,45 @@
         petTomSelect.on('change', function(value) {
             updatePetDependentButtons();
             
+            // Обновляем опции для анализов и вакцинаций при изменении питомца
+            updateLabTestAndVaccinationOptions();
+            
             // Сохраняем текущее значение для следующей проверки
             this.lastValue = value;
+            
+            // Обновляем приемы только если это не инициализация
+            if (!this.isInitializing) {
+                updateVisitOptions();
+            }
         });
         
         // Инициализация состояния кнопок
         updatePetDependentButtons();
+        
+        // Функция для обновления опций анализов и вакцинаций
+        function updateLabTestAndVaccinationOptions() {
+            const petId = petTomSelect.getValue();
+            
+            // Обновляем опции для анализов
+            const labTestSelects = document.querySelectorAll('.order-item[data-item-type="lab_test"] .item-select');
+            labTestSelects.forEach(select => {
+                if (select.tomselect) {
+                    select.tomselect.clear();
+                    select.tomselect.clearOptions();
+                    select.tomselect.load('');
+                }
+            });
+            
+            // Обновляем опции для вакцинаций
+            const vaccinationSelects = document.querySelectorAll('.order-item[data-item-type="vaccination"] .item-select');
+            vaccinationSelects.forEach(select => {
+                if (select.tomselect) {
+                    select.tomselect.clear();
+                    select.tomselect.clearOptions();
+                    select.tomselect.load('');
+                }
+            });
+        }
         
         // TomSelect для приемов
         const visitsTomSelect = new createTomSelect('#visits', {
@@ -985,15 +1088,11 @@
                 const currentDate = new Date().toISOString().split('T')[0];
                 url += '&order_date=' + currentDate;
                 
-                console.log('Loading visits from URL:', url);
-                
                 fetch(url)
                     .then(response => {
-                        console.log('Response status:', response.status);
                         return response.json();
                     })
                     .then(json => {
-                        console.log('Visits loaded:', json);
                         callback(json);
                     })
                     .catch(error => {
@@ -1012,7 +1111,11 @@
         // Обновляем список приемов при изменении клиента или питомца
         function updateVisitOptions() {
             const clientId = clientTomSelect.getValue();
-            console.log('Updating visit options for client:', clientId);
+            
+            // Если это инициализация, не сбрасываем приемы
+            if (clientTomSelect.isInitializing || petTomSelect.isInitializing) {
+                return;
+            }
             
             // Очищаем текущие опции
             visitsTomSelect.clear();
@@ -1025,7 +1128,6 @@
         }
         
         clientTomSelect.on('change', function(value) {
-            console.log('Client changed to:', value);
             updateVisitOptions();
         });
         
@@ -1046,6 +1148,13 @@
             if (itemType && itemUrls[itemType]) {
                 itemSelect.dataset.url = itemUrls[itemType];
                 initItemTomSelect(itemSelect, itemType);
+                
+                // Для анализов и вакцинаций сразу загружаем последние 20 записей
+                if ((itemType === 'lab_test' || itemType === 'vaccination') && itemSelect.tomselect) {
+                    setTimeout(() => {
+                        itemSelect.tomselect.load('');
+                    }, 200);
+                }
             }
             
             // Обработчики для расчета суммы
@@ -1095,6 +1204,13 @@
         
         // Инициализируем TomSelect для элемента
         initItemTomSelect(itemSelect, itemType);
+        
+        // Для анализов и вакцинаций сразу загружаем последние 20 записей
+        if ((itemType === 'lab_test' || itemType === 'vaccination') && itemSelect.tomselect) {
+            setTimeout(() => {
+                itemSelect.tomselect.load('');
+            }, 100);
+        }
         
         // Обработчики для расчета суммы
         const quantityInput = container.querySelector(`[data-item-index="${itemIndex}"] .item-quantity`);
@@ -1212,6 +1328,19 @@
                         const petId = petTomSelect.getValue();
                         if (petId) {
                             url += '&pet_id=' + petId;
+                        }
+                    }
+                }
+                
+                // Если это анализы или вакцинации и запрос пустой, загружаем последние 20 записей
+                if ((type === 'lab_test' || type === 'vaccination') && !query.trim()) {
+                    url = this.input.dataset.url + '?recent=20&filter=false';
+                    if (type === 'lab_test' || type === 'vaccination') {
+                        if (petTomSelect && petTomSelect.getValue) {
+                            const petId = petTomSelect.getValue();
+                            if (petId) {
+                                url += '&pet_id=' + petId;
+                            }
                         }
                     }
                 }

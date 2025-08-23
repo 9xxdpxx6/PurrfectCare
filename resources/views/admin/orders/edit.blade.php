@@ -164,6 +164,9 @@
                         
                         <div class="col-12">
                             <label for="visits" class="form-label">Связанные приемы</label>
+                            @php
+                                $visits = $item->visits;
+                            @endphp
                             <select name="visits[]" id="visits" class="form-select @error('visits') is-invalid @enderror" multiple data-url="{{ route('admin.orders.visit-options') }}">
                                 @if(old('visits'))
                                     @foreach(old('visits') as $visitId)
@@ -215,6 +218,21 @@
                     <h5 class="card-title mb-0">Элементы заказа</h5>
                 </div>
                 <div class="card-body">
+                    @php
+                        // Отладочная информация
+                        // dd([
+                        //     'items_count' => $item->items->count(),
+                        //     'items' => $item->items->map(function($item) {
+                        //         return [
+                        //             'id' => $item->id,
+                        //             'item_type' => $item->item_type,
+                        //             'item_id' => $item->item_id,
+                        //             'itemable' => $item->itemable ? $item->itemable->name : null,
+                        //             'item' => $item->item ? $item->item->name : null,
+                        //         ];
+                        //     })->toArray(),
+                        // ]);
+                    @endphp
                     <!-- Услуги -->
                     <div class="mb-4">
                         <div class="row align-items-center mb-3">
@@ -228,14 +246,20 @@
                             </div>
                         </div>
                         <div id="serviceItems">
-                            @foreach($item->items->where('item_type', 'App\Models\Service') as $index => $orderItem)
+                            @php
+                                $serviceItems = $item->items->where('item_type', 'App\Models\Service');
+                                // dd($serviceItems->toArray());
+                            @endphp
+                            @foreach($serviceItems as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="service">
                                     <div class="row g-3">
                                         <div class="col-12 col-lg-5">
                                             <label class="form-label">Услуга</label>
                                                                                                 <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.service-options') }}">
-                                                @if($orderItem->item)
-                                                    <option value="{{ $orderItem->item_id }}" selected>{{ $orderItem->item->name }}</option>
+                                                @if($orderItem->itemable)
+                                                    <option value="{{ $orderItem->itemable->id }}" selected>{{ $orderItem->itemable->name }}</option>
+                                                @elseif($orderItem->item)
+                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item->name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="service">
@@ -285,14 +309,20 @@
                             </div>
                         </div>
                         <div id="drugItems">
-                            @foreach($item->items->where('item_type', 'App\Models\Drug') as $index => $orderItem)
+                            @php
+                                $drugItems = $item->items->where('item_type', 'App\Models\Drug');
+                                // dd($drugItems->toArray());
+                            @endphp
+                            @foreach($drugItems as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="drug">
                                     <div class="row g-3">
                                         <div class="col-12 col-lg-5">
                                             <label class="form-label">Препарат</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.drug-options') }}">
-                                                @if($orderItem->item)
-                                                    <option value="{{ $orderItem->item_id }}" selected>{{ $orderItem->item->name }}</option>
+                                                @if($orderItem->itemable)
+                                                    <option value="{{ $orderItem->itemable->id }}" selected>{{ $orderItem->itemable->name }}</option>
+                                                @elseif($orderItem->item)
+                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item->name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="drug">
@@ -342,14 +372,20 @@
                             </div>
                         </div>
                         <div id="labTestItems">
-                            @foreach($item->items->where('item_type', 'App\Models\LabTestType') as $index => $orderItem)
+                            @php
+                                $labTestItems = $item->items->where('item_type', 'App\Models\LabTestType');
+                                // dd($labTestItems->toArray());
+                            @endphp
+                            @foreach($labTestItems as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="lab_test">
                                     <div class="row g-3">
                                         <div class="col-12 col-lg-8">
                                             <label class="form-label">Анализ</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}">
-                                                @if($orderItem->item)
-                                                    <option value="{{ $orderItem->item_id }}" selected>{{ $orderItem->item->name }}</option>
+                                                @if($orderItem->itemable)
+                                                    <option value="{{ $orderItem->itemable->id }}" selected>{{ $orderItem->itemable->name }}</option>
+                                                @elseif($orderItem->item)
+                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item->name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="lab_test">
@@ -395,14 +431,20 @@
                             </div>
                         </div>
                         <div id="vaccinationItems">
-                            @foreach($item->items->where('item_type', 'App\Models\VaccinationType') as $index => $orderItem)
+                            @php
+                                $vaccinationItems = $item->items->where('item_type', 'App\Models\VaccinationType');
+                                // dd($vaccinationItems->toArray());
+                            @endphp
+                            @foreach($vaccinationItems as $index => $orderItem)
                                 <div class="order-item border rounded p-3 mb-3" data-item-index="{{ $index }}" data-item-type="vaccination">
                                     <div class="row g-3">
                                         <div class="col-12 col-lg-8">
                                             <label class="form-label">Вакцинация</label>
                                             <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}">
-                                                @if($orderItem->item)
-                                                    <option value="{{ $orderItem->item_id }}" selected>{{ $orderItem->item->name }}</option>
+                                                @if($orderItem->itemable)
+                                                    <option value="{{ $orderItem->itemable->id }}" selected>{{ $orderItem->itemable->name }}</option>
+                                                @elseif($orderItem->item)
+                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item->name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="vaccination">
@@ -411,7 +453,7 @@
                                         
                                         <div class="col-6 col-lg-3">
                                             <label class="form-label">Цена</label>
-                                            <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $orderItem->unit_price }}" min="0" max="999999.99" step="0.01">
+                                            <input type="number" name="items[{{ $index }}][unit_price]" class="form-control item-price" value="{{ $orderItem->itemable->price ?? $orderItem->item->price ?? 0 }}" min="0" max="999999.99" step="0.01">
                                         </div>
                                         
                                         <div class="col-lg-1">
@@ -426,7 +468,13 @@
                                         <div class="col-12">
                                             <small class="text-muted">Препараты в вакцинации:</small>
                                             <ul class="vaccination-drugs-list mt-1 mb-0" style="list-style: none; padding-left: 0;">
-                                                @if($orderItem->item && $orderItem->item->vaccinationType && $orderItem->item->vaccinationType->drugs)
+                                                @if($orderItem->itemable && $orderItem->itemable->drugs)
+                                                    @foreach($orderItem->itemable->drugs as $drug)
+                                                        <li class="mb-1">
+                                                            <small class="text-muted">• {{ $drug->name }} - {{ $drug->pivot->dosage }} шт.</small>
+                                                        </li>
+                                                    @endforeach
+                                                @elseif($orderItem->item && $orderItem->item->vaccinationType && $orderItem->item->vaccinationType->drugs)
                                                     @foreach($orderItem->item->vaccinationType->drugs as $drug)
                                                         <li class="mb-1">
                                                             <small class="text-muted">• {{ $drug->name }} - {{ $drug->pivot->dosage }} шт.</small>
@@ -620,6 +668,30 @@
 
 @php
     $itemCount = $item->items->count();
+    
+    // Отладочная информация
+    // dd([
+    //     'items_count' => $item->items->count(),
+    //     'visits_count' => $item->visits->count(),
+    //     'items' => $item->items->map(function($item) {
+    //         return [
+    //             'id' => $item->id,
+    //             'item_type' => $item->item_type,
+    //             'item_id' => $item->item_id,
+    //             'itemable' => $item->itemable ? $item->itemable->name : null,
+    //             'item' => $item->item ? $item->item->name : null,
+    //         ];
+    //     })->toArray(),
+    //     'visits' => $item->visits->map(function($visit) {
+    //         return [
+    //             'id' => $visit->id,
+    //             'starts_at' => $visit->starts_at,
+    //             'client_name' => $visit->client ? $visit->client->name : null,
+    //             'pet_name' => $visit->pet ? $visit->pet->name : null,
+    //             'status_name' => $visit->status ? $visit->status->name : null,
+    //         ];
+    //     })->toArray(),
+    // ]);
 @endphp
 @push('styles')
 <style>
@@ -796,7 +868,48 @@
             }
         });
 
-        // Фильтрация питомцев по клиенту
+        // Загрузка опций питомцев для клиента (без сброса текущего значения)
+        function loadPetOptionsForClient(clientId, isInitialization = false) {
+            if (!clientId) {
+                petTomSelect.disable();
+                return;
+            } else {
+                petTomSelect.enable();
+            }
+            
+            // Загружаем питомцев для выбранного клиента
+            fetch(`{{ route('admin.orders.pet-options') }}?client_id=${clientId}&filter=false`)
+                .then(response => response.json())
+                .then(data => {
+                    // Очищаем только опции, но не значение
+                    petTomSelect.clearOptions();
+                    
+                    data.forEach(option => {
+                        petTomSelect.addOption(option);
+                    });
+                    
+                    // При инициализации восстанавливаем значение питомца
+                    if (isInitialization) {
+                        const currentPetIdFromServer = '{{ old("pet_id", $item->pet_id) }}';
+                        const currentClientIdFromServer = '{{ old("client_id", $item->client_id) }}';
+                        if (currentPetIdFromServer && clientId === currentClientIdFromServer) {
+                            petTomSelect.setValue(currentPetIdFromServer);
+                            
+                            // После установки питомца предзагружаем приемы
+                            setTimeout(() => {
+                                if (visitsTomSelect && visitsTomSelect.load) {
+                                    visitsTomSelect.load('');
+                                }
+                            }, 100);
+                        }
+                    }
+                })
+                .catch(() => {
+                    petTomSelect.disable();
+                });
+        }
+        
+        // Фильтрация питомцев по клиенту (с полным сбросом)
         function filterPetsByClient(clientId) {
             petTomSelect.clear();
             petTomSelect.clearOptions();
@@ -816,11 +929,13 @@
                         petTomSelect.addOption(option);
                     });
                     
-                    // Восстанавливаем выбранное значение питомца только если клиент совпадает
-                    const currentPetId = '{{ old("pet_id", $item->pet_id) }}';
-                    const currentClientId = '{{ old("client_id", $item->client_id) }}';
-                    if (currentPetId && clientId === currentClientId) {
-                        petTomSelect.setValue(currentPetId);
+                    // Проверяем, принадлежит ли текущий питомец новому клиенту
+                    const currentPetId = petTomSelect.getValue();
+                    if (currentPetId) {
+                        const currentPetOption = data.find(option => option.value == currentPetId);
+                        if (!currentPetOption) {
+                            petTomSelect.clear(); // Очищаем только если питомец не принадлежит клиенту
+                        }
                     }
                 })
                 .catch(() => {
@@ -840,7 +955,15 @@
         // Инициализация при загрузке страницы
         const initialClientId = clientTomSelect.getValue();
         if (initialClientId) {
-            filterPetsByClient(initialClientId);
+            // При инициализации не сбрасываем питомца, только загружаем опции
+            loadPetOptionsForClient(initialClientId, true);
+            
+            // Предзагружаем приемы для текущего клиента
+            setTimeout(() => {
+                if (visitsTomSelect && visitsTomSelect.load) {
+                    visitsTomSelect.load('');
+                }
+            }, 200);
         }
         
         // Управление кнопками анализов и вакцинаций
@@ -862,15 +985,103 @@
         petTomSelect.on('change', function(value) {
             updatePetDependentButtons();
             
+            // Обновляем опции для анализов и вакцинаций при изменении питомца
+            updateLabTestAndVaccinationOptions();
+            
             // Сохраняем текущее значение для следующей проверки
             this.lastValue = value;
+            
+            // При изменении питомца НЕ сбрасываем приемы, если это не инициализация
+            if (!this.isInitializing) {
+                // Обновляем только фильтрацию приемов по питомцу, но не очищаем их
+                updateVisitFilterByPet(value);
+            }
         });
         
         // Инициализация состояния кнопок
         updatePetDependentButtons();
         
+        // Функция для обновления опций анализов и вакцинаций
+        function updateLabTestAndVaccinationOptions() {
+            const petId = petTomSelect.getValue();
+            
+            // Обновляем опции для анализов
+            const labTestSelects = document.querySelectorAll('.order-item[data-item-type="lab_test"] .item-select');
+            labTestSelects.forEach(select => {
+                if (select.tomselect) {
+                    select.tomselect.clear();
+                    select.tomselect.clearOptions();
+                    select.tomselect.load('');
+                }
+            });
+            
+            // Обновляем опции для вакцинаций
+            const vaccinationSelects = document.querySelectorAll('.order-item[data-item-type="vaccination"] .item-select');
+            vaccinationSelects.forEach(select => {
+                if (select.tomselect) {
+                    select.tomselect.clear();
+                    select.tomselect.clearOptions();
+                    select.tomselect.load('');
+                }
+            });
+        }
+        
+        // Функция для обновления фильтрации приемов по питомцу (без сброса)
+        function updateVisitFilterByPet(petId) {
+            // Если приемы еще не инициализированы, не делаем ничего
+            if (!visitsTomSelect.visitsInitialized) {
+                return;
+            }
+            
+            // Если это инициализация, не сбрасываем приемы
+            if (clientTomSelect.isInitializing || petTomSelect.isInitializing) {
+                return;
+            }
+            
+            // Получаем текущие приемы
+            const currentVisits = visitsTomSelect.getValue();
+            if (!currentVisits || currentVisits.length === 0) {
+                return; // Если приемов нет, ничего не делаем
+            }
+            
+            // Проверяем, соответствуют ли текущие приемы выбранному питомцу
+            const currentVisitOptions = visitsTomSelect.options;
+            let shouldKeepVisits = true;
+            
+            currentVisits.forEach(visitId => {
+                const visitOption = currentVisitOptions[visitId];
+                if (visitOption && visitOption.pet_id && visitOption.pet_id != petId) {
+                    shouldKeepVisits = false;
+                }
+            });
+            
+            // Если приемы не соответствуют питомцу, очищаем их
+            if (!shouldKeepVisits) {
+                visitsTomSelect.clear();
+                visitsTomSelect.clearOptions();
+                // Перезагружаем приемы с новым фильтром
+                const clientId = clientTomSelect.getValue();
+                if (clientId) {
+                    visitsTomSelect.load('');
+                }
+            }
+        }
+        
         // TomSelect для приемов
         const visitsTomSelect = new createTomSelect('#visits', {
+            onInitialize: function() {
+                console.log('TomSelect для приемов инициализирован');
+                // После инициализации устанавливаем выбранные значения
+                if (selectedVisits && selectedVisits.length > 0) {
+                    console.log('Устанавливаем выбранные приемы:', selectedVisits);
+                    selectedVisits.forEach(visitId => {
+                        this.setValue(visitId);
+                    });
+                }
+                
+                // Помечаем, что приемы инициализированы
+                this.visitsInitialized = true;
+            },
             placeholder: 'Выберите приемы...',
             valueField: 'value',
             labelField: 'text',
@@ -914,14 +1125,48 @@
         // Обновляем список приемов при изменении клиента или питомца
         function updateVisitOptions() {
             const clientId = clientTomSelect.getValue();
-            console.log('Updating visit options for client:', clientId);
             
-            // Очищаем текущие опции
-            visitsTomSelect.clear();
-            visitsTomSelect.clearOptions();
+            // Если приемы еще не инициализированы, не делаем ничего
+            if (!visitsTomSelect.visitsInitialized) {
+                return;
+            }
+            
+            // Если это инициализация, не сбрасываем приемы
+            if (clientTomSelect.isInitializing || petTomSelect.isInitializing) {
+                return;
+            }
+            
+            // Проверяем, есть ли уже загруженные приемы
+            const currentVisits = visitsTomSelect.getValue();
+            const hasCurrentVisits = currentVisits && currentVisits.length > 0;
+            
+            // Если есть текущие приемы, проверяем, соответствуют ли они новому клиенту
+            if (hasCurrentVisits) {
+                // Получаем информацию о текущих приемах
+                const currentVisitOptions = visitsTomSelect.options;
+                let shouldKeepVisits = true;
+                
+                // Проверяем, принадлежат ли текущие приемы новому клиенту
+                currentVisits.forEach(visitId => {
+                    const visitOption = currentVisitOptions[visitId];
+                    if (visitOption && visitOption.client_id && visitOption.client_id != clientId) {
+                        shouldKeepVisits = false;
+                    }
+                });
+                
+                // Если приемы не соответствуют новому клиенту, очищаем их
+                if (!shouldKeepVisits) {
+                    visitsTomSelect.clear();
+                    visitsTomSelect.clearOptions();
+                }
+            } else {
+                // Если приемов нет, очищаем опции
+                visitsTomSelect.clear();
+                visitsTomSelect.clearOptions();
+            }
             
             if (clientId) {
-                // Если клиент выбран, принудительно загружаем приемы
+                // Если клиент выбран, загружаем приемы
                 visitsTomSelect.load('');
             }
         }
@@ -945,10 +1190,12 @@
         // Инициализируем lastValue для petTomSelect
         petTomSelect.lastValue = petTomSelect.getValue();
         
-        // Убираем флаг инициализации и восстанавливаем приемы после установки питомца
+        // Восстанавливаем приемы после установки питомца, но НЕ очищаем их
         setTimeout(() => {
+            console.log('Восстановление приемов...');
             // Восстанавливаем выбранные приемы при ошибках валидации
             if (selectedVisits && selectedVisits.length > 0) {
+                console.log('Выбранные приемы:', selectedVisits);
                 // Приемы уже есть в DOM в option-ах, просто устанавливаем их в TomSelect
                 selectedVisits.forEach(visitId => {
                     visitsTomSelect.setValue(visitId);
@@ -958,34 +1205,65 @@
             // Убираем флаг инициализации после восстановления всех значений
             clientTomSelect.isInitializing = false;
             petTomSelect.isInitializing = false;
-        }, 300);
+            
+            console.log('Инициализация завершена, приемы сохранены');
+        }, 1000); // Увеличиваем задержку для полной загрузки питомца и приемов
+        
+        // Дополнительная проверка через 1.5 секунды для гарантии сохранения приемов
+        setTimeout(() => {
+            if (visitsTomSelect && visitsTomSelect.visitsInitialized) {
+                console.log('Финальная проверка приемов...');
+                const currentVisits = visitsTomSelect.getValue();
+                console.log('Текущие приемы после инициализации:', currentVisits);
+            }
+        }, 1500);
+        
+        // Инициализируем TomSelect для существующих элементов заказа с задержкой
+        setTimeout(() => {
+            console.log('Инициализация существующих элементов заказа...');
+            const existingItems = document.querySelectorAll('.order-item');
+            console.log('Найдено элементов:', existingItems.length);
+            
+            existingItems.forEach((item, index) => {
+                const itemSelect = item.querySelector('.item-select');
+                const itemType = item.getAttribute('data-item-type');
+                
+                console.log(`Элемент ${index}:`, { itemType, hasSelect: !!itemSelect, hasUrl: !!itemUrls[itemType] });
+                
+                if (itemSelect && itemType && itemUrls[itemType]) {
+                    itemSelect.dataset.url = itemUrls[itemType];
+                    
+                    // Проверяем, есть ли уже выбранное значение
+                    const hasSelectedValue = itemSelect.querySelector('option[selected]');
+                    console.log(`Элемент ${index} имеет выбранное значение:`, !!hasSelectedValue);
+                    
+                    initItemTomSelect(itemSelect, itemType);
+                    
+                    // Для анализов и вакцинаций сразу загружаем последние 20 записей
+                    if ((itemType === 'lab_test' || itemType === 'vaccination') && itemSelect.tomselect) {
+                        setTimeout(() => {
+                            itemSelect.tomselect.load('');
+                        }, 200);
+                    }
+                }
+                
+                // Обработчики для расчета суммы
+                const quantityInput = item.querySelector('.item-quantity');
+                const priceInput = item.querySelector('.item-price');
+                
+                if (quantityInput) {
+                    quantityInput.addEventListener('input', calculateItemTotal);
+                }
+                if (priceInput) {
+                    priceInput.addEventListener('input', calculateItemTotal);
+                }
+            });
+            
+            // Обновляем тоталы после инициализации всех элементов
+            calculateTotal();
+        }, 500);
         
         // Инициализируем тоталы для существующих элементов
-        calculateTotal();
-
-        // Инициализируем TomSelect для существующих элементов заказа
-        const existingItems = document.querySelectorAll('.order-item');
-        existingItems.forEach((item, index) => {
-            const itemSelect = item.querySelector('.item-select');
-            const itemType = item.getAttribute('data-item-type');
-            
-            if (itemType && itemUrls[itemType]) {
-                itemSelect.dataset.url = itemUrls[itemType];
-                initItemTomSelect(itemSelect, itemType);
-            }
-            
-            // Обработчики для расчета суммы
-            const quantityInput = item.querySelector('.item-quantity');
-            const priceInput = item.querySelector('.item-price');
-            
-            if (quantityInput) {
-                quantityInput.addEventListener('input', calculateItemTotal);
-            }
-            if (priceInput) {
-                priceInput.addEventListener('input', calculateItemTotal);
-            }
-        });
-        
         calculateTotal();
     });
 
@@ -1017,6 +1295,13 @@
         
         // Инициализируем TomSelect для элемента
         initItemTomSelect(itemSelect, itemType);
+        
+        // Для анализов и вакцинаций сразу загружаем последние 20 записей
+        if ((itemType === 'lab_test' || itemType === 'vaccination') && itemSelect.tomselect) {
+            setTimeout(() => {
+                itemSelect.tomselect.load('');
+            }, 100);
+        }
         
         // Обработчики для расчета суммы
         const quantityInput = container.querySelector(`[data-item-index="${itemIndex}"] .item-quantity`);
@@ -1115,8 +1400,12 @@
     }
 
     function initItemTomSelect(select, type) {
+        console.log('Инициализация TomSelect для:', type, select);
         const url = itemUrls[type];
-        if (!url) return;
+        if (!url) {
+            console.error('URL не найден для типа:', type);
+            return;
+        }
         
         new createTomSelect(select, {
             placeholder: 'Выберите элемент...',
@@ -1134,6 +1423,19 @@
                         const petId = petTomSelect.getValue();
                         if (petId) {
                             url += '&pet_id=' + petId;
+                        }
+                    }
+                }
+                
+                // Если это анализы или вакцинации и запрос пустой, загружаем последние 20 записей
+                if ((type === 'lab_test' || type === 'vaccination') && !query.trim()) {
+                    url = this.input.dataset.url + '?recent=20&filter=false';
+                    if (type === 'lab_test' || type === 'vaccination') {
+                        if (petTomSelect && petTomSelect.getValue) {
+                            const petId = petTomSelect.getValue();
+                            if (petId) {
+                                url += '&pet_id=' + petId;
+                            }
                         }
                     }
                 }

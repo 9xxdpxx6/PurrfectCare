@@ -160,11 +160,15 @@ class NotificationService
             }
 
             if (isset($filters['dateFrom']) && $filters['dateFrom']) {
-                $query->whereDate('created_at', '>=', $filters['dateFrom']);
+                // Добавляем время 00:00:00 к дате "от"
+                $dateFrom = $filters['dateFrom'] . ' 00:00:00';
+                $query->where('created_at', '>=', $dateFrom);
             }
 
             if (isset($filters['dateTo']) && $filters['dateTo']) {
-                $query->whereDate('created_at', '<=', $filters['dateTo']);
+                // Добавляем время 23:59:59 к дате "до"
+                $dateTo = $filters['dateTo'] . ' 23:59:59';
+                $query->where('created_at', '<=', $dateTo);
             }
 
             if (isset($filters['sort'])) {
@@ -189,15 +193,6 @@ class NotificationService
             // По умолчанию сортируем по дате создания (используем индекс на created_at)
             $query->orderBy('created_at', 'desc');
         }
-
-        // Отладочная информация
-        \Log::info('NotificationService::getAllNotifications', [
-            'filters' => $filters,
-            'per_page' => $perPage,
-            'sql' => $query->toSql(),
-            'bindings' => $query->getBindings(),
-            'total_count' => $query->count()
-        ]);
 
         return $query->paginate($perPage);
     }

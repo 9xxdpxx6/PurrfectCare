@@ -254,7 +254,7 @@
                                         Заказ #{{ $order->id }}
                                     </a>
                                     <div class="small text-muted">
-                                        Создан: {{ $order->created_at->format('d.m.Y H:i') }}
+                                        Создан: {{ $order->created_at ? $order->created_at->format('d.m.Y H:i') : 'Не указано' }}
                                     </div>
                                     <div class="small">
                                         Сумма: {{ number_format($order->total, 2, ',', ' ') }} ₽

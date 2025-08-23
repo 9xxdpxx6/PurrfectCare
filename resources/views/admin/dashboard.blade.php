@@ -69,49 +69,49 @@
 <h5 class="text-muted mb-3">Ключевые показатели за текущий месяц</h5>
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="card kpi-card grad-primary">
-            <div class="card-body text-center">
+        <div class="card kpi-card grad-primary h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-calendar-check fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title mb-2">{{ number_format($metrics['total_visits']) }}</h3>
-                <h6 class= mb-0">Приёмов</h6>
+                <h6 class="mb-0">Приёмов</h6>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card kpi-card grad-success">
-            <div class="card-body text-center">
+        <div class="card kpi-card grad-success h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-cart-check fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title mb-2">{{ number_format($metrics['total_orders']) }}</h3>
-                <h6 class= mb-0">Заказов</h6>
+                <h6 class="mb-0">Заказов</h6>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card kpi-card grad-info">
-            <div class="card-body text-center">
+        <div class="card kpi-card grad-info h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-cash-stack fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title mb-2">{{ number_format($metrics['total_revenue'], 0, ',', ' ') }} ₽</h3>
-                <h6 class= mb-0">Выручка</h6>
+                <h6 class="mb-0">Выручка</h6>
             </div>
         </div>
     </div>
     
     <div class="col-md-3 mb-3">
-        <div class="card kpi-card grad-warning">
-            <div class="card-body text-center">
+        <div class="card kpi-card grad-warning h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
                     <i class="bi bi-people fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title mb-2">{{ number_format($additionalMetrics['total_clients']) }}</h3>
-                <h6 class= mb-0">Новых клиентов</h6>
+                <h6 class="mb-0">Новых клиентов</h6>
             </div>
         </div>
     </div>
@@ -151,7 +151,7 @@
 <div class="row">
     <!-- Сегодняшние приёмы -->
     <div class="col-lg-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-calendar-day"></i> Сегодняшние приёмы
@@ -201,7 +201,7 @@
     
     <!-- Последние заказы -->
     <div class="col-lg-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-cart"></i> Последние заказы
@@ -257,7 +257,7 @@
 <div class="row">
     <!-- Ближайшие приёмы -->
     <div class="col-lg-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-calendar-week"></i> Завтрашние приёмы
@@ -295,7 +295,7 @@
     
     <!-- Топ услуг -->
     <div class="col-lg-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-star"></i> Популярные услуги
@@ -342,7 +342,7 @@
                     @foreach($weekStats['weekdays'] as $day => $stats)
                         <div class="col-md-6 col-sm-6 mb-3">
                             <div class="card border h-100">
-                                <div class="card-body text-center">
+                                <div class="card-body text-center d-flex flex-column justify-content-center">
                                     <div class="d-flex align-items-center justify-content-center mb-2">
                                         @if($stats['rank'])
                                             @php
@@ -375,7 +375,7 @@
                     @if($weekStats['bestDay'])
                         <div class="col-md-6 col-sm-6 mb-3">
                             <div class="card border h-100">
-                                <div class="card-body text-center">
+                                <div class="card-body text-center d-flex flex-column justify-content-center">
                                     <div class="d-flex align-items-center justify-content-center mb-2">
                                         <i class="bi bi-star-fill text-warning me-2"></i>
                                         <h6 class="card-title text-muted mb-0">
@@ -411,13 +411,13 @@
 <!-- Общая информация -->
 <div class="row">
     <div class="col-md-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-building"></i> Общая информация
                 </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <div class="row">
                     <div class="col-6">
                         <h6 class="text-muted mb-1">Филиалов</h6>
@@ -441,13 +441,13 @@
     </div>
     
     <div class="col-md-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-gear"></i> Быстрые действия
                 </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <div class="row">
                     <div class="col-6 mb-2">
                         <a href="{{ route('admin.visits.create') }}" class="btn btn-sm w-100 action-btn action-btn-primary text-start ms-3">

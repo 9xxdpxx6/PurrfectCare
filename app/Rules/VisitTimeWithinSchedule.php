@@ -31,17 +31,7 @@ class VisitTimeWithinSchedule implements Rule
         
         $isValid = $visitTime->between($shiftStartWithBuffer, $shiftEndWithBuffer);
         
-        // Отладочная информация
-        if (!$isValid) {
-            \Log::info('VisitTimeWithinSchedule validation failed', [
-                'visit_time' => $value,
-                'shift_start' => $schedule->shift_starts_at,
-                'shift_end' => $schedule->shift_ends_at,
-                'shift_start_with_buffer' => $shiftStartWithBuffer->format('Y-m-d H:i:s'),
-                'shift_end_with_buffer' => $shiftEndWithBuffer->format('Y-m-d H:i:s'),
-                'visit_time_parsed' => $visitTime->format('Y-m-d H:i:s')
-            ]);
-        }
+
         
         return $isValid;
     }
