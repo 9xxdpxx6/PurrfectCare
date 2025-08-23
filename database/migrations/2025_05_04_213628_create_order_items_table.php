@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->morphs('item');
-            $table->integer('quantity')->default(1);
+            $table->decimal('quantity', 8, 2)->default(1);
             $table->decimal('unit_price', 10, 2);
             $table->timestamps();
             

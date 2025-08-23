@@ -180,7 +180,7 @@ class OrderFactory extends Factory
     /**
      * Создает реалистичный заказ для конкретного пользователя и питомца
      */
-    private function createRealisticOrderForUser($user, $pet): void
+    public function createRealisticOrderForUser($user, $pet): array
     {
         try {
             $notes = [
@@ -217,7 +217,7 @@ class OrderFactory extends Factory
             // Определяем статус заказа
             $statusId = $this->determineOrderStatusId($isClosed, $isPaid);
             
-            $order = Order::create([
+            $orderData = [
                 'client_id' => $user->id,
                 'pet_id' => $pet->id,
                 'status_id' => $statusId,
@@ -229,23 +229,22 @@ class OrderFactory extends Factory
                 'closed_at' => $closedAt,
                 'created_at' => $orderDate,
                 'updated_at' => $orderDate,
-            ]);
+            ];
 
-            // Добавляем элементы заказа в зависимости от типа
-            $this->addRealisticOrderItems($order, $orderType);
+            $itemData = $this->addRealisticOrderItems(0, $pet->id, $orderDate, $orderType);
             
-            // Пересчитываем общую сумму заказа
-            $this->recalculateOrderTotal($order);
+            return ['order' => $orderData, 'items' => $itemData];
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем процесс
             echo "Ошибка создания заказа: " . $e->getMessage() . "\n";
+            return ['order' => [], 'items' => []]; // Возвращаем пустой массив в случае ошибки
         }
     }
 
     /**
      * Создает реалистичный заказ для конкретного пользователя и питомца с случайной датой
      */
-    public function createRealisticOrderForUserWithDate($user, $pet): void
+    public function createRealisticOrderForUserWithDate($user, $pet): array
     {
         try {
             $notes = [
@@ -282,7 +281,7 @@ class OrderFactory extends Factory
             // Определяем статус заказа
             $statusId = $this->determineOrderStatusId($isClosed, $isPaid);
             
-            $order = Order::create([
+            $orderData = [
                 'client_id' => $user->id,
                 'pet_id' => $pet->id,
                 'status_id' => $statusId,
@@ -294,16 +293,15 @@ class OrderFactory extends Factory
                 'closed_at' => $closedAt,
                 'created_at' => $orderDate,
                 'updated_at' => $orderDate,
-            ]);
+            ];
 
-            // Добавляем элементы заказа в зависимости от типа
-            $this->addRealisticOrderItems($order, $orderType);
+            $itemData = $this->addRealisticOrderItems(0, $pet->id, $orderDate, $orderType);
             
-            // Пересчитываем общую сумму заказа
-            $this->recalculateOrderTotal($order);
+            return ['order' => $orderData, 'items' => $itemData];
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем процесс
             echo "Ошибка создания заказа с датой: " . $e->getMessage() . "\n";
+            return ['order' => [], 'items' => []]; // Возвращаем пустой массив в случае ошибки
         }
     }
 
@@ -392,32 +390,51 @@ class OrderFactory extends Factory
     /**
      * Добавляет реалистичные элементы в заказ
      */
-    private function addRealisticOrderItems($order, string $orderType): void
+    private function addRealisticOrderItems(int $orderId, int $petId, string $orderCreatedAt, string $orderType): array
     {
+        $allOrderItems = [];
+        $allVaccinations = [];
+        $allLabTests = [];
+
         switch ($orderType) {
             case 'consultation':
-                $this->addConsultationItems($order);
+                $allOrderItems = array_merge($allOrderItems, $this->addConsultationItems($orderId));
                 break;
             case 'vaccination':
-                $this->addVaccinationItems($order);
+                $vaccinationData = $this->addVaccinationItems($orderId, $petId, $orderCreatedAt);
+                $allOrderItems = array_merge($allOrderItems, $vaccinationData['orderItems']);
+                $allVaccinations = array_merge($allVaccinations, $vaccinationData['vaccinations']);
                 break;
             case 'treatment':
-                $this->addTreatmentItems($order);
+                $allOrderItems = array_merge($allOrderItems, $this->addTreatmentItems($orderId));
                 break;
             case 'diagnostic':
-                $this->addDiagnosticItems($order);
+                $diagnosticData = $this->addDiagnosticItems($orderId, $petId, $orderCreatedAt);
+                $allOrderItems = array_merge($allOrderItems, $diagnosticData['orderItems']);
+                $allLabTests = array_merge($allLabTests, $diagnosticData['labTests']);
                 break;
             case 'complex':
-                $this->addComplexItems($order);
+                $complexData = $this->addComplexItems($orderId, $petId, $orderCreatedAt);
+                $allOrderItems = array_merge($allOrderItems, $complexData['orderItems']);
+                $allVaccinations = array_merge($allVaccinations, $complexData['vaccinations']);
+                $allLabTests = array_merge($allLabTests, $complexData['labTests']);
                 break;
         }
+
+        return [
+            'orderItems' => $allOrderItems,
+            'vaccinations' => $allVaccinations,
+            'labTests' => $allLabTests,
+        ];
     }
 
     /**
      * Добавляет элементы консультации
      */
-    private function addConsultationItems($order): void
+    private function addConsultationItems(int $orderId): array
     {
+        $orderItems = [];
+        
         // Основная консультация (обязательно)
         $consultationService = Service::where('name', 'like', '%консультац%')
             ->orWhere('name', 'like', '%осмотр%')
@@ -426,13 +443,13 @@ class OrderFactory extends Factory
             ->first();
         
         if ($consultationService) {
-            OrderItem::create([
-                'order_id' => $order->id,
+            $orderItems[] = [
+                'order_id' => $orderId,
                 'item_type' => Service::class,
                 'item_id' => $consultationService->id,
                 'quantity' => 1,
                 'unit_price' => $consultationService->price
-            ]);
+            ];
         }
         
         // Дополнительная консультация (30% вероятность)
@@ -444,37 +461,42 @@ class OrderFactory extends Factory
                 ->first();
             
             if ($additionalService) {
-                OrderItem::create([
-                    'order_id' => $order->id,
+                $orderItems[] = [
+                    'order_id' => $orderId,
                     'item_type' => Service::class,
                     'item_id' => $additionalService->id,
                     'quantity' => 1,
                     'unit_price' => $additionalService->price
-                ]);
+                ];
             }
         }
+        
+        return $orderItems;
     }
-
+    
     /**
      * Добавляет элементы вакцинации
      */
-    private function addVaccinationItems($order): void
+    private function addVaccinationItems(int $orderId, int $petId, string $orderCreatedAt): array
     {
+        $orderItems = [];
+        $vaccinations = [];
+        
         // Получаем случайный тип вакцинации
         $vaccinationType = VaccinationType::inRandomOrder()->first();
         
         if (!$vaccinationType) {
-            return; // Если нет типов вакцинации, пропускаем
+            return ['orderItems' => [], 'vaccinations' => []]; // Если нет типов вакцинации, пропускаем
         }
         
         // Создаем вакцинацию для питомца
-        $vaccination = Vaccination::create([
-            'pet_id' => $order->pet_id,
+        $vaccinations[] = [
+            'pet_id' => $petId,
             'veterinarian_id' => Employee::inRandomOrder()->first()->id,
             'vaccination_type_id' => $vaccinationType->id,
-            'administered_at' => $order->created_at,
-            'next_due' => $order->created_at->addYear()
-        ]);
+            'administered_at' => $orderCreatedAt,
+            'next_due' => Carbon::parse($orderCreatedAt)->addYear()
+        ];
         
         // Добавляем вакцинацию как услугу
         $vaccinationService = Service::where('name', 'like', '%вакцин%')
@@ -483,45 +505,49 @@ class OrderFactory extends Factory
             ->first();
         
         if ($vaccinationService) {
-            OrderItem::create([
-                'order_id' => $order->id,
+            $orderItems[] = [
+                'order_id' => $orderId,
                 'item_type' => Service::class,
                 'item_id' => $vaccinationService->id,
                 'quantity' => 1,
                 'unit_price' => $vaccinationService->price
-            ]);
+            ];
         }
         
         // Добавляем препараты для вакцинации (через тип вакцинации)
         if ($vaccinationType->drugs) {
             foreach ($vaccinationType->drugs as $drug) {
-                OrderItem::create([
-                    'order_id' => $order->id,
+                $orderItems[] = [
+                    'order_id' => $orderId,
                     'item_type' => Drug::class,
                     'item_id' => $drug->id,
                     'quantity' => 1,
                     'unit_price' => $drug->price
-                ]);
+                ];
             }
         }
         
         // Добавляем тип вакцинации как элемент заказа
-        OrderItem::create([
-            'order_id' => $order->id,
+        $orderItems[] = [
+            'order_id' => $orderId,
             'item_type' => VaccinationType::class,
             'item_id' => $vaccinationType->id,
             'quantity' => 1,
             'unit_price' => $vaccinationType->price
-        ]);
+        ];
+        
+        return ['orderItems' => $orderItems, 'vaccinations' => $vaccinations];
     }
 
     /**
      * Добавляет элементы лечения
      */
-    private function addTreatmentItems($order): void
+    private function addTreatmentItems(int $orderId): array
     {
+        $orderItems = [];
+        
         // Консультация врача (обязательно)
-        $this->addConsultationItems($order);
+        $orderItems = array_merge($orderItems, $this->addConsultationItems($orderId));
         
         // Препараты для лечения
         $treatmentDrugs = Drug::where('name', 'not like', '%вакцин%')
@@ -531,13 +557,13 @@ class OrderFactory extends Factory
             ->get();
         
         foreach ($treatmentDrugs as $drug) {
-            OrderItem::create([
-                'order_id' => $order->id,
+            $orderItems[] = [
+                'order_id' => $orderId,
                 'item_type' => Drug::class,
                 'item_id' => $drug->id,
                 'quantity' => $this->faker->numberBetween(1, 5),
                 'unit_price' => $drug->price
-            ]);
+            ];
         }
         
         // Дополнительные услуги (50% вероятность)
@@ -551,24 +577,29 @@ class OrderFactory extends Factory
                 ->get();
             
             foreach ($treatmentServices as $service) {
-                OrderItem::create([
-                    'order_id' => $order->id,
+                $orderItems[] = [
+                    'order_id' => $orderId,
                     'item_type' => Service::class,
                     'item_id' => $service->id,
                     'quantity' => 1,
                     'unit_price' => $service->price
-                ]);
+                ];
             }
         }
+        
+        return $orderItems;
     }
-
+    
     /**
      * Добавляет элементы диагностики
      */
-    private function addDiagnosticItems($order): void
+    private function addDiagnosticItems(int $orderId, int $petId, string $orderCreatedAt): array
     {
+        $orderItems = [];
+        $labTests = [];
+        
         // Консультация врача (обязательно)
-        $this->addConsultationItems($order);
+        $orderItems = array_merge($orderItems, $this->addConsultationItems($orderId));
         
         // Лабораторные анализы
         $labTestTypes = LabTestType::inRandomOrder()
@@ -577,22 +608,22 @@ class OrderFactory extends Factory
         
         foreach ($labTestTypes as $labTestType) {
             // Создаем лабораторное исследование
-            $labTest = LabTest::create([
-                'pet_id' => $order->pet_id,
+            $labTests[] = [
+                'pet_id' => $petId,
                 'lab_test_type_id' => $labTestType->id,
                 'veterinarian_id' => Employee::inRandomOrder()->first()->id,
-                'received_at' => $order->created_at,
-                'completed_at' => $order->created_at->addHours($this->faker->numberBetween(1, 24))
-            ]);
+                'received_at' => $orderCreatedAt,
+                'completed_at' => Carbon::parse($orderCreatedAt)->addHours($this->faker->numberBetween(1, 24))
+            ];
             
-            // Добавляем анализ как элемент заказа
-            OrderItem::create([
-                'order_id' => $order->id,
+            // Добавляем анализ как элемент заказа (ID будет обновлен после массовой вставки LabTest)
+            $orderItems[] = [
+                'order_id' => $orderId,
                 'item_type' => LabTest::class,
-                'item_id' => $labTest->id,
+                'item_id' => 0, // Заглушка, будет обновлено
                 'quantity' => 1,
                 'unit_price' => $labTestType->price
-            ]);
+            ];
         }
         
         // Дополнительные диагностические услуги (40% вероятность)
@@ -606,28 +637,36 @@ class OrderFactory extends Factory
                 ->get();
             
             foreach ($diagnosticServices as $service) {
-                OrderItem::create([
-                    'order_id' => $order->id,
+                $orderItems[] = [
+                    'order_id' => $orderId,
                     'item_type' => Service::class,
                     'item_id' => $service->id,
                     'quantity' => 1,
                     'unit_price' => $service->price
-                ]);
+                ];
             }
         }
+        
+        return ['orderItems' => $orderItems, 'labTests' => $labTests];
     }
-
+    
     /**
      * Добавляет комплексные элементы
      */
-    private function addComplexItems($order): void
+    private function addComplexItems(int $orderId, int $petId, string $orderCreatedAt): array
     {
+        $orderItems = [];
+        $vaccinations = [];
+        $labTests = [];
+        
         // Консультация врача (обязательно)
-        $this->addConsultationItems($order);
+        $orderItems = array_merge($orderItems, $this->addConsultationItems($orderId));
         
         // Вакцинация (60% вероятность)
         if ($this->faker->optional(0.6)->boolean()) {
-            $this->addVaccinationItems($order);
+            $vaccinationData = $this->addVaccinationItems($orderId, $petId, $orderCreatedAt);
+            $orderItems = array_merge($orderItems, $vaccinationData['orderItems']);
+            $vaccinations = array_merge($vaccinations, $vaccinationData['vaccinations']);
         }
         
         // Препараты (обязательно)
@@ -636,13 +675,13 @@ class OrderFactory extends Factory
             ->get();
         
         foreach ($drugs as $drug) {
-            OrderItem::create([
-                'order_id' => $order->id,
+            $orderItems[] = [
+                'order_id' => $orderId,
                 'item_type' => Drug::class,
                 'item_id' => $drug->id,
                 'quantity' => $this->faker->numberBetween(1, 4),
                 'unit_price' => $drug->price
-            ]);
+            ];
         }
         
         // Анализы (70% вероятность)
@@ -652,21 +691,21 @@ class OrderFactory extends Factory
                 ->get();
             
             foreach ($labTestTypes as $labTestType) {
-                $labTest = LabTest::create([
-                    'pet_id' => $order->pet_id,
+                $labTests[] = [
+                    'pet_id' => $petId,
                     'lab_test_type_id' => $labTestType->id,
                     'veterinarian_id' => Employee::inRandomOrder()->first()->id,
-                    'received_at' => $order->created_at,
-                    'completed_at' => $order->created_at->addHours($this->faker->numberBetween(1, 24))
-                ]);
+                    'received_at' => $orderCreatedAt,
+                    'completed_at' => Carbon::parse($orderCreatedAt)->addHours($this->faker->numberBetween(1, 24))
+                ];
                 
-                OrderItem::create([
-                    'order_id' => $order->id,
+                $orderItems[] = [
+                    'order_id' => $orderId,
                     'item_type' => LabTest::class,
-                    'item_id' => $labTest->id,
+                    'item_id' => 0, // Заглушка, будет обновлено
                     'quantity' => 1,
                     'unit_price' => $labTestType->price
-                ]);
+                ];
             }
         }
         
@@ -677,27 +716,17 @@ class OrderFactory extends Factory
                 ->get();
             
             foreach ($services as $service) {
-                OrderItem::create([
-                    'order_id' => $order->id,
+                $orderItems[] = [
+                    'order_id' => $orderId,
                     'item_type' => Service::class,
                     'item_id' => $service->id,
                     'quantity' => 1,
                     'unit_price' => $service->price
-                ]);
+                ];
             }
         }
-    }
-
-    /**
-     * Пересчитывает общую сумму заказа
-     */
-    private function recalculateOrderTotal($order): void
-    {
-        $total = $order->items()->sum(\DB::raw('quantity * unit_price'));
         
-        $order->update([
-            'total' => $total
-        ]);
+        return ['orderItems' => $orderItems, 'vaccinations' => $vaccinations, 'labTests' => $labTests];
     }
 
     /**
