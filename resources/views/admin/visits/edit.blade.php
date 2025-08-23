@@ -26,12 +26,15 @@
                         <div class="col-md-6 mb-3">
                             <label for="client_id" class="form-label">Клиент</label>
                             <select name="client_id" id="client_id" class="form-select @error('client_id') is-invalid @enderror" data-url="{{ route('admin.visits.client-options') }}">
-                                <option value="">Выберите клиента</option>
-                                @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" @if(old('client_id', $item->client_id) == $client->id) selected @endif>
-                                        {{ $client->name }}
-                                    </option>
-                                @endforeach
+                                @if(old('client_id') || $item->client_id)
+                                    @php
+                                        $clientId = old('client_id', $item->client_id);
+                                        $selectedClient = \App\Models\User::find($clientId);
+                                    @endphp
+                                    @if($selectedClient)
+                                        <option value="{{ $selectedClient->id }}" selected>{{ $selectedClient->name }}</option>
+                                    @endif
+                                @endif
                             </select>
                             @error('client_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -40,13 +43,16 @@
 
                         <div class="col-md-6 mb-3">
                             <label for="pet_id" class="form-label">Питомец <small class="text-muted">(необязательно)</small></label>
-                            <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.visits.pet-options') }}" @if(!old('client_id', $item->client_id)) disabled @endif>
-                                <option value="">Выберите питомца</option>
-                                @foreach($pets as $pet)
-                                    <option value="{{ $pet->id }}" data-client="{{ $pet->client_id }}" @if(old('pet_id', $item->pet_id) == $pet->id) selected @endif>
-                                        {{ $pet->name }}
-                                    </option>
-                                @endforeach
+                            <select name="pet_id" id="pet_id" class="form-select @error('pet_id') is-invalid @enderror" data-url="{{ route('admin.visits.pet-options') }}">
+                                @if(old('pet_id') || $item->pet_id)
+                                    @php
+                                        $petId = old('pet_id', $item->pet_id);
+                                        $selectedPet = \App\Models\Pet::with('client')->find($petId);
+                                    @endphp
+                                    @if($selectedPet)
+                                        <option value="{{ $selectedPet->id }}" selected data-client="{{ $selectedPet->client_id }}">{{ $selectedPet->name }} ({{ $selectedPet->client->name ?? 'Без владельца' }})</option>
+                                    @endif
+                                @endif
                             </select>
                             @error('pet_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -58,16 +64,21 @@
                         <div class="col-md-6 mb-3">
                             <label for="schedule_id" class="form-label">Расписание</label>
                             <select name="schedule_id" id="schedule_id" class="form-select @error('schedule_id') is-invalid @enderror" data-url="{{ route('admin.visits.schedule-options') }}">
-                                <option value="">Выберите расписание</option>
-                                @foreach($schedules as $schedule)
-                                    <option value="{{ $schedule->id }}" @if(old('schedule_id', $item->schedule_id) == $schedule->id) selected @endif>
-                                        @if($schedule->veterinarian)
-                                            {{ $schedule->veterinarian->name }} - 
-                                        @endif
-                                        {{ \Carbon\Carbon::parse($schedule->shift_starts_at)->format('d.m.Y H:i') }} - 
-                                        {{ \Carbon\Carbon::parse($schedule->shift_ends_at)->format('H:i') }}
-                                    </option>
-                                @endforeach
+                                @if(old('schedule_id') || $item->schedule_id)
+                                    @php
+                                        $scheduleId = old('schedule_id', $item->schedule_id);
+                                        $selectedSchedule = \App\Models\Schedule::with('veterinarian')->find($scheduleId);
+                                    @endphp
+                                    @if($selectedSchedule)
+                                        <option value="{{ $selectedSchedule->id }}" selected>
+                                            @if($selectedSchedule->veterinarian)
+                                                {{ $selectedSchedule->veterinarian->name }} - 
+                                            @endif
+                                            {{ \Carbon\Carbon::parse($selectedSchedule->shift_starts_at)->format('d.m.Y H:i') }} - 
+                                            {{ \Carbon\Carbon::parse($selectedSchedule->shift_ends_at)->format('H:i') }}
+                                        </option>
+                                    @endif
+                                @endif
                             </select>
                             @error('schedule_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -87,7 +98,7 @@
                                 }
                             @endphp
                             <input type="text" name="visit_time" id="visit_time" 
-                                class="form-control @error('visit_time') is-invalid @enderror" 
+                                class="form-control @error('visit_time') is-invalid @enderror @error('starts_at') is-invalid @enderror" 
                                 value="{{ $visitTime }}" placeholder="чч:мм">
                             @error('visit_time')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -107,12 +118,15 @@
                     <div class="mb-3">
                         <label for="status_id" class="form-label">Статус</label>
                         <select name="status_id" id="status_id" class="form-select @error('status_id') is-invalid @enderror" data-url="{{ route('admin.visits.status-options') }}">
-                            <option value="">Выберите статус</option>
-                            @foreach($statuses as $status)
-                                <option value="{{ $status->id }}" @if(old('status_id', $item->status_id) == $status->id) selected @endif>
-                                    {{ $status->name }}
-                                </option>
-                            @endforeach
+                            @if(old('status_id') || $item->status_id)
+                                @php
+                                    $statusId = old('status_id', $item->status_id);
+                                    $selectedStatus = \App\Models\Status::find($statusId);
+                                @endphp
+                                @if($selectedStatus)
+                                    <option value="{{ $selectedStatus->id }}" selected>{{ $selectedStatus->name }}</option>
+                                @endif
+                            @endif
                         </select>
                         @error('status_id')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -142,11 +156,18 @@
                     <!-- Симптомы -->
                     <div class="mb-3">
                         <label for="symptoms" class="form-label">Симптомы</label>
-                        <select name="symptoms[]" id="symptoms" class="form-select" multiple data-url="{{ route('admin.visits.symptom-options') }}">
+                        <select name="symptoms[]" id="symptoms" class="form-select @error('symptoms') is-invalid @enderror @error('symptoms.*') is-invalid @enderror" multiple data-url="{{ route('admin.visits.symptom-options') }}">
                             @foreach($selectedSymptoms as $symptom)
                                 <option value="{{ $symptom['id'] }}" selected>{{ $symptom['name'] }}</option>
                             @endforeach
                         </select>
+                        <div class="form-text">Удерживайте Ctrl для выбора нескольких симптомов</div>
+                        @error('symptoms')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        @error('symptoms.*')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Диагнозы -->
@@ -255,8 +276,8 @@
         const petSelect = document.getElementById('pet_id');
         
         // Переменные для старых значений
-        const oldSymptoms = @json($oldSymptoms ?? []);
-        const oldDiagnoses = @json($oldDiagnoses ?? []);
+        const oldSymptoms = {!! json_encode($oldSymptoms ?? []) !!};
+        const oldDiagnoses = {!! json_encode($oldDiagnoses ?? []) !!};
         
         // Инициализация TomSelect
         const clientTomSelect = new createTomSelect('#client_id', {
@@ -265,14 +286,13 @@
             labelField: 'text',
             searchField: 'text',
             allowEmptyOption: false,
-            preload: false,
+            preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
-                
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))
-                    .catch(() => callback([]));
+                    .catch(() => callback());
             },
             onItemAdd: function() {
                 setTimeout(() => {
@@ -324,14 +344,13 @@
             labelField: 'text',
             searchField: 'text',
             allowEmptyOption: false,
-            preload: false,
+            preload: true,
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
-                
                 fetch(url)
                     .then(response => response.json())
                     .then(json => callback(json))
-                    .catch(() => callback([]));
+                    .catch(() => callback());
             },
             onItemAdd: function() {
                 setTimeout(() => {
@@ -343,6 +362,18 @@
         
         new createTomSelect('#status_id', {
             placeholder: 'Выберите статус...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
             onItemAdd: function() {
                 setTimeout(() => {
                     this.close();
@@ -381,43 +412,25 @@
             }
         });
         
-        // Восстанавливаем старые значения симптомов при ошибке валидации
+        // Восстанавливаем значения симптомов
         if (oldSymptoms && oldSymptoms.length > 0) {
-            // Сначала очищаем все существующие опции
-            symptomsSelect.clearOptions();
-            
-            // Создаем опции для уже выбранных симптомов
-            oldSymptoms.forEach(symptomId => {
-                if (typeof symptomId === 'string' && symptomId.trim() !== '') {
-                    if (isNaN(symptomId)) {
-                        // Кастомный симптом
-                        symptomsSelect.addOption({
-                            value: symptomId,
-                            text: symptomId
-                        });
-                    } else {
-                        // Симптом из словаря - нужно загрузить его данные
-                        fetch(`{{ route('admin.visits.symptom-options') }}?q=&selected=${symptomId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data && data.length > 0) {
-                                    const symptom = data.find(s => s.value == symptomId);
-                                    if (symptom) {
-                                        symptomsSelect.addOption(symptom);
-                                    }
-                                }
-                            });
-                    }
-                }
-            });
-            
-            // Устанавливаем значения после загрузки опций
             setTimeout(() => {
-                symptomsSelect.setValue(oldSymptoms);
-            }, 500);
+                const symptomsUrl = document.getElementById('symptoms').dataset.url + '?selected=' + oldSymptoms.join(',');
+                fetch(symptomsUrl)
+                    .then(response => response.json())
+                    .then(options => {
+                        options.forEach(option => {
+                            symptomsSelect.addOption(option);
+                        });
+                        symptomsSelect.setValue(oldSymptoms);
+                    })
+                    .catch(error => {
+                        console.error('Error loading selected symptoms:', error);
+                    });
+            }, 200);
         } else {
-            // Если нет old значений, восстанавливаем изначально выбранные
-            const selectedSymptoms = @json($selectedSymptoms ?? []);
+            // Восстанавливаем изначально выбранные симптомы
+            const selectedSymptoms = {!! json_encode($selectedSymptoms ?? []) !!};
             if (selectedSymptoms && selectedSymptoms.length > 0) {
                 selectedSymptoms.forEach(symptom => {
                     symptomsSelect.addOption({
@@ -449,8 +462,6 @@
                 const lastDiagnosisItem = diagnosisItems.lastElementChild;
                 
                 if (lastDiagnosisItem) {
-                    // Устанавливаем значение диагноза
-                    const diagnosisSelect = lastDiagnosisItem.querySelector('.diagnosis-select');
                     const treatmentPlanTextarea = lastDiagnosisItem.querySelector('textarea[name*="treatment_plan"]');
                     const idInput = lastDiagnosisItem.querySelector('input[name*="[id]"]');
                     
@@ -465,69 +476,45 @@
                     // Загружаем и устанавливаем выбранный диагноз
                     const diagnosisId = diagnosis.diagnosis_id || diagnosis.id;
                     if (diagnosisId) {
-                        if (typeof diagnosisId === 'string' && isNaN(diagnosisId)) {
-                            // Кастомный диагноз
+                        const diagnosisSelect = lastDiagnosisItem.querySelector('.diagnosis-select');
+                        setTimeout(() => {
                             if (diagnosisSelect.tomselect) {
-                                diagnosisSelect.tomselect.addOption({
-                                    value: diagnosisId,
-                                    text: diagnosisId
-                                });
-                                diagnosisSelect.tomselect.setValue(diagnosisId);
+                                const diagnosisUrl = diagnosisSelect.dataset.url + '?selected=' + diagnosisId;
+                                fetch(diagnosisUrl)
+                                    .then(response => response.json())
+                                    .then(options => {
+                                        options.forEach(option => {
+                                            diagnosisSelect.tomselect.addOption(option);
+                                        });
+                                        diagnosisSelect.tomselect.setValue(diagnosisId);
+                                    });
                             }
-                        } else {
-                            // Диагноз из словаря
-                            fetch(`{{ route('admin.visits.diagnosis-options') }}?q=&selected=${diagnosisId}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data && data.length > 0) {
-                                        const diagnosisData = data.find(d => d.value == diagnosisId);
-                                        if (diagnosisData && diagnosisSelect.tomselect) {
-                                            diagnosisSelect.tomselect.addOption(diagnosisData);
-                                            diagnosisSelect.tomselect.setValue(diagnosisId);
-                                        }
-                                    }
-                                });
-                        }
+                        }, 300);
                     }
                 }
             });
         }
         
-        // Фильтрация питомцев по клиенту
-        function filterPetsByClient(clientId) {
-            const petOptions = petSelect.querySelectorAll('option');
+        // Обработчик изменения клиента
+        clientTomSelect.on('change', function(value) {
+            // Очищаем выбранного питомца при смене клиента
             petTomSelect.clear();
             petTomSelect.clearOptions();
-            if (!clientId) {
-                petSelect.setAttribute('disabled', 'disabled');
-                return;
-            } else {
-                petSelect.removeAttribute('disabled');
-            }
-            petOptions.forEach(option => {
-                if (option.value === '' || option.dataset.client === clientId) {
-                    petTomSelect.addOption({
-                        value: option.value,
-                        text: option.textContent
+            
+            if (value) {
+                // Загружаем питомцев для выбранного клиента
+                fetch(`{{ route('admin.visits.pet-options') }}?client_id=${value}&filter=false`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(option => {
+                            petTomSelect.addOption(option);
+                        });
+                    })
+                    .catch(() => {
+                        console.error('Ошибка загрузки питомцев');
                     });
-                }
-            });
-            // Восстанавливаем выбранное значение питомца
-            const currentPetId = '{{ old("pet_id", $item->pet_id) }}';
-            if (currentPetId) {
-                petTomSelect.setValue(currentPetId);
             }
-        }
-        
-        // Слушатель изменения клиента
-        clientSelect.addEventListener('change', function() {
-            const clientId = this.value;
-                filterPetsByClient(clientId);
         });
-        
-        // Инициализация при загрузке страницы
-        const initialClientId = clientSelect.value;
-            filterPetsByClient(initialClientId);
 
         const visitTimeInput = document.getElementById('visit_time');
         const timeIntervalSpan = document.getElementById('time-interval');

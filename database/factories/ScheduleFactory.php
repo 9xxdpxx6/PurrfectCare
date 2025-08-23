@@ -33,8 +33,8 @@ class ScheduleFactory extends Factory
         return [
             'veterinarian_id' => Employee::inRandomOrder()->first()->id,
             'branch_id' => Branch::inRandomOrder()->first()->id,
-            'shift_starts_at' => $shiftStartsAt,
-            'shift_ends_at' => $shiftEndsAt,
+            'shift_starts_at' => $shiftStartsAt->format('Y-m-d H:i:s'),
+            'shift_ends_at' => $shiftEndsAt->format('Y-m-d H:i:s'),
         ];
     }
 } 

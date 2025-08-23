@@ -154,6 +154,8 @@ class VisitFactory extends Factory
             'status_id' => Status::inRandomOrder()->first()->id,
             'complaints' => $this->faker->randomElement($complaints),
             'notes' => $this->faker->optional(0.7)->randomElement($notes),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
         ];
     }
 } 

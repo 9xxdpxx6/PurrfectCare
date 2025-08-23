@@ -38,18 +38,6 @@ class VisitController extends AdminController
 
     public function create() : View
     {
-        // Оптимизация: используем select для выбора только нужных полей
-        $clients = User::select(['id', 'name', 'email', 'phone'])->get();
-        $pets = Pet::select(['id', 'name', 'breed_id', 'client_id'])->get();
-        $schedules = Schedule::select(['id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at'])->get();
-        $statuses = Status::select(['id', 'name'])->get();
-        $symptoms = DictionarySymptom::select(['id', 'name'])->get();
-        $diagnoses = DictionaryDiagnosis::select(['id', 'name'])->get();
-        
-        // Оптимизация: используем select для выбора только нужных полей
-        $default_status = Status::select(['id', 'name'])->where('name', 'Новый')->first();
-        $default_status_id = $default_status ? $default_status->id : null;
-        
         // Получаем ID клиента, питомца и расписания из параметров запроса
         $selectedClientId = request('client');
         $selectedPetId = request('pet');
@@ -57,7 +45,6 @@ class VisitController extends AdminController
         
         // Если передан pet_id, но не передан client_id, получаем владельца питомца
         if ($selectedPetId && !$selectedClientId) {
-            // Оптимизация: используем индекс на client_id и select для выбора нужных полей
             $pet = Pet::select(['id', 'client_id'])
                 ->with(['client:id,name,email'])
                 ->find($selectedPetId);
@@ -66,15 +53,18 @@ class VisitController extends AdminController
             }
         }
         
+        // Получаем только статус по умолчанию
+        $default_status = Status::select(['id', 'name'])->where('name', 'Новый')->first();
+        $default_status_id = $default_status ? $default_status->id : null;
+        
         return view("admin.{$this->viewPath}.create", compact(
-            'clients', 'pets', 'schedules', 'statuses',
-            'symptoms', 'diagnoses', 'default_status_id', 'selectedClientId', 'selectedPetId', 'selectedScheduleId'
+            'default_status_id', 'selectedClientId', 'selectedPetId', 'selectedScheduleId'
         ));
     }
 
     public function edit($id) : View
     {
-        // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+        // Загружаем только данные визита с нужными связями
         $item = $this->model::select([
                 'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
                 'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
@@ -86,14 +76,6 @@ class VisitController extends AdminController
                 'symptoms.dictionarySymptom:id,name'
             ])
             ->findOrFail($id);
-            
-        // Оптимизация: используем select для выбора только нужных полей
-        $clients = User::select(['id', 'name', 'email', 'phone'])->get();
-        $pets = Pet::select(['id', 'name', 'breed_id', 'client_id'])->get();
-        $schedules = Schedule::select(['id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at'])->get();
-        $statuses = Status::select(['id', 'name'])->get();
-        $symptoms = DictionarySymptom::select(['id', 'name'])->get();
-        $diagnoses = DictionaryDiagnosis::select(['id', 'name'])->get();
         
         // Подготавливаем выбранные симптомы
         $selectedSymptoms = $item->symptoms->map(function($symptom) {
@@ -130,8 +112,7 @@ class VisitController extends AdminController
         });
         
         return view("admin.{$this->viewPath}.edit", compact(
-            'item', 'clients', 'pets', 'schedules', 'statuses',
-            'symptoms', 'diagnoses', 'selectedSymptoms', 'selectedDiagnoses'
+            'item', 'selectedSymptoms', 'selectedDiagnoses'
         ));
     }
 
@@ -256,6 +237,37 @@ class VisitController extends AdminController
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
         }
+    }
+
+    // TomSelect опции для основных полей
+    public function clientOptions(Request $request)
+    {
+        return app(\App\Services\Options\ClientOptionsService::class)->getOptions($request);
+    }
+
+    public function petOptions(Request $request)
+    {
+        return app(\App\Services\Options\PetOptionsService::class)->getOptions($request);
+    }
+
+    public function scheduleOptions(Request $request)
+    {
+        return app(\App\Services\Options\ScheduleOptionsService::class)->getOptions($request);
+    }
+
+    public function statusOptions(Request $request)
+    {
+        return app(\App\Services\Options\StatusOptionsService::class)->getOptions($request);
+    }
+
+    public function symptomOptions(Request $request)
+    {
+        return app(\App\Services\Options\SymptomOptionsService::class)->getOptions($request);
+    }
+
+    public function diagnosisOptions(Request $request)
+    {
+        return app(\App\Services\Options\DiagnosisOptionsService::class)->getOptions($request);
     }
 
 

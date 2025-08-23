@@ -52,8 +52,8 @@ class SymptomFactory extends Factory
             'dictionary_symptom_id' => $useDictionary ? DictionarySymptom::inRandomOrder()->first()->id : null,
             'custom_symptom' => $useDictionary ? null : $this->faker->randomElement($customSymptoms),
             'notes' => $this->faker->optional(0.6)->randomElement($notes),
-            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
         ];
     }
 } 

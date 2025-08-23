@@ -62,8 +62,8 @@ class DiagnosisFactory extends Factory
             'dictionary_diagnosis_id' => $useDictionary ? DictionaryDiagnosis::inRandomOrder()->first()->id : null,
             'custom_diagnosis' => $useDictionary ? null : $this->faker->randomElement($customDiagnoses),
             'treatment_plan' => $this->faker->optional(0.8)->randomElement($treatmentPlans),
-            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
         ];
     }
 } 

@@ -10,6 +10,18 @@ class ScheduleOptionsService extends BaseOptionsService
     public function getOptions(Request $request)
     {
         $query = Schedule::with('veterinarian');
+        
+        // Применяем поиск по имени ветеринара
+        $search = $request->input('q');
+        if ($search) {
+            $query->whereHas('veterinarian', function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        }
+        
+        // Сортируем по дате расписания (новые первыми)
+        $query->orderBy('shift_starts_at', 'desc');
+        
         return $this->buildOptions($request, $query, [
             'model' => Schedule::class
         ]);

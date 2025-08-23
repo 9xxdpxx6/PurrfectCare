@@ -36,8 +36,8 @@ class LabTestResultFactory extends Factory
             'lab_test_param_id' => LabTestParam::inRandomOrder()->first()->id,
             'value' => $this->faker->optional(0.9)->randomFloat(2, 0.1, 1000),
             'notes' => $this->faker->optional(0.3)->randomElement($notes),
-            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
         ];
     }
 } 

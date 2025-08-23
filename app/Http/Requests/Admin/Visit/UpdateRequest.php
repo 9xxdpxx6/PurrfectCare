@@ -22,29 +22,22 @@ class UpdateRequest extends FormRequest
             'pet_id' => ['nullable', 'exists:pets,id', new BelongsToClient],
             'schedule_id' => ['required', 'exists:schedules,id', new HasAvailableTime($this->route('visit'))],
             'visit_time' => 'required|date_format:H:i',
-            'starts_at' => ['required', 'date', new VisitTimeWithinSchedule, new NoVisitConflict($this->route('visit'))],
+            'starts_at' => ['required', 'date_format:Y-m-d H:i:s', new VisitTimeWithinSchedule, new NoVisitConflict($this->route('visit'))],
             'status_id' => 'required|exists:statuses,id',
             'complaints' => 'nullable|string',
             'notes' => 'nullable|string',
             'services' => 'nullable|array',
             'services.*' => 'exists:services,id',
             'symptoms' => 'nullable|array',
-            'symptoms.*' => ['required', function ($attribute, $value, $fail) {
-                // Если число - проверяем существование в справочнике
-                if (is_numeric($value)) {
-                    if (!\App\Models\DictionarySymptom::where('id', $value)->exists()) {
-                        $fail('Выбранный симптом не найден в справочнике');
-                    }
-                } else {
-                    // Если строка - проверяем что не пустая
-                    if (empty(trim($value))) {
-                        $fail('Симптом не может быть пустым');
-                    }
-                }
-            }],
+            'symptoms.*' => 'nullable|string',
             'diagnoses' => 'nullable|array',
             'diagnoses.*' => 'nullable|array',
-            'diagnoses.*.diagnosis_id' => ['required', function ($attribute, $value, $fail) {
+            'diagnoses.*.diagnosis_id' => ['nullable', function ($attribute, $value, $fail) {
+                // Если значение пустое, пропускаем проверку
+                if (empty($value)) {
+                    return;
+                }
+
                 // Если число - проверяем существование в справочнике
                 if (is_numeric($value)) {
                     if (!\App\Models\DictionaryDiagnosis::where('id', $value)->exists()) {
@@ -74,8 +67,8 @@ class UpdateRequest extends FormRequest
             'schedule_id.has_available_time' => 'Для выбранного расписания нет свободного времени. Все слоты заняты.',
             'visit_time.required' => 'Необходимо указать время приёма',
             'visit_time.date_format' => 'Неверный формат времени (должно быть чч:мм)',
-            'starts_at.required' => 'Необходимо указать дату и время',
-            'starts_at.date' => 'Неверный формат даты и времени',
+            'starts_at.required' => 'Не удалось определить дату и время приёма. Убедитесь, что выбрано расписание и корректно указано время.',
+            'starts_at.date_format' => 'Произошла ошибка при формировании даты и времени приёма.',
             'starts_at.visit_time_within_schedule' => 'Время приема должно находиться в рамках выбранного расписания.',
             'starts_at.no_visit_conflict' => 'На это время уже записан другой приём к данному врачу',
             'status_id.required' => 'Необходимо выбрать статус',
@@ -113,22 +106,26 @@ class UpdateRequest extends FormRequest
 
     public function prepareForValidation()
     {
-        if ($this->has('starts_at') && $this->starts_at) {
-            try {
-                $dt = \Carbon\Carbon::createFromFormat('d.m.Y H:i', $this->starts_at);
-                
-                $minutes = $dt->minute;
-                if ($minutes >= 30) {
-                    $dt->setMinute(30)->setSecond(0);
-                } else {
-                    $dt->setMinute(0)->setSecond(0);
-                }
+        if ($this->has('schedule_id') && $this->visit_time) {
+            $schedule = \App\Models\Schedule::find($this->schedule_id);
+            if ($schedule) {
+                try {
+                    $scheduleDate = \Carbon\Carbon::parse($schedule->shift_starts_at)->format('Y-m-d');
+                    $dt = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $scheduleDate . ' ' . $this->visit_time);
 
-                $this->merge([
-                    'starts_at' => $dt->format('Y-m-d H:i:s'),
-                ]);
-            } catch (\Exception $e) {
-                // Не меняем, если формат не совпал
+                    $minutes = $dt->minute;
+                    if ($minutes >= 30) {
+                        $dt->setMinute(30)->setSecond(0);
+                    } else {
+                        $dt->setMinute(0)->setSecond(0);
+                    }
+
+                    $this->merge([
+                        'starts_at' => $dt->format('Y-m-d H:i:s'),
+                    ]);
+                } catch (\Exception $e) {
+                    // Let validation handle it.
+                }
             }
         }
     }

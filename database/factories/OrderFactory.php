@@ -16,6 +16,7 @@ use App\Models\LabTest;
 use App\Models\LabTestType;
 use App\Models\Order;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Carbon\Carbon;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Order>
@@ -53,7 +54,7 @@ class OrderFactory extends Factory
 
         // Определяем статус завершения заказа (70% вероятность)
         $isClosed = $this->faker->optional(0.7)->boolean();
-        $closedAt = $isClosed ? $this->faker->dateTimeBetween('-1 month', 'now') : null;
+        $closedAt = $isClosed ? $this->faker->dateTimeBetween('-1 month', 'now')->format('Y-m-d H:i:s') : null;
         
         // Если заказ завершен - он 100% оплачен, иначе 70% вероятность
         $isPaid = $isClosed ? true : ($this->faker->optional(0.7)->boolean() ?? false);
@@ -68,8 +69,8 @@ class OrderFactory extends Factory
             'total' => 0, // Будет рассчитано после добавления элементов
             'is_paid' => $isPaid,
             'closed_at' => $closedAt,
-            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -205,13 +206,13 @@ class OrderFactory extends Factory
             
             // Определяем статус завершения заказа
             $isClosed = $this->determineOrderStatus($orderType);
-            $closedAt = $isClosed ? $this->faker->dateTimeBetween('-1 month', 'now') : null;
+            $closedAt = $isClosed ? $this->faker->dateTimeBetween('-1 month', 'now')->format('Y-m-d H:i:s') : null;
             
             // Определяем оплату
             $isPaid = $this->determinePaymentStatus($isClosed, $orderType);
 
             // Заказ должен быть создан ПОСЛЕ регистрации клиента
-            $orderDate = $this->faker->dateTimeBetween($user->created_at, 'now');
+            $orderDate = $this->faker->dateTimeBetween(Carbon::parse($user->created_at), 'now')->format('Y-m-d H:i:s');
             
             // Определяем статус заказа
             $statusId = $this->determineOrderStatusId($isClosed, $isPaid);
@@ -270,13 +271,13 @@ class OrderFactory extends Factory
             
             // Определяем статус завершения заказа
             $isClosed = $this->determineOrderStatus($orderType);
-            $closedAt = $isClosed ? $this->faker->dateTimeBetween('-1 month', 'now') : null;
+            $closedAt = $isClosed ? $this->faker->dateTimeBetween('-1 month', 'now')->format('Y-m-d H:i:s') : null;
             
             // Определяем оплату
             $isPaid = $this->determinePaymentStatus($isClosed, $orderType);
 
             // Заказ должен быть создан ПОСЛЕ регистрации клиента, но с более широким диапазоном дат
-            $orderDate = $this->faker->dateTimeBetween($user->created_at, 'now');
+            $orderDate = $this->faker->dateTimeBetween(Carbon::parse($user->created_at), 'now')->format('Y-m-d H:i:s');
             
             // Определяем статус заказа
             $statusId = $this->determineOrderStatusId($isClosed, $isPaid);

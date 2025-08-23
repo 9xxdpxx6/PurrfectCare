@@ -24,16 +24,16 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'phone' => '7' . fake()->numberBetween(9000000000, 9999999999), // Генерируем номер в формате 79XXXXXXXXX
-            'address' => fake()->address(),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'phone' => '7' . $this->faker->numberBetween(9000000000, 9999999999), // Генерируем номер в формате 79XXXXXXXXX
+            'address' => $this->faker->address(),
             'telegram' => null,
             'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
-            'created_at' => fake()->dateTimeBetween('-2 years', 'now'),
-            'updated_at' => fake()->dateTimeBetween('-2 years', 'now'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
         ];
     }
 

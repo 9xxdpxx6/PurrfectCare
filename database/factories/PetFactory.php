@@ -36,7 +36,7 @@ class PetFactory extends Factory
                 ' Рыжий', ' Маленький', ' Большой', ' Пушистый', ' Храбрый', ' Умный'
             ]),
             'breed_id' => $breed->id,
-            'birthdate' => $this->faker->optional(0.8)->dateTimeBetween('-10 years', '-1 year'),
+            'birthdate' => $this->faker->boolean(80) ? $this->faker->dateTimeBetween('-10 years', '-1 year')->format('Y-m-d H:i:s') : null,
             'client_id' => $user->id,
             'temperature' => $this->faker->optional(0.3)->randomFloat(2, 35.0, 40.0),
             'weight' => $this->faker->optional(0.7)->randomFloat(2, 1.0, 50.0),
@@ -45,8 +45,8 @@ class PetFactory extends Factory
                 array_fill(0, 45, 'female'), // 45% female
                 array_fill(0, 10, 'unknown') // 10% unknown
             )),
-            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
-            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
+            'updated_at' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Y-m-d H:i:s'),
         ];
     }
 }
