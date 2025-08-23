@@ -15,23 +15,29 @@ class TelegramApiService
             return;
         }
 
+        // Очищаем UTF-8 символы в тексте сообщения
+        $cleanText = $this->cleanUtf8($text);
+        
+        // Очищаем UTF-8 символы в клавиатуре
+        $cleanKeyboard = $this->cleanKeyboardUtf8($inlineKeyboard);
+
         Log::info('TelegramApiService: sending message', [
             'chat_id' => $chatId,
-            'text' => $text,
-            'keyboard' => $inlineKeyboard,
+            'text' => $cleanText,
+            'keyboard' => $cleanKeyboard,
             'token_exists' => !empty($token),
             'token_preview' => substr($token, 0, 10) . '...' . substr($token, -4)
         ]);
         
         $payload = [
             'chat_id' => $chatId,
-            'text' => $text,
+            'text' => $cleanText,
             'parse_mode' => 'HTML',
         ];
         
-        if (!empty($inlineKeyboard)) {
+        if (!empty($cleanKeyboard)) {
             $payload['reply_markup'] = [
-                'inline_keyboard' => $inlineKeyboard,
+                'inline_keyboard' => $cleanKeyboard,
             ];
         }
 
@@ -106,5 +112,46 @@ class TelegramApiService
                 'trace' => $e->getTraceAsString()
             ]);
         }
+    }
+
+    /**
+     * Очищает и нормализует UTF-8 строку, удаляя поврежденные символы
+     */
+    private function cleanUtf8(string $text): string
+    {
+        // Удаляем поврежденные UTF-8 символы
+        $clean = @iconv('UTF-8', 'UTF-8//IGNORE', $text);
+        
+        // Если iconv не сработал, используем mb_convert_encoding
+        if ($clean === false) {
+            $clean = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+        }
+        
+        // Удаляем невидимые символы и лишние пробелы
+        $clean = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $clean);
+        $clean = trim($clean);
+        
+        return $clean ?: 'Сообщение';
+    }
+
+    /**
+     * Очищает UTF-8 символы в клавиатуре
+     */
+    private function cleanKeyboardUtf8(array $keyboard): array
+    {
+        $cleanKeyboard = [];
+        
+        foreach ($keyboard as $row) {
+            $cleanRow = [];
+            foreach ($row as $button) {
+                if (isset($button['text'])) {
+                    $button['text'] = $this->cleanUtf8($button['text']);
+                }
+                $cleanRow[] = $button;
+            }
+            $cleanKeyboard[] = $cleanRow;
+        }
+        
+        return $cleanKeyboard;
     }
 }

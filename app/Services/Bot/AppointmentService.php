@@ -51,7 +51,7 @@ class AppointmentService
         $keyboard = [];
         foreach ($branches as $branch) {
             $keyboard[] = [[
-                'text' => $branch->name,
+                'text' => $this->cleanUtf8($branch->name),
                 'callback_data' => "branch:{$branch->id}"
             ]];
         }
@@ -68,9 +68,9 @@ class AppointmentService
         ];
     }
 
-    public function sendVeterinarians(string $chatId, int $branchId): array
+    public function sendVeterinarians(string $chatId, int $branchId, int $page = 1): array
     {
-        Log::info('AppointmentService: sending veterinarians', ['branch_id' => $branchId]);
+        Log::info('AppointmentService: sending veterinarians', ['branch_id' => $branchId, 'page' => $page]);
 
         // Упрощаем запрос - сначала получаем ID сотрудников филиала
         $employeeIds = \DB::table('branch_employee')
@@ -87,7 +87,7 @@ class AppointmentService
 
         // Получаем название филиала для отображения
         $branch = Branch::select('name')->find($branchId);
-        $branchName = $branch ? $branch->name : 'Филиал';
+        $branchName = $branch ? $this->cleanUtf8($branch->name) : 'Филиал';
 
         // Теперь получаем ветеринаров с их специальностями
         $veterinarians = Employee::select('employees.id', 'employees.name')
@@ -117,15 +117,50 @@ class AppointmentService
             ];
         }
 
+        // Пагинация: максимум 20 ветеринаров на страницу
+        $perPage = 20;
+        $total = $veterinarians->count();
+        $totalPages = ceil($total / $perPage);
+        $currentPage = max(1, min($page, $totalPages));
+        $offset = ($currentPage - 1) * $perPage;
+        
+        $pageVeterinarians = $veterinarians->slice($offset, $perPage);
+
         $keyboard = [];
-        foreach ($veterinarians as $veterinarian) {
+        foreach ($pageVeterinarians as $veterinarian) {
             $specialties = $veterinarian->specialties->pluck('name')->toArray();
             $specialtyText = implode(', ', $specialties);
             
+            // Очищаем и нормализуем UTF-8 символы
+            $veterinarianName = $this->cleanUtf8($veterinarian->name);
+            $specialtyText = $this->cleanUtf8($specialtyText);
+            
+            // Обрезаем длинные названия специальностей
+            if (mb_strlen($specialtyText) > 80) {
+                $specialtyText = mb_substr($specialtyText, 0, 77) . '...';
+            }
+            
             $keyboard[] = [[
-                'text' => "{$veterinarian->name} ({$specialtyText})",
+                'text' => "{$veterinarianName} ({$specialtyText})",
                 'callback_data' => "vet:{$veterinarian->id}:{$branchId}"
             ]];
+        }
+
+        // Добавляем кнопки пагинации если есть несколько страниц
+        if ($totalPages > 1) {
+            $paginationRow = [];
+            
+            if ($currentPage > 1) {
+                $paginationRow[] = ['text' => '⬅️ Пред.', 'callback_data' => "vets_page:{$branchId}:" . ($currentPage - 1)];
+            }
+            
+            $paginationRow[] = ['text' => "{$currentPage}/{$totalPages}", 'callback_data' => 'noop'];
+            
+            if ($currentPage < $totalPages) {
+                $paginationRow[] = ['text' => 'След. ➡️', 'callback_data' => "vets_page:{$branchId}:" . ($currentPage + 1)];
+            }
+            
+            $keyboard[] = $paginationRow;
         }
 
         // Добавляем кнопки навигации
@@ -134,9 +169,14 @@ class AppointmentService
             ['text' => '🏠 Главное меню', 'callback_data' => 'main_menu']
         ];
 
+        $message = $this->cleanUtf8("{$branchName}. Выберите ветеринара:");
+        if ($totalPages > 1) {
+            $message .= "\n\n📄 Страница {$currentPage} из {$totalPages} (всего: {$total})";
+        }
+
         return [
             'action' => 'send_message',
-            'message' => "{$branchName}. Выберите ветеринара:",
+            'message' => $message,
             'keyboard' => $keyboard
         ];
     }
@@ -541,5 +581,25 @@ class AppointmentService
             return $schedule->branch->name;
         }
         return 'Филиал';
+    }
+
+    /**
+     * Очищает и нормализует UTF-8 строку, удаляя поврежденные символы
+     */
+    private function cleanUtf8(string $text): string
+    {
+        // Удаляем поврежденные UTF-8 символы
+        $clean = @iconv('UTF-8', 'UTF-8//IGNORE', $text);
+        
+        // Если iconv не сработал, используем mb_convert_encoding
+        if ($clean === false) {
+            $clean = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+        }
+        
+        // Удаляем невидимые символы и лишние пробелы
+        $clean = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $clean);
+        $clean = trim($clean);
+        
+        return $clean ?: 'Неизвестно';
     }
 }

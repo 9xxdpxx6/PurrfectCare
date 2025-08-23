@@ -141,8 +141,17 @@ class TelegramBotService
         if (str_starts_with($data, 'branch:')) {
             $branchId = (int)substr($data, 7);
             
-            // Просто переходим к выбору ветеринара без сохранения филиала
+            // Переходим к выбору ветеринара
             $this->sendVeterinarians($chatId, $branchId);
+            return;
+        }
+
+        if (str_starts_with($data, 'vets_page:')) {
+            [$prefix, $branchId, $page] = explode(':', $data);
+            
+            // Показываем страницу ветеринаров
+            $result = $this->appointmentService->sendVeterinarians($chatId, (int)$branchId, (int)$page);
+            $this->executeAction($result, $chatId, $profile);
             return;
         }
 
@@ -333,6 +342,11 @@ class TelegramBotService
             return;
         }
 
+        // Игнорируем noop callback (кнопка с номером страницы)
+        if ($data === 'noop') {
+            return;
+        }
+
         Log::warning('TelegramBotService: unknown callback data', ['data' => $data]);
     }
 
@@ -366,9 +380,9 @@ class TelegramBotService
         $this->executeAction($result, $chatId);
     }
 
-    protected function sendVeterinarians(string $chatId, int $branchId): void
+    protected function sendVeterinarians(string $chatId, int $branchId, int $page = 1): void
     {
-        $result = $this->appointmentService->sendVeterinarians($chatId, $branchId);
+        $result = $this->appointmentService->sendVeterinarians($chatId, $branchId, $page);
         $this->executeAction($result, $chatId);
     }
 
@@ -428,8 +442,9 @@ class TelegramBotService
                     
                 case 'send_veterinarians':
                     $branchId = $result['branch_id'] ?? null;
+                    $page = $result['page'] ?? 1;
                     if ($branchId) {
-                        $this->sendVeterinarians($chatId, $branchId);
+                        $this->sendVeterinarians($chatId, $branchId, $page);
                     }
                     break;
                     

@@ -147,14 +147,27 @@ class NavigationService
     public function processProfileConfirmation(string $chatId, TelegramProfile $profile, string $data): array
     {
         if ($data === 'confirm_profile_yes') {
-            $profile->user_id = $profile->data['found_user_id'];
-            $profile->save();
-            
-            return [
-                'action' => 'send_message_and_branches',
-                'message' => "✅ Отлично! Ваш аккаунт привязан к Telegram. Добро пожаловать, {$profile->data['found_user_name']}!",
-                'keyboard' => []
-            ];
+            // Получаем пользователя
+            $foundUserId = $profile->data['found_user_id'] ?? null;
+            if (!$foundUserId) {
+                return [
+                    'action' => 'send_message',
+                    'message' => '❌ Ошибка: пользователь не найден. Начните авторизацию заново.',
+                    'keyboard' => []
+                ];
+            }
+
+            $user = \App\Models\User::find($foundUserId);
+            if (!$user) {
+                return [
+                    'action' => 'send_message',
+                    'message' => '❌ Ошибка: пользователь не найден. Начните авторизацию заново.',
+                    'keyboard' => []
+                ];
+            }
+
+            // Отправляем код подтверждения на email перед авторизацией
+            return $this->sendVerificationCodeForProfile($profile, $chatId, $user);
         } elseif ($data === 'confirm_profile_no') {
             $profile->state = 'await_phone_existing';
             $profile->save();
@@ -171,6 +184,45 @@ class NavigationService
             'message' => 'Неизвестное действие подтверждения профиля',
             'keyboard' => []
         ];
+    }
+
+    protected function sendVerificationCodeForProfile(TelegramProfile $profile, string $chatId, \App\Models\User $user): array
+    {
+        // Генерируем 6-значный код
+        $verificationCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        
+        // Сохраняем код в профиль
+        $data = $profile->data ?? [];
+        $profile->data = array_merge($data, [
+            'verification_code' => $verificationCode,
+            'verification_code_created_at' => now()->timestamp,
+            'verifying_existing_user' => true
+        ]);
+        $profile->state = 'awaiting_verification_code';
+        $profile->save();
+
+        try {
+            // Отправляем код на email существующего пользователя
+            \Mail::to($user->email)->send(new \App\Mail\VerificationCode($verificationCode, $user->name));
+            
+            return [
+                'action' => 'send_message',
+                'message' => "📧 Код подтверждения отправлен на email: {$user->email}\n\nВведите 6-значный код из письма для привязки аккаунта к Telegram.\n\n⏰ Код действителен 10 минут.\n\n💡 Если код не пришел, проверьте папку 'Спам' в вашей почте.",
+                'keyboard' => []
+            ];
+        } catch (\Exception $e) {
+            \Log::error('NavigationService: failed to send verification email for profile confirmation', [
+                'email' => $user->email,
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return [
+                'action' => 'send_message',
+                'message' => '❌ Ошибка отправки email. Пожалуйста, попробуйте снова.',
+                'keyboard' => []
+            ];
+        }
     }
 
     private function clearTransientPetData(TelegramProfile $profile): void

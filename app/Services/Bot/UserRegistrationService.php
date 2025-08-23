@@ -227,7 +227,7 @@ class UserRegistrationService
 
         return [
             'action' => 'send_message',
-            'message' => "🔍 Найден существующий аккаунт:\n\n👤 Имя: {$existingUser->name}\n📧 Email: {$existingUser->email}\n📱 Телефон: {$existingUser->phone}\n\nЭто ваш аккаунт?",
+            'message' => "🔍 Найден существующий аккаунт:\n\n👤 Имя: {$existingUser->name}\n📧 Email: {$existingUser->email}\n📱 Телефон: {$existingUser->phone}\n\nЭто ваш аккаунт? Если да, то на ваш email будет отправлен код подтверждения.",
             'keyboard' => $keyboard
         ];
     }
@@ -681,26 +681,8 @@ class UserRegistrationService
             ];
         }
 
-        // Привязываем пользователя к профилю
-        $profile->user_id = $user->id;
-        $profile->state = 'start';
-        $profile->data = [];
-        $profile->save();
-
-        // Обновляем telegram ID у пользователя
-        $user->telegram = (string)$chatId;
-        $user->save();
-
-        Log::info('UserRegistrationService: existing phone user confirmed and linked', [
-            'user_id' => $user->id,
-            'user_name' => $user->name
-        ]);
-
-        return [
-            'action' => 'send_message_and_branches',
-            'message' => "✅ Отлично! Ваш аккаунт найден и привязан к Telegram. Добро пожаловать, {$user->name}!",
-            'keyboard' => null
-        ];
+        // Отправляем код подтверждения на email существующего пользователя
+        return $this->sendVerificationCodeForExistingUser($profile, $chatId, $data, $user);
     }
 
     public function useDifferentEmail(string $chatId, TelegramProfile $profile): array
