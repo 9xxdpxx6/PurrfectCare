@@ -93,18 +93,18 @@
                         </p>
                     </div>
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap mt-3 mt-lg-0">
-                        <a href="{{ route('admin.employees.show', $employee) }}" class="btn btn-outline-info" title="Просмотр">
+                        <a href="{{ route('admin.employees.show', $employee) }}" class="btn btn-outline-info">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>
                         </a>
-                        <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-outline-warning" title="Редактировать">
+                        <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-outline-warning">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </a>
                         <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить" onclick="return confirm('Удалить сотрудника ({{ $employee->name }})?');">
+                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Удалить сотрудника ({{ $employee->name }})?');">
                                 <span class="d-none d-lg-inline-block">Удалить</span>
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -135,12 +135,6 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Инициализация тултипов
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-        
         const selectedValue = '{{ request("specialty") }}';
         
         const specialtySelect = new createTomSelect('#specialty', {

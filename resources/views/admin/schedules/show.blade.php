@@ -174,7 +174,7 @@
                                     
                                     <!-- Действия -->
                                     <div class="col-12 col-md-2 col-xl-3 text-center">
-                                        <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm w-100 text-nowrap" title="Подробнее о приеме">
+                                        <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm w-100 text-nowrap" data-bs-toggle="tooltip" data-bs-placement="top" title="Подробнее о приеме">
                                             <i class="bi bi-eye"></i> <span class="d-inline d-md-none d-xl-inline">Подробнее</span>
                                         </a>
                                     </div>

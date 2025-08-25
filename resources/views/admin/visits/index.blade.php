@@ -116,6 +116,9 @@
                             <h5 class="card-title mb-0">
                             <i class="bi bi-calendar-check"></i>
                             {{ \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') }}
+                            @if($visit->orders && $visit->orders->count() > 0)
+                                <i class="bi bi-bag-check text-success ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Есть заказы"></i>
+                            @endif
                         </h5>
                             @if($visit->status)
                                 <span class="badge" style="background-color: {{ $visit->status->color ?? '#6c757d' }}">{{ $visit->status->name }}</span>

@@ -103,9 +103,10 @@
                     <!-- Ссылки будут добавлены динамически -->
                 </div>
             </div>
-            <div class="ms-0 ms-md-3 mt-2 mt-md-0 flex-shrink-0">
+            <div class="ms-2 ms-md-3 me-3 mt-2 mt-md-0 flex-shrink-0">
                 <button type="button" class="btn btn-sm btn-outline-primary mark-read-btn" data-bs-toggle="tooltip" data-bs-title="Отметить как прочитанное">
                     <i class="bi bi-check"></i>
+                    <span class="d-inline d-md-none ms-1">Прочитать</span>
                 </button>
             </div>
         </div>
@@ -161,11 +162,11 @@ class NotificationsPage {
     }
 
     initTooltips() {
-        // Инициализируем Bootstrap тултипы
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+            // Инициализируем Bootstrap тултипы
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
     }
 
     getCsrfToken() {

@@ -5,7 +5,12 @@
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2 d-flex align-items-center">
-        <span class="me-2">Заказ #{{ $item->id }}</span>
+        <span class="me-2">
+            Заказ #{{ $item->id }}
+            @if($item->visits && $item->visits->count() > 0)
+                <i class="bi bi-calendar-check text-info ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Есть приёмы"></i>
+            @endif
+        </span>
         <span class="fs-6 badge" style="background-color: {{ $item->status->color ?? '#6c757d' }}; color: white;">{{ $item->status->name }}</span>
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -131,7 +136,9 @@
                                     <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
-                                                {{ $orderItem->item->name }}
+                                                <a href="{{ route('admin.services.show', $orderItem->item) }}" class="text-body text-decoration-none">
+                                                    {{ $orderItem->item->name }}
+                                                </a>
                                             @else
                                                 <span class="text-muted">Услуга не найдена</span>
                                             @endif
@@ -196,7 +203,9 @@
                                     <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
-                                                {{ $orderItem->item->name }}
+                                                <a href="{{ route('admin.drugs.show', $orderItem->item) }}" class="text-body text-decoration-none">
+                                                    {{ $orderItem->item->name }}
+                                                </a>
                                             @else
                                                 <span class="text-muted">Препарат не найден</span>
                                             @endif
@@ -446,4 +455,4 @@
     @endif
 
 </div>
-@endsection 
+@endsection

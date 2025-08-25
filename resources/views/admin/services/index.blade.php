@@ -98,18 +98,18 @@
                     </div>
 
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap">
-                        <a href="{{ route('admin.services.show', $service) }}" class="btn btn-outline-info" title="Просмотр">
+                        <a href="{{ route('admin.services.show', $service) }}" class="btn btn-outline-info">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>
                         </a>
-                        <a href="{{ route('admin.services.edit', $service) }}" class="btn btn-outline-warning" title="Редактировать">
+                        <a href="{{ route('admin.services.edit', $service) }}" class="btn btn-outline-warning">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </a>
                         <form action="{{ route('admin.services.destroy', $service) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить"
+                            <button type="submit" class="btn btn-outline-danger w-100"
                                 onclick="return confirm('Удалить услугу ({{ $service->name }})?');">
                                 <span class="d-none d-lg-inline-block">Удалить</span>
                                 <i class="bi bi-trash"></i>

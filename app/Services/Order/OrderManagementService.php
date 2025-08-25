@@ -111,16 +111,19 @@ class OrderManagementService
         try {
             DB::beginTransaction();
 
-            // Оптимизация: используем индексы на внешние ключи и загружаем только нужные поля
-            $order = Order::select([
+            // Получаем текущий заказ с элементами для сохранения старого состояния
+            $oldOrder = Order::select([
                     'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
                     'notes', 'total', 'is_paid', 'closed_at', 'created_at', 'updated_at'
                 ])
                 ->with(['items:id,order_id,item_type,item_id,quantity,unit_price'])
                 ->findOrFail($id);
 
-            // Определяем дату закрытия если заказ выполнен
-            $closedAt = $order->closed_at;
+            // Определяем состояние выполнения до изменений
+            $wasExecuted = !is_null($oldOrder->closed_at);
+
+            // Определяем дату закрытия после изменений
+            $closedAt = $oldOrder->closed_at;
             if ($request->has('is_closed') && $request->input('is_closed') && !$closedAt) {
                 // Дополнительная проверка: заказ не может быть выполнен, если не оплачен
                 if (!$request->has('is_paid') || !$request->input('is_paid')) {
@@ -131,13 +134,15 @@ class OrderManagementService
                 $closedAt = null;
             }
 
-            // Возвращаем препараты на склад из старого заказа если он был закрыт
-            if ($order->closed_at) {
-                $this->inventoryService->processInventoryReturn($order);
-            }
+            // Определяем состояние выполнения после изменений
+            $isExecuted = !is_null($closedAt);
+
+            // Создаем копию старого заказа для передачи в сервис корректировки запасов
+            // Необходимо сохранить старые элементы заказа в отдельной коллекции
+            $oldOrderItems = $oldOrder->items->toArray();
 
             // Обновляем заказ
-            $order->update([
+            $oldOrder->update([
                 'client_id' => $validated['client_id'],
                 'pet_id' => $validated['pet_id'],
                 'status_id' => $validated['status_id'],
@@ -150,26 +155,42 @@ class OrderManagementService
             ]);
 
             // Обновляем элементы заказа
-            $this->itemService->updateOrderItems($order, $validated['items'], $validated);
-
-            // Списание со склада только если заказ закрыт
-            if ($closedAt) {
-                $this->inventoryService->processInventoryReduction($order);
-            }
+            $this->itemService->updateOrderItems($oldOrder, $validated['items'], $validated);
 
             // Обновляем связи с приемами
-            $this->visitService->syncOrderVisits($order, $request);
+            $this->visitService->syncOrderVisits($oldOrder, $request);
+
+            // Перезагружаем заказ с новыми элементами для корректировки запасов
+            $newOrder = $oldOrder->fresh(['items']);
+
+            // Создаем временный объект для представления старого состояния заказа
+            $oldOrderForInventory = new Order();
+            $oldOrderForInventory->id = $oldOrder->id;
+            $oldOrderForInventory->setRelation('items', collect($oldOrderItems)->map(function ($item) {
+                $orderItem = new \App\Models\OrderItem();
+                $orderItem->fill($item);
+                return $orderItem;
+            }));
+
+            // Умная корректировка запасов с учетом всех изменений
+            $this->inventoryService->processInventoryUpdateCorrection(
+                $oldOrderForInventory, 
+                $newOrder, 
+                $wasExecuted, 
+                $isExecuted
+            );
 
             DB::commit();
 
-            Log::info('Заказ успешно обновлен', [
-                'order_id' => $order->id,
-                'client_id' => $order->client_id,
-                'total' => $order->total,
-                'is_closed' => (bool)$closedAt
+            Log::info('Заказ успешно обновлен с корректировкой запасов', [
+                'order_id' => $oldOrder->id,
+                'client_id' => $oldOrder->client_id,
+                'total' => $oldOrder->total,
+                'was_executed' => $wasExecuted,
+                'is_executed' => $isExecuted
             ]);
 
-            return $order;
+            return $oldOrder;
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -248,7 +269,7 @@ class OrderManagementService
             ->with([
                 'client:id,name,email,phone',
                 'pet:id,name,breed_id,client_id',
-                'status:id,name',
+                'status:id,name,color',
                 'branch:id,name,address',
                 'manager:id,name,email',
                 'items:id,order_id,item_type,item_id,quantity,unit_price',

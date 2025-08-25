@@ -117,7 +117,7 @@ class OrderController extends AdminController
             ->with([
                 'client:id,name,email',
                 'pet:id,name,breed_id',
-                'status:id,name',
+                'status:id,name,color',
                 'branch:id,name',
                 'manager:id,name',
                 'items:id,order_id,item_type,item_id,quantity,unit_price',
@@ -147,7 +147,7 @@ class OrderController extends AdminController
             ->with([
                 'client:id,name,email,phone,address',
                 'pet:id,name,breed_id,client_id,birthdate,gender',
-                'status:id,name',
+                'status:id,name,color',
                 'branch:id,name,address',
                 'manager:id,name,email',
                 'items:id,order_id,item_type,item_id,quantity,unit_price',

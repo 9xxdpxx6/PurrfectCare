@@ -21,7 +21,7 @@ class DashboardDataService
                 'pet.client:id,name,email',
                 'schedule:id,veterinarian_id',
                 'schedule.veterinarian:id,name',
-                'status:id,name'
+                'status:id,name,color'
             ])
             ->orderBy('starts_at')
             ->get();
@@ -40,7 +40,7 @@ class DashboardDataService
                 'pet.client:id,name,email',
                 'schedule:id,veterinarian_id',
                 'schedule.veterinarian:id,name',
-                'status:id,name'
+                'status:id,name,color'
             ])
             ->orderBy('starts_at')
             ->limit($limit)
@@ -57,7 +57,7 @@ class DashboardDataService
             ->with([
                 'client:id,name,email',
                 'pet:id,name',
-                'status:id,name'
+                'status:id,name,color'
             ])
             ->orderBy('created_at', 'desc')
             ->limit($limit)

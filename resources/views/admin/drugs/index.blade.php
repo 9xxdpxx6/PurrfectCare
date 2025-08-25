@@ -122,18 +122,18 @@
                     </div>
 
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap">
-                        <a href="{{ route('admin.drugs.show', $drug) }}" class="btn btn-outline-info" title="Просмотр">
+                        <a href="{{ route('admin.drugs.show', $drug) }}" class="btn btn-outline-info">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>
                         </a>
-                        <a href="{{ route('admin.drugs.edit', $drug) }}" class="btn btn-outline-warning" title="Редактировать">
+                        <a href="{{ route('admin.drugs.edit', $drug) }}" class="btn btn-outline-warning">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </a>
                         <form action="{{ route('admin.drugs.destroy', $drug) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить"
+                            <button type="submit" class="btn btn-outline-danger w-100"
                                 onclick="return confirm('Удалить препарат ({{ $drug->name }})?');">
                                 <span class="d-none d-lg-inline-block">Удалить</span>
                                 <i class="bi bi-trash"></i>
@@ -209,12 +209,6 @@
                     this.blur();
                 }, 50);
             }
-        });
-        
-        // Инициализация Bootstrap тултипов
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     });
 </script>

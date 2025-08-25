@@ -193,7 +193,7 @@ class PetController extends AdminController
                 'schedule:id,veterinarian_id,shift_starts_at',
                 'schedule.veterinarian:id,name,email',
                 'schedule.veterinarian.specialties:id,name',
-                'status:id,name'
+                'status:id,name,color'
             ])
             ->latest()
             ->limit(10)
@@ -225,7 +225,7 @@ class PetController extends AdminController
             ->select(['id', 'pet_id', 'branch_id', 'status_id', 'total', 'is_paid', 'closed_at', 'created_at'])
             ->with([
                 'branch:id,name,address',
-                'status:id,name'
+                'status:id,name,color'
             ])
             ->latest()
             ->limit(10)

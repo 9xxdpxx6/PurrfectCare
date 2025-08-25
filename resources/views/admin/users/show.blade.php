@@ -412,14 +412,6 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Инициализация Bootstrap тултипов
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    });
-
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(function() {
             // Определяем, что копируем

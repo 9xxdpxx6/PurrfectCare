@@ -234,7 +234,7 @@ class ConversionStatisticsService
     public function getConversionByVisitStatuses($startDate, $endDate)
     {
         // Оптимизация: используем select для выбора только нужных полей
-        $statuses = Status::select(['id', 'name'])->get();
+        $statuses = Status::select(['id', 'name', 'color'])->get();
         $conversionData = [];
         
         foreach ($statuses as $status) {

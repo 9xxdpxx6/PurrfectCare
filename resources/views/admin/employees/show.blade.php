@@ -90,7 +90,7 @@
                                             <!-- Клиент и дата -->
                                             <div class="col-12 col-md-4 mb-2 mb-md-0">
                                                 <h6 class="mb-1">{{ $order->client->name ?? 'Клиент не указан' }}</h6>
-                                                <small class="text-muted">{{ $order->created_at->format('d.m.Y') }}</small>
+                                                <small class="text-muted">{{ $order->created_at ? $order->created_at->format('d.m.Y') : 'Дата не указана' }}</small>
                                             </div>
                                             
                                             <!-- Питомец -->
@@ -111,7 +111,7 @@
                                             
                                             <!-- Действие на больших экранах -->
                                             <div class="col-12 col-md-1 text-end align-self-center d-none d-md-block">
-                                                <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm" title="Подробнее">
+                                                <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Просмотреть детали заказа">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                             </div>
@@ -154,14 +154,14 @@
                                             </div>
                                             
                                             <div class="text-end d-flex align-items-center gap-2 d-none d-md-flex">
-                                                <small class="text-muted">{{ $vaccination->administered_at->format('d.m.Y') }}</small>
-                                                <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-primary btn-sm" title="Подробнее">
+                                                <small class="text-muted">{{ $vaccination->administered_at ? $vaccination->administered_at->format('d.m.Y') : 'Дата не указана' }}</small>
+                                                <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Просмотреть детали вакцинации">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                             </div>
                                             
                                             <div class="text-end d-md-none">
-                                                <small class="text-muted">{{ $vaccination->administered_at->format('d.m.Y') }}</small>
+                                                <small class="text-muted">{{ $vaccination->administered_at ? $vaccination->administered_at->format('d.m.Y') : 'Дата не указана' }}</small>
                                             </div>
                                         </div>
                                         <!-- Действие на маленьких экранах -->
@@ -211,13 +211,13 @@
                                             <!-- Дата -->
                                             <div class="col-12 col-md-3 align-self-start">
                                                 <div class="text-end">
-                                                    <small class="text-muted">{{ $labTest->created_at->format('d.m.Y') }}</small>
+                                                    <small class="text-muted">{{ $labTest->created_at ? $labTest->created_at->format('d.m.Y') : 'Дата не указана' }}</small>
                                                 </div>
                                             </div>
                                             
                                             <!-- Действие на больших экранах -->
                                             <div class="col-12 col-md-1 text-end d-none d-md-block">
-                                                <a href="{{ route('admin.lab-tests.show', $labTest) }}" class="btn btn-outline-primary btn-sm" title="Подробнее">
+                                                <a href="{{ route('admin.lab-tests.show', $labTest) }}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Просмотреть детали анализа">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                             </div>
@@ -256,15 +256,15 @@
                                         <div class="row align-items-center g-2">
                                             <!-- Дата и время -->
                                             <div class="col-12 col-md-4 mb-2 mb-md-0">
-                                                <h6 class="mb-1">{{ $schedule->shift_starts_at->format('d.m.Y') }}</h6>
-                                                <small class="text-muted">{{ $schedule->shift_starts_at->format('D') }}</small>
+                                                <h6 class="mb-1">{{ $schedule->shift_starts_at ? $schedule->shift_starts_at->format('d.m.Y') : 'Дата не указана' }}</h6>
+                                                <small class="text-muted">{{ $schedule->shift_starts_at ? $schedule->shift_starts_at->format('D') : '' }}</small>
                                             </div>
                                             
                                             <!-- Время работы -->
                                             <div class="col-12 col-md-4 mb-2 mb-md-0">
                                                 <div>
                                                     <small class="text-muted d-block">Время работы</small>
-                                                    <span>{{ $schedule->shift_starts_at->format('H:i') }} - {{ $schedule->shift_ends_at->format('H:i') }}</span>
+                                                    <span>{{ $schedule->shift_starts_at ? $schedule->shift_starts_at->format('H:i') : '--:--' }} - {{ $schedule->shift_ends_at ? $schedule->shift_ends_at->format('H:i') : '--:--' }}</span>
                                                 </div>
                                             </div>
                                             
@@ -278,7 +278,7 @@
                                             
                                             <!-- Действие на больших экранах -->
                                             <div class="col-12 col-md-1 text-end d-none d-md-block">
-                                                <a href="{{ route('admin.schedules.show', $schedule) }}" class="btn btn-outline-primary btn-sm" title="Подробнее">
+                                                <a href="{{ route('admin.schedules.show', $schedule) }}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Просмотреть детали расписания">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                             </div>
@@ -344,7 +344,7 @@
                     </div>
                     <div class="d-flex justify-content-between">
                         <span>Последний заказ:</span>
-                        <strong>{{ $orders->first()->created_at->format('d.m.Y') }}</strong>
+                        <strong>{{ $orders->first() && $orders->first()->created_at ? $orders->first()->created_at->format('d.m.Y') : 'Дата не указана' }}</strong>
                     </div>
                 @endif
             </div>
@@ -390,10 +390,30 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Инициализация тултипов
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
+        // Инициализация тултипов для элементов, добавленных динамически
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1 && node.hasAttribute && node.hasAttribute('data-bs-toggle')) {
+                            if (node.getAttribute('data-bs-toggle') === 'tooltip') {
+                                new bootstrap.Tooltip(node, {
+                                    trigger: 'hover focus',
+                                    delay: { show: 100, hide: 100 },
+                                    html: true,
+                                    boundary: 'viewport'
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Наблюдаем за изменениями в DOM
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
         });
     });
 </script>

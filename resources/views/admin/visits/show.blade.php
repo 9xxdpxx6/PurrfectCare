@@ -4,7 +4,12 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Приём {{ $item->starts_at->format('d.m.Y H:i') }}</h1>
+    <h1 class="h2">
+        Приём {{ \Carbon\Carbon::parse($item->starts_at)->format('d.m.Y H:i') }}
+        @if($item->orders && $item->orders->count() > 0)
+            <i class="bi bi-bag-check text-success ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Есть заказы"></i>
+        @endif
+    </h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
         <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-outline-warning">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
@@ -328,4 +333,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

@@ -54,7 +54,7 @@ class VisitController extends AdminController
         }
         
         // Получаем только статус по умолчанию
-        $default_status = Status::select(['id', 'name'])->where('name', 'Новый')->first();
+        $default_status = Status::select(['id', 'name', 'color'])->where('name', 'Новый')->first();
         $default_status_id = $default_status ? $default_status->id : null;
         
         return view("admin.{$this->viewPath}.create", compact(
@@ -146,7 +146,7 @@ class VisitController extends AdminController
                 'client:id,name,email',
                 'pet:id,name,breed_id',
                 'schedule:id,veterinarian_id,branch_id,shift_starts_at',
-                'status:id,name',
+                'status:id,name,color',
                 'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom',
                 'symptoms.dictionarySymptom:id,name',
                 'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis',
@@ -165,7 +165,7 @@ class VisitController extends AdminController
         }
         
         // Оптимизация: используем select для выбора только нужных полей
-        $statuses = Status::select(['id', 'name'])->orderBy('name')->get();
+        $statuses = Status::select(['id', 'name', 'color'])->orderBy('name')->get();
         
         return view("admin.{$this->viewPath}.index", compact('items', 'statuses'));
     }
@@ -182,7 +182,7 @@ class VisitController extends AdminController
                 'pet:id,name,breed_id,client_id,birthdate,gender',
                 'schedule:id,veterinarian_id,branch_id,shift_starts_at,shift_ends_at',
                 'schedule.veterinarian:id,name,email',
-                'status:id,name',
+                'status:id,name,color',
                 'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom,notes',
                 'symptoms.dictionarySymptom:id,name',
                 'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis,treatment_plan',

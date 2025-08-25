@@ -154,8 +154,11 @@
                                     </span>
                                 @endif
                                 Заказ #{{ $order->id }}
+                                @if($order->visits && $order->visits->count() > 0)
+                                    <i class="bi bi-calendar-check text-info ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Есть приёмы"></i>
+                                @endif
                                 @if($order->closed_at)
-                                    <span class="text-muted fs-6 ms-2">закрыт {{ $order->closed_at->format('d.m.Y H:i') }}</span>
+                                    <span class="text-muted fs-6 ms-2">Завершен {{ $order->closed_at->format('d.m.Y H:i') }}</span>
                                 @else
                                     <span class="text-muted fs-6 ms-2">в работе</span>
                                 @endif
@@ -193,18 +196,18 @@
                         </div>
 
                         <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap mt-3 mt-lg-0">
-                            <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-info" title="Просмотр">
+                            <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline-info">
                                 <span class="d-none d-lg-inline-block">Просмотр</span>
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route('admin.orders.edit', $order) }}" class="btn btn-outline-warning" title="Редактировать">
+                            <a href="{{ route('admin.orders.edit', $order) }}" class="btn btn-outline-warning">
                                 <span class="d-none d-lg-inline-block">Редактировать</span>
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <form action="{{ route('admin.orders.destroy', $order) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger w-100" title="Удалить"
+                                <button type="submit" class="btn btn-outline-danger w-100"
                                     onclick="return confirm('Удалить заказ #{{ $order->id }}? Это действие нельзя отменить.');">
                                     <span class="d-none d-lg-inline-block">Удалить</span>
                                     <i class="bi bi-trash"></i>
@@ -237,131 +240,139 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // TomSelect для фильтров
-        new createTomSelect('#client', {
-            placeholder: 'Выберите клиента...',
-            valueField: 'value',
-            labelField: 'text',
-            searchField: 'text',
-            preload: true,
-            load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
-            },
-            onItemAdd: function() {
-                this.setTextboxValue('');
-                this.refreshOptions();
-                setTimeout(() => {
-                    this.close();
-                    this.blur();
-                }, 50);
-            }
-        });
+        // TomSelect для фильтров с проверкой существования элементов
+        if (document.querySelector('#client')) {
+            new createTomSelect('#client', {
+                placeholder: 'Выберите клиента...',
+                valueField: 'value',
+                labelField: 'text',
+                searchField: 'text',
+                preload: true,
+                load: function(query, callback) {
+                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(json => callback(json))
+                        .catch(() => callback());
+                },
+                onItemAdd: function() {
+                    this.setTextboxValue('');
+                    this.refreshOptions();
+                    setTimeout(() => {
+                        this.close();
+                        this.blur();
+                    }, 50);
+                }
+            });
+        }
 
-        new createTomSelect('#pet', {
-            placeholder: 'Выберите питомца...',
-            valueField: 'value',
-            labelField: 'text',
-            searchField: 'text',
-            preload: true,
-            load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
-            },
-            onItemAdd: function() {
-                this.setTextboxValue('');
-                this.refreshOptions();
-                setTimeout(() => {
-                    this.close();
-                    this.blur();
-                }, 50);
-            }
-        });
+        if (document.querySelector('#pet')) {
+            new createTomSelect('#pet', {
+                placeholder: 'Выберите питомца...',
+                valueField: 'value',
+                labelField: 'text',
+                searchField: 'text',
+                preload: true,
+                load: function(query, callback) {
+                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(json => callback(json))
+                        .catch(() => callback());
+                },
+                onItemAdd: function() {
+                    this.setTextboxValue('');
+                    this.refreshOptions();
+                    setTimeout(() => {
+                        this.close();
+                        this.blur();
+                    }, 50);
+                }
+            });
+        }
 
-        new createTomSelect('#status', {
-            placeholder: 'Выберите статус...',
-            valueField: 'value',
-            labelField: 'text',
-            searchField: 'text',
-            preload: true,
-            load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
-            },
-            onItemAdd: function() {
-                this.setTextboxValue('');
-                this.refreshOptions();
-                setTimeout(() => {
-                    this.close();
-                    this.blur();
-                }, 50);
-            }
-        });
+        if (document.querySelector('#status')) {
+            new createTomSelect('#status', {
+                placeholder: 'Выберите статус...',
+                valueField: 'value',
+                labelField: 'text',
+                searchField: 'text',
+                preload: true,
+                load: function(query, callback) {
+                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(json => callback(json))
+                        .catch(() => callback());
+                },
+                onItemAdd: function() {
+                    this.setTextboxValue('');
+                    this.refreshOptions();
+                    setTimeout(() => {
+                        this.close();
+                        this.blur();
+                    }, 50);
+                }
+            });
+        }
 
-        new createTomSelect('#branch', {
-            placeholder: 'Выберите филиал...',
-            valueField: 'value',
-            labelField: 'text',
-            searchField: 'text',
-            preload: true,
-            load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
-            },
-            onItemAdd: function() {
-                this.setTextboxValue('');
-                this.refreshOptions();
-                setTimeout(() => {
-                    this.close();
-                    this.blur();
-                }, 50);
-            }
-        });
+        if (document.querySelector('#branch')) {
+            new createTomSelect('#branch', {
+                placeholder: 'Выберите филиал...',
+                valueField: 'value',
+                labelField: 'text',
+                searchField: 'text',
+                preload: true,
+                load: function(query, callback) {
+                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(json => callback(json))
+                        .catch(() => callback());
+                },
+                onItemAdd: function() {
+                    this.setTextboxValue('');
+                    this.refreshOptions();
+                    setTimeout(() => {
+                        this.close();
+                        this.blur();
+                    }, 50);
+                }
+            });
+        }
 
-        new createTomSelect('#manager', {
-            placeholder: 'Выберите менеджера...',
-            valueField: 'value',
-            labelField: 'text',
-            searchField: 'text',
-            preload: true,
-            load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
-            },
-            onItemAdd: function() {
-                this.setTextboxValue('');
-                this.refreshOptions();
-                setTimeout(() => {
-                    this.close();
-                    this.blur();
-                }, 50);
-            }
-        });
+        if (document.querySelector('#manager')) {
+            new createTomSelect('#manager', {
+                placeholder: 'Выберите менеджера...',
+                valueField: 'value',
+                labelField: 'text',
+                searchField: 'text',
+                preload: true,
+                load: function(query, callback) {
+                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(json => callback(json))
+                        .catch(() => callback());
+                },
+                onItemAdd: function() {
+                    this.setTextboxValue('');
+                    this.refreshOptions();
+                    setTimeout(() => {
+                        this.close();
+                        this.blur();
+                    }, 50);
+                }
+            });
+        }
 
-        // Datepickers для дат
-        createDatepicker('#created_at_from');
-        createDatepicker('#created_at_to');
-        
-        // Инициализация тултипов
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+        // Datepickers для дат с проверкой существования элементов
+        if (document.querySelector('#created_at_from')) {
+            createDatepicker('#created_at_from');
+        }
+        if (document.querySelector('#created_at_to')) {
+            createDatepicker('#created_at_to');
+        }
     });
 </script>
 @endpush 

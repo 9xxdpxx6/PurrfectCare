@@ -101,7 +101,7 @@
                                                 <span class="fw-bold">{{ $procurement->quantity }}{{ $item->unit ? $item->unit->symbol : '' }}</span>
                                             </div>
                                             <div>
-                                                <small class="text-muted d-block">Цена</small>
+                                                <small class="text-muted d-block">Стоимость</small>
                                                 <span class="fw-bold">{{ number_format($procurement->price, 2, ',', ' ') }} ₽</span>
                                             </div>
                                         </div>

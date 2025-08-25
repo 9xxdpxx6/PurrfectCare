@@ -14,7 +14,7 @@ class OperationalStatisticsService
         // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
         $visits = Visit::select(['id', 'starts_at', 'status_id'])
             ->whereBetween('starts_at', [$startDate, $endDate])
-            ->with(['status:id,name'])
+            ->with(['status:id,name,color'])
             ->get();
         
         $byDay = $visits->groupBy(function($visit) {
@@ -163,7 +163,7 @@ class OperationalStatisticsService
         // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
         $statusStats = Visit::select(['id', 'status_id'])
             ->whereBetween('starts_at', [$startDate, $endDate])
-            ->with(['status:id,name'])
+            ->with(['status:id,name,color'])
             ->get()
             ->groupBy(function($visit) {
                 return $visit->status ? $visit->status->name : 'Без статуса';

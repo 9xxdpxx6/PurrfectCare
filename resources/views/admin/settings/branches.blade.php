@@ -156,19 +156,19 @@
 
                     <!-- Кнопки действий -->
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
-                        <button type="button" class="btn btn-outline-warning edit-btn" title="Редактировать" onclick="toggleEdit(this)">
+                        <button type="button" class="btn btn-outline-warning edit-btn" onclick="toggleEdit(this)">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-success save-btn d-none" title="Сохранить" onclick="saveRow(this)">
+                        <button type="button" class="btn btn-outline-success save-btn d-none" onclick="saveRow(this)">
                             <span class="d-none d-lg-inline-block">Сохранить</span>
                             <i class="bi bi-check"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary cancel-btn d-none" title="Отменить" onclick="cancelEdit(this)">
+                        <button type="button" class="btn btn-outline-secondary cancel-btn d-none" onclick="cancelEdit(this)">
                             <span class="d-none d-lg-inline-block">Отменить</span>
                             <i class="bi bi-x"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick="deleteRow({{ $branch->id }})">
+                        <button type="button" class="btn btn-outline-danger" onclick="deleteRow({{ $branch->id }})">
                             <span class="d-none d-lg-inline-block">Удалить</span>
                             <i class="bi bi-trash"></i>
                         </button>
@@ -527,11 +527,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     <!-- Кнопки действий -->
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
-                        <button type="button" class="btn btn-outline-success save-btn" title="Сохранить" onclick="saveNewRow(this)">
+                        <button type="button" class="btn btn-outline-success save-btn" onclick="saveNewRow(this)">
                             <span class="d-none d-lg-inline-block">Сохранить</span>
                             <i class="bi bi-check"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary cancel-btn" title="Отменить" onclick="removeNewRow(this)">
+                        <button type="button" class="btn btn-outline-secondary cancel-btn" onclick="removeNewRow(this)">
                             <span class="d-none d-lg-inline-block">Отменить</span>
                             <i class="bi bi-x"></i>
                         </button>
