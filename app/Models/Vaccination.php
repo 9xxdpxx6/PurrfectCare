@@ -63,4 +63,16 @@ class Vaccination extends Model
     {
         return $this->morphMany(OrderItem::class, 'item');
     }
+
+    // Геттер для получения названия вакцинации из типа вакцинации
+    public function getNameAttribute()
+    {
+        return $this->vaccinationType?->name ?? 'Вакцинация без названия';
+    }
+
+    // Геттер для получения цены вакцинации из типа вакцинации
+    public function getPriceAttribute()
+    {
+        return $this->vaccinationType?->price ?? 0;
+    }
 }

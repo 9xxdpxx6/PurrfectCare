@@ -12,7 +12,7 @@ class OrderFilter extends AbstractFilter
     public const PET = 'pet';
     public const STATUS = 'status';
     public const BRANCH = 'branch';
-    public const MANAGER = 'manager';
+
     public const CREATED_AT_FROM = 'created_at_from';
     public const CREATED_AT_TO = 'created_at_to';
     public const TOTAL_FROM = 'total_from';
@@ -27,7 +27,7 @@ class OrderFilter extends AbstractFilter
             self::PET => [$this, 'pet'],
             self::STATUS => [$this, 'status'],
             self::BRANCH => [$this, 'branch'],
-            self::MANAGER => [$this, 'manager'],
+
             self::CREATED_AT_FROM => [$this, 'createdAtFrom'],
             self::CREATED_AT_TO => [$this, 'createdAtTo'],
             self::TOTAL_FROM => [$this, 'totalFrom'],
@@ -50,9 +50,6 @@ class OrderFilter extends AbstractFilter
                             $q->where('name', 'like', "%{$normalized}%");
                         })
                         ->orWhereHas('pet', function ($q) use ($normalized) {
-                            $q->where('name', 'like', "%{$normalized}%");
-                        })
-                        ->orWhereHas('manager', function ($q) use ($normalized) {
                             $q->where('name', 'like', "%{$normalized}%");
                         });
 
@@ -85,9 +82,6 @@ class OrderFilter extends AbstractFilter
                             ->orWhereHas('pet', function ($q) use ($word) {
                                 $q->where('name', 'like', "%{$word}%");
                             })
-                            ->orWhereHas('manager', function ($q) use ($word) {
-                                $q->where('name', 'like', "%{$word}%");
-                            })
                             // Поиск по notes только для слов длиной >=3 (фильтр уже применён)
                             ->orWhere('notes', 'like', "%{$word}%");
                         });
@@ -115,11 +109,6 @@ class OrderFilter extends AbstractFilter
     public function branch(Builder $builder, $value)
     {
         return $builder->where('branch_id', $value);
-    }
-
-    public function manager(Builder $builder, $value)
-    {
-        return $builder->where('manager_id', $value);
     }
 
     public function createdAtFrom(Builder $builder, $value)

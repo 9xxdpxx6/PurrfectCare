@@ -20,7 +20,7 @@ class OrderItem extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
+        'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2'
     ];
 
@@ -44,7 +44,46 @@ class OrderItem extends Model
 
     public function item()
     {
-        return $this->morphTo();
+        return $this->morphTo('item', 'item_type', 'item_id');
+    }
+
+    // Альтернативный метод с правильным именем
+    public function itemable()
+    {
+        return $this->morphTo('itemable', 'item_type', 'item_id');
+    }
+
+    // Добавляем удобный метод для получения названия элемента
+    public function getItemNameAttribute()
+    {
+        try {
+            // Пробуем получить через itemable
+            if ($this->relationLoaded('itemable') && $this->itemable) {
+                return $this->itemable->name ?? 'Без названия';
+            }
+            
+            // Пробуем получить через item
+            if ($this->relationLoaded('item') && $this->item) {
+                return $this->item->name ?? 'Без названия';
+            }
+            
+            // Загружаем отношение если оно не загружено
+            $itemable = $this->itemable;
+            if ($itemable) {
+                return $itemable->name ?? 'Без названия';
+            }
+            
+            return 'Элемент не найден';
+        } catch (\Exception $e) {
+            \Log::error('Ошибка получения названия элемента заказа', [
+                'order_item_id' => $this->id,
+                'item_type' => $this->item_type,
+                'item_id' => $this->item_id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return 'Ошибка загрузки названия';
+        }
     }
 
     public function getTotalAttribute()

@@ -21,8 +21,43 @@
     
     @if ($errors->any())
         @php
+            // Отладочная информация для анализов и вакцинаций
+            $debugOldItems = old('items', []);
+            $debugLabTests = [];
+            $debugVaccinations = [];
+            
+            foreach ($debugOldItems as $index => $item) {
+                if (isset($item['item_type'])) {
+                    if ($item['item_type'] === 'lab_test') {
+                        $labTestType = null;
+                        if (isset($item['item_id']) && $item['item_id']) {
+                            $labTestType = \App\Models\LabTestType::find($item['item_id']);
+                        }
+                        $debugLabTests[] = [
+                            'index' => $index,
+                            'item_id' => $item['item_id'] ?? 'не задан',
+                            'quantity' => $item['quantity'] ?? 'не задан',
+                            'unit_price' => $item['unit_price'] ?? 'не задан',
+                            'name' => $labTestType ? $labTestType->name : 'не найдено'
+                        ];
+                    } elseif ($item['item_type'] === 'vaccination') {
+                        $vaccinationType = null;
+                        if (isset($item['item_id']) && $item['item_id']) {
+                            $vaccinationType = \App\Models\VaccinationType::find($item['item_id']);
+                        }
+                        $debugVaccinations[] = [
+                            'index' => $index,
+                            'item_id' => $item['item_id'] ?? 'не задан',
+                            'quantity' => $item['quantity'] ?? 'не задан',
+                            'unit_price' => $item['unit_price'] ?? 'не задан',
+                            'name' => $vaccinationType ? $vaccinationType->name : 'не найдено'
+                        ];
+                    }
+                }
+            }
+            
             // Исключаем ошибки полей, которые уже показываются рядом с полями
-            $fieldErrors = ['client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id', 'visits', 'notes'];
+            $fieldErrors = ['client_id', 'pet_id', 'status_id', 'branch_id', 'visits', 'notes'];
             $generalErrors = [];
             
             foreach ($errors->all() as $error) {
@@ -50,6 +85,29 @@
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
+            </div>
+        @endif
+        
+        {{-- Отладочная информация (только при наличии ошибок) --}}
+        @if (count($debugLabTests) > 0 || count($debugVaccinations) > 0)
+            <div class="alert alert-info">
+                <h6>Отладочная информация:</h6>
+                @if (count($debugLabTests) > 0)
+                    <p><strong>Анализы в old():</strong></p>
+                    <ul class="mb-2">
+                        @foreach ($debugLabTests as $labTest)
+                            <li>Индекс {{ $labTest['index'] }}: ID={{ $labTest['item_id'] }}, Название="{{ $labTest['name'] }}", Цена={{ $labTest['unit_price'] }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+                @if (count($debugVaccinations) > 0)
+                    <p><strong>Вакцинации в old():</strong></p>
+                    <ul class="mb-0">
+                        @foreach ($debugVaccinations as $vaccination)
+                            <li>Индекс {{ $vaccination['index'] }}: ID={{ $vaccination['item_id'] }}, Название="{{ $vaccination['name'] }}", Цена={{ $vaccination['unit_price'] }}</li>
+                        @endforeach
+                    </ul>
+                @endif
             </div>
         @endif
     @endif
@@ -136,23 +194,6 @@
                                 @endif
                             </select>
                             @error('branch_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="manager_id" class="form-label">Менеджер</label>
-                            <select name="manager_id" id="manager_id" class="form-select @error('manager_id') is-invalid @enderror" data-url="{{ route('admin.orders.manager-options') }}">
-                                @if(old('manager_id'))
-                                    @php
-                                        $selectedManager = \App\Models\Employee::find(old('manager_id'));
-                                    @endphp
-                                    @if($selectedManager)
-                                        <option value="{{ $selectedManager->id }}" selected>{{ $selectedManager->name }}</option>
-                                    @endif
-                                @endif
-                            </select>
-                            @error('manager_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -370,10 +411,18 @@
                                                     <label class="form-label">Анализ</label>
                                                     <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}">
                                                         @php
-                                                            $labTestType = \App\Models\LabTestType::find($item['item_id']);
+                                                            // Отладочная информация
+                                                            $debugItemId = $item['item_id'] ?? 'не найден';
+                                                            $labTestType = null;
+                                                            if (isset($item['item_id']) && $item['item_id']) {
+                                                                $labTestType = \App\Models\LabTestType::find($item['item_id']);
+                                                            }
                                                         @endphp
                                                         @if($labTestType)
                                                             <option value="{{ $labTestType->id }}" selected>{{ $labTestType->name }}</option>
+                                                        @else
+                                                            {{-- Отладка: показываем что не найдено --}}
+                                                            <option value="" disabled selected>Тип анализа не найден (ID: {{ $debugItemId }})</option>
                                                         @endif
                                                     </select>
                                                     <input type="hidden" name="items[{{ $index }}][item_type]" value="lab_test">
@@ -431,10 +480,18 @@
                                                     <label class="form-label">Вакцинация</label>
                                                     <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.vaccination-options') }}">
                                                         @php
-                                                            $vaccinationType = \App\Models\VaccinationType::find($item['item_id']);
+                                                            // Отладочная информация
+                                                            $debugVaccinationItemId = $item['item_id'] ?? 'не найден';
+                                                            $vaccinationType = null;
+                                                            if (isset($item['item_id']) && $item['item_id']) {
+                                                                $vaccinationType = \App\Models\VaccinationType::find($item['item_id']);
+                                                            }
                                                         @endphp
                                                         @if($vaccinationType)
                                                             <option value="{{ $vaccinationType->id }}" selected>{{ $vaccinationType->name }}</option>
+                                                        @else
+                                                            {{-- Отладка: показываем что не найдено --}}
+                                                            <option value="" disabled selected>Тип вакцинации не найден (ID: {{ $debugVaccinationItemId }})</option>
                                                         @endif
                                                     </select>
                                                     <input type="hidden" name="items[{{ $index }}][item_type]" value="vaccination">
@@ -688,7 +745,7 @@
         const selectedClientId = '{{ old("client_id", $selectedClientId ?? "") }}';
         const selectedPetId = '{{ old("pet_id", $selectedPetId ?? "") }}';
         const selectedVisitId = '{{ $selectedVisitId ?? "" }}';
-        const selectedVisits = @json(old('visits', isset($selectedVisitId) && $selectedVisitId ? [$selectedVisitId] : []));
+        const selectedVisits = JSON.parse('@json(old("visits", isset($selectedVisitId) && $selectedVisitId ? [$selectedVisitId] : []))');
         
         // Обработчик отправки формы
         document.getElementById('orderForm').addEventListener('submit', function(e) {
@@ -884,27 +941,7 @@
             }
         });
 
-        new createTomSelect('#manager_id', {
-            placeholder: 'Выберите менеджера...',
-            valueField: 'value',
-            labelField: 'text',
-            searchField: 'text',
-            allowEmptyOption: false,
-            preload: true,
-            load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
-                fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
-            },
-            onItemAdd: function() {
-                setTimeout(() => {
-                    this.close();
-                    this.blur();
-                }, 50);
-            }
-        });
+
 
         // Загрузка опций питомцев для клиента (без сброса текущего значения)
         function loadPetOptionsForClient(clientId, isInitialization = false) {
@@ -1147,13 +1184,47 @@
             
             if (itemType && itemUrls[itemType]) {
                 itemSelect.dataset.url = itemUrls[itemType];
+                
+                // Сохраняем текущее значение и текст option перед инициализацией TomSelect
+                const selectedOption = itemSelect.querySelector('option[selected]');
+                let selectedValue = null;
+                let selectedText = null;
+                
+                if (selectedOption) {
+                    selectedValue = selectedOption.value;
+                    selectedText = selectedOption.textContent;
+                    console.log(`Сохраняем значение для ${itemType}:`, selectedValue, selectedText);
+                }
+                
                 initItemTomSelect(itemSelect, itemType);
                 
-                // Для анализов и вакцинаций сразу загружаем последние 20 записей
+                // Восстанавливаем значение после инициализации TomSelect
+                if (selectedValue && selectedText) {
+                    setTimeout(() => {
+                        if (itemSelect.tomselect) {
+                            // Добавляем опцию, если она не была загружена
+                            const existingOption = itemSelect.tomselect.options[selectedValue];
+                            if (!existingOption) {
+                                itemSelect.tomselect.addOption({
+                                    value: selectedValue,
+                                    text: selectedText
+                                });
+                            }
+                            // Устанавливаем значение
+                            itemSelect.tomselect.setValue(selectedValue);
+                            console.log(`Восстановлено значение для ${itemType}:`, selectedValue, selectedText);
+                        }
+                    }, 300); // Увеличиваем задержку
+                }
+                
+                // Для анализов и вакцинаций загружаем данные только если нет выбранного значения
                 if ((itemType === 'lab_test' || itemType === 'vaccination') && itemSelect.tomselect) {
                     setTimeout(() => {
-                        itemSelect.tomselect.load('');
-                    }, 200);
+                        // Загружаем данные только если нет выбранного значения
+                        if (!selectedValue) {
+                            itemSelect.tomselect.load('');
+                        }
+                    }, 500);
                 }
             }
             
@@ -1205,7 +1276,7 @@
         // Инициализируем TomSelect для элемента
         initItemTomSelect(itemSelect, itemType);
         
-        // Для анализов и вакцинаций сразу загружаем последние 20 записей
+        // Для анализов и вакцинаций загружаем последние 20 записей при добавлении новых элементов
         if ((itemType === 'lab_test' || itemType === 'vaccination') && itemSelect.tomselect) {
             setTimeout(() => {
                 itemSelect.tomselect.load('');
@@ -1255,7 +1326,12 @@
         addOrderItemBase('vaccinationItemTemplate', 'vaccinationItems', 'vaccination');
     }
 
-    function addVaccinationDrugs(vaccinationTypeId, vaccinationItemDiv = null) {
+    function addVaccinationDrugs(vaccinationTypeId, vaccinationItemDiv = null, isChange = false) {
+        // Если это изменение типа вакцинации, сначала удаляем старые препараты
+        if (isChange && vaccinationItemDiv) {
+            removeVaccinationDrugs(vaccinationItemDiv);
+        }
+        
         // Получаем препараты из типа вакцинации
         fetch(`{{ route('admin.vaccination-types.drugs', 'VACCINATION_TYPE_ID') }}`.replace('VACCINATION_TYPE_ID', vaccinationTypeId))
             .then(response => response.json())
@@ -1299,6 +1375,13 @@
                         if (priceInput) {
                             priceInput.value = drug.price || 0; // Устанавливаем цену
                         }
+                        
+                        // Помечаем препарат как связанный с вакцинацией
+                        const vaccinationIndex = vaccinationItemDiv ? vaccinationItemDiv.getAttribute('data-item-index') : null;
+                        if (vaccinationIndex) {
+                            lastDrugItem.setAttribute('data-vaccination-index', vaccinationIndex);
+                        }
+                        
                         calculateItemTotal.call(priceInput); // Обновляем тоталы
                     }
                 });
@@ -1308,9 +1391,30 @@
             });
     }
 
+    // Функция для удаления препаратов, связанных с вакцинацией
+    function removeVaccinationDrugs(vaccinationItemDiv) {
+        const vaccinationIndex = vaccinationItemDiv.getAttribute('data-item-index');
+        if (!vaccinationIndex) return;
+        
+        // Находим все препараты, связанные с этой вакцинацией
+        const drugItems = document.getElementById('drugItems');
+        const relatedDrugs = drugItems.querySelectorAll(`[data-vaccination-index="${vaccinationIndex}"]`);
+        
+        // Удаляем связанные препараты
+        relatedDrugs.forEach(drugItem => {
+            drugItem.remove();
+        });
+        
+        // Пересчитываем общую сумму
+        calculateTotal();
+    }
+
     function initItemTomSelect(select, type) {
         const url = itemUrls[type];
         if (!url) return;
+        
+        // Для анализов и вакцинаций не используем preload, чтобы сохранить исходные option
+        const shouldPreload = !(type === 'lab_test' || type === 'vaccination');
         
         new createTomSelect(select, {
             placeholder: 'Выберите элемент...',
@@ -1318,7 +1422,23 @@
             labelField: 'text',
             searchField: 'text',
             allowEmptyOption: false,
-            preload: true,
+            preload: shouldPreload,
+            onInitialize: function() {
+                // Для анализов и вакцинаций сохраняем исходные option элементы
+                if (type === 'lab_test' || type === 'vaccination') {
+                    const selectedOption = this.input.querySelector('option[selected]');
+                    if (selectedOption) {
+                        console.log(`Найден выбранный элемент ${type}:`, selectedOption.value, selectedOption.textContent);
+                        // Убеждаемся, что опция добавлена в TomSelect
+                        this.addOption({
+                            value: selectedOption.value,
+                            text: selectedOption.textContent
+                        });
+                        // Устанавливаем значение
+                        this.setValue(selectedOption.value);
+                    }
+                }
+            },
             load: function(query, callback) {
                 let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
                 
@@ -1389,8 +1509,14 @@
                             console.error('Ошибка при получении цены вакцинации:', error);
                         });
                     
+                    // Проверяем, есть ли уже выбранное значение (это значит, что происходит изменение)
+                    const isChange = this.input.hasAttribute('data-has-value');
+                    
                     // Добавляем препараты отдельно
-                    addVaccinationDrugs(value, itemDiv);
+                    addVaccinationDrugs(value, itemDiv, isChange);
+                    
+                    // Помечаем, что значение установлено
+                    this.input.setAttribute('data-has-value', 'true');
                 } else {
                     // Для услуг и препаратов устанавливаем цену по умолчанию
                     const priceInput = itemDiv.querySelector('.item-price');
@@ -1423,6 +1549,13 @@
 
     function removeOrderItem(button) {
         const itemDiv = button.closest('.order-item');
+        const itemType = itemDiv.getAttribute('data-item-type');
+        
+        // Если удаляется вакцинация, сначала удаляем связанные препараты
+        if (itemType === 'vaccination') {
+            removeVaccinationDrugs(itemDiv);
+        }
+        
         itemDiv.remove();
         calculateTotal();
     }

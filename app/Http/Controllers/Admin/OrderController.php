@@ -82,7 +82,7 @@ class OrderController extends AdminController
             ])
             ->with([
                 'items:id,order_id,item_type,item_id,quantity,unit_price',
-                'items.item:id,name'
+                'visits:id,client_id,pet_id,starts_at,status_id'
             ])
             ->findOrFail($id);
         return view("admin.{$this->viewPath}.edit", compact('item'));
@@ -162,6 +162,10 @@ class OrderController extends AdminController
         try {
             $validated = $request->validated();
             
+            // Добавляем manager_id в валидированные данные
+            // Используем правильный guard 'admin' для получения ID сотрудника
+            $validated['manager_id'] = auth('admin')->id();
+            
             $this->orderService->createOrder($validated, $request);
             
             return redirect()
@@ -169,9 +173,10 @@ class OrderController extends AdminController
                 ->with('success', 'Заказ успешно создан');
         } catch (\Exception $e) {
             \Log::error('Order store error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            
             return back()
                 ->withInput()
-                ->withErrors(['error' => 'Ошибка при создании заказа: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Ошибка при создании заказа. Попробуйте еще раз.']);
         }
     }
 

@@ -19,7 +19,7 @@
     @if ($errors->any())
         @php
             // Исключаем ошибки полей, которые уже показываются рядом с полями
-            $fieldErrors = ['client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id', 'visits', 'notes'];
+            $fieldErrors = ['client_id', 'pet_id', 'status_id', 'branch_id', 'visits', 'notes'];
             $generalErrors = [];
             
             foreach ($errors->all() as $error) {
@@ -124,23 +124,6 @@
                                 @endif
                             </select>
                             @error('branch_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="manager_id" class="form-label">Менеджер</label>
-                            <select name="manager_id" id="manager_id" class="form-select @error('manager_id') is-invalid @enderror" data-url="{{ route('admin.orders.manager-options') }}">
-                                @if(old('manager_id', $item->manager_id))
-                                    @php
-                                        $selectedManager = \App\Models\Employee::find(old('manager_id', $item->manager_id));
-                                    @endphp
-                                    @if($selectedManager)
-                                        <option value="{{ $selectedManager->id }}" selected>{{ $selectedManager->name }}</option>
-                                    @endif
-                                @endif
-                            </select>
-                            @error('manager_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -259,7 +242,7 @@
                                                 @if($orderItem->itemable)
                                                     <option value="{{ $orderItem->itemable->id }}" selected>{{ $orderItem->itemable->name }}</option>
                                                 @elseif($orderItem->item)
-                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item->name }}</option>
+                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item_name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="service">
@@ -267,7 +250,7 @@
                                         
                                         <div class="col-6 col-lg-3">
                                             <label class="form-label">Кол-во</label>
-                                            <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="1" max="9999">
+                                            <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="0.01" max="9999" step="0.01">
                                         </div>
                                         
                                         <div class="col-6 col-lg-3">
@@ -322,7 +305,7 @@
                                                 @if($orderItem->itemable)
                                                     <option value="{{ $orderItem->itemable->id }}" selected>{{ $orderItem->itemable->name }}</option>
                                                 @elseif($orderItem->item)
-                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item->name }}</option>
+                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item_name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="drug">
@@ -330,7 +313,7 @@
                                         
                                         <div class="col-6 col-lg-3">
                                             <label class="form-label">Кол-во</label>
-                                            <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="1" max="9999">
+                                            <input type="number" name="items[{{ $index }}][quantity]" class="form-control item-quantity" value="{{ $orderItem->quantity }}" min="0.01" max="9999" step="0.01">
                                         </div>
                                         
                                         <div class="col-6 col-lg-3">
@@ -385,7 +368,7 @@
                                                 @if($orderItem->itemable)
                                                     <option value="{{ $orderItem->itemable->id }}" selected>{{ $orderItem->itemable->name }}</option>
                                                 @elseif($orderItem->item)
-                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item->name }}</option>
+                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item_name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="lab_test">
@@ -444,7 +427,7 @@
                                                 @if($orderItem->itemable)
                                                     <option value="{{ $orderItem->itemable->id }}" selected>{{ $orderItem->itemable->name }}</option>
                                                 @elseif($orderItem->item)
-                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item->name }}</option>
+                                                    <option value="{{ $orderItem->item->id }}" selected>{{ $orderItem->item_name }}</option>
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="vaccination">
@@ -710,7 +693,7 @@
 
 @push('scripts')
 <script>
-    let itemIndex = {{ $itemCount }};
+    let itemIndex = parseInt('{!! $itemCount ?? 0 !!}') || 0;
     let petTomSelect; // Глобальная переменная для доступа из других функций
     
     const itemUrls = {
@@ -749,7 +732,7 @@
         const petSelect = document.getElementById('pet_id');
         
         // Получаем предустановленные значения
-        const selectedVisits = @json(old('visits', $item->visits->pluck('id')->toArray()));
+        const selectedVisits = JSON.parse('{!! json_encode(old("visits", $item->visits->pluck("id")->toArray())) !!}');
         
         // TomSelect для основных полей
         const clientTomSelect = new createTomSelect('#client_id', {
@@ -846,27 +829,7 @@
             }
         });
 
-        new createTomSelect('#manager_id', {
-            placeholder: 'Выберите менеджера...',
-            valueField: 'value',
-            labelField: 'text',
-            searchField: 'text',
-            allowEmptyOption: false,
-            preload: true,
-            load: function(query, callback) {
-                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=false';
-                fetch(url)
-                    .then(response => response.json())
-                    .then(json => callback(json))
-                    .catch(() => callback());
-            },
-            onItemAdd: function() {
-                setTimeout(() => {
-                    this.close();
-                    this.blur();
-                }, 50);
-            }
-        });
+
 
         // Загрузка опций питомцев для клиента (без сброса текущего значения)
         function loadPetOptionsForClient(clientId, isInitialization = false) {
@@ -890,8 +853,8 @@
                     
                     // При инициализации восстанавливаем значение питомца
                     if (isInitialization) {
-                        const currentPetIdFromServer = '{{ old("pet_id", $item->pet_id) }}';
-                        const currentClientIdFromServer = '{{ old("client_id", $item->client_id) }}';
+                        const currentPetIdFromServer = '{!! old("pet_id", $item->pet_id) !!}';
+                        const currentClientIdFromServer = '{!! old("client_id", $item->client_id) !!}';
                         if (currentPetIdFromServer && clientId === currentClientIdFromServer) {
                             petTomSelect.setValue(currentPetIdFromServer);
                             
@@ -1346,7 +1309,12 @@
         addOrderItemBase('vaccinationItemTemplate', 'vaccinationItems', 'vaccination');
     }
 
-    function addVaccinationDrugs(vaccinationTypeId, vaccinationItemDiv = null) {
+    function addVaccinationDrugs(vaccinationTypeId, vaccinationItemDiv = null, isChange = false) {
+        // Если это изменение типа вакцинации, сначала удаляем старые препараты
+        if (isChange && vaccinationItemDiv) {
+            removeVaccinationDrugs(vaccinationItemDiv);
+        }
+        
         // Получаем препараты из типа вакцинации
         fetch(`{{ route('admin.vaccination-types.drugs', 'VACCINATION_TYPE_ID') }}`.replace('VACCINATION_TYPE_ID', vaccinationTypeId))
             .then(response => response.json())
@@ -1390,6 +1358,13 @@
                         if (priceInput) {
                             priceInput.value = drug.price || 0; // Устанавливаем цену
                         }
+                        
+                        // Помечаем препарат как связанный с вакцинацией
+                        const vaccinationIndex = vaccinationItemDiv ? vaccinationItemDiv.getAttribute('data-item-index') : null;
+                        if (vaccinationIndex) {
+                            lastDrugItem.setAttribute('data-vaccination-index', vaccinationIndex);
+                        }
+                        
                         calculateItemTotal.call(priceInput); // Обновляем тоталы
                     }
                 });
@@ -1397,6 +1372,24 @@
             .catch(error => {
                 console.error('Ошибка при получении препаратов вакцинации:', error);
             });
+    }
+
+    // Функция для удаления препаратов, связанных с вакцинацией
+    function removeVaccinationDrugs(vaccinationItemDiv) {
+        const vaccinationIndex = vaccinationItemDiv.getAttribute('data-item-index');
+        if (!vaccinationIndex) return;
+        
+        // Находим все препараты, связанные с этой вакцинацией
+        const drugItems = document.getElementById('drugItems');
+        const relatedDrugs = drugItems.querySelectorAll(`[data-vaccination-index="${vaccinationIndex}"]`);
+        
+        // Удаляем связанные препараты
+        relatedDrugs.forEach(drugItem => {
+            drugItem.remove();
+        });
+        
+        // Пересчитываем общую сумму
+        calculateTotal();
     }
 
     function initItemTomSelect(select, type) {
@@ -1481,8 +1474,14 @@
                             console.error('Ошибка при получении цены вакцинации:', error);
                         });
                     
+                    // Проверяем, есть ли уже выбранное значение (это значит, что происходит изменение)
+                    const isChange = this.input.hasAttribute('data-has-value');
+                    
                     // Добавляем препараты отдельно
-                    addVaccinationDrugs(value, itemDiv);
+                    addVaccinationDrugs(value, itemDiv, isChange);
+                    
+                    // Помечаем, что значение установлено
+                    this.input.setAttribute('data-has-value', 'true');
                 } else {
                     // Для услуг и препаратов устанавливаем цену по умолчанию
                     const priceInput = itemDiv.querySelector('.item-price');
@@ -1512,6 +1511,13 @@
 
     function removeOrderItem(button) {
         const itemDiv = button.closest('.order-item');
+        const itemType = itemDiv.getAttribute('data-item-type');
+        
+        // Если удаляется вакцинация, сначала удаляем связанные препараты
+        if (itemType === 'vaccination') {
+            removeVaccinationDrugs(itemDiv);
+        }
+        
         itemDiv.remove();
         calculateTotal();
     }

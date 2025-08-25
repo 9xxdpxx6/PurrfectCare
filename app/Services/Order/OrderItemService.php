@@ -130,8 +130,9 @@ class OrderItemService
      */
     protected function validateItemExists(string $itemType, int $itemId): void
     {
-        // Оптимизация: используем select для выбора только нужных полей
-        $item = $itemType::select(['id', 'name'])->find($itemId);
+        // Проверяем существование элемента, выбирая только id
+        // Не все модели имеют поле name, поэтому не включаем его в select
+        $item = $itemType::select(['id'])->find($itemId);
         if (!$item) {
             throw new \InvalidArgumentException(
                 'Элемент типа ' . $itemType . ' с ID ' . $itemId . ' не найден'

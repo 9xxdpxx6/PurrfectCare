@@ -21,7 +21,6 @@ class StoreRequest extends FormRequest
             'pet_id' => ['required', 'exists:pets,id', new BelongsToClient],
             'status_id' => 'required|exists:statuses,id',
             'branch_id' => 'required|exists:branches,id',
-            'manager_id' => 'required|exists:employees,id',
             'notes' => 'nullable|string|max:1000',
             'total' => 'required|numeric|min:0|max:999999.99',
             'is_paid' => 'boolean',
@@ -29,7 +28,7 @@ class StoreRequest extends FormRequest
             'items' => 'required|array|min:1',
             'items.*.item_type' => 'required|in:service,drug,lab_test,vaccination',
             'items.*.item_id' => 'required|integer',
-            'items.*.quantity' => ['required', 'numeric', 'min:0.01', 'max:9999', new CheckDrugQuantity],
+            'items.*.quantity' => ['required', 'decimal:0,2', 'min:0.01', 'max:9999', new CheckDrugQuantity],
             'items.*.unit_price' => 'required|numeric|min:0|max:999999.99',
         ];
     }
@@ -46,8 +45,6 @@ class StoreRequest extends FormRequest
             'status_id.exists' => 'Выбранный статус не найден',
             'branch_id.required' => 'Филиал обязателен для выбора',
             'branch_id.exists' => 'Выбранный филиал не найден',
-            'manager_id.required' => 'Менеджер обязателен для выбора',
-            'manager_id.exists' => 'Выбранный менеджер не найден',
             'notes.max' => 'Заметки не должны превышать 1000 символов',
             'total.required' => 'Общая сумма обязательна',
             'total.numeric' => 'Общая сумма должна быть числом',

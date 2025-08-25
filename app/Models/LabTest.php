@@ -64,4 +64,16 @@ class LabTest extends Model
     {
         return $this->morphMany(OrderItem::class, 'item');
     }
+
+    // Геттер для получения названия анализа из типа анализа
+    public function getNameAttribute()
+    {
+        return $this->labTestType?->name ?? 'Анализ без названия';
+    }
+
+    // Геттер для получения цены анализа из типа анализа
+    public function getPriceAttribute()
+    {
+        return $this->labTestType?->price ?? 0;
+    }
 }

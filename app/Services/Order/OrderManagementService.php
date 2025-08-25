@@ -142,7 +142,7 @@ class OrderManagementService
                 'pet_id' => $validated['pet_id'],
                 'status_id' => $validated['status_id'],
                 'branch_id' => $validated['branch_id'],
-                'manager_id' => $validated['manager_id'],
+                // manager_id не обновляется - остается зафиксированным при создании
                 'notes' => $validated['notes'] ?? null,
                 'total' => $validated['total'],
                 'is_paid' => $request->has('is_paid') && $request->input('is_paid'),

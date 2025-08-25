@@ -23,6 +23,10 @@ class Order extends Model
         'closed_at'
     ];
 
+    protected $guarded = [
+        // Убираем manager_id из guarded, так как он теперь в fillable
+    ];
+
     protected $casts = [
         'total' => 'decimal:2',
         'is_paid' => 'boolean',

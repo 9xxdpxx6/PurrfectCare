@@ -74,20 +74,7 @@
                 @endif
             </select>
         </div>
-        <div class="flex-grow-1" style="min-width:180px;">
-            <label for="manager" class="form-label mb-1">Менеджер</label>
-            <select name="manager" id="manager" class="form-select" data-url="{{ route('admin.orders.manager-options') }}">
-                <option value="">Все менеджеры</option>
-                @if(request('manager'))
-                    @php
-                        $selectedManager = \App\Models\Employee::find(request('manager'));
-                    @endphp
-                    @if($selectedManager)
-                        <option value="{{ $selectedManager->id }}" selected>{{ $selectedManager->name }}</option>
-                    @endif
-                @endif
-            </select>
-        </div>
+
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
             <select name="sort" id="sort" class="form-select">
