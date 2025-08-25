@@ -1222,6 +1222,11 @@
                 }
             });
             
+            // Сначала помечаем существующие препараты от вакцинаций с задержкой
+            setTimeout(() => {
+                markExistingVaccinationDrugs();
+            }, 100);
+            
             // Обновляем тоталы после инициализации всех элементов
             calculateTotal();
         }, 500);
@@ -1474,8 +1479,10 @@
                             console.error('Ошибка при получении цены вакцинации:', error);
                         });
                     
-                    // Проверяем, есть ли уже выбранное значение (это значит, что происходит изменение)
-                    const isChange = this.input.hasAttribute('data-has-value');
+                    // Проверяем, есть ли уже связанные препараты с этой вакцинацией
+                    const vaccinationIndex = itemDiv.getAttribute('data-item-index');
+                    const hasRelatedDrugs = document.querySelectorAll(`[data-vaccination-index="${vaccinationIndex}"]`).length > 0;
+                    const isChange = hasRelatedDrugs;
                     
                     // Добавляем препараты отдельно
                     addVaccinationDrugs(value, itemDiv, isChange);
@@ -1580,6 +1587,49 @@
         
         document.getElementById('totalAmount').textContent = total.toFixed(2) + ' ₽';
         document.getElementById('total').value = total.toFixed(2);
+    }
+
+    // Функция для пометки существующих препаратов от вакцинаций
+    function markExistingVaccinationDrugs() {
+        // Получаем все вакцинации из заказа
+        const vaccinationItems = document.querySelectorAll('.order-item[data-item-type="vaccination"]');
+        
+        vaccinationItems.forEach(vaccinationItem => {
+            const vaccinationSelect = vaccinationItem.querySelector('.item-select option[selected]');
+            if (!vaccinationSelect) return;
+            
+            const vaccinationTypeId = vaccinationSelect.value;
+            const vaccinationIndex = vaccinationItem.getAttribute('data-item-index');
+            
+            // Получаем препараты этой вакцинации
+            fetch(`{{ route('admin.vaccination-types.drugs', 'VACCINATION_TYPE_ID') }}`.replace('VACCINATION_TYPE_ID', vaccinationTypeId))
+                .then(response => response.json())
+                .then(drugs => {
+                    const drugIds = drugs.map(drug => drug.id.toString());
+                    
+                    // Находим препараты в заказе, которые соответствуют препаратам вакцинации
+                    const drugItems = document.querySelectorAll('.order-item[data-item-type="drug"]');
+                    drugItems.forEach(drugItem => {
+                        const drugSelect = drugItem.querySelector('.item-select option[selected]');
+                        if (!drugSelect) return;
+                        
+                        const drugId = drugSelect.value;
+                        if (drugIds.includes(drugId)) {
+                            // Помечаем препарат как препарат вакцинации
+                            const quantityInput = drugItem.querySelector('.item-quantity');
+                            if (quantityInput) {
+                                quantityInput.setAttribute('data-vaccination-drug', 'true');
+                                quantityInput.readOnly = true;
+                                // Связываем с вакцинацией
+                                drugItem.setAttribute('data-vaccination-index', vaccinationIndex);
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка при получении препаратов вакцинации:', error);
+                });
+        });
     }
 
     // Функция для пересчета стоимости вакцинации
