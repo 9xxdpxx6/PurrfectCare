@@ -28,14 +28,10 @@ class PetController extends AdminController
 
     public function create() : View
     {
-        // Оптимизация: используем select для выбора только нужных полей
-        $clients = User::select(['id', 'name', 'email', 'phone'])->get();
-        $breeds = Breed::select(['id', 'name'])->get();
-        
         // Получаем ID клиента из параметра запроса
         $selectedClientId = request('owner');
         
-        return view("admin.{$this->viewPath}.create", compact('clients', 'breeds', 'selectedClientId'));
+        return view("admin.{$this->viewPath}.create", compact('selectedClientId'));
     }
 
     public function edit($id) : View
@@ -47,10 +43,7 @@ class PetController extends AdminController
             ])
             ->findOrFail($id);
             
-        // Оптимизация: используем select для выбора только нужных полей
-        $clients = User::select(['id', 'name', 'email', 'phone'])->get();
-        $breeds = Breed::select(['id', 'name'])->get();
-        return view("admin.{$this->viewPath}.edit", compact('item', 'clients', 'breeds'));
+        return view("admin.{$this->viewPath}.edit", compact('item'));
     }
 
     public function store(StoreRequest $request) : RedirectResponse
@@ -182,7 +175,8 @@ class PetController extends AdminController
             ])
             ->with([
                 'client:id,name,email,phone,address',
-                'breed:id,name'
+                'breed:id,name,species_id',
+                'breed.species:id,name'
             ])
             ->findOrFail($id);
         

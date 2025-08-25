@@ -42,11 +42,16 @@
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="breed_id" class="form-label">Порода</label>
-            <select class="form-select @error('breed_id') is-invalid @enderror" id="breed_id" name="breed_id">
+            <select class="form-select @error('breed_id') is-invalid @enderror" id="breed_id" name="breed_id" data-url="{{ route('admin.pets.breed-options') }}">
                 <option value="">Выберите породу</option>
-                @foreach($breeds as $breed)
-                    <option value="{{ $breed->id }}" @if(old('breed_id') == $breed->id) selected @endif>{{ $breed->name }}</option>
-                @endforeach
+                @if(old('breed_id'))
+                    @php
+                        $selectedBreed = \App\Models\Breed::find(old('breed_id'));
+                    @endphp
+                    @if($selectedBreed)
+                        <option value="{{ $selectedBreed->id }}" selected>{{ $selectedBreed->name }}</option>
+                    @endif
+                @endif
             </select>
             @error('breed_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
@@ -79,11 +84,19 @@
         </div>
         <div class="col-md-6 col-lg-4">
             <label for="client_id" class="form-label">Владелец</label>
-            <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id">
+            <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id" data-url="{{ route('admin.pets.client-options') }}">
                 <option value="">Выберите владельца</option>
-                @foreach($clients as $client)
-                    <option value="{{ $client->id }}" @if(old('client_id', $selectedClientId ?? request('client_id')) == $client->id) selected @endif>{{ $client->name }}</option>
-                @endforeach
+                @php
+                    $clientId = old('client_id', $selectedClientId ?? request('client_id'));
+                @endphp
+                @if($clientId)
+                    @php
+                        $selectedClient = \App\Models\User::find($clientId);
+                    @endphp
+                    @if($selectedClient)
+                        <option value="{{ $selectedClient->id }}" selected>{{ $selectedClient->name }}</option>
+                    @endif
+                @endif
             </select>
             @error('client_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
@@ -120,18 +133,48 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         createDatepicker('#birthdate', {});
+        
+        // TomSelect для клиентов с поиском
         createTomSelect('#client_id', {
             placeholder: 'Выберите владельца...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
             onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
                 setTimeout(() => {
                     this.close();
                     this.blur();
                 }, 50);
             }
         });
+        
+        // TomSelect для пород с поиском
         createTomSelect('#breed_id', {
             placeholder: 'Выберите породу...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
             onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
                 setTimeout(() => {
                     this.close();
                     this.blur();

@@ -16,6 +16,7 @@ use App\Services\Options\SymptomOptionsService;
 use App\Services\Options\DiagnosisOptionsService;
 use App\Services\Options\LabTestOptionsService;
 use App\Services\Options\VaccinationOptionsService;
+use App\Services\Options\BreedOptionsService;
 use Illuminate\Http\Request;
 
 trait HasOptionsMethods
@@ -108,5 +109,10 @@ trait HasOptionsMethods
     public function vaccinationOptions(Request $request)
     {
         return app(VaccinationOptionsService::class)->getOptions($request);
+    }
+
+    public function breedOptions(Request $request)
+    {
+        return app(BreedOptionsService::class)->getOptions($request);
     }
 } 

@@ -41,7 +41,7 @@
                         </p>
                         <p class="mb-2">
                             <strong><i class="bi bi-collection"></i> Вид:</strong>
-                            <span class="text-muted">Не указан</span>
+                            <span class="text-muted">{{ $pet->breed->species->name ?? '—' }}</span>
                         </p>
                         <p class="mb-2">
                             <strong>
