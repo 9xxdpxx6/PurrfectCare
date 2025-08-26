@@ -4,8 +4,8 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2 col-12 col-md-7 col-xl-8">Питомец: {{ $pet->name }}</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
+    <h1 class="h2">Питомец: {{ $pet->name }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0 text-nowrap">
         <a href="{{ route('admin.pets.edit', $pet) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
@@ -16,7 +16,7 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-8">
+    <div class="col-xl-8 col-lg-12">
         <!-- Основная информация -->
         <div class="card mb-4">
             <div class="card-header">
@@ -381,7 +381,7 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-xl-4 col-lg-12">
         <!-- Статистика -->
         <div class="card mb-4">
             <div class="card-header">
@@ -390,7 +390,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                                <div class="d-flex justify-content-between mb-2">
+                <div class="d-flex justify-content-between mb-2">
                     <span>Всего приёмов:</span>
                     <strong>{{ $visitsTotal }}</strong>
                 </div>
@@ -412,7 +412,7 @@
                         <strong>{{ number_format($orders->sum('total'), 2, ',', ' ') }} ₽</strong>
                     </div>
                 @endif
-                                @if($pet->birthdate)
+                @if($pet->birthdate)
                     <div class="d-flex justify-content-between mb-2">
                         <span>Возраст:</span>
                         <strong>{{ $pet->birthdate->age }} 
@@ -432,9 +432,9 @@
                                 }
                             @endphp
                         </strong>
-        </div>
+                    </div>
                 @endif
-                                @if($visits->count() > 0 && $visits->first()->created_at)
+                @if($visits->count() > 0 && $visits->first()->created_at)
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span>Последний приём:</span>
@@ -456,20 +456,20 @@
                 <h5 class="card-title mb-0">
                     <i class="bi bi-gear"></i> Действия
                 </h5>
-    </div>
+            </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('admin.visits.create', ['pet' => $pet->id]) }}" class="btn btn-outline-primary">
-                        <i class="bi bi-plus"></i> Записать на приём
+                    <a href="{{ route('admin.visits.create', ['pet' => $pet->id]) }}" class="btn btn-outline-info">
+                        <i class="bi bi-calendar-plus"></i> Записать на приём
                     </a>
                     <a href="{{ route('admin.orders.create', ['pet' => $pet->id]) }}" class="btn btn-outline-success">
-                        <i class="bi bi-plus"></i> Добавить заказ
+                        <i class="bi bi-cart-plus"></i> Добавить заказ
                     </a>
                     <a href="{{ route('admin.lab-tests.create', ['pet' => $pet->id]) }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-plus"></i> Добавить анализ
+                        <i class="bi bi-clipboard-data"></i> Добавить анализ
                     </a>
-                    <a href="{{ route('admin.vaccinations.create', ['pet' => $pet->id]) }}" class="btn btn-outline-info">
-                        <i class="bi bi-plus"></i> Добавить вакцинацию
+                    <a href="{{ route('admin.vaccinations.create', ['pet' => $pet->id]) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-shield-plus"></i> Добавить вакцинацию
                     </a>
                     <hr>
                     <a href="{{ route('admin.pets.edit', $pet) }}" class="btn btn-outline-warning">

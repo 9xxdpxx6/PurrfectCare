@@ -288,6 +288,11 @@ class VaccinationController extends AdminController
         return app(\App\Services\Options\VaccinationTypeOptionsService::class)->getOptions($request);
     }
     
+    public function drugOptions(Request $request)
+    {
+        return app(\App\Services\Options\DrugOptionsService::class)->getOptions($request);
+    }
+    
     public function getDrugs($id)
     {
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей

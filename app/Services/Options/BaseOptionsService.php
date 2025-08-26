@@ -15,7 +15,9 @@ abstract class BaseOptionsService
         $options = [];
         $search = $request->input('q');
         $selectedId = $request->input('selected');
-        $isFilter = $request->input('filter', false);
+        // Параметр filter может приходить как строка "true" / "false" —
+        // приводим его к булевому виду, чтобы 'false' не считался истинным
+        $isFilter = filter_var($request->input('filter', false), FILTER_VALIDATE_BOOLEAN);
 
         // Добавляем "Все" только для фильтров
         if ($isFilter) {

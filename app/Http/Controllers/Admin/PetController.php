@@ -31,7 +31,10 @@ class PetController extends AdminController
         // Получаем ID клиента из параметра запроса
         $selectedClientId = request('owner');
         
-        return view("admin.{$this->viewPath}.create", compact('selectedClientId'));
+        // Загружаем список клиентов для отображения информации о выбранном клиенте
+        $clients = User::select(['id', 'name', 'email'])->orderBy('name')->get();
+        
+        return view("admin.{$this->viewPath}.create", compact('selectedClientId', 'clients'));
     }
 
     public function edit($id) : View

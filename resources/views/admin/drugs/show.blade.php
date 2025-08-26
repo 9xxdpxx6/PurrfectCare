@@ -195,11 +195,11 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('admin.drug-procurements.create', ['drug' => $item->id]) }}" class="btn btn-outline-primary">
-                        <i class="bi bi-plus"></i> Добавить поставку
-                    </a>
                     <a href="{{ route('admin.drugs.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                    <a href="{{ route('admin.drug-procurements.create', ['drug' => $item->id]) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus"></i> Добавить поставку
                     </a>
                     <hr>
                     <form action="{{ route('admin.drugs.destroy', $item) }}" method="POST" class="d-grid">

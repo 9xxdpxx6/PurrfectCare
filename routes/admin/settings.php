@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\Settings\BreedController;
 use App\Http\Controllers\Admin\Settings\SupplierController as SettingsSupplierController;
 use App\Http\Controllers\Admin\Settings\DictionaryDiagnosisController;
 use App\Http\Controllers\Admin\Settings\DictionarySymptomController;
+use App\Http\Controllers\Admin\Settings\LabTestTypeController;
+use App\Http\Controllers\Admin\Settings\LabTestParamController;
+use App\Http\Controllers\Admin\Settings\VaccinationTypeController;
 
 Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/', [SettingsSettingsController::class, 'index'])->name('index');
@@ -31,6 +34,20 @@ Route::prefix('settings')->name('settings.')->group(function () {
 
     // Поставщики
     Route::resource('suppliers', SettingsSupplierController::class)->parameters(['suppliers' => 'supplier']);
+    
+    // Анализы
+    Route::resource('lab-test-types', LabTestTypeController::class)->parameters(['lab-test-types' => 'lab-test-type']);
+    Route::resource('lab-test-params', LabTestParamController::class)->parameters(['lab-test-params' => 'lab-test-param']);
+    
+    // Единицы измерения опции для TomSelect
+    Route::get('unit-options', [UnitController::class, 'options'])->name('unit-options');
+    // Единицы измерения
+    Route::resource('units', UnitController::class)->parameters(['units' => 'unit']);
+    Route::get('units/options', [UnitController::class, 'options'])->name('units.options');
+    
+    // Вакцинации
+    Route::resource('vaccination-types', VaccinationTypeController::class)->parameters(['vaccination-types' => 'vaccination-type']);
+    Route::get('vaccination-types/{vaccination_type}/drugs', [VaccinationTypeController::class, 'getDrugs'])->name('vaccination-types.drugs');
 });
 
 

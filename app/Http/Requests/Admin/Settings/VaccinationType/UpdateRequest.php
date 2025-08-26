@@ -23,12 +23,31 @@ class UpdateRequest extends FormRequest
         $vaccinationType = $this->route('vaccinationType');
         $vaccinationTypeId = $vaccinationType ? $vaccinationType->id : null;
         
+        // Если ID не найден, используем ID из URL
+        if (!$vaccinationTypeId) {
+            $pathSegments = explode('/', $this->path());
+            $vaccinationTypeId = end($pathSegments);
+        }
+        
+        // Убеждаемся, что ID числовой
+        if (!is_numeric($vaccinationTypeId)) {
+            $vaccinationTypeId = null;
+        }
+        
+        // Логируем для отладки
+        \Log::info('UpdateRequest rules', [
+            'route_vaccinationType' => $vaccinationType,
+            'vaccinationTypeId' => $vaccinationTypeId,
+            'path' => $this->path(),
+            'route_parameters' => $this->route()->parameters()
+        ]);
+        
         return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('vaccination_types')->ignore($vaccinationTypeId)
+                Rule::unique('vaccination_types')->ignore($vaccinationTypeId, 'id')
             ],
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',

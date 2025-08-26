@@ -129,23 +129,18 @@
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Тип анализа</label>
-                                <select class="form-select form-select-sm" data-field="lab_test_type_id" onchange="markAsChanged(this)">
-                                    @foreach($labTestTypes as $type)
-                                        <option value="{{ $type->id }}" {{ $param->lab_test_type_id == $type->id ? 'selected' : '' }}>
-                                            {{ $type->name }}
-                                        </option>
-                                    @endforeach
+                                <select class="form-select form-select-sm lab-test-type-select" data-field="lab_test_type_id" onchange="markAsChanged(this)">
+                                    @if($param->lab_test_type_id)
+                                        <option value="{{ $param->lab_test_type_id }}" selected>{{ $param->labTestType->name ?? 'Тип анализа' }}</option>
+                                    @endif
                                 </select>
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Единица измерения</label>
-                                <select class="form-select form-select-sm" data-field="unit_id" onchange="markAsChanged(this)">
-                                    <option value="">Без единицы</option>
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}" {{ $param->unit_id == $unit->id ? 'selected' : '' }}>
-                                            {{ $unit->name }}
-                                        </option>
-                                    @endforeach
+                                <select class="form-select form-select-sm unit-select" data-field="unit_id" onchange="markAsChanged(this)">
+                                    @if($param->unit_id)
+                                        <option value="{{ $param->unit_id }}" selected>{{ $param->unit->name ?? 'Единица' }}</option>
+                                    @endif
                                 </select>
                             </div>
                             <div class="col-12">
@@ -169,7 +164,7 @@
                             <span class="d-none d-lg-inline-block">Отменить</span>
                             <i class="bi bi-x"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick='deleteRow({{ $param->id }})'>
+                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick="deleteRow(this)" data-param-id="{{ $param->id }}">
                             <span class="d-none d-lg-inline-block">Удалить</span>
                             <i class="bi bi-trash"></i>
                         </button>
@@ -333,6 +328,9 @@ let changedRows = new Set();
         editBtn.classList.add('d-none');
         saveBtn.classList.remove('d-none');
         cancelBtn.classList.remove('d-none');
+        
+        // Инициализируем TomSelect для селектов
+        initTomSelects(card);
     }
 
     function saveRow(button) {
@@ -360,7 +358,7 @@ let changedRows = new Set();
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({...data, _method: 'PATCH'})
             })
@@ -444,20 +442,14 @@ let changedRows = new Set();
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Тип анализа</label>
-                                <select class="form-select form-select-sm" data-field="lab_test_type_id" onchange="markAsChanged(this)">
+                                <select class="form-select form-select-sm lab-test-type-select" data-field="lab_test_type_id" onchange="markAsChanged(this)">
                                     <option value="">Выберите тип анализа</option>
-                                    @foreach($labTestTypes as $type)
-                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Единица измерения</label>
-                                <select class="form-select form-select-sm" data-field="unit_id" onchange="markAsChanged(this)">
+                                <select class="form-select form-select-sm unit-select" data-field="unit_id" onchange="markAsChanged(this)">
                                     <option value="">Без единицы</option>
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12">
@@ -490,6 +482,9 @@ let changedRows = new Set();
             container.appendChild(newCard);
         }
         
+        // Инициализируем TomSelect для новой карточки
+        initTomSelects(newCard);
+        
         hasChanges = true;
     }
 
@@ -510,12 +505,12 @@ let changedRows = new Set();
             return;
         }
         
-        fetch('{{ route('admin.lab-tests.params.store') }}', {
+        fetch("{{ route('admin.lab-tests.params.store') }}", {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify(data)
         })
@@ -554,14 +549,15 @@ let changedRows = new Set();
         card.remove();
     }
 
-    function deleteRow(id) {
+    function deleteRow(button) {
+        const id = button.dataset.paramId;
         if (confirm('Вы уверены, что хотите удалить этот параметр?')) {
             fetch(`{{ route('admin.lab-tests.params.destroy', '') }}/${id}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ _method: 'DELETE' })
             })
@@ -609,5 +605,130 @@ let changedRows = new Set();
             createToast(message, 'info', 'Информация');
         }
     }
+
+    // Функции для работы с TomSelect
+    function initTomSelects(container) {
+        if (!container) return;
+        
+        // Инициализируем селект для типа анализа
+        const labTestTypeSelect = container.querySelector('.lab-test-type-select');
+        if (labTestTypeSelect && !labTestTypeSelect.tomselect) {
+            initLabTestTypeSelect(labTestTypeSelect);
+        }
+        
+        // Инициализируем селект для единицы измерения
+        const unitSelect = container.querySelector('.unit-select');
+        if (unitSelect && !unitSelect.tomselect) {
+            initUnitSelect(unitSelect);
+        }
+    }
+
+    function initLabTestTypeSelect(select) {
+        const selectedValue = select.value || '';
+        const selectedText = select.selectedIndex >= 0 ? select.options[select.selectedIndex].text : '';
+        
+        const tomSelect = createTomSelect(select, {
+            placeholder: 'Поиск типа анализа...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: true,
+            maxOptions: 50,
+            maxItems: 1,
+            load: function(query, callback) {
+                let url = '{{ route("admin.lab-tests.lab-test-type-options") }}?q=' + encodeURIComponent(query || '');
+                
+                if (selectedValue && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedValue);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onChange: function() {
+                if (this.input && typeof markAsChanged === 'function') {
+                    markAsChanged(this.input);
+                }
+            }
+        });
+        
+        if (selectedValue && selectedText && selectedText !== 'Выберите тип анализа') {
+            try {
+                tomSelect.addOption({
+                    value: selectedValue,
+                    text: selectedText
+                });
+                tomSelect.setValue(selectedValue);
+            } catch (error) {
+                console.error('Error setting initial value:', error);
+            }
+        }
+        
+        return tomSelect;
+    }
+
+    function initUnitSelect(select) {
+        const selectedValue = select.value || '';
+        const selectedText = select.selectedIndex >= 0 ? select.options[select.selectedIndex].text : '';
+        
+        const tomSelect = createTomSelect(select, {
+            placeholder: 'Поиск единицы измерения...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: true,
+            preload: true,
+            maxOptions: 50,
+            maxItems: 1,
+            load: function(query, callback) {
+                let url = "{{ route('admin.settings.unit-options') }}?q=" + encodeURIComponent(query || '');
+                
+                if (selectedValue && !query) {
+                    url += '&selected=' + encodeURIComponent(selectedValue);
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onChange: function() {
+                if (this.input && typeof markAsChanged === 'function') {
+                    markAsChanged(this.input);
+                }
+            }
+        });
+        
+        if (selectedValue && selectedText && selectedText !== 'Без единицы') {
+            try {
+                tomSelect.addOption({
+                    value: selectedValue,
+                    text: selectedText
+                });
+                tomSelect.setValue(selectedValue);
+            } catch (error) {
+                console.error('Error setting initial value:', error);
+            }
+        }
+        
+        return tomSelect;
+    }
+
+    // Инициализация TomSelect при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализируем все существующие селекты
+        document.querySelectorAll('.lab-test-type-select, .unit-select').forEach(select => {
+            if (!select.tomselect) {
+                if (select.classList.contains('lab-test-type-select')) {
+                    initLabTestTypeSelect(select);
+                } else if (select.classList.contains('unit-select')) {
+                    initUnitSelect(select);
+                }
+            }
+        });
+    });
 </script>
 @endpush 

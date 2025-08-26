@@ -343,17 +343,17 @@
                     <div class="collapse show" id="settingsMenu">
                         <ul class="nav flex-column ms-3">
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.types.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.lab-tests.types.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.lab-test-types.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.lab-test-types.index') }}">
                                     Типы анализов
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.lab-tests.params.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.lab-tests.params.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.lab-test-params.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.lab-test-params.index') }}">
                                     Параметры анализов
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('admin.vaccination-types.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.vaccination-types.index') }}">
+                                <a class="nav-link {{ request()->routeIs('admin.settings.vaccination-types.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.settings.vaccination-types.index') }}">
                                     Типы вакцинаций
                                 </a>
                             </li>

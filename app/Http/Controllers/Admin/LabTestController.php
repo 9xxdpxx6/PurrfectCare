@@ -280,4 +280,25 @@ class LabTestController extends AdminController
                 ->withErrors(['error' => 'Ошибка при удалении анализа: ' . $e->getMessage()]);
         }
     }
+    
+    // TomSelect опции для основных полей
+    public function petOptions(Request $request)
+    {
+        return app(\App\Services\Options\PetOptionsService::class)->getOptions($request);
+    }
+    
+    public function veterinarianOptions(Request $request)
+    {
+        return app(\App\Services\Options\EmployeeOptionsService::class)->getVeterinarianOptions($request);
+    }
+    
+    public function labTestTypeOptions(Request $request)
+    {
+        return app(\App\Services\Options\LabTestOptionsService::class)->getLabTestTypeOptions($request);
+    }
+    
+    public function labTestParamOptions(Request $request)
+    {
+        return app(\App\Services\Options\LabTestOptionsService::class)->getLabTestParamOptions($request);
+    }
 } 

@@ -306,6 +306,10 @@
                 }, 50);
             }
         });
+
+        // Флаги инициализации для корректной первичной установки значений
+        clientTomSelect.isInitializing = true;
+        petTomSelect.isInitializing = true;
         
         // Устанавливаем предустановленные значения
         setTimeout(() => {
@@ -333,10 +337,16 @@
                 scheduleTomSelect.setValue(selectedScheduleId);
                 getAvailableTime(selectedScheduleId);
             }
+
+            // Завершаем фазу инициализации
+            clientTomSelect.isInitializing = false;
+            petTomSelect.isInitializing = false;
         }, 100);
         
         // Обработчик изменения клиента
         clientTomSelect.on('change', function(value) {
+            // Пропускаем очистку во время первоначальной инициализации
+            if (this.isInitializing) return;
             // Очищаем выбранного питомца при смене клиента
             petTomSelect.clear();
             petTomSelect.clearOptions();

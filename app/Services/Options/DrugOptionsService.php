@@ -10,6 +10,13 @@ class DrugOptionsService extends BaseOptionsService
     public function getOptions(Request $request)
     {
         $query = Drug::with('unit');
+        
+        // Применяем поиск, если есть запрос
+        $search = $request->input('q');
+        if ($search) {
+            $query->where('name', 'like', "%$search%");
+        }
+        
         return $this->buildOptions($request, $query, [
             'model' => Drug::class,
             'include_price' => $request->input('include_price', false)

@@ -6,120 +6,9 @@
 
 @push('styles')
 <style>
-    /* Стили для TomSelect в секции препаратов - динамичная высота */
+    /* Минимальные стили для TomSelect в секции препаратов */
     .drug-select {
         min-height: 38px;
-    }
-    
-    .ts-wrapper {
-        min-height: 38px;
-    }
-    
-    .ts-control {
-        min-height: 38px;
-        padding: 0.375rem 0.75rem;
-        border: 1px solid var(--bs-border-color);
-        border-radius: 0.375rem;
-        background-color: var(--bs-body-bg);
-        color: var(--bs-body-color);
-        font-size: 1rem;
-        line-height: 1.5;
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 2px;
-    }
-    
-    .ts-dropdown {
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 1050;
-    }
-    
-    .ts-dropdown .option {
-        padding: 0.375rem 0.75rem;
-        border-bottom: 1px solid var(--bs-border-color);
-        font-size: 1rem;
-        line-height: 1.5;
-    }
-    
-    .ts-dropdown .option:hover {
-        background-color: var(--bs-primary);
-        color: white;
-    }
-    
-    .ts-dropdown .option.active {
-        background-color: var(--bs-primary);
-        color: white;
-    }
-    
-    /* Улучшение отображения в карточках */
-    .card .drug-row .ts-wrapper {
-        width: 100%;
-    }
-    
-    /* Адаптивность для мобильных */
-    @media (max-width: 768px) {
-        .ts-dropdown {
-            max-height: 150px;
-        }
-        
-        .drug-row .col-6 {
-            margin-bottom: 8px;
-        }
-    }
-    
-    /* Дополнительные стили для корректного отображения */
-    .edit-fields .ts-wrapper {
-        position: relative;
-    }
-    
-    .edit-fields .ts-dropdown {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: var(--bs-body-bg);
-        border: 1px solid var(--bs-border-color);
-        border-radius: 0.375rem;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Улучшение отображения выбранных элементов */
-    .ts-control .item {
-        background-color: var(--bs-primary);
-        color: white;
-        border-radius: 0.25rem;
-        padding: 2px 6px;
-        margin: 2px;
-        font-size: 0.875rem;
-        display: flex;
-        align-items: center;
-    }
-    
-    .ts-control .item .remove {
-        color: white;
-        font-weight: bold;
-        margin-left: 4px;
-    }
-    
-    .ts-control .item .remove:hover {
-        color: #ffcccc;
-    }
-    
-    /* Улучшение отображения длинных названий */
-    .ts-control .item {
-        max-width: 100%;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
-    }
-    
-    .ts-control .item .text {
-        max-width: calc(100% - 20px);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
     
     /* Унификация размеров всех элементов */
@@ -253,7 +142,7 @@
             <input type="text" name="search" id="search" class="form-control" placeholder="Поиск..." value="{{ request('search') }}">
         </div>
         <div class="d-flex gap-2 ms-auto w-auto">
-            <a href="{{ route('admin.vaccination-types.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('admin.settings.vaccination-types.index') }}" class="btn btn-outline-secondary">
                 <span class="d-none d-lg-inline">Сбросить</span> <i class="bi bi-x-lg"></i>
             </a>
             <button type="submit" class="btn btn-outline-primary">
@@ -339,7 +228,7 @@
                                         @endforeach
                                     </div> 
                                     <div class="mt-3">
-                                        <button type="button" class="btn btn-outline-primary btn-sm btn-add-drug" onclick="addDrugRow({{ $type->id }})">
+                                        <button type="button" class="btn btn-outline-primary btn-sm btn-add-drug" onclick="addDrugRow(this)" data-type-id="{{ $type->id }}">
                                             <i class="bi bi-plus-circle me-1"></i> Добавить препарат
                                         </button>
                                     </div>
@@ -362,7 +251,7 @@
                             <span class="d-none d-lg-inline-block">Отменить</span>
                             <i class="bi bi-x"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick="deleteRow({{ $type->id }})">
+                        <button type="button" class="btn btn-outline-danger" title="Удалить" onclick="deleteRow(this)" data-type-id="{{ $type->id }}">
                             <span class="d-none d-lg-inline-block">Удалить</span>
                             <i class="bi bi-trash"></i>
                         </button>
@@ -558,7 +447,8 @@ function createEditableRow() {
     return div;
 }
 
-function addDrugRow(typeId) {
+function addDrugRow(button) {
+    const typeId = button.dataset.typeId;
     const container = document.querySelector(`#drugs-container-${typeId}`);
     if (container) {
         const drugRow = createDrugRow();
@@ -631,25 +521,7 @@ function initDrugSelects(container) {
     });
 }
 
-function initDrugSelectsSilently(container) {
-    if (!container) {
-        console.error('Container is null or undefined');
-        return;
-    }
-    
-    const selects = container.querySelectorAll('.drug-select');
-    
-    selects.forEach((select, index) => {
-        // Проверяем, что это действительно select элемент и он еще не инициализирован
-        if (select && select.tagName === 'SELECT' && !select.tomselect) {
-            try {
-                initTomSelectForDrugSilently(select);
-            } catch (error) {
-                console.error('Error initializing TomSelect for drug:', error);
-            }
-        }
-    });
-}
+
 
 function initTomSelectForDrug(select) {
     // Проверяем, что селект существует
@@ -663,7 +535,7 @@ function initTomSelectForDrug(select) {
     const selectedText = (select.selectedIndex >= 0 && select.options[select.selectedIndex]) ? select.options[select.selectedIndex].text : '';
     
     // Инициализируем TomSelect
-    const tomSelect = new createTomSelect(select, {
+    const tomSelect = createTomSelect(select, {
         placeholder: 'Поиск препарата...',
         valueField: 'value',
         labelField: 'text',
@@ -672,9 +544,8 @@ function initTomSelectForDrug(select) {
         preload: true,
         maxOptions: 50,
         maxItems: 1,
-        closeAfterSelect: true,
         load: function(query, callback) {
-            let url = '{{ route("admin.vaccinations.drug-options") }}?q=' + encodeURIComponent(query);
+            let url = '{{ route("admin.vaccinations.drug-options") }}?q=' + encodeURIComponent(query || '');
             
             // Если есть выбранное значение и это первая загрузка, передаём его
             if (selectedValue && !query) {
@@ -686,30 +557,10 @@ function initTomSelectForDrug(select) {
                 .then(json => callback(json))
                 .catch(() => callback());
         },
-        onItemAdd: function() {
-            if (this.setTextboxValue) {
-                this.setTextboxValue('');
-            }
-            if (this.refreshOptions) {
-                this.refreshOptions();
-            }
-            setTimeout(() => {
-                if (this.close) this.close();
-                if (this.blur) this.blur();
-            }, 50);
-        },
         onChange: function() {
             // Вызываем markAsChanged для отслеживания изменений
             if (this.input && typeof markAsChanged === 'function') {
                 markAsChanged(this.input);
-            }
-        },
-        onDropdownOpen: function() {
-            // Убеждаемся, что dropdown не выходит за границы
-            const dropdown = this.dropdown;
-            if (dropdown) {
-                dropdown.style.maxHeight = '200px';
-                dropdown.style.overflowY = 'auto';
             }
         }
     });
@@ -731,91 +582,7 @@ function initTomSelectForDrug(select) {
     return tomSelect;
 }
 
-function initTomSelectForDrugSilently(select) {
-    // Проверяем, что селект существует
-    if (!select) {
-        console.error('Select element is null or undefined');
-        return null;
-    }
-    
-    // Проверяем, что элемент является select
-    if (select.tagName !== 'SELECT') {
-        console.error('Element is not a select:', select);
-        return null;
-    }
-    
-    // Если есть уже выбранное значение, сохраняем его
-    const selectedValue = select.value || '';
-    const selectedText = (select.selectedIndex >= 0 && select.options[select.selectedIndex]) ? select.options[select.selectedIndex].text : '';
-    
-    // Инициализируем TomSelect с отключенным автозаполнением
-    const tomSelect = new createTomSelect(select, {
-        placeholder: 'Поиск препарата...',
-        valueField: 'value',
-        labelField: 'text',
-        searchField: 'text',
-        allowEmptyOption: false,
-        preload: false, // Отключаем предзагрузку
-        maxOptions: 50,
-        maxItems: 1,
-        closeAfterSelect: true,
-        load: function(query, callback) {
-            let url = '{{ route("admin.vaccinations.drug-options") }}?q=' + encodeURIComponent(query);
-            
-            // Если есть выбранное значение и это первая загрузка, передаём его
-            if (selectedValue && !query) {
-                url += '&selected=' + encodeURIComponent(selectedValue);
-            }
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(json => callback(json))
-                .catch(() => callback());
-        },
-        onItemAdd: function() {
-            if (this.setTextboxValue) {
-                this.setTextboxValue('');
-            }
-            if (this.refreshOptions) {
-                this.refreshOptions();
-            }
-            setTimeout(() => {
-                if (this.close) this.close();
-                if (this.blur) this.blur();
-            }, 50);
-        },
-        onChange: function() {
-            // Вызываем markAsChanged для отслеживания изменений
-            if (this.input && typeof markAsChanged === 'function') {
-                markAsChanged(this.input);
-            }
-        },
-        onDropdownOpen: function() {
-            // Убеждаемся, что dropdown не выходит за границы
-            const dropdown = this.dropdown;
-            if (dropdown) {
-                dropdown.style.maxHeight = '200px';
-                dropdown.style.overflowY = 'auto';
-            }
-        }
-    });
-    
-    // Если было выбранное значение, восстанавливаем его БЕЗ открытия dropdown
-    if (selectedValue && selectedText && selectedText !== 'Выберите препарат' && selectedText !== '') {
-        try {
-            // Добавляем опцию и выбираем её
-            tomSelect.addOption({
-                value: selectedValue,
-                text: selectedText
-            });
-            tomSelect.setValue(selectedValue);
-        } catch (error) {
-            console.error('Error setting initial value:', error);
-        }
-    }
-    
-    return tomSelect;
-}
+
 
 function toggleEdit(button) {
     // Сначала закрываем все открытые поля редактирования
@@ -834,8 +601,8 @@ function toggleEdit(button) {
     if (saveBtn) saveBtn.classList.remove('d-none');
     if (cancelBtn) cancelBtn.classList.remove('d-none');
     
-    // Инициализируем селекты препаратов БЕЗ автоматического открытия
-    initDrugSelectsSilently(card);
+    // Инициализируем селекты препаратов
+    initDrugSelects(card);
 }
 
 function closeAllEditFields() {
@@ -1000,8 +767,8 @@ function saveRow(button) {
     }
     
     const url = id === 'new' 
-                        ? '{{ route("admin.vaccination-types.store") }}'
-                  : '{{ url("admin/vaccination-types") }}/' + id;
+                        ? '{{ route("admin.settings.vaccination-types.store") }}'
+                  : '{{ url("admin/settings/vaccination-types") }}/' + id;
     
     const method = id === 'new' ? 'POST' : 'POST';
     
@@ -1069,7 +836,8 @@ function saveRow(button) {
     });
 }
 
-function deleteRow(id) {
+function deleteRow(button) {
+    const id = button.dataset.typeId;
     if (!confirm('Вы уверены, что хотите удалить этот тип вакцинации?')) {
         return;
     }
@@ -1129,10 +897,10 @@ function deleteRow(id) {
 
 // Инициализация TomSelect при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-    // Инициализируем все существующие селекты препаратов БЕЗ автоматического открытия
+    // Инициализируем все существующие селекты препаратов
     document.querySelectorAll('.drug-select').forEach(select => {
         if (!select.tomselect) {
-            initTomSelectForDrugSilently(select);
+            initTomSelectForDrug(select);
         }
     });
 });
