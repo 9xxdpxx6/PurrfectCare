@@ -5,30 +5,37 @@ namespace App\Services\Statistics;
 use App\Models\Visit;
 use App\Models\Schedule;
 use App\Models\Status;
+use App\Models\Employee;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class OperationalStatisticsService
 {
     public function getVisitsData($startDate, $endDate)
     {
-        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
-        $visits = Visit::select(['id', 'starts_at', 'status_id'])
-            ->whereBetween('starts_at', [$startDate, $endDate])
-            ->with(['status:id,name,color'])
-            ->get();
+        $visitsQuery = Visit::whereBetween('starts_at', [$startDate, $endDate]);
+
+        $total = (clone $visitsQuery)->count();
         
-        $byDay = $visits->groupBy(function($visit) {
-            return $visit->starts_at->format('Y-m-d');
-        })->map->count();
-        
+        $completed = (clone $visitsQuery)
+            ->whereHas('status', fn($q) => $q->where('name', 'Завершён'))
+            ->count();
+            
+        $cancelled = (clone $visitsQuery)
+            ->whereHas('status', fn($q) => $q->where('name', 'Отменён'))
+            ->count();
+
+        $byDay = (clone $visitsQuery)
+            ->select(DB::raw('DATE(starts_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->pluck('count', 'date');
+
         return [
-            'total' => $visits->count(),
-            'completed' => $visits->filter(function($visit) {
-                return $visit->status && $visit->status->name === 'Завершён';
-            })->count(),
-            'cancelled' => $visits->filter(function($visit) {
-                return $visit->status && $visit->status->name === 'Отменён';
-            })->count(),
+            'total' => $total,
+            'completed' => $completed,
+            'cancelled' => $cancelled,
             'by_day' => $byDay,
         ];
     }
@@ -38,35 +45,35 @@ class OperationalStatisticsService
         // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
         $totalVisits = Visit::select(['id'])->whereBetween('starts_at', [$startDate, $endDate])->count();
         
-        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
-        $employeeData = Visit::select(['id', 'starts_at', 'schedule_id'])
-            ->whereBetween('starts_at', [$startDate, $endDate])
-            ->with(['schedule:id,veterinarian_id', 'schedule.veterinarian:id,name,email'])
-            ->get()
-            ->groupBy('schedule.veterinarian_id')
-            ->map(function($visits, $employeeId) use ($startDate, $endDate, $totalVisits) {
-                $employee = $visits->first()->schedule->veterinarian;
-                
-                // Считаем дни когда ветеринар работал (были приёмы)
-                $workingDays = $visits->groupBy(function($visit) {
-                    return $visit->starts_at->format('Y-m-d');
-                })->count();
-                
-                $visitsCount = $visits->count();
-                $avgVisitsPerDay = $workingDays > 0 ? $visitsCount / $workingDays : 0;
-                
-                // Процент от общего количества приемов
-                $visitsPercentage = $totalVisits > 0 ? round(($visitsCount / $totalVisits) * 100, 1) : 0;
-                
-                return [
-                    'employee' => $employee,
-                    'visits_count' => $visitsCount,
-                    'working_days' => $workingDays,
-                    'avg_visits_per_day' => $avgVisitsPerDay,
-                    'visits_percentage' => $visitsPercentage,
-                ];
-            });
-        
+        $employeeStats = Visit::whereBetween('visits.starts_at', [$startDate, $endDate])
+            ->join('schedules', 'visits.schedule_id', '=', 'schedules.id')
+            ->join('employees', 'schedules.veterinarian_id', '=', 'employees.id')
+            ->select(
+                'schedules.veterinarian_id',
+                'employees.id as employee_id',
+                'employees.name as employee_name',
+                DB::raw('count(visits.id) as visits_count'),
+                DB::raw('count(distinct DATE(visits.starts_at)) as working_days')
+            )
+            ->groupBy('schedules.veterinarian_id', 'employee_id', 'employee_name')
+            ->get();
+
+        $employeeIds = $employeeStats->pluck('employee_id');
+        $employees = Employee::with('specialties')->find($employeeIds)->keyBy('id');
+            
+        $employeeData = $employeeStats->map(function($stats) use ($totalVisits, $employees) {
+            $avgVisitsPerDay = $stats->working_days > 0 ? $stats->visits_count / $stats->working_days : 0;
+            $visitsPercentage = $totalVisits > 0 ? round(($stats->visits_count / $totalVisits) * 100, 1) : 0;
+            
+            return [
+                'employee' => $employees->get($stats->employee_id),
+                'visits_count' => $stats->visits_count,
+                'working_days' => $stats->working_days,
+                'avg_visits_per_day' => $avgVisitsPerDay,
+                'visits_percentage' => $visitsPercentage,
+            ];
+        });
+
         // Рассчитываем динамические пороги на основе фактических данных
         $allAvgLoads = $employeeData->pluck('avg_visits_per_day')->filter()->values();
         
@@ -96,17 +103,19 @@ class OperationalStatisticsService
             $maxLoad = 20;
         }
         
+        $vetIds = $employeeData->pluck('employee.id');
+        $allSchedules = Schedule::select(['id', 'veterinarian_id', 'shift_starts_at', 'shift_ends_at'])
+            ->whereIn('veterinarian_id', $vetIds)
+            ->whereBetween('shift_starts_at', [$startDate, $endDate])
+            ->get()
+            ->groupBy('veterinarian_id');
+
         // Применяем рассчитанные пороги к каждому сотруднику
-        return $employeeData->map(function($data) use ($lowThreshold, $mediumThreshold, $startDate, $endDate) {
+        return $employeeData->map(function($data) use ($lowThreshold, $mediumThreshold, $allSchedules) {
             $avgVisitsPerDay = $data['avg_visits_per_day'];
             $employee = $data['employee'];
             
-            // Рассчитываем теоретический максимум на основе расписания ветеринара
-            // Оптимизация: используем индексы на veterinarian_id и shift_starts_at, select для выбора только нужных полей
-            $schedules = Schedule::select(['id', 'shift_starts_at', 'shift_ends_at'])
-                ->where('veterinarian_id', $employee->id)
-                ->whereBetween('shift_starts_at', [$startDate, $endDate])
-                ->get();
+            $schedules = $allSchedules->get($employee->id) ?? collect();
             
             $theoreticalMaxPerDay = 0;
             if ($schedules->count() > 0) {
@@ -160,15 +169,12 @@ class OperationalStatisticsService
 
     public function getStatusStats($startDate, $endDate)
     {
-        // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
-        $statusStats = Visit::select(['id', 'status_id'])
-            ->whereBetween('starts_at', [$startDate, $endDate])
-            ->with(['status:id,name,color'])
+        $statusStats = Visit::whereBetween('starts_at', [$startDate, $endDate])
+            ->join('statuses', 'visits.status_id', '=', 'statuses.id')
+            ->select('statuses.name', DB::raw('count(visits.id) as count'))
+            ->groupBy('statuses.name')
             ->get()
-            ->groupBy(function($visit) {
-                return $visit->status ? $visit->status->name : 'Без статуса';
-            })
-            ->map->count();
+            ->pluck('count', 'name');
         
         $totalVisits = $statusStats->sum();
         

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Employee;
 use Carbon\Carbon;
 use App\Services\Statistics\ConversionStatisticsService;
+use Illuminate\Support\Facades\DB;
 
 class DashboardStatisticsService
 {
@@ -40,29 +41,41 @@ class DashboardStatisticsService
 
     public function getPeriodStats($startDate, $endDate)
     {
-        $stats = [];
-        $current = Carbon::parse($startDate);
+        $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
-        
-        // Определяем формат даты в зависимости от периода
+
+        $visitsByDay = Visit::whereBetween('starts_at', [$start, $end])
+            ->select(DB::raw('DATE(starts_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->get()
+            ->keyBy(fn($row) => Carbon::parse($row->date)->format('Y-m-d'));
+
+        $ordersByDay = Order::whereBetween('created_at', [$start, $end])
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->get()
+            ->keyBy(fn($row) => Carbon::parse($row->date)->format('Y-m-d'));
+
+        $revenueByDay = Order::whereBetween('created_at', [$start, $end])
+            ->where('is_paid', true)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('sum(total) as revenue'))
+            ->groupBy('date')
+            ->get()
+            ->keyBy(fn($row) => Carbon::parse($row->date)->format('Y-m-d'));
+
+        $stats = [];
+        $current = $start->clone();
         $period = $end->diffInDays($current);
         $dateFormat = $period > 180 ? 'd.m.Y' : 'd.m';
         
         while ($current <= $end) {
-            $dateKey = $current->format($dateFormat);
+            $dateKey = $current->format('Y-m-d');
+            $displayDateKey = $current->format($dateFormat);
             
-            $stats[$dateKey] = [
-                // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
-                'visits' => Visit::select(['id'])->whereDate('starts_at', $current)->count(),
-                
-                // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
-                'orders' => Order::select(['id'])->whereDate('created_at', $current)->count(),
-                
-                // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
-                'revenue' => Order::select(['total'])
-                    ->whereDate('created_at', $current)
-                    ->where('is_paid', true) // Только оплаченные заказы
-                    ->sum('total'),
+            $stats[$displayDateKey] = [
+                'visits' => $visitsByDay->get($dateKey)->count ?? 0,
+                'orders' => $ordersByDay->get($dateKey)->count ?? 0,
+                'revenue' => $revenueByDay->get($dateKey)->revenue ?? 0,
             ];
             
             $current->addDay();
@@ -73,48 +86,38 @@ class DashboardStatisticsService
 
     public function getTopServices($startDate)
     {
-        // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
-        return Order::select(['id', 'created_at'])
-            ->where('created_at', '>=', $startDate)
-            ->where('is_paid', true) // Только оплаченные заказы
-            ->with(['items' => function($query) {
-                $query->select(['id', 'order_id', 'item_type', 'item_id', 'quantity', 'unit_price'])
-                    ->where('item_type', Service::class);
-            }])
-            ->get()
-            ->flatMap(function($order) {
-                return $order->items;
-            })
-            ->groupBy('item_id')
-            ->map(function($items) {
-                return [
-                    'service' => $items->first()->item,
-                    'count' => $items->count(),
-                    'revenue' => $items->sum(function($item) {
-                        return $item->quantity * $item->unit_price;
-                    }),
-                ];
-            })
-            ->sortByDesc('count')
-            ->take(5);
+        $topServicesData = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('order_items.item_type', Service::class)
+            ->where('orders.is_paid', true)
+            ->where('orders.created_at', '>=', $startDate)
+            ->select('order_items.item_id', DB::raw('count(order_items.id) as count'), DB::raw('sum(order_items.quantity * order_items.unit_price) as revenue'))
+            ->groupBy('order_items.item_id')
+            ->orderByDesc('count')
+            ->take(5)
+            ->get();
+
+        $serviceIds = $topServicesData->pluck('item_id');
+        $services = Service::find($serviceIds)->keyBy('id');
+
+        return $topServicesData->map(function($item) use ($services) {
+            return [
+                'service' => $services->get($item->item_id),
+                'count' => (int) $item->count,
+                'revenue' => (float) $item->revenue,
+            ];
+        });
     }
 
     public function getRevenueData($startDate)
     {
-        $data = [];
-        $current = Carbon::parse($startDate);
-        $end = Carbon::now();
-        
-        while ($current <= $end) {
-            // Оптимизация: используем индексы на created_at и is_paid, select для выбора только нужных полей
-            $data[$current->format('Y-m-d')] = Order::select(['total'])
-                ->whereDate('created_at', $current)
-                ->where('is_paid', true) // Только оплаченные заказы
-                ->sum('total');
-            $current->addDay();
-        }
-        
-        return $data;
+        return Order::where('created_at', '>=', $startDate)
+            ->where('is_paid', true)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('sum(total) as revenue'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->pluck('revenue', 'date');
     }
 
     /**
