@@ -285,6 +285,86 @@ function showInfo(message, title = 'Информация') {
     return createToast(message, 'info', title);
 }
 
+// Функции для управления карточками
+window.hasFilledFields = function(card) {
+    // Проверяем обычные поля
+    const inputs = card.querySelectorAll('input[data-field], textarea[data-field]');
+    for (let input of inputs) {
+        if (input.value && input.value.trim() !== '' && input.value !== '0') {
+            return true;
+        }
+    }
+    
+    // Проверяем селекты (включая TomSelect)
+    const selects = card.querySelectorAll('select[data-field]');
+    for (let select of selects) {
+        let value = '';
+        if (select.tomselect) {
+            value = select.tomselect.getValue();
+        } else {
+            value = select.value;
+        }
+        if (value && value.trim() !== '') {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+window.getAddCard = function() {
+    // Ищем карточку добавления (без data-id или с data-id="new")
+    const cards = document.querySelectorAll('.card');
+    for (let card of cards) {
+        if (!card.dataset.id || card.dataset.id === 'new') {
+            return card;
+        }
+    }
+    return null;
+}
+
+window.closeAllCards = function() {
+    // Закрываем все карточки редактирования
+    document.querySelectorAll('.card').forEach(card => {
+        const editFields = card.querySelector('.edit-fields');
+        const editBtn = card.querySelector('.edit-btn');
+        const saveBtn = card.querySelector('.save-btn');
+        const cancelBtn = card.querySelector('.cancel-btn');
+        
+        if (editFields && !editFields.classList.contains('d-none')) {
+            editFields.classList.add('d-none');
+            if (editBtn) editBtn.classList.remove('d-none');
+            if (saveBtn) saveBtn.classList.add('d-none');
+            if (cancelBtn) cancelBtn.classList.add('d-none');
+        }
+    });
+    
+    // Удаляем карточки добавления без заполненных полей
+    const addCard = window.getAddCard();
+    if (addCard && !window.hasFilledFields(addCard)) {
+        addCard.closest('.col-12').remove();
+    }
+}
+
+window.closeAllEditCards = function() {
+    // Закрываем только карточки редактирования (не трогаем карточки добавления)
+    document.querySelectorAll('.card[data-id]').forEach(card => {
+        if (card.dataset.id && card.dataset.id !== 'new') {
+            const editFields = card.querySelector('.edit-fields');
+            const editBtn = card.querySelector('.edit-btn');
+            const saveBtn = card.querySelector('.save-btn');
+            const cancelBtn = card.querySelector('.cancel-btn');
+            
+            if (editFields && !editFields.classList.contains('d-none')) {
+                editFields.classList.add('d-none');
+                if (editBtn) editBtn.classList.remove('d-none');
+                if (saveBtn) saveBtn.classList.add('d-none');
+                if (cancelBtn) cancelBtn.classList.add('d-none');
+            }
+        }
+    });
+}
+
 let hasChanges = false;
 let changedRows = new Set();
 let timePickers = new Map();
@@ -337,25 +417,18 @@ document.addEventListener('DOMContentLoaded', function () {
         hasChanges = true;
     }
 
-    window.closeAllEditCards = function() {
-        document.querySelectorAll('.card').forEach(card => {
-            const editFields = card.querySelector('.edit-fields');
-            const editBtn = card.querySelector('.edit-btn');
-            const saveBtn = card.querySelector('.save-btn');
-            const cancelBtn = card.querySelector('.cancel-btn');
-            
-            if (editFields && !editFields.classList.contains('d-none')) {
-                editFields.classList.add('d-none');
-                editBtn.classList.remove('d-none');
-                saveBtn.classList.add('d-none');
-                cancelBtn.classList.add('d-none');
-            }
-        });
-    }
+
 
     window.toggleEdit = function(button) {
-        // Закрываем все другие карточки
-        closeAllEditCards();
+        // Проверяем, есть ли карточка добавления с заполненными полями
+        const addCard = window.getAddCard();
+        if (addCard && window.hasFilledFields(addCard)) {
+            showWarning('Завершите заполнение карточки добавления перед редактированием');
+            return;
+        }
+        
+        // Закрываем все карточки (включая карточки добавления)
+        window.closeAllCards();
         
         const card = button.closest('.card');
         const editFields = card.querySelector('.edit-fields');
@@ -469,8 +542,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     window.addNewRow = function() {
-        // Закрываем все другие карточки
-        closeAllEditCards();
+        // Проверяем, есть ли уже карточка добавления
+        const existingAddCard = window.getAddCard();
+        if (existingAddCard) {
+            // Если есть карточка с заполненными полями, показываем предупреждение
+            if (window.hasFilledFields(existingAddCard)) {
+                showWarning('Завершите заполнение текущей карточки добавления');
+                return;
+            } else {
+                // Если поля пустые, удаляем старую карточку
+                existingAddCard.closest('.col-12').remove();
+            }
+        }
+        
+        // Закрываем все карточки редактирования
+        window.closeAllEditCards();
         
         const container = document.querySelector('.row.g-3');
         const newCard = document.createElement('div');

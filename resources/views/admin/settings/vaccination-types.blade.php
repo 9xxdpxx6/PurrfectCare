@@ -367,13 +367,111 @@ function showInfo(message, title = 'Информация') {
     return createToast(message, 'info', title);
 }
 
+// Функции для управления карточками
+function hasFilledFields(card) {
+    // Проверяем обычные поля
+    const inputs = card.querySelectorAll('input[data-field], textarea[data-field]');
+    for (let input of inputs) {
+        if (input.value && input.value.trim() !== '' && input.value !== '0') {
+            return true;
+        }
+    }
+    
+    // Проверяем селекты (включая TomSelect)
+    const selects = card.querySelectorAll('select[data-field]');
+    for (let select of selects) {
+        let value = '';
+        if (select.tomselect) {
+            value = select.tomselect.getValue();
+        } else {
+            value = select.value;
+        }
+        if (value && value.trim() !== '') {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function getAddCard() {
+    // Ищем карточку добавления (без data-id или с data-id="new")
+    const cards = document.querySelectorAll('.card');
+    for (let card of cards) {
+        if (!card.dataset.id || card.dataset.id === 'new') {
+            return card;
+        }
+    }
+    return null;
+}
+
+function closeAllCards() {
+    // Закрываем все карточки редактирования
+    document.querySelectorAll('.card').forEach(card => {
+        const editFields = card.querySelector('.edit-fields');
+        const editBtn = card.querySelector('.edit-btn');
+        const saveBtn = card.querySelector('.save-btn');
+        const cancelBtn = card.querySelector('.cancel-btn');
+        
+        if (editFields && !editFields.classList.contains('d-none')) {
+            editFields.classList.add('d-none');
+            if (editBtn) editBtn.classList.remove('d-none');
+            if (saveBtn) saveBtn.classList.add('d-none');
+            if (cancelBtn) cancelBtn.classList.add('d-none');
+            card.classList.remove('border-warning');
+        }
+    });
+    
+    // Удаляем карточки добавления без заполненных полей
+    const addCard = getAddCard();
+    if (addCard && !hasFilledFields(addCard)) {
+        addCard.closest('.col-12').remove();
+    }
+}
+
 function addNewRow() {
+    // Проверяем, есть ли уже карточка добавления
+    const existingAddCard = getAddCard();
+    if (existingAddCard) {
+        // Если есть карточка с заполненными полями, показываем предупреждение
+        if (hasFilledFields(existingAddCard)) {
+            showWarning('Завершите заполнение текущей карточки добавления');
+            return;
+        } else {
+            // Если поля пустые, удаляем старую карточку
+            existingAddCard.closest('.col-12').remove();
+        }
+    }
+    
+    // Закрываем все карточки редактирования
+    closeAllEditCards();
+    
     const container = document.querySelector('.row.g-3');
     const newRow = createEditableRow();
     container.insertBefore(newRow, container.firstChild);
     
     // Инициализируем селекты для препаратов
     initDrugSelects(newRow);
+}
+
+function closeAllEditCards() {
+    // Закрываем только карточки редактирования (не трогаем карточки добавления)
+    document.querySelectorAll('.card[data-id]').forEach(card => {
+        if (card.dataset.id && card.dataset.id !== 'new') {
+            const editFields = card.querySelector('.edit-fields');
+            const editBtn = card.querySelector('.edit-btn');
+            const saveBtn = card.querySelector('.save-btn');
+            const cancelBtn = card.querySelector('.cancel-btn');
+            
+            if (editFields && !editFields.classList.contains('d-none')) {
+                editFields.classList.add('d-none');
+                if (editBtn) editBtn.classList.remove('d-none');
+                if (saveBtn) saveBtn.classList.add('d-none');
+                if (cancelBtn) cancelBtn.classList.add('d-none');
+                card.classList.remove('border-warning');
+            }
+        }
+    });
 }
 
 function createEditableRow() {
@@ -600,8 +698,15 @@ function initTomSelectForDrug(select) {
 
 
 function toggleEdit(button) {
-    // Сначала закрываем все открытые поля редактирования
-    closeAllEditFields();
+    // Проверяем, есть ли карточка добавления с заполненными полями
+    const addCard = getAddCard();
+    if (addCard && hasFilledFields(addCard)) {
+        showWarning('Завершите заполнение карточки добавления перед редактированием');
+        return;
+    }
+    
+    // Закрываем все карточки (включая карточки добавления)
+    closeAllCards();
     
     const card = button.closest('.card');
     if (!card) return;
@@ -632,48 +737,28 @@ function toggleEdit(button) {
     });
 }
 
-function closeAllEditFields() {
-    // Закрываем все открытые поля редактирования
-    document.querySelectorAll('.edit-fields').forEach(editFields => {
-        if (editFields && !editFields.classList.contains('d-none')) {
-            const card = editFields.closest('.card');
-            if (card) {
-                const editBtn = card.querySelector('.edit-btn');
-                const saveBtn = card.querySelector('.save-btn');
-                const cancelBtn = card.querySelector('.cancel-btn');
-                
-                editFields.classList.add('d-none');
-                if (editBtn) editBtn.classList.remove('d-none');
-                if (saveBtn) saveBtn.classList.add('d-none');
-                if (cancelBtn) cancelBtn.classList.add('d-none');
-                
-                // Убираем предупреждение об изменениях
-                card.classList.remove('border-warning');
-            }
-        }
-    });
-}
+
 
 function cancelEdit(button) {
     const card = button.closest('.card');
     if (!card) return;
     
-    const editFields = card.querySelector('.edit-fields');
-    if (!editFields) return;
+    const cardEditFields = card.querySelector('.edit-fields');
+    if (!cardEditFields) return;
     
     // Восстанавливаем оригинальные значения
     const original = JSON.parse(card.dataset.original || '{}');
     
-    const nameField = editFields.querySelector('[data-field="name"]');
-    const priceField = editFields.querySelector('[data-field="price"]');
-    const descriptionField = editFields.querySelector('[data-field="description"]');
+    const nameField = cardEditFields.querySelector('[data-field="name"]');
+    const priceField = cardEditFields.querySelector('[data-field="price"]');
+    const descriptionField = cardEditFields.querySelector('[data-field="description"]');
     
     if (nameField && original.name) nameField.value = original.name;
     if (priceField && original.price) priceField.value = original.price;
     if (descriptionField) descriptionField.value = original.description || '';
     
     // Восстанавливаем препараты в TomSelect
-    const drugSelects = editFields.querySelectorAll('.drug-select');
+    const drugSelects = cardEditFields.querySelectorAll('.drug-select');
     drugSelects.forEach((select, index) => {
         if (select.tomselect && original.drugs && original.drugs[index]) {
             const drug = original.drugs[index];
@@ -688,24 +773,20 @@ function cancelEdit(button) {
     });
     
     // Закрываем только текущее поле редактирования
-    closeEditFields(card);
-}
-
-function closeEditFields(card) {
-    if (!card) return;
+    const currentEditFields = card.querySelector('.edit-fields');
+    const currentEditBtn = card.querySelector('.edit-btn');
+    const currentSaveBtn = card.querySelector('.save-btn');
+    const currentCancelBtn = card.querySelector('.cancel-btn');
     
-    const editFields = card.querySelector('.edit-fields');
-    const editBtn = card.querySelector('.edit-btn');
-    const saveBtn = card.querySelector('.save-btn');
-    const cancelBtn = card.querySelector('.cancel-btn');
-    
-    if (editFields) editFields.classList.add('d-none');
-    if (editBtn) editBtn.classList.remove('d-none');
-    if (saveBtn) saveBtn.classList.add('d-none');
-    if (cancelBtn) cancelBtn.classList.add('d-none');
+    if (currentEditFields) currentEditFields.classList.add('d-none');
+    if (currentEditBtn) currentEditBtn.classList.remove('d-none');
+    if (currentSaveBtn) currentSaveBtn.classList.add('d-none');
+    if (currentCancelBtn) currentCancelBtn.classList.add('d-none');
     
     card.classList.remove('border-warning');
 }
+
+
 
 function cancelNewRow(button) {
     const card = button.closest('.col-12');
@@ -847,8 +928,8 @@ function saveRow(button) {
     })
     .then(data => {
         if (data.success) {
-            // Закрываем поля редактирования перед перезагрузкой
-            closeAllEditFields();
+            // Закрываем все карточки перед перезагрузкой
+            closeAllCards();
             showSuccess('Тип вакцинации успешно сохранен');
             setTimeout(() => {
                 location.reload();
