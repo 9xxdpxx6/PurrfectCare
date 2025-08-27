@@ -115,12 +115,12 @@
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $status->name }}" 
+                                <input type="text" class="form-control" value="{{ $status->name }}" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Цвет</label>
-                                <input type="color" class="form-control form-control-color form-control-sm" value="{{ $status->color }}" 
+                                <input type="color" class="form-control form-control-color" value="{{ $status->color }}" 
                                        data-field="color" onchange="markAsChanged(this)">
                             </div>
                         </div>
@@ -508,12 +508,12 @@ let changedRows = new Set();
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Цвет</label>
-                                <input type="color" class="form-control form-control-color form-control-sm" value="#000000" 
+                                <input type="color" class="form-control form-control-color" value="#000000" 
                                        data-field="color" onchange="markAsChanged(this)">
                             </div>
                         </div>

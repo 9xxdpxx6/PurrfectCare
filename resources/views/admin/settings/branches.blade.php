@@ -128,27 +128,27 @@
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $branch->name }}" 
+                                <input type="text" class="form-control" value="{{ $branch->name }}" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Адрес</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $branch->address }}" 
+                                <input type="text" class="form-control" value="{{ $branch->address }}" 
                                        data-field="address" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Телефон</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $branch->phone }}" 
+                                <input type="text" class="form-control" value="{{ $branch->phone }}" 
                                        data-field="phone" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Время открытия</label>
-                                <input type="text" class="form-control form-control-sm time-input" value="{{ $branch->opens_at ? $branch->opens_at->format('H:i') : '' }}" 
+                                <input type="text" class="form-control time-input" value="{{ $branch->opens_at ? $branch->opens_at->format('H:i') : '' }}" 
                                        data-field="opens_at" data-type="opens_at" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Время закрытия</label>
-                                <input type="text" class="form-control form-control-sm time-input" value="{{ $branch->closes_at ? $branch->closes_at->format('H:i') : '' }}" 
+                                <input type="text" class="form-control time-input" value="{{ $branch->closes_at ? $branch->closes_at->format('H:i') : '' }}" 
                                        data-field="closes_at" data-type="closes_at" onchange="markAsChanged(this)">
                             </div>
                         </div>
@@ -585,27 +585,27 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Адрес</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="address" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Телефон</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="phone" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Время открытия</label>
-                                <input type="text" class="form-control form-control-sm time-input" value="" 
+                                <input type="text" class="form-control time-input" value="" 
                                        data-field="opens_at" data-type="opens_at" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Время закрытия</label>
-                                <input type="text" class="form-control form-control-sm time-input" value="" 
+                                <input type="text" class="form-control time-input" value="" 
                                        data-field="closes_at" data-type="closes_at" onchange="markAsChanged(this)">
                             </div>
                         </div>

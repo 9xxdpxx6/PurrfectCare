@@ -146,15 +146,15 @@
 
                     <!-- Поля для редактирования -->
                     <div class="d-none edit-fields">
-                        <div class="row g-2">
+                        <div class="row g-3">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $param->name }}" 
+                                <input type="text" class="form-control" value="{{ $param->name }}" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Тип анализа</label>
-                                <select class="form-select form-select-sm lab-test-type-select" data-field="lab_test_type_id" onchange="markAsChanged(this)">
+                                <select class="form-select lab-test-type-select" data-field="lab_test_type_id" onchange="markAsChanged(this)">
                                     @if($param->lab_test_type_id)
                                         <option value="{{ $param->lab_test_type_id }}" selected>{{ $param->labTestType->name ?? 'Тип анализа' }}</option>
                                     @endif
@@ -162,7 +162,7 @@
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Единица измерения</label>
-                                <select class="form-select form-select-sm unit-select" data-field="unit_id" onchange="markAsChanged(this)">
+                                <select class="form-select unit-select" data-field="unit_id" onchange="markAsChanged(this)">
                                     @if($param->unit_id)
                                         <option value="{{ $param->unit_id }}" selected>{{ $param->unit->name ?? 'Единица' }}</option>
                                     @endif
@@ -543,21 +543,21 @@ let changedRows = new Set();
 
                     <!-- Поля для редактирования -->
                     <div class="edit-fields">
-                        <div class="row g-2">
+                        <div class="row g-3">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Тип анализа</label>
-                                <select class="form-select form-select-sm lab-test-type-select" data-field="lab_test_type_id" onchange="markAsChanged(this)">
+                                <select class="form-select lab-test-type-select" data-field="lab_test_type_id" onchange="markAsChanged(this)">
                                     <option value="">Выберите тип анализа</option>
                                 </select>
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Единица измерения</label>
-                                <select class="form-select form-select-sm unit-select" data-field="unit_id" onchange="markAsChanged(this)">
+                                <select class="form-select unit-select" data-field="unit_id" onchange="markAsChanged(this)">
                                     <option value="">Без единицы</option>
                                 </select>
                             </div>

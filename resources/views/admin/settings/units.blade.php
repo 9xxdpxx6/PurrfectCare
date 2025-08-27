@@ -113,12 +113,12 @@
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $unit->name }}" 
+                                <input type="text" class="form-control" value="{{ $unit->name }}" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Обозначение</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $unit->symbol }}" 
+                                <input type="text" class="form-control" value="{{ $unit->symbol }}" 
                                        data-field="symbol" onchange="markAsChanged(this)">
                             </div>
                         </div>
@@ -482,12 +482,12 @@ let changedRows = new Set();
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Обозначение</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="symbol" onchange="markAsChanged(this)">
                             </div>
                         </div>

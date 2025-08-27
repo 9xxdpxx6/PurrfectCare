@@ -30,6 +30,25 @@
         opacity: 1;
     }
     
+    /* Стили для TomSelect - выравнивание отступов */
+    .ts-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .ts-control {
+        margin: 0 !important;
+        padding: 0.375rem 0.75rem !important;
+        border-radius: 0.375rem !important;
+        border: 1px solid #ced4da !important;
+        background-color: #fff !important;
+        min-height: 38px !important;
+    }
+    
+    .ts-dropdown {
+        margin: 0 !important;
+    }
+    
     @keyframes slideInRight {
         from {
             transform: translateX(100%);
@@ -111,12 +130,12 @@
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $breed->name }}" 
+                                <input type="text" class="form-control" value="{{ $breed->name }}" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Вид животного</label>
-                                <select class="form-select form-select-sm" data-field="species_id" onchange="markAsChanged(this)">
+                                <select class="form-control" data-field="species_id" data-tomselect onchange="markAsChanged(this)">
                                     @foreach($species as $speciesItem)
                                         <option value="{{ $speciesItem->id }}" {{ $breed->species_id == $speciesItem->id ? 'selected' : '' }}>
                                             {{ $speciesItem->name }}
@@ -173,6 +192,44 @@
 
 @push('scripts')
 <script>
+// Инициализация TomSelect для всех селектов с атрибутом data-tomselect
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTomSelects();
+});
+
+function initializeTomSelects() {
+    const tomSelectElements = document.querySelectorAll('select[data-tomselect]');
+    tomSelectElements.forEach(element => {
+        if (!element.tomselect) {
+            const tomSelect = window.createTomSelect(element, {
+                placeholder: 'Выберите вид животного...',
+                plugins: ['remove_button'],
+                allowEmptyOption: true,
+                maxOptions: 30,
+                persist: false
+            });
+            
+            // Добавляем обработчик изменения для обновления отображения вида животного
+            tomSelect.on('change', function(value) {
+                const card = element.closest('.card');
+                if (card) {
+                    const speciesDisplay = card.querySelector('.species-display');
+                    if (speciesDisplay) {
+                        if (value && value !== '') {
+                            const selectedOption = element.querySelector(`option[value="${value}"]`);
+                            if (selectedOption) {
+                                speciesDisplay.textContent = selectedOption.textContent;
+                            }
+                        } else {
+                            speciesDisplay.textContent = 'Не выбран';
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
+
 // Функции для работы с Bootstrap уведомлениями
 function createToast(message, type = 'info', title = null) {
     const container = document.getElementById('notifications-container');
@@ -277,7 +334,7 @@ function hasFilledFields(card) {
         } else {
             value = select.value;
         }
-        if (value && value.trim() !== '') {
+        if (value && value.toString().trim() !== '' && value !== '0') {
             return true;
         }
     }
@@ -309,12 +366,23 @@ function closeAllCards() {
             if (editBtn) editBtn.classList.remove('d-none');
             if (saveBtn) saveBtn.classList.add('d-none');
             if (cancelBtn) cancelBtn.classList.add('d-none');
+            
+            // Уничтожаем TomSelect при закрытии карточки
+            const editSelect = card.querySelector('select[data-tomselect]');
+            if (editSelect && editSelect.tomselect) {
+                editSelect.tomselect.destroy();
+            }
         }
     });
     
     // Удаляем карточки добавления без заполненных полей
     const addCard = getAddCard();
     if (addCard && !hasFilledFields(addCard)) {
+        // Уничтожаем TomSelect перед удалением карточки
+        const editSelect = addCard.querySelector('select[data-tomselect]');
+        if (editSelect && editSelect.tomselect) {
+            editSelect.tomselect.destroy();
+        }
         addCard.closest('.col-12').remove();
     }
 }
@@ -333,6 +401,12 @@ function closeAllEditCards() {
                 if (editBtn) editBtn.classList.remove('d-none');
                 if (saveBtn) saveBtn.classList.add('d-none');
                 if (cancelBtn) cancelBtn.classList.add('d-none');
+                
+                // Уничтожаем TomSelect при закрытии карточки
+                const editSelect = card.querySelector('select[data-tomselect]');
+                if (editSelect && editSelect.tomselect) {
+                    editSelect.tomselect.destroy();
+                }
             }
         }
     });
@@ -344,6 +418,11 @@ let changedRows = new Set();
     function markAsChanged(input) {
         const card = input.closest('.card');
         const rowId = card ? card.dataset.id : null;
+        
+        // Если это селект с TomSelect, получаем значение через TomSelect API
+        if (input.tagName === 'SELECT' && input.tomselect) {
+            input.value = input.tomselect.getValue();
+        }
         
         if (rowId) {
             changedRows.add(rowId);
@@ -392,6 +471,33 @@ let changedRows = new Set();
         editBtn.classList.add('d-none');
         saveBtn.classList.remove('d-none');
         cancelBtn.classList.remove('d-none');
+        
+        // Инициализируем TomSelect для полей редактирования
+        const editSelect = card.querySelector('select[data-tomselect]');
+        if (editSelect && !editSelect.tomselect) {
+            const tomSelect = window.createTomSelect(editSelect, {
+                placeholder: 'Выберите вид животного...',
+                plugins: ['remove_button'],
+                allowEmptyOption: true,
+                maxOptions: 30,
+                persist: false
+            });
+            
+            // Добавляем обработчик изменения для обновления отображения вида животного
+            tomSelect.on('change', function(value) {
+                const typeDisplay = card.querySelector('.text-muted');
+                if (typeDisplay) {
+                    if (value && value !== '') {
+                        const selectedOption = editSelect.querySelector(`option[value="${value}"]`);
+                        if (selectedOption) {
+                            typeDisplay.innerHTML = `<span>Вид животного:</span> ${selectedOption.textContent}`;
+                        }
+                    } else {
+                        typeDisplay.innerHTML = '<span>Вид животного:</span> Не указан';
+                    }
+                }
+            });
+        }
     }
 
     function saveRow(button) {
@@ -401,7 +507,12 @@ let changedRows = new Set();
         if (rowId) {
             const data = {};
             card.querySelectorAll('input[data-field], select[data-field], textarea[data-field]').forEach(input => {
-                data[input.dataset.field] = input.value;
+                let value = input.value;
+                // Если это селект с TomSelect, получаем значение через TomSelect API
+                if (input.tagName === 'SELECT' && input.tomselect) {
+                    value = input.tomselect.getValue();
+                }
+                data[input.dataset.field] = value;
             });
             
             // Проверяем обязательные поля
@@ -441,6 +552,11 @@ let changedRows = new Set();
             .then(data => {
                 if (data.success) {
                     showSuccess('Порода успешно обновлена');
+                    // Уничтожаем TomSelect перед перезагрузкой
+                    const editSelect = card.querySelector('select[data-tomselect]');
+                    if (editSelect && editSelect.tomselect) {
+                        editSelect.tomselect.destroy();
+                    }
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
@@ -466,6 +582,12 @@ let changedRows = new Set();
         editBtn.classList.remove('d-none');
         saveBtn.classList.add('d-none');
         cancelBtn.classList.add('d-none');
+        
+        // Уничтожаем TomSelect при отмене редактирования
+        const editSelect = card.querySelector('select[data-tomselect]');
+        if (editSelect && editSelect.tomselect) {
+            editSelect.tomselect.destroy();
+        }
     }
 
     function addNewRow() {
@@ -513,12 +635,12 @@ let changedRows = new Set();
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Вид животного</label>
-                                <select class="form-select form-select-sm" data-field="species_id" onchange="markAsChanged(this)">
+                                <select class="form-control" data-field="species_id" data-tomselect onchange="markAsChanged(this)">
                                     <option value="">Выберите вид животного</option>
                                     ${speciesOptions}
                                 </select>
@@ -549,6 +671,33 @@ let changedRows = new Set();
             container.appendChild(newCard);
         }
         
+        // Инициализируем TomSelect для новой карточки
+        const newSelect = newCard.querySelector('select[data-tomselect]');
+        if (newSelect) {
+            const tomSelect = window.createTomSelect(newSelect, {
+                placeholder: 'Выберите вид животного...',
+                plugins: ['remove_button'],
+                allowEmptyOption: true,
+                maxOptions: 30,
+                persist: false
+            });
+            
+            // Добавляем обработчик изменения для обновления отображения вида животного
+            tomSelect.on('change', function(value) {
+                const speciesDisplay = newCard.querySelector('.species-display');
+                if (speciesDisplay) {
+                    if (value && value !== '') {
+                        const selectedOption = newSelect.querySelector(`option[value="${value}"]`);
+                        if (selectedOption) {
+                            speciesDisplay.textContent = selectedOption.textContent;
+                        }
+                    } else {
+                        speciesDisplay.textContent = 'Не выбран';
+                    }
+                }
+            });
+        }
+        
         hasChanges = true;
     }
 
@@ -556,7 +705,12 @@ let changedRows = new Set();
         const card = button.closest('.card');
         const data = {};
         card.querySelectorAll('input[data-field], select[data-field], textarea[data-field]').forEach(input => {
-            data[input.dataset.field] = input.value;
+            let value = input.value;
+            // Если это селект с TomSelect, получаем значение через TomSelect API
+            if (input.tagName === 'SELECT' && input.tomselect) {
+                value = input.tomselect.getValue();
+            }
+            data[input.dataset.field] = value;
         });
         
         // Проверяем обязательные поля
@@ -596,6 +750,11 @@ let changedRows = new Set();
         .then(data => {
             if (data.success) {
                 showSuccess('Порода успешно создана');
+                // Уничтожаем TomSelect перед перезагрузкой
+                const editSelect = card.querySelector('select[data-tomselect]');
+                if (editSelect && editSelect.tomselect) {
+                    editSelect.tomselect.destroy();
+                }
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
@@ -611,6 +770,11 @@ let changedRows = new Set();
 
     function removeNewRow(button) {
         const card = button.closest('.col-12');
+        // Уничтожаем TomSelect перед удалением карточки
+        const editSelect = card.querySelector('select[data-tomselect]');
+        if (editSelect && editSelect.tomselect) {
+            editSelect.tomselect.destroy();
+        }
         card.remove();
     }
 
@@ -642,6 +806,11 @@ let changedRows = new Set();
             .then(data => {
                 if (data.success) {
                     const card = document.querySelector(`[data-id="${id}"]`);
+                    // Уничтожаем TomSelect перед удалением карточки
+                    const editSelect = card.querySelector('select[data-tomselect]');
+                    if (editSelect && editSelect.tomselect) {
+                        editSelect.tomselect.destroy();
+                    }
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                     showSuccess('Порода успешно удалена');

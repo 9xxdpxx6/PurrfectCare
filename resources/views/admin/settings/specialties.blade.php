@@ -116,12 +116,12 @@
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $specialty->name }}" 
+                                <input type="text" class="form-control" value="{{ $specialty->name }}" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Тип специальности</label>
-                                <select class="form-control" data-field="is_veterinarian" onchange="markAsChanged(this)">
+                                <select class="form-control" data-field="is_veterinarian" data-tomselect onchange="markAsChanged(this)">
                                     <option value="1" {{ $specialty->is_veterinarian ? 'selected' : '' }}>Медицинский</option>
                                     <option value="0" {{ !$specialty->is_veterinarian ? 'selected' : '' }}>Сервисный</option>
                                 </select>
@@ -175,6 +175,39 @@
 
 @push('scripts')
 <script>
+// Инициализация TomSelect для всех селектов с атрибутом data-tomselect
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTomSelects();
+});
+
+function initializeTomSelects() {
+    const tomSelectElements = document.querySelectorAll('select[data-tomselect]');
+    tomSelectElements.forEach(element => {
+        if (!element.tomselect) {
+            const tomSelect = window.createTomSelect(element, {
+                placeholder: 'Выберите тип специальности...'
+            });
+            
+            // Добавляем обработчик изменения для обновления отображения типа
+            tomSelect.on('change', function(value) {
+                const card = element.closest('.card');
+                if (card) {
+                    const typeDisplay = card.querySelector('.badge');
+                    if (typeDisplay) {
+                        if (value === '1') {
+                            typeDisplay.textContent = 'Медицинский';
+                            typeDisplay.className = 'badge bg-success';
+                        } else if (value === '0') {
+                            typeDisplay.textContent = 'Сервисный';
+                            typeDisplay.className = 'badge bg-secondary';
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
+
 // Функции для работы с Bootstrap уведомлениями
 function createToast(message, type = 'info', title = null) {
     const container = document.getElementById('notifications-container');
@@ -279,7 +312,7 @@ function hasFilledFields(card) {
         } else {
             value = select.value;
         }
-        if (value && value.trim() !== '') {
+        if (value && value.toString().trim() !== '' && value !== '0') {
             return true;
         }
     }
@@ -311,12 +344,23 @@ function closeAllCards() {
             if (editBtn) editBtn.classList.remove('d-none');
             if (saveBtn) saveBtn.classList.add('d-none');
             if (cancelBtn) cancelBtn.classList.add('d-none');
+            
+            // Уничтожаем TomSelect при закрытии карточки
+            const editSelect = card.querySelector('select[data-tomselect]');
+            if (editSelect && editSelect.tomselect) {
+                editSelect.tomselect.destroy();
+            }
         }
     });
     
     // Удаляем карточки добавления без заполненных полей
     const addCard = getAddCard();
     if (addCard && !hasFilledFields(addCard)) {
+        // Уничтожаем TomSelect перед удалением карточки
+        const editSelect = addCard.querySelector('select[data-tomselect]');
+        if (editSelect && editSelect.tomselect) {
+            editSelect.tomselect.destroy();
+        }
         addCard.closest('.col-12').remove();
     }
 }
@@ -335,6 +379,12 @@ function closeAllEditCards() {
                 if (editBtn) editBtn.classList.remove('d-none');
                 if (saveBtn) saveBtn.classList.add('d-none');
                 if (cancelBtn) cancelBtn.classList.add('d-none');
+                
+                // Уничтожаем TomSelect при закрытии карточки
+                const editSelect = card.querySelector('select[data-tomselect]');
+                if (editSelect && editSelect.tomselect) {
+                    editSelect.tomselect.destroy();
+                }
             }
         }
     });
@@ -346,6 +396,11 @@ let changedRows = new Set();
     function markAsChanged(input) {
         const card = input.closest('.card');
         const rowId = card ? card.dataset.id : null;
+        
+        // Если это селект с TomSelect, получаем значение через TomSelect API
+        if (input.tagName === 'SELECT' && input.tomselect) {
+            input.value = input.tomselect.getValue();
+        }
         
         if (rowId) {
             changedRows.add(rowId);
@@ -394,6 +449,28 @@ let changedRows = new Set();
         editBtn.classList.add('d-none');
         saveBtn.classList.remove('d-none');
         cancelBtn.classList.remove('d-none');
+        
+        // Инициализируем TomSelect для полей редактирования
+        const editSelect = card.querySelector('select[data-tomselect]');
+        if (editSelect && !editSelect.tomselect) {
+            const tomSelect = window.createTomSelect(editSelect, {
+                placeholder: 'Выберите тип специальности...'
+            });
+            
+            // Добавляем обработчик изменения для обновления отображения типа
+            tomSelect.on('change', function(value) {
+                const typeDisplay = card.querySelector('.badge');
+                if (typeDisplay) {
+                    if (value === '1') {
+                        typeDisplay.textContent = 'Медицинский';
+                        typeDisplay.className = 'badge bg-success';
+                    } else if (value === '0') {
+                        typeDisplay.textContent = 'Сервисный';
+                        typeDisplay.className = 'badge bg-secondary';
+                    }
+                }
+            });
+        }
     }
 
     function saveRow(button) {
@@ -403,7 +480,12 @@ let changedRows = new Set();
         if (rowId) {
             const data = {};
             card.querySelectorAll('input[data-field], select[data-field], textarea[data-field]').forEach(input => {
-                data[input.dataset.field] = input.value;
+                let value = input.value;
+                // Если это селект с TomSelect, получаем значение через TomSelect API
+                if (input.tagName === 'SELECT' && input.tomselect) {
+                    value = input.tomselect.getValue();
+                }
+                data[input.dataset.field] = value;
             });
             
             // Проверяем обязательные поля
@@ -438,6 +520,11 @@ let changedRows = new Set();
             .then(data => {
                 if (data.success) {
                     showSuccess('Специальность успешно обновлена');
+                    // Уничтожаем TomSelect перед перезагрузкой
+                    const editSelect = card.querySelector('select[data-tomselect]');
+                    if (editSelect && editSelect.tomselect) {
+                        editSelect.tomselect.destroy();
+                    }
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
@@ -463,6 +550,12 @@ let changedRows = new Set();
         editBtn.classList.remove('d-none');
         saveBtn.classList.add('d-none');
         cancelBtn.classList.add('d-none');
+        
+        // Уничтожаем TomSelect при отмене редактирования
+        const editSelect = card.querySelector('select[data-tomselect]');
+        if (editSelect && editSelect.tomselect) {
+            editSelect.tomselect.destroy();
+        }
     }
 
     function addNewRow() {
@@ -503,14 +596,14 @@ let changedRows = new Set();
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Тип специальности</label>
-                                <select class="form-control" data-field="is_veterinarian" onchange="markAsChanged(this)">
-                                    <option value="1">Ветеринар</option>
-                                    <option value="0">Административный</option>
+                                <select class="form-control" data-field="is_veterinarian" data-tomselect onchange="markAsChanged(this)">
+                                    <option value="1">Медицинский</option>
+                                    <option value="0">Сервисный</option>
                                 </select>
                             </div>
                         </div>
@@ -539,6 +632,31 @@ let changedRows = new Set();
             container.appendChild(newCard);
         }
         
+        // Инициализируем TomSelect для новой карточки
+        const newSelect = newCard.querySelector('select[data-tomselect]');
+        if (newSelect) {
+            const tomSelect = window.createTomSelect(newSelect, {
+                placeholder: 'Выберите тип специальности...'
+            });
+            
+            // Добавляем обработчик изменения для обновления отображения типа
+            tomSelect.on('change', function(value) {
+                const typeDisplay = newCard.querySelector('.type-display');
+                if (typeDisplay) {
+                    if (value === '1') {
+                        typeDisplay.textContent = 'Медицинский';
+                        typeDisplay.className = 'badge bg-success';
+                    } else if (value === '0') {
+                        typeDisplay.textContent = 'Сервисный';
+                        typeDisplay.className = 'badge bg-secondary';
+                    } else {
+                        typeDisplay.textContent = 'Не указано';
+                        typeDisplay.className = '';
+                    }
+                }
+            });
+        }
+        
         hasChanges = true;
     }
 
@@ -546,7 +664,12 @@ let changedRows = new Set();
         const card = button.closest('.card');
         const data = {};
         card.querySelectorAll('input[data-field], select[data-field], textarea[data-field]').forEach(input => {
-            data[input.dataset.field] = input.value;
+            let value = input.value;
+            // Если это селект с TomSelect, получаем значение через TomSelect API
+            if (input.tagName === 'SELECT' && input.tomselect) {
+                value = input.tomselect.getValue();
+            }
+            data[input.dataset.field] = value;
         });
         
         // Проверяем обязательные поля
@@ -578,16 +701,21 @@ let changedRows = new Set();
             }
             return response.json();
         })
-        .then(data => {
-            if (data.success) {
-                showSuccess('Специальность успешно создана');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                showWarning(data.message || 'Ошибка при создании специальности');
-            }
-        })
+                    .then(data => {
+                if (data.success) {
+                    showSuccess('Специальность успешно создана');
+                    // Уничтожаем TomSelect перед перезагрузкой
+                    const editSelect = card.querySelector('select[data-tomselect]');
+                    if (editSelect && editSelect.tomselect) {
+                        editSelect.tomselect.destroy();
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showWarning(data.message || 'Ошибка при создании специальности');
+                }
+            })
         .catch(error => {
             console.error('Error:', error);
             showWarning('Произошла ошибка при создании специальности: ' + error.message);
@@ -596,6 +724,11 @@ let changedRows = new Set();
 
     function removeNewRow(button) {
         const card = button.closest('.col-12');
+        // Уничтожаем TomSelect перед удалением карточки
+        const editSelect = card.querySelector('select[data-tomselect]');
+        if (editSelect && editSelect.tomselect) {
+            editSelect.tomselect.destroy();
+        }
         card.remove();
     }
 
@@ -627,6 +760,11 @@ let changedRows = new Set();
             .then(data => {
                 if (data.success) {
                     const card = document.querySelector(`[data-id="${id}"]`);
+                    // Уничтожаем TomSelect перед удалением карточки
+                    const editSelect = card.querySelector('select[data-tomselect]');
+                    if (editSelect && editSelect.tomselect) {
+                        editSelect.tomselect.destroy();
+                    }
                     card.closest('.col-12').remove();
                     changedRows.delete(id.toString());
                     showSuccess('Специальность успешно удалена');

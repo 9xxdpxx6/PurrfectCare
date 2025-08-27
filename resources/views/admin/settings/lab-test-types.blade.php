@@ -116,12 +116,12 @@
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="{{ $type->name }}" 
+                                <input type="text" class="form-control" value="{{ $type->name }}" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Цена</label>
-                                <input type="number" class="form-control form-control-sm" value="{{ $type->price }}" 
+                                <input type="number" class="form-control" value="{{ $type->price }}" 
                                        data-field="price" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
@@ -512,12 +512,12 @@ let changedRows = new Set();
                         <div class="row g-2">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Название</label>
-                                <input type="text" class="form-control form-control-sm" value="" 
+                                <input type="text" class="form-control" value="" 
                                        data-field="name" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Цена</label>
-                                <input type="number" class="form-control form-control-sm" value="" 
+                                <input type="number" class="form-control" value="" 
                                        data-field="price" onchange="markAsChanged(this)">
                             </div>
                             <div class="col-12">
