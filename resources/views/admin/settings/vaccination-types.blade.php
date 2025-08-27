@@ -530,26 +530,41 @@ function initTomSelectForDrug(select) {
         return null;
     }
     
-    // Если есть уже выбранное значение, сохраняем его
+    // Сохраняем текущее значение и текст
     const selectedValue = select.value || '';
-    const selectedText = (select.selectedIndex >= 0 && select.options[select.selectedIndex]) ? select.options[select.selectedIndex].text : '';
+    const selectedText = select.selectedIndex >= 0 && select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : '';
     
-    // Инициализируем TomSelect
-    const tomSelect = createTomSelect(select, {
+    // Создаем новый пустой select элемент
+    const newSelect = document.createElement('select');
+    newSelect.className = select.className;
+    newSelect.dataset.field = select.dataset.field;
+    newSelect.onchange = select.onchange;
+    
+    // Заменяем старый select новым
+    select.parentNode.replaceChild(newSelect, select);
+    
+    // Инициализируем TomSelect на новом элементе
+    const tomSelect = createTomSelect(newSelect, {
         placeholder: 'Поиск препарата...',
         valueField: 'value',
         labelField: 'text',
         searchField: 'text',
-        allowEmptyOption: false,
+        allowEmptyOption: true,
         preload: true,
         maxOptions: 50,
         maxItems: 1,
         load: function(query, callback) {
-            let url = '{{ route("admin.vaccinations.drug-options") }}?q=' + encodeURIComponent(query || '');
+            const searchQuery = query || '';
+            let url = '{{ route("admin.vaccinations.drug-options") }}?q=' + encodeURIComponent(searchQuery);
             
             // Если есть выбранное значение и это первая загрузка, передаём его
-            if (selectedValue && !query) {
+            if (selectedValue && selectedValue !== '' && !searchQuery) {
                 url += '&selected=' + encodeURIComponent(selectedValue);
+            }
+            
+            // Для предзагрузки (когда query пустой) загружаем последние препараты
+            if (!searchQuery) {
+                url = '{{ route("admin.vaccinations.drug-options") }}';
             }
             
             fetch(url)
@@ -566,7 +581,7 @@ function initTomSelectForDrug(select) {
     });
     
     // Если было выбранное значение, восстанавливаем его
-    if (selectedValue && selectedText && selectedText !== 'Выберите препарат' && selectedText !== '') {
+    if (selectedValue && selectedValue !== '' && selectedText && selectedText !== 'Выберите препарат' && selectedText !== '') {
         try {
             // Добавляем опцию и выбираем её
             tomSelect.addOption({
@@ -603,6 +618,18 @@ function toggleEdit(button) {
     
     // Инициализируем селекты препаратов
     initDrugSelects(card);
+    
+    // Принудительно загружаем опции для существующих TomSelect
+    card.querySelectorAll('.drug-select').forEach(select => {
+        if (select.tomselect) {
+            // Загружаем предзагруженные опции
+            select.tomselect.load('', function(options) {
+                if (options && options.length > 0) {
+                    select.tomselect.refreshOptions();
+                }
+            });
+        }
+    });
 }
 
 function closeAllEditFields() {

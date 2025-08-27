@@ -4,6 +4,31 @@
 
 @push('styles')
 <style>
+    /* Минимальные стили для TomSelect */
+    .lab-test-type-select,
+    .unit-select {
+        min-height: 38px;
+    }
+    
+    /* Унификация размеров всех элементов */
+    .edit-fields .form-control,
+    .edit-fields .form-select {
+        height: 38px;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+    
+    .edit-fields .btn {
+        height: 38px;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
     /* Стили для Bootstrap уведомлений */
     .notification-toast {
         animation: slideInRight 0.3s ease-out;
