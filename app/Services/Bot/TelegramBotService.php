@@ -122,7 +122,8 @@ class TelegramBotService
         }
 
         // СРАЗУ удаляем сообщение с кнопками для блокировки повторных нажатий
-        if ($messageId) {
+        // НО НЕ удаляем для кнопки отображения страницы (page_info)
+        if ($messageId && $data !== 'page_info') {
             $this->apiService->deleteMessage($chatId, $messageId);
         }
 
@@ -138,6 +139,11 @@ class TelegramBotService
 
     protected function processCallbackData(TelegramProfile $profile, string $chatId, string $data): void
     {
+        // Обработка кнопки отображения страницы (ничего не делаем)
+        if ($data === 'page_info') {
+            return;
+        }
+
         if (str_starts_with($data, 'branch:')) {
             $branchId = (int)substr($data, 7);
             

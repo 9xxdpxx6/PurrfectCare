@@ -1,0 +1,70 @@
+// Стили для оверлеев админ-панели
+
+// Оверлеи
+.overlay-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    display: none;
+}
+
+.overlay-content {
+    position: absolute;
+    top: 54px;
+    right: 40px;
+    min-width: 300px;
+    max-width: 400px;
+    max-height: 500px;
+    animation: overlaySlideIn 0.2s ease-out;
+}
+
+@keyframes overlaySlideIn {
+    from { 
+        opacity: 0; 
+        transform: translate(10px, -10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translate(0, 0); 
+    }
+}
+
+// Уведомления
+.notifications-overlay { 
+    width: 350px; 
+    
+    &.overlay-content { 
+        display: flex; 
+        flex-direction: column; 
+    }
+    
+    #notificationsList {
+        flex-grow: 1;
+        overflow-y: auto;
+        max-height: 350px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--bs-border-color) transparent;
+        
+        &::-webkit-scrollbar { 
+            width: 6px; 
+        }
+        
+        &::-webkit-scrollbar-track { 
+            background: transparent; 
+        }
+        
+        &::-webkit-scrollbar-thumb { 
+            background: var(--bs-border-color); 
+            border-radius: 3px; 
+        }
+        
+        &::-webkit-scrollbar-thumb:hover { 
+            background: var(--bs-secondary); 
+        }
+    }
+}
+
+.user-overlay { 
+    width: 250px; 
+}

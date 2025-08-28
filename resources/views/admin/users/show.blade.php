@@ -416,17 +416,18 @@
         navigator.clipboard.writeText(text).then(function() {
             // Определяем, что копируем
             let message = '';
-            if (text.includes('@') || text.length > 15) {
-                message = 'ID Telegram скопирован в буфер обмена!';
-            } else {
+            // Проверяем, является ли текст номером телефона (начинается с +7 или 8 и содержит только цифры)
+            if (/^(\+?7|8)\d{10}$/.test(text)) {
                 message = 'Номер телефона скопирован в буфер обмена!';
+            } else {
+                message = 'ID Telegram скопирован в буфер обмена!';
             }
             showAlert(message, 'success');
         }, function(err) {
             console.error('Ошибка при копировании: ', err);
             showAlert('Ошибка при копировании', 'danger');
         });
-    }
+        }
     
     function showAlert(message, type) {
         // Удаляем существующие алерты

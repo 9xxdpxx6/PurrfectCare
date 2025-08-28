@@ -154,7 +154,7 @@ class AppointmentService
                 $paginationRow[] = ['text' => '⬅️ Пред.', 'callback_data' => "vets_page:{$branchId}:" . ($currentPage - 1)];
             }
             
-            $paginationRow[] = ['text' => "{$currentPage}/{$totalPages}", 'callback_data' => 'noop'];
+            $paginationRow[] = ['text' => "{$currentPage}/{$totalPages}", 'callback_data' => 'page_info'];
             
             if ($currentPage < $totalPages) {
                 $paginationRow[] = ['text' => 'След. ➡️', 'callback_data' => "vets_page:{$branchId}:" . ($currentPage + 1)];
