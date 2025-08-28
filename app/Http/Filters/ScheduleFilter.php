@@ -27,56 +27,62 @@ class ScheduleFilter extends AbstractFilter
 
     protected function search(Builder $builder, $value)
     {
-        // Разбиваем поисковый запрос на слова
-        $words = array_filter(explode(' ', trim($value)));
-        
-        if (empty($words)) {
+        if (empty(trim($value))) {
             return $builder;
         }
         
-        // Маппинг русских названий дней недели на английские
+        $term = trim($value);
+        
+        // Debug logging
+        \Log::info('ScheduleFilter search called with term: ' . $term);
+        
+        // Маппинг русских названий дней недели для поиска
+        // DAYOFWEEK() возвращает 1=воскресенье, 2=понедельник, 3=вторник, 4=среда, 5=четверг, 6=пятница, 7=суббота
         $dayMapping = [
-            'пн' => 'monday',
-            'понедельник' => 'monday',
-            'вт' => 'tuesday', 
-            'вторник' => 'tuesday',
-            'ср' => 'wednesday',
-            'среда' => 'wednesday',
-            'чт' => 'thursday',
-            'четверг' => 'thursday',
-            'пт' => 'friday',
-            'пятница' => 'friday',
-            'сб' => 'saturday',
-            'суббота' => 'saturday',
-            'вс' => 'sunday',
-            'воскресенье' => 'sunday'
+            'пн' => 2,
+            'понедельник' => 2,
+            'вт' => 3,
+            'вторник' => 3,
+            'ср' => 4,
+            'среда' => 4,
+            'чт' => 5,
+            'четверг' => 5,
+            'пт' => 6,
+            'пятница' => 6,
+            'сб' => 7,
+            'суббота' => 7,
+            'вс' => 1,
+            'воскресенье' => 1
         ];
         
-        $builder->where(function ($query) use ($words, $dayMapping) {
-            foreach ($words as $word) {
-                $query->where(function ($q) use ($word, $dayMapping) {
-                    $q->whereHas('veterinarian', function ($q2) use ($word) {
-                        $q2->where('name', 'like', "%{$word}%")
-                           ->orWhereHas('specialties', function ($q3) use ($word) {
-                               $q3->where('name', 'like', "%{$word}%");
-                           });
-                    })
-                    ->orWhereHas('branch', function ($q2) use ($word) {
-                        $q2->where('name', 'like', "%{$word}%")
-                           ->orWhere('address', 'like', "%{$word}%");
-                    })
-                    ->orWhere(function ($dayQuery) use ($word, $dayMapping) {
-                        // Проверяем русские названия дней недели
-                        if (isset($dayMapping[strtolower($word)])) {
-                            $dayQuery->whereRaw("DAYNAME(shift_starts_at) = ?", [$dayMapping[strtolower($word)]]);
-                        } else {
-                            // Если не русское название, ищем как есть (для английских названий)
-                            $dayQuery->whereRaw("DAYNAME(shift_starts_at) LIKE ?", ["%{$word}%"]);
-                        }
-                    });
-                });
-            }
+        $builder->where(function ($query) use ($term, $dayMapping) {
+            // Поиск по имени ветеринара
+            $query->whereHas('veterinarian', function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%");
+            })
+            // Поиск по названию филиала
+            ->orWhereHas('branch', function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%");
+            })
+            // Поиск по дню недели
+            ->orWhere(function ($dayQuery) use ($term, $dayMapping) {
+                $lowerTerm = mb_strtolower($term);
+                
+                // Если это известный день недели, ищем по номеру дня
+                if (isset($dayMapping[$lowerTerm])) {
+                    $dayNumber = $dayMapping[$lowerTerm];
+                    $dayQuery->whereRaw("DAYOFWEEK(shift_starts_at) = ?", [$dayNumber]);
+                    \Log::info('Searching by day number: ' . $dayNumber . ' for term: ' . $lowerTerm);
+                } else {
+                    // Иначе пробуем искать по названию дня (fallback)
+                    $dayQuery->whereRaw("LOWER(DAYNAME(shift_starts_at)) LIKE ?", ["%" . $lowerTerm . "%"]);
+                    \Log::info('Searching by day name fallback for term: ' . $lowerTerm);
+                }
+            });
         });
+        
+        \Log::info('ScheduleFilter search query built');
+        return $builder;
     }
 
     protected function veterinarian(Builder $builder, $value)
@@ -91,6 +97,7 @@ class ScheduleFilter extends AbstractFilter
 
     protected function dateFrom(Builder $builder, $value)
     {
+        dd($value);
         try {
             $date = \Carbon\Carbon::createFromFormat('d.m.Y', $value)->format('Y-m-d');
         } catch (\Exception $e) {
@@ -113,10 +120,10 @@ class ScheduleFilter extends AbstractFilter
     {
         switch ($value) {
             case 'date_asc':
-                $builder->orderBy('shift_starts_at');
+                $builder->orderBy('schedules.shift_starts_at');
                 break;
             case 'date_desc':
-                $builder->orderBy('shift_starts_at', 'desc');
+                $builder->orderBy('schedules.shift_starts_at', 'desc');
                 break;
             case 'veterinarian_asc':
                 $builder->join('employees', 'schedules.veterinarian_id', '=', 'employees.id')
@@ -135,7 +142,7 @@ class ScheduleFilter extends AbstractFilter
                         ->orderBy('branches.name', 'desc');
                 break;
             default:
-                $builder->orderBy('id', 'desc');
+                $builder->orderBy('schedules.id', 'desc');
                 break;
         }
     }
@@ -145,7 +152,7 @@ class ScheduleFilter extends AbstractFilter
         parent::apply($builder);
         // Если сортировка не указана, сортируем по дате DESC
         if (!isset($this->queryParams['sort']) || !$this->queryParams['sort']) {
-            $builder->orderByDesc('id');
+            $builder->orderByDesc('schedules.id');
         }
     }
 } 

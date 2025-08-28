@@ -466,50 +466,46 @@
 
 @push('scripts')
 <script>
-function setPeriod(period) {
-    document.getElementById('hidden-period').value = period;
-    
-    // Убираем активный класс у всех кнопок
-    document.querySelectorAll('.btn-group .btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Добавляем активный класс к нажатой кнопке
-    event.target.classList.add('active');
-    
-    // Если выбран период "all", очищаем поля дат
-    if (period === 'all') {
-        document.getElementById('hidden-start').value = '';
-        document.getElementById('hidden-end').value = '';
-        document.getElementById('date_range').value = '';
-    }
-    
-    // Отправляем форму
-    document.getElementById('period-form').submit();
-}
-
-// Простая функция для выбора произвольного периода
 document.addEventListener('DOMContentLoaded', function() {
-    const dateRangeInput = document.getElementById('date_range');
-    
-    if (dateRangeInput) {
-        dateRangeInput.addEventListener('click', function() {
-            // Простой выбор дат через prompt
-            const startDate = prompt('Введите начальную дату (ДД.ММ.ГГГГ):', '');
-            if (startDate) {
-                const endDate = prompt('Введите конечную дату (ДД.ММ.ГГГГ):', '');
-                if (endDate) {
-                    document.getElementById('hidden-start').value = startDate;
-                    document.getElementById('hidden-end').value = endDate;
-                    document.getElementById('date_range').value = startDate + ' по ' + endDate;
-                    document.getElementById('hidden-period').value = 'custom';
-                    document.getElementById('period-form').submit();
-                }
-            }
+    const hiddenPeriod = document.getElementById('hidden-period');
+    const hiddenStart = document.getElementById('hidden-start');
+    const hiddenEnd = document.getElementById('hidden-end');
+
+    window.setPeriod = function(period) {
+        hiddenPeriod.value = period;
+        
+        // Убираем активный класс у всех кнопок
+        document.querySelectorAll('.btn-group .btn').forEach(btn => {
+            btn.classList.remove('active');
         });
-    }
+        
+        // Добавляем активный класс к нажатой кнопке
+        event.target.classList.add('active');
+        
+        // Если выбран период "all", очищаем поля дат
+        if (period === 'all') {
+            hiddenStart.value = '';
+            hiddenEnd.value = '';
+            document.getElementById('date_range').value = '';
+        }
+        
+        // Отправляем форму
+        document.getElementById('period-form').submit();
+    };
 
-
+    const rangePicker = new AirDatepicker('#date_range', {
+        range: true,
+        multipleDatesSeparator: ' по ',
+        dateFormat: 'dd.MM.yyyy',
+        autoClose: true,
+        onSelect({formattedDate}) {
+            if (!formattedDate || formattedDate.length < 2) return;
+            hiddenPeriod.value = 'custom';
+            hiddenStart.value = formattedDate[0];
+            hiddenEnd.value = formattedDate[1];
+            document.getElementById('period-form').submit();
+        }
+    });
 });
 </script>
 @endpush

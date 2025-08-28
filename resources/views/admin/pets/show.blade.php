@@ -463,7 +463,7 @@
                         <i class="bi bi-calendar-plus"></i> Записать на приём
                     </a>
                     <a href="{{ route('admin.orders.create', ['pet' => $pet->id]) }}" class="btn btn-outline-success">
-                        <i class="bi bi-cart-plus"></i> Добавить заказ
+                        <i class="bi bi-bag-plus"></i> Добавить заказ
                     </a>
                     <a href="{{ route('admin.lab-tests.create', ['pet' => $pet->id]) }}" class="btn btn-outline-secondary">
                         <i class="bi bi-clipboard-data"></i> Добавить анализ

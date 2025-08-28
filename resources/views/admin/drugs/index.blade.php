@@ -36,24 +36,24 @@
             <select name="unit" id="unit" class="form-select">
                 <option value="">Все</option>
                 @foreach($units as $unit)
-                    <option value="{{ $unit->id }}" @if(request('unit') == $unit->id) selected @endif>{{ $unit->name }}</option>
+                    <option value="{{ $unit->id }}" @if(request('unit') == $unit->id) selected @endif>{{ $unit->name }} ({{ $unit->symbol }})</option>
                 @endforeach
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="prescription_required" class="form-label mb-1">Требует рецепт</label>
-            <select name="prescription_required" id="prescription_required" class="form-select">
-                <option value="">&mdash;</option>
+            <select name="prescription_required" id="prescription_required" class="form-control" data-tomselect>
+                <option value="">Не важно</option>
                 <option value="1" @if(request('prescription_required') == '1') selected @endif>Да</option>
                 <option value="0" @if(request('prescription_required') == '0') selected @endif>Нет</option>
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
-            <select name="sort" id="sort" class="form-select">
+            <select name="sort" id="sort" class="form-control" data-tomselect>
                 <option value="">По умолчанию</option>
-                <option value="name_asc" @if(request('sort') == 'name_asc') selected @endif>По алфавиту (А-Я)</option>
-                <option value="name_desc" @if(request('sort') == 'name_desc') selected @endif>По алфавиту (Я-А)</option>
+                <option value="name_asc" @if(request('sort') == 'name_asc') selected @endif>По названию (А-Я)</option>
+                <option value="name_desc" @if(request('sort') == 'name_desc') selected @endif>По названию (Я-А)</option>
                 <option value="price_asc" @if(request('sort') == 'price_asc') selected @endif>По цене (дешевые)</option>
                 <option value="price_desc" @if(request('sort') == 'price_desc') selected @endif>По цене (дорогие)</option>
                 <option value="quantity_asc" @if(request('sort') == 'quantity_asc') selected @endif>По количеству (меньше)</option>
@@ -209,6 +209,24 @@
                     this.blur();
                 }, 50);
             }
+        });
+
+        // TomSelect для поля "Требует рецепт"
+        new createTomSelect('#prescription_required', {
+            placeholder: 'Выберите...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 5,
+            persist: false
+        });
+
+        // TomSelect для поля сортировки
+        new createTomSelect('#sort', {
+            placeholder: 'Выберите сортировку...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 10,
+            persist: false
         });
     });
 </script>

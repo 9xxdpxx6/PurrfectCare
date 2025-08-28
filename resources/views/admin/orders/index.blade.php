@@ -20,64 +20,44 @@
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="client" class="form-label mb-1">Клиент</label>
-            <select name="client" id="client" class="form-select" data-url="{{ route('admin.orders.client-options') }}">
+            <select name="client" id="client" class="form-select">
                 <option value="">Все клиенты</option>
-                @if(request('client'))
-                    @php
-                        $selectedClient = \App\Models\User::find(request('client'));
-                    @endphp
-                    @if($selectedClient)
-                        <option value="{{ $selectedClient->id }}" selected>{{ $selectedClient->name }}</option>
-                    @endif
-                @endif
+                @foreach($clients as $client)
+                    <option value="{{ $client->id }}" @if(request('client') == $client->id) selected @endif>{{ $client->name }}</option>
+                @endforeach
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="pet" class="form-label mb-1">Питомец</label>
-            <select name="pet" id="pet" class="form-select" data-url="{{ route('admin.orders.pet-options') }}">
+            <select name="pet" id="pet" class="form-select">
                 <option value="">Все питомцы</option>
-                @if(request('pet'))
-                    @php
-                        $selectedPet = \App\Models\Pet::with('client')->find(request('pet'));
-                    @endphp
-                    @if($selectedPet)
-                        <option value="{{ $selectedPet->id }}" selected>{{ $selectedPet->name }} ({{ $selectedPet->client->name ?? 'Без владельца' }})</option>
-                    @endif
-                @endif
+                @foreach($pets as $pet)
+                    <option value="{{ $pet->id }}" @if(request('pet') == $pet->id) selected @endif>{{ $pet->name }} ({{ $pet->client ? $pet->client->name : 'Без владельца' }})</option>
+                @endforeach
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="status" class="form-label mb-1">Статус</label>
-            <select name="status" id="status" class="form-select" data-url="{{ route('admin.orders.status-options') }}">
+            <select name="status" id="status" class="form-select">
                 <option value="">Все статусы</option>
-                @if(request('status'))
-                    @php
-                        $selectedStatus = \App\Models\Status::find(request('status'));
-                    @endphp
-                    @if($selectedStatus)
-                        <option value="{{ $selectedStatus->id }}" selected>{{ $selectedStatus->name }}</option>
-                    @endif
-                @endif
+                @foreach($statuses as $status)
+                    <option value="{{ $status->id }}" @if(request('status') == $status->id) selected @endif>{{ $status->name }}</option>
+                @endforeach
             </select>
         </div>
         <div class="flex-grow-1" style="min-width:180px;">
             <label for="branch" class="form-label mb-1">Филиал</label>
-            <select name="branch" id="branch" class="form-select" data-url="{{ route('admin.orders.branch-options') }}">
+            <select name="branch" id="branch" class="form-select">
                 <option value="">Все филиалы</option>
-                @if(request('branch'))
-                    @php
-                        $selectedBranch = \App\Models\Branch::find(request('branch'));
-                    @endphp
-                    @if($selectedBranch)
-                        <option value="{{ $selectedBranch->id }}" selected>{{ $selectedBranch->name }}</option>
-                    @endif
-                @endif
+                @foreach($branches as $branch)
+                    <option value="{{ $branch->id }}" @if(request('branch') == $branch->id) selected @endif>{{ $branch->name }}</option>
+                @endforeach
             </select>
         </div>
 
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
-            <select name="sort" id="sort" class="form-select">
+            <select name="sort" id="sort" class="form-control" data-tomselect>
                 <option value="">По умолчанию</option>
                 <option value="created_at_desc" @if(request('sort') == 'created_at_desc') selected @endif>Дата создания (новые)</option>
                 <option value="created_at_asc" @if(request('sort') == 'created_at_asc') selected @endif>Дата создания (старые)</option>
@@ -240,104 +220,31 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // TomSelect для фильтров с проверкой существования элементов
+        // Обычный TomSelect для клиентов (без динамической загрузки)
         if (document.querySelector('#client')) {
             new createTomSelect('#client', {
                 placeholder: 'Выберите клиента...',
-                valueField: 'value',
-                labelField: 'text',
-                searchField: 'text',
-                preload: true,
-                load: function(query, callback) {
-                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(json => callback(json))
-                        .catch(() => callback());
-                },
-                onItemAdd: function() {
-                    this.setTextboxValue('');
-                    this.refreshOptions();
-                    setTimeout(() => {
-                        this.close();
-                        this.blur();
-                    }, 50);
-                }
             });
         }
 
+        // Обычный TomSelect для питомцев (без динамической загрузки)
         if (document.querySelector('#pet')) {
             new createTomSelect('#pet', {
                 placeholder: 'Выберите питомца...',
-                valueField: 'value',
-                labelField: 'text',
-                searchField: 'text',
-                preload: true,
-                load: function(query, callback) {
-                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(json => callback(json))
-                        .catch(() => callback());
-                },
-                onItemAdd: function() {
-                    this.setTextboxValue('');
-                    this.refreshOptions();
-                    setTimeout(() => {
-                        this.close();
-                        this.blur();
-                    }, 50);
-                }
             });
         }
 
+        // Обычный TomSelect для статусов (без динамической загрузки)
         if (document.querySelector('#status')) {
             new createTomSelect('#status', {
                 placeholder: 'Выберите статус...',
-                valueField: 'value',
-                labelField: 'text',
-                searchField: 'text',
-                preload: true,
-                load: function(query, callback) {
-                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(json => callback(json))
-                        .catch(() => callback());
-                },
-                onItemAdd: function() {
-                    this.setTextboxValue('');
-                    this.refreshOptions();
-                    setTimeout(() => {
-                        this.close();
-                        this.blur();
-                    }, 50);
-                }
             });
         }
 
+        // Обычный TomSelect для филиалов (без динамической загрузки)
         if (document.querySelector('#branch')) {
             new createTomSelect('#branch', {
                 placeholder: 'Выберите филиал...',
-                valueField: 'value',
-                labelField: 'text',
-                searchField: 'text',
-                preload: true,
-                load: function(query, callback) {
-                    let url = this.input.dataset.url + '?q=' + encodeURIComponent(query) + '&filter=true';
-                    fetch(url)
-                        .then(response => response.json())
-                        .then(json => callback(json))
-                        .catch(() => callback());
-                },
-                onItemAdd: function() {
-                    this.setTextboxValue('');
-                    this.refreshOptions();
-                    setTimeout(() => {
-                        this.close();
-                        this.blur();
-                    }, 50);
-                }
             });
         }
 
@@ -365,6 +272,15 @@
                 }
             });
         }
+
+        // TomSelect для поля сортировки
+        new createTomSelect('#sort', {
+            placeholder: 'Выберите сортировку...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 10,
+            persist: false
+        });
 
         // Datepickers для дат с проверкой существования элементов
         if (document.querySelector('#created_at_from')) {

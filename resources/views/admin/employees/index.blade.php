@@ -42,7 +42,7 @@
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
-            <select name="sort" id="sort" class="form-select">
+            <select name="sort" id="sort" class="form-control" data-tomselect>
                 <option value="">По умолчанию</option>
                 <option value="name_asc" @selected(request('sort')=='name_asc')>Имя А-Я</option>
                 <option value="name_desc" @selected(request('sort')=='name_desc')>Имя Я-А</option>
@@ -167,6 +167,24 @@
                     this.blur();
                 }, 50);
             }
+        });
+
+        // TomSelect для поля филиала
+        new createTomSelect('#branch', {
+            placeholder: 'Выберите филиал...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 10,
+            persist: false
+        });
+
+        // TomSelect для поля сортировки
+        new createTomSelect('#sort', {
+            placeholder: 'Выберите сортировку...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 10,
+            persist: false
         });
     });
 </script>

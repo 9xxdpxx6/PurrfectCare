@@ -28,7 +28,16 @@ class DrugController extends AdminController
 
     public function index(Request $request): View
     {
-        $filter = app()->make(DrugFilter::class, ['queryParams' => array_filter($request->all())]);
+        // Фильтруем только непустые параметры, но сохраняем '0' как валидное значение
+        $queryParams = array_filter($request->all(), function($value, $key) {
+            // Сохраняем '0' для prescription_required, но удаляем пустые строки
+            if ($key === 'prescription_required') {
+                return $value !== '' && $value !== null;
+            }
+            return $value !== '' && $value !== null;
+        }, ARRAY_FILTER_USE_BOTH);
+        
+        $filter = app()->make(DrugFilter::class, ['queryParams' => $queryParams]);
         
         $query = $this->model::with(['unit', 'procurements.supplier']);
         $filter->apply($query);

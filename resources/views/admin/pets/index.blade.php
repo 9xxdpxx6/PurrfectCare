@@ -33,7 +33,7 @@
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="gender" class="form-label mb-1">Пол</label>
-            <select name="gender" id="gender" class="form-select">
+            <select name="gender" id="gender" class="form-control" data-tomselect>
                 <option value="">Любой</option>
                 <option value="male" @if(request('gender') == 'male') selected @endif>Самец</option>
                 <option value="female" @if(request('gender') == 'female') selected @endif>Самка</option>
@@ -42,7 +42,7 @@
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
-            <select name="sort" id="sort" class="form-select">
+            <select name="sort" id="sort" class="form-control" data-tomselect>
                 <option value="">По умолчанию</option>
                 <option value="name_asc" @if(request('sort') == 'name_asc') selected @endif>По алфавиту (А-Я)</option>
                 <option value="name_desc" @if(request('sort') == 'name_desc') selected @endif>По алфавиту (Я-А)</option>
@@ -180,6 +180,24 @@
                     this.blur();
                 }, 50);
             }
+        });
+
+        // TomSelect для поля "Пол"
+        new createTomSelect('#gender', {
+            placeholder: 'Выберите пол...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 5,
+            persist: false
+        });
+
+        // TomSelect для поля сортировки
+        new createTomSelect('#sort', {
+            placeholder: 'Выберите сортировку...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 10,
+            persist: false
         });
     });
 </script>

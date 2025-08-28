@@ -48,7 +48,13 @@ class DrugFilter extends AbstractFilter
 
     protected function prescriptionRequired(Builder $builder, $value)
     {
-        $builder->where('prescription_required', $value === '1');
+        // Проверяем, что значение не пустое и является строкой '0' или '1'
+        if ($value === '1') {
+            $builder->where('prescription_required', true);
+        } elseif ($value === '0') {
+            $builder->where('prescription_required', false);
+        }
+        // Если значение не '1' и не '0', фильтр не применяется
     }
 
     protected function unit(Builder $builder, $value)

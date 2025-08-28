@@ -10,10 +10,10 @@
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
             <a href="{{ route('admin.visits.create') }}" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-plus-circle"></i> Новый приём
+                <i class="bi bi-calendar-plus"></i> Новый приём
             </a>
             <a href="{{ route('admin.orders.create') }}" class="btn btn-sm btn-outline-success">
-                <i class="bi bi-cart-plus"></i> Новый заказ
+                <i class="bi bi-bag-plus"></i> Новый заказ
             </a>
         </div>
     </div>
@@ -451,12 +451,12 @@
                 <div class="row">
                     <div class="col-6 mb-2">
                         <a href="{{ route('admin.visits.create') }}" class="btn btn-sm w-100 action-btn action-btn-primary text-start ms-3">
-                            <i class="bi bi-plus-circle"></i> Новый приём
+                            <i class="bi bi-calendar-plus"></i> Новый приём
                         </a>
                     </div>
                     <div class="col-6 mb-2">
                         <a href="{{ route('admin.orders.create') }}" class="btn btn-sm w-100 action-btn action-btn-success text-start ms-3">
-                            <i class="bi bi-cart-plus"></i> Новый заказ
+                            <i class="bi bi-bag-plus"></i> Новый заказ
                         </a>
                     </div>
                     <div class="col-6 mb-2">

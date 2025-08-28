@@ -53,8 +53,9 @@ class ScheduleController extends AdminController
         
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $query = $this->model::select([
-                'id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at',
-                'created_at', 'updated_at'
+                'schedules.id', 'schedules.veterinarian_id', 'schedules.branch_id', 
+                'schedules.shift_starts_at', 'schedules.shift_ends_at',
+                'schedules.created_at', 'schedules.updated_at'
             ])
             ->with([
                 'veterinarian:id,name,email',
@@ -140,8 +141,9 @@ class ScheduleController extends AdminController
     {
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $item = $this->model::select([
-                'id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at',
-                'created_at', 'updated_at'
+                'schedules.id', 'schedules.veterinarian_id', 'schedules.branch_id', 
+                'schedules.shift_starts_at', 'schedules.shift_ends_at',
+                'schedules.created_at', 'schedules.updated_at'
             ])
             ->with([
                 'veterinarian:id,name,email,phone',
@@ -155,8 +157,9 @@ class ScheduleController extends AdminController
     {
         // Оптимизация: используем select для выбора нужных полей
         $item = $this->model::select([
-                'id', 'veterinarian_id', 'branch_id', 'shift_starts_at', 'shift_ends_at',
-                'created_at', 'updated_at'
+                'schedules.id', 'schedules.veterinarian_id', 'schedules.branch_id', 
+                'schedules.shift_starts_at', 'schedules.shift_ends_at',
+                'schedules.created_at', 'schedules.updated_at'
             ])
             ->findOrFail($id);
             

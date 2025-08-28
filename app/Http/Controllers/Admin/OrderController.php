@@ -133,8 +133,13 @@ class OrderController extends AdminController
         }
         
         $items = $query->paginate(25)->withQueryString();
+
+        $statuses = Status::select(['id', 'name', 'color'])->orderBy('name')->get();
+        $clients = User::select(['id', 'name', 'email'])->orderBy('name')->get();
+        $pets = Pet::select(['id', 'name', 'client_id'])->with(['client:id,name'])->orderBy('name')->get();
+        $branches = Branch::select(['id', 'name'])->orderBy('name')->get();
         
-        return view("admin.{$this->viewPath}.index", compact('items'));
+        return view("admin.{$this->viewPath}.index", compact('items', 'statuses', 'clients', 'pets', 'branches'));
     }
 
     public function show($id): View

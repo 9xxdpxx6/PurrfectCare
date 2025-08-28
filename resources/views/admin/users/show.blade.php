@@ -359,7 +359,7 @@
                         <i class="bi bi-plus-circle"></i> Добавить питомца
                     </a>
                     <a href="{{ route('admin.orders.create', ['client' => $user->id]) }}" class="btn btn-outline-success">
-                        <i class="bi bi-cart-plus"></i> Добавить заказ
+                        <i class="bi bi-bag-plus"></i> Добавить заказ
                     </a>
                     
                     @if($pets->count() > 0)

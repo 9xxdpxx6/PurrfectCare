@@ -46,7 +46,7 @@
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
-            <select name="sort" id="sort" class="form-select">
+            <select name="sort" id="sort" class="form-control" data-tomselect>
                 <option value="">По умолчанию</option>
                 <option value="delivery_date_desc" @if(request('sort') == 'delivery_date_desc') selected @endif>Дата поставки (новые)</option>
                 <option value="delivery_date_asc" @if(request('sort') == 'delivery_date_asc') selected @endif>Дата поставки (старые)</option>
@@ -249,6 +249,15 @@
                     this.blur();
                 }, 50);
             }
+        });
+
+        // TomSelect для поля сортировки
+        new createTomSelect('#sort', {
+            placeholder: 'Выберите сортировку...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 10,
+            persist: false
         });
 
         // Air Datepickers

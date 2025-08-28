@@ -20,7 +20,7 @@
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="has_pets" class="form-label mb-1">Питомцы</label>
-            <select name="has_pets" id="has_pets" class="form-select">
+            <select name="has_pets" id="has_pets" class="form-control" data-tomselect>
                 <option value="">Все</option>
                 <option value="1" @if(request('has_pets') == '1') selected @endif>Есть питомцы</option>
                 <option value="0" @if(request('has_pets') == '0') selected @endif>Нет питомцев</option>
@@ -28,7 +28,7 @@
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="has_orders" class="form-label mb-1">Заказы</label>
-            <select name="has_orders" id="has_orders" class="form-select">
+            <select name="has_orders" id="has_orders" class="form-control" data-tomselect>
                 <option value="">Все</option>
                 <option value="1" @if(request('has_orders') == '1') selected @endif>Есть заказы</option>
                 <option value="0" @if(request('has_orders') == '0') selected @endif>Нет заказов</option>
@@ -36,7 +36,7 @@
         </div>
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="has_visits" class="form-label mb-1">Приемы</label>
-            <select name="has_visits" id="has_visits" class="form-select">
+            <select name="has_visits" id="has_visits" class="form-control" data-tomselect>
                 <option value="">Все</option>
                 <option value="1" @if(request('has_visits') == '1') selected @endif>Были приемы</option>
                 <option value="0" @if(request('has_visits') == '0') selected @endif>Не было приемов</option>
@@ -44,7 +44,7 @@
         </div>
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
-            <select name="sort" id="sort" class="form-select">
+            <select name="sort" id="sort" class="form-control" data-tomselect>
                 <option value="">По умолчанию</option>
                 <option value="name_asc" @if(request('sort') == 'name_asc') selected @endif>По имени (А-Я)</option>
                 <option value="name_desc" @if(request('sort') == 'name_desc') selected @endif>По имени (Я-А)</option>
@@ -142,4 +142,46 @@
 <div class="mt-4">
     {{ $items->links() }}
 </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // TomSelect для поля "Питомцы"
+        new createTomSelect('#has_pets', {
+            placeholder: 'Выберите...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 5,
+            persist: false
+        });
+
+        // TomSelect для поля "Заказы"
+        new createTomSelect('#has_orders', {
+            placeholder: 'Выберите...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 5,
+            persist: false
+        });
+
+        // TomSelect для поля "Приемы"
+        new createTomSelect('#has_visits', {
+            placeholder: 'Выберите...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 5,
+            persist: false
+        });
+
+        // TomSelect для поля сортировки
+        new createTomSelect('#sort', {
+            placeholder: 'Выберите сортировку...',
+            plugins: ['remove_button'],
+            allowEmptyOption: true,
+            maxOptions: 10,
+            persist: false
+        });
+    });
+</script>
+@endpush 
