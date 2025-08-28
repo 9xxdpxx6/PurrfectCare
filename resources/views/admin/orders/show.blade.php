@@ -386,7 +386,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body text-center py-4">
-                    <i class="bi bi-cart-x display-4 text-muted"></i>
+                    <i class="bi bi-bag-x display-4 text-muted"></i>
                     <h5 class="mt-3">Состав заказа отсутствует</h5>
                     <p class="text-muted">В данном заказе нет позиций.</p>
                 </div>

@@ -9,9 +9,9 @@ use Carbon\Carbon;
 class DashboardDataService
 {
     /**
-     * Получить сегодняшние приёмы
+     * Получить сегодняшние приёмы (последние 10)
      */
-    public function getTodayVisits()
+    public function getTodayVisits($limit = 10)
     {
         // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
         return Visit::select(['id', 'starts_at', 'pet_id', 'schedule_id', 'status_id'])
@@ -24,13 +24,14 @@ class DashboardDataService
                 'status:id,name,color'
             ])
             ->orderBy('starts_at')
+            ->limit($limit)
             ->get();
     }
 
     /**
      * Получить ближайшие приёмы (завтра)
      */
-    public function getTomorrowVisits($limit = 5)
+    public function getTomorrowVisits($limit = 10)
     {
         // Оптимизация: используем индекс на starts_at и select для выбора только нужных полей
         return Visit::select(['id', 'starts_at', 'pet_id', 'schedule_id', 'status_id'])
@@ -50,7 +51,7 @@ class DashboardDataService
     /**
      * Получить последние заказы
      */
-    public function getRecentOrders($limit = 5)
+    public function getRecentOrders($limit = 10)
     {
         // Оптимизация: используем индекс на created_at и select для выбора только нужных полей
         return Order::select(['id', 'client_id', 'pet_id', 'status_id', 'total', 'created_at'])

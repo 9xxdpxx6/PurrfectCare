@@ -91,7 +91,7 @@
         <div class="card h-100 border-0 shadow-sm settings-card">
             <div class="card-header bg-gradient-warning text-white border-0">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-paw me-2"></i>Животные
+                    <i class="bi bi-heart me-2"></i>Животные
                 </h5>
             </div>
             <div class="card-body p-0">

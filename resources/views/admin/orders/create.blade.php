@@ -157,7 +157,7 @@
                             @enderror
                         </div>
                         
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="status_id" class="form-label">Статус</label>
                             <select name="status_id" id="status_id" class="form-select @error('status_id') is-invalid @enderror" data-url="{{ route('admin.orders.status-options') }}">
                                 @if(old('status_id'))
@@ -181,7 +181,7 @@
                             @enderror
                         </div>
                         
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="branch_id" class="form-label">Филиал</label>
                             <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror" data-url="{{ route('admin.orders.branch-options') }}">
                                 @if(old('branch_id'))
@@ -198,7 +198,7 @@
                             @enderror
                         </div>
                         
-                        <div class="col-lg-8">
+                        <div class="col-lg-6">
                             <div class="d-flex justify-content-between gap-3">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="is_paid" id="is_paid" value="1" {{ old('is_paid') ? 'checked' : '' }}>
@@ -1333,7 +1333,7 @@
         }
         
         // Получаем препараты из типа вакцинации
-        fetch(`{{ route('admin.vaccination-types.drugs', 'VACCINATION_TYPE_ID') }}`.replace('VACCINATION_TYPE_ID', vaccinationTypeId))
+        fetch(`{{ route('admin.settings.vaccination-types.drugs', 'VACCINATION_TYPE_ID') }}`.replace('VACCINATION_TYPE_ID', vaccinationTypeId))
             .then(response => response.json())
             .then(drugs => {
                 // Обновляем список препаратов в вакцинации

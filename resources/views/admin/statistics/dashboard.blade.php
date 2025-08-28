@@ -109,7 +109,7 @@
         <div class="card kpi-card grad-success">
             <div class="card-body text-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-cart-check text-success fs-1 me-2"></i>
+                    <i class="bi bi-bag-check text-success fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title text-success mb-2">{{ number_format($metrics['total_orders']) }}</h3>
                 <h6 class="mb-0">Заказов</h6>

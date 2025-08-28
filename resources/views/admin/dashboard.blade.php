@@ -31,7 +31,7 @@
     
     <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
         <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-success h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none nav-btn">
-            <i class="bi bi-cart-check fs-1 mb-2"></i>
+            <i class="bi bi-bag-check fs-1 mb-2"></i>
             <span class="fw-bold">Заказы</span>
         </a>
     </div>
@@ -84,7 +84,7 @@
         <div class="card kpi-card grad-success h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-cart-check fs-1 me-2"></i>
+                    <i class="bi bi-bag-check fs-1 me-2"></i>
                 </div>
                 <h3 class="card-title mb-2">{{ number_format($metrics['total_orders']) }}</h3>
                 <h6 class="mb-0">Заказов</h6>
@@ -168,13 +168,16 @@
                                         <div>
                                             <h6 class="mb-1">
                                                 <a href="{{ route('admin.visits.show', $visit->id) }}" class="text-decoration-none text-body">
-                                                    {{ $visit->pet->name ?? 'Без имени' }}
+                                                    @if($visit->pet && $visit->pet->name)
+                                                        {{ $visit->pet->client->name ?? 'Неизвестный владелец' }} ({{ $visit->pet->name }})
+                                                    @else
+                                                        {{ $visit->pet->client->name ?? 'Неизвестный владелец' }}
+                                                    @endif
                                                 </a>
                                             </h6>
-                                                                                         <small class="text-muted">
-                                                 {{ $visit->pet->client->name ?? 'Неизвестный владелец' }} • 
-                                                 {{ $visit->schedule->veterinarian->name ?? 'Не назначен' }}
-                                             </small>
+                                            <small class="text-muted">
+                                                {{ $visit->schedule->veterinarian->name ?? 'Не назначен' }}
+                                            </small>
                                         </div>
                                         <div class="text-end">
                                             <span class="badge bg-{{ $visit->status->color ?? 'secondary' }} rounded-pill">
@@ -204,7 +207,7 @@
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-cart"></i> Последние заказы
+                    <i class="bi bi-bag"></i> Последние заказы
                 </h5>
                 <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-success">Все заказы</a>
             </div>
@@ -244,7 +247,7 @@
                     </div>
                 @else
                     <div class="text-center py-4">
-                        <i class="bi bi-cart-x fs-1 text-muted mb-3"></i>
+                        <i class="bi bi-bag-x fs-1 text-muted mb-3"></i>
                         <p class="text-muted mb-0">Заказов пока нет</p>
                     </div>
                 @endif
@@ -268,17 +271,20 @@
                     <div class="list-group list-group-flush">
                         @foreach($tomorrowVisits as $visit)
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <div class="flex-grow-1">
+                                                                <div class="flex-grow-1">
                                     <h6 class="mb-1">
                                         <a href="{{ route('admin.visits.show', $visit->id) }}" class="text-decoration-none text-body">
-                                            {{ $visit->pet->name ?? 'Без имени' }}
+                                            @if($visit->pet && $visit->pet->name)
+                                                {{ $visit->pet->client->name ?? 'Неизвестный владелец' }} ({{ $visit->pet->name }})
+                                            @else
+                                                {{ $visit->pet->client->name ?? 'Неизвестный владелец' }}
+                                            @endif
                                         </a>
                                     </h6>
-                                                                         <small class="text-muted">
-                                         {{ $visit->pet->client->name ?? 'Неизвестный владелец' }} • 
-                                         {{ $visit->schedule->veterinarian->name ?? 'Не назначен' }} • 
-                                         {{ $visit->starts_at->format('H:i') }}
-                                     </small>
+                                    <small class="text-muted">
+                                        {{ $visit->schedule->veterinarian->name ?? 'Не назначен' }} • 
+                                        {{ $visit->starts_at->format('H:i') }}
+                                    </small>
                                 </div>
                             </div>
                         @endforeach

@@ -56,7 +56,7 @@
         <div class="card kpi-outline info h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-cart-check fs-1"></i>
+                    <i class="bi bi-bag-check fs-1"></i>
                 </div>
                 <h3>{{ number_format($totalOrders, 0, ',', ' ') }}</h3>
                 <p class="card-text text-muted mb-1">

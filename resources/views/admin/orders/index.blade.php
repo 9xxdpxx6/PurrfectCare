@@ -203,7 +203,7 @@
 
 @if($items->isEmpty())
     <div class="text-center py-5">
-        <i class="bi bi-cart-x display-1 text-muted"></i>
+        <i class="bi bi-bag-x display-1 text-muted"></i>
         <h4 class="mt-3">Заказы не найдены</h4>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте новый заказ.</p>
         <a href="{{ route('admin.orders.create') }}" class="btn btn-success">

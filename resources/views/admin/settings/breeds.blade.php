@@ -173,7 +173,7 @@
 
 @if($breeds->isEmpty())
     <div class="text-center py-5">
-        <i class="bi bi-gitlab display-1 text-muted"></i>
+        <i class="bi bi-heartbreak display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Породы не найдены</h3>
         <p class="text-muted">Добавьте новую породу.</p>
         <button type="button" class="btn btn-primary" onclick="addNewRow()">

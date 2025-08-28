@@ -21,7 +21,7 @@
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-paw"></i> {{ $pet->name }}
+                    <i class="bi bi-heart"></i> {{ $pet->name }}
                 </h5>
             </div>
             <div class="card-body">

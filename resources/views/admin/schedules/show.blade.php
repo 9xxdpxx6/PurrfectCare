@@ -187,7 +187,7 @@
                         <i class="bi bi-calendar-x display-6"></i>
                         <p class="mt-2">На это время приемы не запланированы</p>
                         <a href="{{ route('admin.visits.create') }}?schedule_id={{ $item->id }}" class="btn btn-outline-primary">
-                            <i class="bi bi-plus"></i> Запланировать прием
+                            <i class="bi bi-calendar-plus"></i> Запланировать прием
                         </a>
                     </div>
                 @endif

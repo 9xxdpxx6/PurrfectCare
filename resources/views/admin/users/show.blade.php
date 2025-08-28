@@ -105,7 +105,7 @@
                                                         
                                                         @if($visit->pet)
                                                             <p class="text-muted small mb-0">
-                                                                <i class="bi bi-paw"></i> {{ $visit->pet->name }}
+                                                                <i class="bi bi-heart"></i> {{ $visit->pet->name }}
                                                             </p>
                                                         @endif
                                                     </div>

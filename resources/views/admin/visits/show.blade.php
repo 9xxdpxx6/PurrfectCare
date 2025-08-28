@@ -238,7 +238,7 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-cart-check"></i> Связанные заказы
+                        <i class="bi bi-bag-check"></i> Связанные заказы
                     </h5>
                 </div>
                 <div class="card-body">
@@ -295,7 +295,7 @@
                         if($item->client) $orderParams['client'] = $item->client->id;
                     @endphp
                     <a href="{{ route('admin.orders.create', $orderParams) }}" class="btn btn-outline-primary">
-                        <i class="bi bi-plus"></i> Добавить заказ
+                        <i class="bi bi-bag-plus"></i> Добавить заказ
                     </a>
                     
                     <hr>

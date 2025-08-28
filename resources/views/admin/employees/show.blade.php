@@ -77,7 +77,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ordersCollapse" aria-expanded="true" aria-controls="ordersCollapse">
-                        <i class="bi bi-cart me-2"></i> Заказы ({{ $ordersTotal }})
+                        <i class="bi bi-bag me-2"></i> Заказы ({{ $ordersTotal }})
                     </button>
                 </h2>
                 <div id="ordersCollapse" class="accordion-collapse collapse show">
