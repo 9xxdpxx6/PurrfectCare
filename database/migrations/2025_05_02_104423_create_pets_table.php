@@ -23,6 +23,7 @@ return new class extends Migration
             $table->timestamps();
             
             // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск питомцев по имени
             $table->index('client_id'); // Быстрый поиск питомцев клиента
             $table->index('breed_id'); // Быстрый поиск питомцев по породе
             $table->index('gender'); // Быстрый поиск питомцев по полу

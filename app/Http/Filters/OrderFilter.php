@@ -4,6 +4,11 @@ namespace App\Http\Filters;
 
 use App\Http\Filters\AbstractFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
+use App\Models\Service;
+use App\Models\Drug;
+use App\Models\LabTestType;
+use App\Models\VaccinationType;
 
 class OrderFilter extends AbstractFilter
 {
@@ -40,54 +45,90 @@ class OrderFilter extends AbstractFilter
     {
         // Нормализация пробелов и обрезка
         $normalized = trim(preg_replace('/\s+/', ' ', (string) $value));
+        
+        if (empty($normalized)) {
+            return $builder;
+        }
 
         return $builder->where(function ($query) use ($normalized) {
-            // Если значение является числом, ищем точное совпадение по ID
-            if ($normalized !== '' && is_numeric($normalized)) {
-                $query->where('id', $normalized)
-                    ->orWhere(function ($subQuery) use ($normalized) {
-                        $subQuery->whereHas('client', function ($q) use ($normalized) {
-                            $q->where('name', 'like', "%{$normalized}%");
-                        })
-                        ->orWhereHas('pet', function ($q) use ($normalized) {
-                            $q->where('name', 'like', "%{$normalized}%");
-                        });
-
-                        // Поиск по notes только если длина запроса >= 3
-                        if (mb_strlen($normalized) >= 3) {
-                            $subQuery->orWhere('notes', 'like', "%{$normalized}%");
-                        }
-                    });
-            } else {
-                if ($normalized === '') {
-                    return $query;
-                }
-
-                // Разбиваем на слова, отбрасываем слишком короткие (<3)
-                $words = array_values(array_filter(explode(' ', $normalized), function ($w) {
-                    return mb_strlen($w) >= 3;
-                }));
-
-                if (empty($words)) {
-                    return $query;
-                }
-
-                // Ищем заказы, где каждое слово найдено в любом из полей
-                $query->where(function ($subQuery) use ($words) {
-                    foreach ($words as $word) {
-                        $subQuery->where(function ($wordQuery) use ($word) {
-                            $wordQuery->whereHas('client', function ($q) use ($word) {
-                                $q->where('name', 'like', "%{$word}%");
-                            })
-                            ->orWhereHas('pet', function ($q) use ($word) {
-                                $q->where('name', 'like', "%{$word}%");
-                            })
-                            // Поиск по notes только для слов длиной >=3 (фильтр уже применён)
-                            ->orWhere('notes', 'like', "%{$word}%");
-                        });
-                    }
-                });
+            // Если значение является числом, ищем точное совпадение по ID (самый быстрый поиск)
+            if (is_numeric($normalized)) {
+                $query->where('id', $normalized);
+                return;
             }
+
+            // Для текстового поиска используем EXISTS подзапросы для лучшей производительности
+            $query->where(function ($subQuery) use ($normalized) {
+                // Поиск по основным полям заказа
+                $subQuery->where('notes', 'like', "%{$normalized}%");
+                
+                // Поиск по связанным таблицам через EXISTS (быстрее чем whereHas)
+                $subQuery->orWhereExists(function ($existsQuery) use ($normalized) {
+                    $existsQuery->select(\DB::raw(1))
+                        ->from('users')
+                        ->whereColumn('users.id', 'orders.client_id')
+                        ->where('users.name', 'like', "%{$normalized}%");
+                });
+                
+                $subQuery->orWhereExists(function ($existsQuery) use ($normalized) {
+                    $existsQuery->select(DB::raw(1))
+                        ->from('pets')
+                        ->whereColumn('pets.id', 'orders.pet_id')
+                        ->where('pets.name', 'like', "%{$normalized}%");
+                });
+                
+                $subQuery->orWhereExists(function ($existsQuery) use ($normalized) {
+                    $existsQuery->select(DB::raw(1))
+                        ->from('employees')
+                        ->whereColumn('employees.id', 'orders.manager_id')
+                        ->where('employees.name', 'like', "%{$normalized}%");
+                });
+                
+                // Поиск по элементам заказа через JOIN (значительно быстрее whereHasMorph)
+                $subQuery->orWhereExists(function ($existsQuery) use ($normalized) {
+                    $existsQuery->select(DB::raw(1))
+                        ->from('order_items')
+                        ->join('services', function ($join) {
+                            $join->on('services.id', '=', 'order_items.item_id')
+                                 ->where('order_items.item_type', 'App\Models\Service');
+                        })
+                        ->whereColumn('order_items.order_id', 'orders.id')
+                        ->where('services.name', 'like', "%{$normalized}%");
+                });
+                
+                $subQuery->orWhereExists(function ($existsQuery) use ($normalized) {
+                    $existsQuery->select(DB::raw(1))
+                        ->from('order_items')
+                        ->join('drugs', function ($join) {
+                            $join->on('drugs.id', '=', 'order_items.item_id')
+                                 ->where('order_items.item_type', 'App\Models\Drug');
+                        })
+                        ->whereColumn('order_items.order_id', 'orders.id')
+                        ->where('drugs.name', 'like', "%{$normalized}%");
+                });
+                
+                $subQuery->orWhereExists(function ($existsQuery) use ($normalized) {
+                    $existsQuery->select(DB::raw(1))
+                        ->from('order_items')
+                        ->join('lab_test_types', function ($join) {
+                            $join->on('lab_test_types.id', '=', 'order_items.item_id')
+                                 ->where('order_items.item_type', 'App\Models\LabTestType');
+                        })
+                        ->whereColumn('order_items.order_id', 'orders.id')
+                        ->where('lab_test_types.name', 'like', "%{$normalized}%");
+                });
+                
+                $subQuery->orWhereExists(function ($existsQuery) use ($normalized) {
+                    $existsQuery->select(DB::raw(1))
+                        ->from('order_items')
+                        ->join('vaccination_types', function ($join) {
+                            $join->on('vaccination_types.id', '=', 'order_items.item_id')
+                                 ->where('order_items.item_type', 'App\Models\VaccinationType');
+                        })
+                        ->whereColumn('order_items.order_id', 'orders.id')
+                        ->where('vaccination_types.name', 'like', "%{$normalized}%");
+                });
+            });
         });
     }
 

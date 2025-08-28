@@ -24,20 +24,19 @@ class UserController extends AdminController
 
     public function index(Request $request) : View
     {
-        $filter = app()->make(UserFilter::class, ['queryParams' => array_filter($request->all())]);
+        // Собираем все параметры, включая '0' значения для фильтров
+        $queryParams = $request->all();
         
-        $query = $this->model::with(['pets', 'orders', 'visits']);
+        $filter = app()->make(UserFilter::class, ['queryParams' => $queryParams]);
+        
+        $query = $this->model::query();
         $filter->apply($query);
         
-        // Подсчитаем статистику для каждого пользователя
-        $items = $query->paginate(25)->appends($request->query());
-        
-        foreach ($items as $user) {
-            $user->pets_count = $user->pets->count();
-            // Если уже есть orders_count от withCount, используем его, иначе считаем
-            $user->orders_count = $user->orders_count ?? $user->orders->count();
-            $user->visits_count = $user->visits->count();
-        }
+        // Загружаем связи и считаем количество для отображения
+        $items = $query->with(['pets', 'orders', 'visits'])
+            ->withCount(['pets', 'orders', 'visits'])
+            ->paginate(25)
+            ->appends($request->query());
         
         return view("admin.{$this->viewPath}.index", compact('items'));
     }

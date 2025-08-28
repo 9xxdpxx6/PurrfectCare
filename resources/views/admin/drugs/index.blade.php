@@ -43,7 +43,7 @@
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="prescription_required" class="form-label mb-1">Требует рецепт</label>
             <select name="prescription_required" id="prescription_required" class="form-control" data-tomselect>
-                <option value="">Не важно</option>
+                <option value="">Не выбрано</option>
                 <option value="1" @if(request('prescription_required') == '1') selected @endif>Да</option>
                 <option value="0" @if(request('prescription_required') == '0') selected @endif>Нет</option>
             </select>

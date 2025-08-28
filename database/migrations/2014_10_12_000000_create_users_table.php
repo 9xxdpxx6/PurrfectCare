@@ -24,6 +24,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Индексы для оптимизации производительности
+            $table->index('name'); // Быстрый поиск по имени
             $table->index('email'); // Быстрый поиск по email
             $table->index('phone'); // Быстрый поиск по телефону
             $table->index('telegram'); // Быстрый поиск по telegram

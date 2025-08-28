@@ -31,6 +31,7 @@ class Pet extends Model
      * Индексы для оптимизации производительности
      */
     protected $indexes = [
+        'name',
         'client_id',
         'breed_id',
         'gender',

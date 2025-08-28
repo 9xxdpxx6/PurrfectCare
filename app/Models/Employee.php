@@ -34,6 +34,12 @@ class Employee extends Authenticatable
         'is_active' => 'boolean',
     ];
 
+    protected $indexes = [
+        'name',
+        'email',
+        'phone',
+    ];
+
     protected $deleteDependencies = [
         'visits' => 'Невозможно удалить сотрудника, так как с ним связаны приёмы',
         'labTests' => 'Невозможно удалить сотрудника, так как с ним связаны лабораторные исследования',

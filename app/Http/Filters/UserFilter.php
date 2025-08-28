@@ -2,6 +2,7 @@
 
 namespace App\Http\Filters;
 
+use App\Http\Filters\AbstractFilter;
 use Illuminate\Database\Eloquent\Builder;
 
 class UserFilter extends AbstractFilter
@@ -41,28 +42,37 @@ class UserFilter extends AbstractFilter
 
     protected function hasPets(Builder $builder, $value)
     {
-        if ($value === '1') {
-            $builder->has('pets');
-        } elseif ($value === '0') {
-            $builder->doesntHave('pets');
+        // Проверяем что значение не пустое и не null
+        if ($value !== '' && $value !== null) {
+            if ($value === '1') {
+                $builder->has('pets');
+            } elseif ($value === '0') {
+                $builder->doesntHave('pets');
+            }
         }
     }
 
     protected function hasOrders(Builder $builder, $value)
     {
-        if ($value === '1') {
-            $builder->has('orders');
-        } elseif ($value === '0') {
-            $builder->doesntHave('orders');
+        // Проверяем что значение не пустое и не null
+        if ($value !== '' && $value !== null) {
+            if ($value === '1') {
+                $builder->has('orders');
+            } elseif ($value === '0') {
+                $builder->doesntHave('orders');
+            }
         }
     }
 
     protected function hasVisits(Builder $builder, $value)
     {
-        if ($value === '1') {
-            $builder->has('visits');
-        } elseif ($value === '0') {
-            $builder->doesntHave('visits');
+        // Проверяем что значение не пустое и не null
+        if ($value !== '' && $value !== null) {
+            if ($value === '1') {
+                $builder->has('visits');
+            } elseif ($value === '0') {
+                $builder->doesntHave('visits');
+            }
         }
     }
 

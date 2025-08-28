@@ -21,7 +21,7 @@
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="has_pets" class="form-label mb-1">Питомцы</label>
             <select name="has_pets" id="has_pets" class="form-control" data-tomselect>
-                <option value="">Все</option>
+                <option value="">Не выбрано</option>
                 <option value="1" @if(request('has_pets') == '1') selected @endif>Есть питомцы</option>
                 <option value="0" @if(request('has_pets') == '0') selected @endif>Нет питомцев</option>
             </select>
@@ -29,7 +29,7 @@
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="has_orders" class="form-label mb-1">Заказы</label>
             <select name="has_orders" id="has_orders" class="form-control" data-tomselect>
-                <option value="">Все</option>
+                <option value="">Не выбрано</option>
                 <option value="1" @if(request('has_orders') == '1') selected @endif>Есть заказы</option>
                 <option value="0" @if(request('has_orders') == '0') selected @endif>Нет заказов</option>
             </select>
@@ -37,7 +37,7 @@
         <div class="flex-grow-1" style="min-width:140px;">
             <label for="has_visits" class="form-label mb-1">Приемы</label>
             <select name="has_visits" id="has_visits" class="form-control" data-tomselect>
-                <option value="">Все</option>
+                <option value="">Не выбрано</option>
                 <option value="1" @if(request('has_visits') == '1') selected @endif>Были приемы</option>
                 <option value="0" @if(request('has_visits') == '0') selected @endif>Не было приемов</option>
             </select>

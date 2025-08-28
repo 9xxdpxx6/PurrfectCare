@@ -26,7 +26,7 @@
                         $selectedClient = \App\Models\User::find(request('client'));
                     @endphp
                     @if($selectedClient)
-                        <option value="{{ $selectedClient->id }}" selected>{{ $selectedClient->name }} ({{ $selectedClient->email }})</option>
+                        <option value="{{ $selectedClient->id }}" selected>{{ $selectedClient->name }}</option>
                     @endif
                 @endif
             </select>

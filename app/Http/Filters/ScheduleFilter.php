@@ -97,7 +97,6 @@ class ScheduleFilter extends AbstractFilter
 
     protected function dateFrom(Builder $builder, $value)
     {
-        dd($value);
         try {
             $date = \Carbon\Carbon::createFromFormat('d.m.Y', $value)->format('Y-m-d');
         } catch (\Exception $e) {

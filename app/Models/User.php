@@ -49,6 +49,13 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected $indexes = [
+        'name',
+        'email',
+        'phone',
+        'telegram',
+    ];
+
     protected $deleteDependencies = [
         'pets' => 'Невозможно удалить клиента, так как у него есть питомцы',
         'orders' => 'Невозможно удалить клиента, так как с ним связаны заказы',
