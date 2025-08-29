@@ -10,6 +10,7 @@ use App\Models\Traits\HasDeleteDependenciesCheck;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Employee extends Authenticatable
 {
@@ -23,6 +24,7 @@ class Employee extends Authenticatable
         'phone',
         'password',
         'is_active',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -32,6 +34,7 @@ class Employee extends Authenticatable
 
     protected $casts = [
         'is_active' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
 
     protected $indexes = [
@@ -60,7 +63,7 @@ class Employee extends Authenticatable
 
     public function visits()
     {
-        return $this->hasMany(Visit::class, 'veterinarian_id');
+        return $this->hasManyThrough(Visit::class, Schedule::class, 'veterinarian_id', 'schedule_id');
     }
 
     public function labTests()

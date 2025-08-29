@@ -10,7 +10,7 @@
     </a>
 </div>
 
-<form method="POST" action="{{ route('admin.employees.store') }}" class="needs-validation" novalidate>
+<form method="POST" action="{{ route('admin.employees.store') }}">
     @csrf
     <div class="row g-3">
         <div class="col-md-6 col-lg-4">
@@ -26,6 +26,9 @@
         <div class="col-md-6 col-lg-4">
             <label for="phone" class="form-label">Телефон</label>
             <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone') }}" maxlength="20">
+            <div class="form-text text-muted">
+                <i class="bi bi-info-circle"></i> Поддерживаемые форматы: +7XXXXXXXXXX, 8XXXXXXXXXX, 7XXXXXXXXXX
+            </div>
             @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">

@@ -12,6 +12,8 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserPasswordReset;
 
 class UserController extends AdminController
 {
@@ -86,11 +88,35 @@ class UserController extends AdminController
                 'phone' => $user->phone ?? null
             ]);
             
-            // TODO: Отправить временный пароль на email пользователя
-            
-            return redirect()
-                ->route("admin.{$this->routePrefix}.index")
-                ->with('success', 'Клиент успешно создан. Временный пароль: ' . $tempPassword);
+            // Отправляем временный пароль на email клиента
+            try {
+                Mail::to($user->email)->send(new UserPasswordReset(
+                    $tempPassword,
+                    $user->name,
+                    $user->email
+                ));
+                
+                Log::info('Письмо с временным паролем отправлено на email', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email
+                ]);
+                
+                return redirect()
+                    ->route("admin.{$this->routePrefix}.index")
+                    ->with('success', 'Клиент успешно создан. Временный пароль отправлен на email');
+                    
+            } catch (\Exception $mailException) {
+                Log::error('Ошибка при отправке письма с временным паролем', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'error' => $mailException->getMessage()
+                ]);
+                
+                // Клиент создан, но письмо не отправлено
+                return redirect()
+                    ->route("admin.{$this->routePrefix}.index")
+                    ->with('warning', 'Клиент создан, но не удалось отправить письмо. Временный пароль: ' . $tempPassword);
+            }
                 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -170,9 +196,35 @@ class UserController extends AdminController
                 'user_email' => $user->email
             ]);
             
-            return redirect()
-                ->route("admin.{$this->routePrefix}.index")
-                ->with('success', 'Пароль успешно сброшен. Новый временный пароль: ' . $tempPassword);
+            // Отправляем новый пароль на email клиента
+            try {
+                Mail::to($user->email)->send(new UserPasswordReset(
+                    $tempPassword,
+                    $user->name,
+                    $user->email
+                ));
+                
+                Log::info('Письмо с новым паролем отправлено на email', [
+                    'user_id' => $id,
+                    'user_email' => $user->email
+                ]);
+                
+                return redirect()
+                    ->route("admin.{$this->routePrefix}.index")
+                    ->with('success', 'Пароль успешно сброшен и отправлен на email клиента');
+                    
+            } catch (\Exception $mailException) {
+                Log::error('Ошибка при отправке письма с новым паролем', [
+                    'user_id' => $id,
+                    'user_email' => $user->email,
+                    'error' => $mailException->getMessage()
+                ]);
+                
+                // Пароль сброшен, но письмо не отправлено
+                return redirect()
+                    ->route("admin.{$this->routePrefix}.index")
+                    ->with('warning', 'Пароль сброшен, но не удалось отправить письмо. Новый пароль: ' . $tempPassword);
+            }
                 
         } catch (\Exception $e) {
             DB::rollBack();

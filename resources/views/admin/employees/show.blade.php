@@ -362,7 +362,7 @@
                     <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
-                    <a href="{{ route('admin.employees.resetPassword', $employee) }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.employees.resetPassword', $employee) }}" class="btn btn-outline-primary" onclick="return confirm('Вы уверены, что хотите сбросить пароль для сотрудника {{ $employee->name }}? Новый пароль будет отправлен на email: {{ $employee->email }}')">
                         <i class="bi bi-key"></i> Сбросить пароль
                     </a>
                     <hr>

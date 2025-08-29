@@ -14,7 +14,23 @@ class BreedOptionsService extends BaseOptionsService
         // Применяем поиск по названию породы
         $search = $request->input('q');
         if ($search) {
-            $query->where('name', 'like', '%' . $search . '%');
+            $searchTerms = array_filter(explode(' ', trim($search)));
+            
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $term = trim($term);
+                    if (empty($term)) continue;
+                    
+                    $q->where(function($subQ) use ($term) {
+                        // Поиск по названию породы
+                        $subQ->where('name', 'like', '%' . $term . '%')
+                        // Поиск по названию вида
+                        ->orWhereHas('species', function($sq) use ($term) {
+                            $sq->where('name', 'like', '%' . $term . '%');
+                        });
+                    });
+                }
+            });
         }
         
         return $this->buildOptions($request, $query, [

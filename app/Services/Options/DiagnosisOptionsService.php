@@ -38,7 +38,16 @@ class DiagnosisOptionsService extends BaseOptionsService
         }
         
         if ($search) {
-            $query->where('name', 'like', "%$search%");
+            $searchTerms = array_filter(explode(' ', trim($search)));
+            
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $term = trim($term);
+                    if (empty($term)) continue;
+                    
+                    $q->where('name', 'like', '%' . $term . '%');
+                }
+            });
         }
         
         $diagnoses = $query->orderBy('name')->limit(15)->get();

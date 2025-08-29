@@ -395,11 +395,14 @@
                     <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
+                    <a href="{{ route('admin.users.resetPassword', $user) }}" class="btn btn-outline-primary" onclick="return confirm('Вы уверены, что хотите сбросить пароль для клиента {{ $user->name }}? Новый пароль будет отправлен на email: {{ $user->email }}')">
+                        <i class="bi bi-key"></i> Сбросить пароль
+                    </a>
                     <hr>
                     <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-grid">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить клиента?')">
+                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить клиента {{ $user->name }}? Это действие нельзя отменить.')">
                             <i class="bi bi-trash"></i> Удалить
                         </button>
                     </form>

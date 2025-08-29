@@ -116,7 +116,7 @@
                         <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger w-100 text-nowrap" title="Удалить" onclick="return confirm('Вы уверены, что хотите удалить запись?')">
+                            <button type="submit" class="btn btn-outline-danger w-100 text-nowrap" title="Удалить" onclick="return confirm('Вы уверены, что хотите удалить клиента {{ $user->name }}? Это действие нельзя отменить.')">
                                 <span class="d-none d-lg-inline-block">Удалить</span>
                                 <i class="bi bi-trash"></i>
                             </button>

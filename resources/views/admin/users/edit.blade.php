@@ -66,7 +66,7 @@
                 <!-- Правая группа - Сброс пароля и Сохранить -->
                 <div class="d-flex flex-column flex-sm-row gap-2">
                     <a href="{{ route('admin.users.resetPassword', $item) }}" class="btn btn-outline-warning"
-                        onclick="return confirm('Сбросить пароль для клиента {{ $item->name }}?');">
+                        onclick="return confirm('Сбросить пароль для клиента {{ $item->name }}? Новый пароль будет отправлен на email: {{ $item->email }}')">
                         <i class="bi bi-key"></i> <span class="d-inline">Сбросить пароль</span>
                     </a>
                     <button type="submit" class="btn btn-success">

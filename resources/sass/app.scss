@@ -382,3 +382,48 @@
         overflow-y: auto;
     }
 }
+
+// Отключение зеленых обводок для валидных полей
+.form-control.is-valid,
+.was-validated .form-control:valid {
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
+}
+
+.form-control.is-valid:focus,
+.was-validated .form-control:valid:focus {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.form-select.is-valid,
+.was-validated .form-select:valid {
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
+}
+
+.form-select.is-valid:focus,
+.was-validated .form-select:valid:focus {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+// Отключение зеленых обводок для всех типов полей
+.form-control.is-valid,
+.form-select.is-valid,
+.form-check-input.is-valid,
+.was-validated .form-control:valid,
+.was-validated .form-select:valid,
+.was-validated .form-check-input:valid {
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
+}
+
+// Сохранение синих обводок при фокусе для валидных полей
+.form-control.is-valid:focus,
+.form-select.is-valid:focus,
+.was-validated .form-control:valid:focus,
+.was-validated .form-select:valid:focus {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}

@@ -3,9 +3,12 @@
 namespace App\Http\Requests\Admin\Employee;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\NormalizesPhone;
 
 class UpdateRequest extends FormRequest
 {
+    use NormalizesPhone;
+
     public function authorize(): bool
     {
         return true;
@@ -22,6 +25,24 @@ class UpdateRequest extends FormRequest
             'branches' => 'required|array|min:1',
             'branches.*' => 'exists:branches,id',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if ($this->phone && !$this->validatePhone($this->phone)) {
+                $validator->errors()->add('phone', 'Неверный формат номера телефона. Введите корректный российский номер.');
+            }
+        });
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->phone) {
+            $this->merge([
+                'phone' => $this->normalizePhone($this->phone)
+            ]);
+        }
     }
 
     public function messages(): array

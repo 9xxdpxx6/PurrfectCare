@@ -9,7 +9,7 @@ class PetOptionsService extends BaseOptionsService
 {
     public function getOptions(Request $request)
     {
-        $query = Pet::with('client');
+        $query = Pet::with(['client', 'breed']);
         $clientId = $request->input('client_id');
         $search = $request->input('q');
         
@@ -18,13 +18,28 @@ class PetOptionsService extends BaseOptionsService
             $query->where('client_id', $clientId);
         }
         
-        // Поиск по кличке питомца и ФИО владельца
+        // Поиск по кличке питомца, ФИО владельца и породе
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhereHas('client', function($q2) use ($search) {
-                      $q2->where('name', 'like', "%{$search}%");
-                  });
+            $searchTerms = array_filter(explode(' ', trim($search)));
+            
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $term = trim($term);
+                    if (empty($term)) continue;
+                    
+                    $q->where(function($subQ) use ($term) {
+                        // Поиск по кличке питомца
+                        $subQ->where('name', 'like', '%' . $term . '%')
+                        // Поиск по ФИО владельца
+                        ->orWhereHas('client', function($q2) use ($term) {
+                            $q2->where('name', 'like', '%' . $term . '%');
+                        })
+                        // Поиск по породе
+                        ->orWhereHas('breed', function($q2) use ($term) {
+                            $q2->where('name', 'like', '%' . $term . '%');
+                        });
+                    });
+                }
             });
         }
         

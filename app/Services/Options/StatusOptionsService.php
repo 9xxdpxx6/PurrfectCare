@@ -14,7 +14,16 @@ class StatusOptionsService extends BaseOptionsService
         // Применяем поиск по названию статуса
         $search = $request->input('q');
         if ($search) {
-            $query->where('name', 'like', '%' . $search . '%');
+            $searchTerms = array_filter(explode(' ', trim($search)));
+            
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $term = trim($term);
+                    if (empty($term)) continue;
+                    
+                    $q->where('name', 'like', '%' . $term . '%');
+                }
+            });
         }
         
         // Сортируем по названию для удобства

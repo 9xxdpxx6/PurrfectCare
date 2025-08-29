@@ -25,6 +25,10 @@ class AdminLoginController extends Controller {
         $remember = $request->boolean('remember');
 
         if (Auth::guard('admin')->attempt($credentials, $remember)) {
+            // Обновляем время последнего входа
+            $employee = Auth::guard('admin')->user();
+            $employee->update(['last_login_at' => now()]);
+            
             $request->session()->regenerate();
             return redirect()->intended('/admin/dashboard');
         }

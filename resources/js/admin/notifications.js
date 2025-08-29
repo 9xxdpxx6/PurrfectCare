@@ -248,48 +248,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализируем менеджер уведомлений
     const notificationManager = new NotificationManager();
 
-    // Управление оверлеем пользователя
-    const userToggle = document.getElementById('userToggle');
-    const userOverlay = document.getElementById('userOverlay');
-    let userOverlayOpen = false;
+    // Управление оверлеем профиля
+    const profileToggle = document.getElementById('profileToggle');
+    const profileOverlay = document.getElementById('profileOverlay');
+    let profileOverlayOpen = false;
 
-    if (userToggle && userOverlay) {
-        userToggle.addEventListener('click', (e) => {
+    if (profileToggle && profileOverlay) {
+        profileToggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            toggleUserOverlay();
+            toggleProfileOverlay();
         });
 
-        function toggleUserOverlay() {
-            if (userOverlayOpen) {
-                closeUserOverlay();
+        function toggleProfileOverlay() {
+            if (profileOverlayOpen) {
+                closeProfileOverlay();
             } else {
-                openUserOverlay();
+                openProfileOverlay();
             }
         }
 
-        function openUserOverlay() {
-            userOverlay.style.display = 'block';
-            userOverlayOpen = true;
-            userToggle.classList.add('active');
+        function openProfileOverlay() {
+            profileOverlay.style.display = 'block';
+            profileOverlayOpen = true;
+            profileToggle.classList.add('active');
         }
 
-        function closeUserOverlay() {
-            userOverlay.style.display = 'none';
-            userOverlayOpen = false;
-            userToggle.classList.remove('active');
+        function closeProfileOverlay() {
+            profileOverlay.style.display = 'none';
+            profileOverlayOpen = false;
+            profileToggle.classList.remove('active');
         }
 
         // Закрытие при клике по темной области
-        userOverlay.addEventListener('click', (e) => {
-            if (e.target === userOverlay) {
-                closeUserOverlay();
+        profileOverlay.addEventListener('click', (e) => {
+            if (e.target === profileOverlay) {
+                closeProfileOverlay();
             }
         });
 
         // Закрытие при нажатии Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                closeUserOverlay();
+                closeProfileOverlay();
                 if (notificationManager) notificationManager.closeOverlay();
             }
         });
@@ -299,8 +299,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Проверяем, что клик не по кнопкам и не по содержимому оверлеев
             if (!e.target.closest('.overlay-content') && 
                 !e.target.closest('#notificationsToggle') && 
-                !e.target.closest('#userToggle')) {
-                closeUserOverlay();
+                !e.target.closest('#profileToggle')) {
+                closeProfileOverlay();
                 if (notificationManager) notificationManager.closeOverlay();
             }
         });

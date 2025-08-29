@@ -10,7 +10,7 @@
     </a>
 </div>
 
-<form method="POST" action="{{ route('admin.employees.update', $employee) }}" class="needs-validation" novalidate>
+<form method="POST" action="{{ route('admin.employees.update', $employee) }}">
     @csrf
     @method('PATCH')
     <div class="row g-3">
@@ -27,6 +27,9 @@
         <div class="col-md-6 col-lg-4">
             <label for="phone" class="form-label">Телефон</label>
             <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $employee->phone) }}" maxlength="20">
+            <div class="form-text text-muted">
+                <i class="bi bi-info-circle"></i> Поддерживаемые форматы: +7XXXXXXXXXX, 8XXXXXXXXXX, 7XXXXXXXXXX
+            </div>
             @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6 col-lg-4">
@@ -56,7 +59,7 @@
         <!-- Кнопка "Сбросить пароль" -->
         <a href="{{ route('admin.employees.resetPassword', $employee) }}"
             class="btn btn-outline-warning mt-3 mt-md-0 ms-md-auto"
-            onclick="return confirm('Сбросить пароль сотрудника? Новый временный пароль будет показан после сохранения.')">
+            onclick="return confirm('Сбросить пароль для сотрудника {{ $employee->name }}? Новый пароль будет отправлен на email: {{ $employee->email }}')">
             <i class="bi bi-key"></i>
             Сбросить пароль
         </a>

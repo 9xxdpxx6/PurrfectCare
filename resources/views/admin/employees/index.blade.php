@@ -104,7 +104,7 @@
                         <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Удалить сотрудника ({{ $employee->name }})?');">
+                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Удалить сотрудника {{ $employee->name }}? Это действие нельзя отменить.');">
                                 <span class="d-none d-lg-inline-block">Удалить</span>
                                 <i class="bi bi-trash"></i>
                             </button>

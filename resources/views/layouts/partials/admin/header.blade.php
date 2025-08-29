@@ -20,7 +20,7 @@
             </button>
         </div>
         <div class="nav-item text-nowrap">
-            <button class="btn btn-link nav-link px-3 text-white" type="button" id="userToggle">
+            <button class="btn btn-link nav-link px-3 text-white position-relative" type="button" id="profileToggle">
                 <span class="fs-5"><i class="bi bi-person-fill"></i></span> {{ Auth::guard('admin')->user()?->name }}
             </button>
             <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">

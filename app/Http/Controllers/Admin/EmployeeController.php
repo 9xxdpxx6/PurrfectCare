@@ -20,6 +20,8 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EmployeePasswordReset;
 
 class EmployeeController extends AdminController
 {
@@ -80,9 +82,33 @@ class EmployeeController extends AdminController
                 'branches_count' => $request->filled('branches') ? count($request->input('branches')) : 0
             ]);
             
-            // TODO: отправить временный пароль на email
-            return redirect()->route('admin.employees.index')
-                ->with('success', 'Сотрудник успешно создан. Временный пароль: ' . $tempPassword);
+            // Отправляем временный пароль на email сотрудника
+            try {
+                Mail::to($employee->email)->send(new EmployeePasswordReset(
+                    $tempPassword,
+                    $employee->name,
+                    $employee->email
+                ));
+                
+                Log::info('Письмо с временным паролем отправлено на email', [
+                    'employee_id' => $employee->id,
+                    'employee_email' => $employee->email
+                ]);
+                
+                return redirect()->route('admin.employees.index')
+                    ->with('success', 'Сотрудник успешно создан. Временный пароль отправлен на email');
+                    
+            } catch (\Exception $mailException) {
+                Log::error('Ошибка при отправке письма с временным паролем', [
+                    'employee_id' => $employee->id,
+                    'employee_email' => $employee->email,
+                    'error' => $mailException->getMessage()
+                ]);
+                
+                // Сотрудник создан, но письмо не отправлено
+                return redirect()->route('admin.employees.index')
+                    ->with('warning', 'Сотрудник создан, но не удалось отправить письмо. Временный пароль: ' . $tempPassword);
+            }
                 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -209,9 +235,33 @@ class EmployeeController extends AdminController
                 'employee_email' => $employee->email
             ]);
             
-            // TODO: отправить новый временный пароль на email
-            return redirect()->route('admin.employees.index')
-                ->with('success', 'Пароль успешно сброшен. Новый временный пароль: ' . $tempPassword);
+            // Отправляем новый пароль на email сотрудника
+            try {
+                Mail::to($employee->email)->send(new EmployeePasswordReset(
+                    $tempPassword,
+                    $employee->name,
+                    $employee->email
+                ));
+                
+                Log::info('Письмо с новым паролем отправлено на email', [
+                    'employee_id' => $id,
+                    'employee_email' => $employee->email
+                ]);
+                
+                return redirect()->route('admin.employees.index')
+                    ->with('success', 'Пароль успешно сброшен и отправлен на email сотрудника');
+                    
+            } catch (\Exception $mailException) {
+                Log::error('Ошибка при отправке письма с новым паролем', [
+                    'employee_id' => $id,
+                    'employee_email' => $employee->email,
+                    'error' => $mailException->getMessage()
+                ]);
+                
+                // Пароль сброшен, но письмо не отправлено
+                return redirect()->route('admin.employees.index')
+                    ->with('warning', 'Пароль сброшен, но не удалось отправить письмо. Новый пароль: ' . $tempPassword);
+            }
                 
         } catch (\Exception $e) {
             DB::rollBack();
