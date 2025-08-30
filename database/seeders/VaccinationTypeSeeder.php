@@ -29,11 +29,20 @@ class VaccinationTypeSeeder extends Seeder
                     ['name' => $drugData['name']],
                     [
                         'price' => rand(200, 1500),
-                        'quantity' => rand(50, 200),
                         'prescription_required' => true,
                         'unit_id' => 1, // Предполагаем, что единица измерения с ID 1 это "мл"
                     ]
                 );
+
+                // Attach препарат ко всем филиалам если он только что создан
+                if ($drug->wasRecentlyCreated) {
+                    $branches = \App\Models\Branch::all();
+                    foreach ($branches as $branch) {
+                        $drug->branches()->attach($branch->id, [
+                            'quantity' => rand(50, 200),
+                        ]);
+                    }
+                }
                 
                 // Привязываем препарат к типу вакцинации
                 $vaccinationType->drugs()->attach($drug->id, [

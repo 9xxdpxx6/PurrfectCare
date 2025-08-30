@@ -136,7 +136,7 @@
 
                     <div class="d-flex justify-content-between gap-2">
                         <a href="{{ route('admin.vaccinations.index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>    
+                            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline">Отмена</span>    
                         </a>
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-lg"></i> Сохранить

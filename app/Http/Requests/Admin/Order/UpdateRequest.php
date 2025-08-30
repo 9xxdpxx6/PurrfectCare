@@ -4,7 +4,7 @@ namespace App\Http\Requests\Admin\Order;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\BelongsToClient;
-use App\Rules\CheckDrugQuantity;
+use App\Rules\CheckDrugStockPerBranch;
 use App\Rules\OrderCompletionRule;
 
 class UpdateRequest extends FormRequest
@@ -25,10 +25,10 @@ class UpdateRequest extends FormRequest
             'total' => 'required|numeric|min:0|max:999999.99',
             'is_paid' => 'boolean',
             'is_closed' => ['boolean', new OrderCompletionRule],
-            'items' => 'required|array|min:1',
+            'items' => ['required', 'array', 'min:1', new CheckDrugStockPerBranch($this->input('branch_id'))],
             'items.*.item_type' => 'required|in:service,drug,lab_test,vaccination',
             'items.*.item_id' => 'required|integer',
-            'items.*.quantity' => ['required', 'numeric', 'min:0.01', 'max:9999', new CheckDrugQuantity],
+            'items.*.quantity' => ['required', 'numeric', 'min:0.01', 'max:9999'],
             'items.*.unit_price' => 'required|numeric|min:0|max:999999.99',
         ];
     }
@@ -60,7 +60,7 @@ class UpdateRequest extends FormRequest
             'items.*.quantity.numeric' => 'Количество должно быть числом',
             'items.*.quantity.min' => 'Количество должно быть не менее 0.01',
             'items.*.quantity.max' => 'Количество не может превышать 9999',
-            'items.*.quantity.check_drug_quantity' => 'Недостаточно препарата на складе',
+            'items.check_drug_stock_per_branch' => 'Недостаточно препаратов на складе филиала',
             'items.*.unit_price.required' => 'Цена за единицу обязательна',
             'items.*.unit_price.numeric' => 'Цена за единицу должна быть числом',
             'items.*.unit_price.min' => 'Цена за единицу не может быть отрицательной',

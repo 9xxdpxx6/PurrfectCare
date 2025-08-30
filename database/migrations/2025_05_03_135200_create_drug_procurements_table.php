@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
             $table->foreignId('drug_id')->constrained()->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
             $table->date('delivery_date');
             $table->date('expiry_date');
             $table->date('manufacture_date');
@@ -26,6 +27,7 @@ return new class extends Migration
             // Индексы для оптимизации производительности
             $table->index('supplier_id'); // Быстрый поиск закупок поставщика
             $table->index('drug_id'); // Быстрый поиск закупок лекарства
+            $table->index('branch_id'); // Быстрый поиск закупок по филиалу
             $table->index('delivery_date'); // Быстрый поиск по дате доставки
             $table->index('expiry_date'); // Быстрый поиск по сроку годности
         });

@@ -28,15 +28,7 @@ abstract class BaseOptionsService
         if ($selectedId && is_numeric($selectedId)) {
             $selected = $config['model']::find($selectedId);
             if ($selected) {
-                $option = [
-                    'value' => $selected->id,
-                    'text' => $this->formatText($selected, $config)
-                ];
-                
-                if (isset($config['include_price']) && $config['include_price']) {
-                    $option['price'] = $selected->price ?? 0;
-                }
-                
+                $option = $this->formatOption($selected, $config);
                 $options[] = $option;
                 $query->where('id', '!=', $selectedId);
             }
@@ -53,15 +45,7 @@ abstract class BaseOptionsService
 
         // Добавляем остальные элементы
         foreach ($items as $item) {
-            $option = [
-                'value' => $item->id,
-                'text' => $this->formatText($item, $config)
-            ];
-            
-            if (isset($config['include_price']) && $config['include_price']) {
-                $option['price'] = $item->price ?? 0;
-            }
-            
+            $option = $this->formatOption($item, $config);
             $options[] = $option;
         }
 
@@ -74,5 +58,22 @@ abstract class BaseOptionsService
     protected function formatText($item, $config): string
     {
         return $item->name;
+    }
+
+    /**
+     * Форматирование опции для JSON ответа
+     */
+    protected function formatOption($item, $config): array
+    {
+        $option = [
+            'value' => $item->id,
+            'text' => $this->formatText($item, $config)
+        ];
+        
+        if (isset($config['include_price']) && $config['include_price']) {
+            $option['price'] = $item->price ?? 0;
+        }
+        
+        return $option;
     }
 }

@@ -22,10 +22,8 @@ class SpecialtyOptionsService extends BaseOptionsService
                     if (empty($term)) continue;
                     
                     $q->where(function($subQ) use ($term) {
-                        // Поиск по названию специальности
-                        $subQ->where('name', 'like', '%' . $term . '%')
-                        // Поиск по описанию
-                        ->orWhere('description', 'like', '%' . $term . '%');
+                        // Поиск только по названию специальности (столбец description не существует)
+                        $subQ->where('name', 'like', '%' . $term . '%');
                     });
                 }
             });

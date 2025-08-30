@@ -122,6 +122,9 @@ class OrderManagementService
             // Определяем состояние выполнения до изменений
             $wasExecuted = !is_null($oldOrder->closed_at);
 
+            // Сохраняем оригинальный branch_id до обновления
+            $originalBranchId = $oldOrder->branch_id;
+
             // Определяем дату закрытия после изменений
             $closedAt = $oldOrder->closed_at;
             if ($request->has('is_closed') && $request->input('is_closed') && !$closedAt) {
@@ -166,6 +169,7 @@ class OrderManagementService
             // Создаем временный объект для представления старого состояния заказа
             $oldOrderForInventory = new Order();
             $oldOrderForInventory->id = $oldOrder->id;
+            $oldOrderForInventory->branch_id = (int)$originalBranchId; // Используем сохраненный оригинальный branch_id
             $oldOrderForInventory->setRelation('items', collect($oldOrderItems)->map(function ($item) {
                 $orderItem = new \App\Models\OrderItem();
                 $orderItem->fill($item);
@@ -219,9 +223,9 @@ class OrderManagementService
 
             // Оптимизация: используем индексы на внешние ключи и загружаем только нужные поля
             $order = Order::select([
-                    'id', 'closed_at'
+                    'id', 'branch_id', 'closed_at'
                 ])
-                ->with(['items:id,order_id,item_type,item_id,quantity'])
+                ->with(['items:id,order_id,item_type,item_id,quantity,unit_price'])
                 ->findOrFail($id);
 
             // Возвращаем препараты на склад если заказ был закрыт
@@ -303,16 +307,17 @@ class OrderManagementService
      * Проверить доступность препаратов для заказа
      * 
      * @param array $items Массив элементов заказа
+     * @param int $branchId ID филиала
      * @return array Результат проверки
      */
-    public function checkOrderAvailability(array $items): array
+    public function checkOrderAvailability(array $items, int $branchId): array
     {
         // Оптимизация: фильтруем только лекарства для проверки доступности
         $drugItems = collect($items)->filter(function($item) {
             return $item['item_type'] === 'App\Models\Drug';
         })->toArray();
         
-        $availability = $this->inventoryService->checkDrugAvailability($drugItems);
+        $availability = $this->inventoryService->checkDrugAvailability($drugItems, $branchId);
         
         $allAvailable = collect($availability)->every('is_available');
         

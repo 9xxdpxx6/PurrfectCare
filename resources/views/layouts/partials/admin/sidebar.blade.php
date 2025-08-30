@@ -18,13 +18,13 @@
         @include('layouts.partials.admin.sidebar.organization-menu')
         
         <!-- Уведомления -->
-        <ul class="nav flex-column mb-4">
+        <!-- <ul class="nav flex-column mb-4">
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.notifications.index') }}">
                     <i class="bi bi-bell me-2"></i>Уведомления
                 </a>
             </li>
-        </ul>
+        </ul> -->
         
         <!-- Настройки -->
         @include('layouts.partials.admin.sidebar.settings-menu')

@@ -4,8 +4,9 @@ namespace App\Services\Order;
 
 use App\Models\Order;
 use App\Models\Drug;
-use Illuminate\Support\Facades\DB;
+use App\Models\Branch;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class InventoryManagementService
 {
@@ -20,9 +21,21 @@ class InventoryManagementService
         try {
             DB::beginTransaction();
             
+            Log::info('Начало списания препаратов со склада', [
+                'order_id' => $order->id,
+                'branch_id' => $order->branch_id,
+                'items_count' => $order->items->count()
+            ]);
+            
             foreach ($order->items as $item) {
                 if ($item->item_type === 'App\Models\Drug') {
-                    $this->reduceDrugQuantity($item);
+                    Log::info('Списание препарата со склада', [
+                        'drug_id' => $item->item_id,
+                        'quantity' => $item->quantity,
+                        'branch_id' => $order->branch_id
+                    ]);
+                    
+                    $this->reduceDrugQuantity($item, $order->branch_id);
                 }
             }
             
@@ -30,6 +43,7 @@ class InventoryManagementService
             
             Log::info('Списание препаратов со склада успешно завершено', [
                 'order_id' => $order->id,
+                'branch_id' => $order->branch_id,
                 'drugs_count' => $order->items->where('item_type', 'App\Models\Drug')->count()
             ]);
             
@@ -38,6 +52,7 @@ class InventoryManagementService
             
             Log::error('Ошибка при списании препаратов со склада', [
                 'order_id' => $order->id,
+                'branch_id' => $order->branch_id,
                 'error' => $e->getMessage()
             ]);
             
@@ -56,9 +71,15 @@ class InventoryManagementService
         try {
             DB::beginTransaction();
             
+            Log::info('Начало возврата препаратов на склад', [
+                'order_id' => $order->id,
+                'branch_id' => $order->branch_id,
+                'items_count' => $order->items->count()
+            ]);
+            
             foreach ($order->items as $item) {
                 if ($item->item_type === 'App\Models\Drug') {
-                    $this->returnDrugQuantity($item);
+                    $this->returnDrugQuantity($item, $order->branch_id);
                 }
             }
             
@@ -66,6 +87,7 @@ class InventoryManagementService
             
             Log::info('Возврат препаратов на склад успешно завершен', [
                 'order_id' => $order->id,
+                'branch_id' => $order->branch_id,
                 'drugs_count' => $order->items->where('item_type', 'App\Models\Drug')->count()
             ]);
             
@@ -74,6 +96,7 @@ class InventoryManagementService
             
             Log::error('Ошибка при возврате препаратов на склад', [
                 'order_id' => $order->id,
+                'branch_id' => $order->branch_id,
                 'error' => $e->getMessage()
             ]);
             
@@ -82,39 +105,50 @@ class InventoryManagementService
     }
 
     /**
-     * Списание количества препарата со склада
+     * Списание количества препарата со склада в конкретном филиале
      * 
      * @param mixed $orderItem Элемент заказа
+     * @param int $branchId ID филиала
      * @return void
      */
-    protected function reduceDrugQuantity($orderItem): void
+    protected function reduceDrugQuantity($orderItem, int $branchId): void
     {
         try {
-            // Оптимизация: используем select для выбора только нужных полей и индекс на id
-            $drug = Drug::select(['id', 'name', 'quantity'])->find($orderItem->item_id);
-            if ($drug) {
-                // Проверяем, достаточно ли препарата на складе
-                if ($drug->quantity >= $orderItem->quantity) {
-                    $drug->decrement('quantity', $orderItem->quantity);
-                    
-                    Log::info('Препарат списан со склада', [
-                        'drug_id' => $drug->id,
-                        'drug_name' => $drug->name,
-                        'quantity_reduced' => $orderItem->quantity,
-                        'remaining_quantity' => $drug->quantity
-                    ]);
-                } else {
-                    Log::warning('Недостаточно препарата на складе для списания', [
-                        'drug_id' => $drug->id,
-                        'drug_name' => $drug->name,
-                        'requested_quantity' => $orderItem->quantity,
-                        'available_quantity' => $drug->quantity
-                    ]);
-                }
+            // Проверяем, что branchId не null
+            if (is_null($branchId)) {
+                throw new \InvalidArgumentException('Branch ID не может быть null');
+            }
+
+            // Получаем количество препарата в конкретном филиале
+            $branch = Branch::find($branchId);
+            $branchDrug = $branch->drugs()
+                ->withPivot('quantity')
+                ->where('drug_id', $orderItem->item_id)
+                ->first();
+
+            if (!$branchDrug) {
+                throw new \Exception("Препарат не найден в филиале {$branchId}");
+            }
+
+            // Проверяем, достаточно ли препарата на складе филиала
+            if ($branchDrug->pivot->quantity >= $orderItem->quantity) {
+                $branchDrug->pivot->decrement('quantity', $orderItem->quantity);
+
+                $newQuantity = $branchDrug->pivot->quantity - $orderItem->quantity;
+                
+                Log::info('Препарат списан со склада филиала', [
+                    'drug_id' => $orderItem->item_id,
+                    'branch_id' => $branchId,
+                    'quantity_reduced' => $orderItem->quantity,
+                    'remaining_quantity' => $newQuantity
+                ]);
+            } else {
+                throw new \Exception("Недостаточно препарата в филиале {$branchId}. Запрошено: {$orderItem->quantity}, доступно: {$branchDrug->pivot->quantity}");
             }
         } catch (\Exception $e) {
-            Log::error('Ошибка при списании препарата со склада', [
+            Log::error('Ошибка при списании препарата со склада филиала', [
                 'drug_id' => $orderItem->item_id,
+                'branch_id' => $branchId,
                 'error' => $e->getMessage()
             ]);
             throw $e;
@@ -122,29 +156,55 @@ class InventoryManagementService
     }
 
     /**
-     * Возврат количества препарата на склад
+     * Возврат количества препарата на склад в конкретном филиале
      * 
      * @param mixed $orderItem Элемент заказа
+     * @param int $branchId ID филиала
      * @return void
      */
-    protected function returnDrugQuantity($orderItem): void
+    protected function returnDrugQuantity($orderItem, int $branchId): void
     {
         try {
-            // Оптимизация: используем select для выбора только нужных полей и индекс на id
-            $drug = Drug::select(['id', 'name', 'quantity'])->find($orderItem->item_id);
-            if ($drug) {
-                $drug->increment('quantity', $orderItem->quantity);
+            // Проверяем, что branchId не null
+            if (is_null($branchId)) {
+                throw new \InvalidArgumentException('Branch ID не может быть null');
+            }
+
+            // Получаем текущее количество препарата в филиале
+            $branch = Branch::find($branchId);
+            $branchDrug = $branch->drugs()
+                ->withPivot('quantity')
+                ->where('drug_id', $orderItem->item_id)
+                ->first();
+
+            if (!$branchDrug) {
+                // Если препарат не найден в филиале, создаем запись
+                $branch->drugs()->attach($orderItem->item_id, [
+                    'quantity' => $orderItem->quantity,
+                ]);
                 
-                Log::info('Препарат возвращен на склад', [
-                    'drug_id' => $drug->id,
-                    'drug_name' => $drug->name,
+                Log::info('Создана новая запись препарата в филиале', [
+                    'drug_id' => $orderItem->item_id,
+                    'branch_id' => $branchId,
+                    'quantity_added' => $orderItem->quantity
+                ]);
+            } else {
+                // Увеличиваем количество в существующей записи
+                $branchDrug->pivot->increment('quantity', $orderItem->quantity);
+
+                $newQuantity = $branchDrug->pivot->quantity + $orderItem->quantity;
+                
+                Log::info('Препарат возвращен на склад филиала', [
+                    'drug_id' => $orderItem->item_id,
+                    'branch_id' => $branchId,
                     'quantity_returned' => $orderItem->quantity,
-                    'new_quantity' => $drug->quantity
+                    'new_quantity' => $newQuantity
                 ]);
             }
         } catch (\Exception $e) {
-            Log::error('Ошибка при возврате препарата на склад', [
+            Log::error('Ошибка при возврате препарата на склад филиала', [
                 'drug_id' => $orderItem->item_id,
+                'branch_id' => $branchId,
                 'error' => $e->getMessage()
             ]);
             throw $e;
@@ -152,41 +212,53 @@ class InventoryManagementService
     }
 
     /**
-     * Проверить доступность препаратов на складе
+     * Проверить доступность препаратов на складе в конкретном филиале
      * 
      * @param array $items Массив элементов заказа
+     * @param int $branchId ID филиала
      * @return array Массив с информацией о доступности
      */
-    public function checkDrugAvailability(array $items): array
+    public function checkDrugAvailability(array $items, int $branchId): array
     {
         $availability = [];
         
-        // Оптимизация: группируем запросы по типам для уменьшения количества обращений к БД
+        // Фильтруем только препараты
         $drugItems = collect($items)->filter(function($item) {
-            return $item['item_type'] === 'App\Models\Drug';
+            return $item['item_type'] === 'drug';
         });
         
         if ($drugItems->isEmpty()) {
             return $availability;
         }
         
-        // Оптимизация: получаем все нужные препараты одним запросом
+        // Получаем все нужные препараты с количеством в конкретном филиале
         $drugIds = $drugItems->pluck('item_id')->toArray();
-        $drugs = Drug::select(['id', 'name', 'quantity'])
-            ->whereIn('id', $drugIds)
+        
+        $branch = Branch::find($branchId);
+        $branchDrugs = $branch->drugs()
+            ->withPivot('quantity')
+            ->whereIn('drugs.id', $drugIds)
             ->get()
             ->keyBy('id');
         
         foreach ($drugItems as $item) {
-            $drug = $drugs->get($item['item_id']);
-            if ($drug) {
-                $available = $drug->quantity >= $item['quantity'];
+            $branchDrug = $branchDrugs->get($item['item_id']);
+            if ($branchDrug) {
+                $available = $branchDrug->pivot->quantity >= $item['quantity'];
                 $availability[] = [
-                    'drug_id' => $drug->id,
-                    'drug_name' => $drug->name,
-                    'requested_quantity' => $item['quantity'],
-                    'available_quantity' => $drug->quantity,
+                    'drug_id' => $item['item_id'],
+                    'drug_name' => $branchDrug->name,
+                    'available_quantity' => $branchDrug->pivot->quantity,
                     'is_available' => $available
+                ];
+            } else {
+                // Препарат не найден в филиале
+                $availability[] = [
+                    'drug_id' => $item['item_id'],
+                    'drug_name' => 'Неизвестно',
+                    'requested_quantity' => $item['quantity'],
+                    'available_quantity' => 0,
+                    'is_available' => false
                 ];
             }
         }
@@ -223,6 +295,7 @@ class InventoryManagementService
                 DB::commit();
                 Log::info('Заказ стал выполненным, списаны препараты', [
                     'order_id' => $newOrder->id,
+                    'branch_id' => $newOrder->branch_id,
                     'drugs_count' => $newOrder->items->where('item_type', 'App\Models\Drug')->count()
                 ]);
                 return;
@@ -234,6 +307,7 @@ class InventoryManagementService
                 DB::commit();
                 Log::info('Заказ стал невыполненным, возвращены препараты', [
                     'order_id' => $newOrder->id,
+                    'branch_id' => $oldOrder->branch_id,
                     'drugs_count' => $oldOrder->items->where('item_type', 'App\Models\Drug')->count()
                 ]);
                 return;
@@ -243,9 +317,7 @@ class InventoryManagementService
             if ($wasExecuted && $isExecuted) {
                 $this->processInventoryDifferenceCorrection($oldOrder, $newOrder);
                 DB::commit();
-                Log::info('Скорректированы остатки препаратов для выполненного заказа', [
-                    'order_id' => $newOrder->id
-                ]);
+                
                 return;
             }
 
@@ -274,16 +346,31 @@ class InventoryManagementService
      */
     protected function processInventoryDifferenceCorrection(Order $oldOrder, Order $newOrder): void
     {
-        // Получаем старые и новые препараты
-        $oldDrugs = $this->getOrderDrugItems($oldOrder);
-        $newDrugs = $this->getOrderDrugItems($newOrder);
+        // Проверяем, изменился ли филиал - приводим к int для корректного сравнения
+        $branchChanged = (int)$oldOrder->branch_id !== (int)$newOrder->branch_id;
+        
+        if ($branchChanged) {
 
-        // Рассчитываем разности
-        $differences = $this->calculateDrugDifferences($oldDrugs, $newDrugs);
+            // 1. Возвращаем все препараты на склад старого филиала
+            $this->processInventoryReturn($oldOrder);
+            
+            // 2. Списываем все препараты со склада нового филиала
+            $this->processInventoryReduction($newOrder);
+        } else {
+            // Филиал не изменился - обычная корректировка разностей
+            $oldDrugs = $this->getOrderDrugItems($oldOrder);
+            $newDrugs = $this->getOrderDrugItems($newOrder);
 
-        foreach ($differences as $drugId => $difference) {
-            if ($difference['quantity_change'] != 0) {
-                $this->applyDrugQuantityChange($drugId, $difference);
+            // Рассчитываем разности
+            $differences = $this->calculateDrugDifferences($oldDrugs, $newDrugs);
+
+            // Используем branch_id из нового заказа для корректировки
+            $branchId = $newOrder->branch_id;
+
+            foreach ($differences as $drugId => $difference) {
+                if ($difference['quantity_change'] != 0) {
+                    $this->applyDrugQuantityChange($drugId, $difference, $branchId);
+                }
             }
         }
     }
@@ -341,69 +428,100 @@ class InventoryManagementService
     }
 
     /**
-     * Применить изменение количества препарата
+     * Применить изменение количества препарата в конкретном филиале
      * 
      * @param int $drugId ID препарата
      * @param array $difference Информация об изменении
+     * @param int $branchId ID филиала
      * @return void
      */
-    protected function applyDrugQuantityChange(int $drugId, array $difference): void
+    protected function applyDrugQuantityChange(int $drugId, array $difference, int $branchId): void
     {
         try {
-            $drug = Drug::select(['id', 'name', 'quantity'])->find($drugId);
-            if (!$drug) {
-                Log::warning('Препарат не найден при корректировке', [
-                    'drug_id' => $drugId
-                ]);
-                return;
-            }
-
             $quantityChange = $difference['quantity_change'];
 
             if ($quantityChange > 0) {
                 // Увеличилось количество в заказе - нужно списать больше
-                if ($drug->quantity >= $quantityChange) {
-                    $drug->decrement('quantity', $quantityChange);
-                    
-                    Log::info('Дополнительно списан препарат со склада', [
-                        'drug_id' => $drug->id,
-                        'drug_name' => $drug->name,
-                        'quantity_reduced' => $quantityChange,
-                        'old_order_quantity' => $difference['old_quantity'],
-                        'new_order_quantity' => $difference['new_quantity'],
-                        'remaining_quantity' => $drug->quantity
-                    ]);
-                } else {
-                    Log::warning('Недостаточно препарата на складе для дополнительного списания', [
-                        'drug_id' => $drug->id,
-                        'drug_name' => $drug->name,
-                        'requested_additional' => $quantityChange,
-                        'available_quantity' => $drug->quantity
-                    ]);
-                }
+                $this->reduceDrugQuantityForCorrection($drugId, $quantityChange, $branchId, $difference);
             } else {
                 // Уменьшилось количество в заказе - нужно вернуть на склад
                 $returnQuantity = abs($quantityChange);
-                $drug->increment('quantity', $returnQuantity);
-                
-                Log::info('Возвращен препарат на склад при корректировке', [
-                    'drug_id' => $drug->id,
-                    'drug_name' => $drug->name,
-                    'quantity_returned' => $returnQuantity,
-                    'old_order_quantity' => $difference['old_quantity'],
-                    'new_order_quantity' => $difference['new_quantity'],
-                    'new_stock_quantity' => $drug->quantity
-                ]);
+                $this->returnDrugQuantityForCorrection($drugId, $returnQuantity, $branchId, $difference);
             }
 
         } catch (\Exception $e) {
-            Log::error('Ошибка при корректировке количества препарата', [
+            Log::error('Ошибка при корректировке количества препарата в филиале', [
                 'drug_id' => $drugId,
+                'branch_id' => $branchId,
                 'difference' => $difference,
                 'error' => $e->getMessage()
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Списание дополнительного количества препарата при корректировке заказа
+     */
+    protected function reduceDrugQuantityForCorrection(int $drugId, int $quantityChange, int $branchId, array $difference): void
+    {
+        // Получаем количество препарата в филиале
+        $branch = Branch::find($branchId);
+        $branchDrug = $branch->drugs()->where('drug_id', $drugId)->first();
+
+        if (!$branchDrug) {
+            throw new \Exception("Препарат не найден в филиале {$branchId}");
+        }
+
+        if ($branchDrug->pivot->quantity >= $quantityChange) {
+            $branchDrug->pivot->decrement('quantity', $quantityChange);
+
+            $newQuantity = $branchDrug->pivot->quantity - $quantityChange;
+            
+            Log::info('Дополнительно списан препарат со склада филиала', [
+                'drug_id' => $drugId,
+                'branch_id' => $branchId,
+                'quantity_reduced' => $quantityChange,
+                'old_order_quantity' => $difference['old_quantity'],
+                'new_order_quantity' => $difference['new_quantity'],
+                'remaining_quantity' => $newQuantity
+            ]);
+        } else {
+            throw new \Exception("Недостаточно препарата в филиале {$branchId} для дополнительного списания. Запрошено: {$quantityChange}, доступно: {$branchDrug->pivot->quantity}");
+        }
+    }
+
+    /**
+     * Возврат количества препарата на склад филиала при корректировке заказа
+     */
+    protected function returnDrugQuantityForCorrection(int $drugId, int $returnQuantity, int $branchId, array $difference): void
+    {
+        // Получаем текущее количество препарата в филиале
+        $branch = Branch::find($branchId);
+        $branchDrug = $branch->drugs()->where('drug_id', $drugId)->first();
+
+        if ($branchDrug) {
+            // Увеличиваем количество в существующей записи
+            $branchDrug->pivot->increment('quantity', $returnQuantity);
+
+            $newQuantity = $branchDrug->pivot->quantity + $returnQuantity;
+        } else {
+            // Создаем новую запись если препарат не найден в филиале
+            $branch->drugs()->attach($drugId, [
+                'quantity' => $returnQuantity,
+            ]);
+            
+            $newQuantity = $returnQuantity;
+        }
+        
+        Log::info('Возвращен препарат на склад филиала при корректировке', [
+            'drug_id' => $drugId,
+            'branch_id' => $branchId,
+            'quantity_returned' => $returnQuantity,
+            'old_order_quantity' => $difference['old_quantity'],
+            'new_order_quantity' => $difference['new_quantity'],
+            'new_stock_quantity' => $newQuantity
+        ]);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Drug;
 use App\Models\Supplier;
+use App\Models\Branch;
 use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Species;
@@ -23,7 +24,8 @@ class DrugProcurementFactory extends Factory
     {
         return [
             'supplier_id' => Supplier::inRandomOrder()->first()->id ?? Supplier::factory()->create()->id,
-            'drug_id' => Drug::inRandomOrder()->first()->id ?? Drug::factory()->create()->id,
+            'drug_id' => Drug::inRandomOrder()->first()?->id ?: 1, // fallback к ID 1 если нет препаратов
+            'branch_id' => Branch::inRandomOrder()->first()->id ?? Branch::factory()->create()->id,
             'delivery_date' => $this->faker->dateTimeBetween('-1 year', 'now')->format('Y-m-d H:i:s'),
             'expiry_date' => $this->faker->dateTimeBetween('+1 year', '+5 years')->format('Y-m-d H:i:s'),
             'manufacture_date' => $this->faker->dateTimeBetween('-5 years', '-1 year')->format('Y-m-d H:i:s'),

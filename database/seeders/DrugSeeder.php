@@ -13,11 +13,14 @@ class DrugSeeder extends Seeder
      */
     public function run(): void
     {
+        // Очищаем таблицу branch_drug перед заполнением
+        \Illuminate\Support\Facades\DB::table('branch_drug')->truncate();
+
         $drugs = [
             // Антибиотики
-            ['name' => 'Амоксициллин 15%', 'price' => 850.00, 'quantity' => 100, 'prescription_required' => true, 'unit' => 'мл'],
-            ['name' => 'Цефтриаксон 5%', 'price' => 1200.00, 'quantity' => 50, 'prescription_required' => true, 'unit' => 'мл'],
-            ['name' => 'Энрофлоксацин 10%', 'price' => 950.00, 'quantity' => 80, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Амоксициллин 15%', 'price' => 850.00, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Цефтриаксон 5%', 'price' => 1200.00, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Энрофлоксацин 10%', 'price' => 950.00, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Тилозин 200', 'price' => 1800.00, 'quantity' => 30, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Линкомицин 30%', 'price' => 750.00, 'quantity' => 60, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Гентамицин 4%', 'price' => 650.00, 'quantity' => 40, 'prescription_required' => true, 'unit' => 'мл'],
@@ -43,7 +46,7 @@ class DrugSeeder extends Seeder
             ['name' => 'Празиквантел 10%', 'price' => 550.00, 'quantity' => 120, 'prescription_required' => false, 'unit' => 'мл'],
             ['name' => 'Пирантел 15%', 'price' => 320.00, 'quantity' => 140, 'prescription_required' => false, 'unit' => 'мл'],
             ['name' => 'Левамизол 7.5%', 'price' => 290.00, 'quantity' => 170, 'prescription_required' => false, 'unit' => 'мл'],
-            ['name' => 'Милбемицин 0.1%', 'price' => 680.00, 'quantity' => 80, 'prescription_required' => false, 'unit' => 'мл'],
+            ['name' => 'Милбемицин 0.1%', 'price' => 680.00, 'prescription_required' => false, 'unit' => 'мл'],
             ['name' => 'Моксидектин 1%', 'price' => 720.00, 'quantity' => 70, 'prescription_required' => false, 'unit' => 'мл'],
 
             // Антипротозойные препараты
@@ -79,9 +82,9 @@ class DrugSeeder extends Seeder
             ['name' => 'Цинк 5%', 'price' => 180.00, 'quantity' => 260, 'prescription_required' => false, 'unit' => 'мл'],
 
             // Препараты для сердечно-сосудистой системы
-            ['name' => 'Дигоксин 0.025%', 'price' => 450.00, 'quantity' => 80, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Дигоксин 0.025%', 'price' => 450.00, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Верапамил 0.25%', 'price' => 380.00, 'quantity' => 95, 'prescription_required' => true, 'unit' => 'мл'],
-            ['name' => 'Амиодарон 5%', 'price' => 680.00, 'quantity' => 50, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Амиодарон 5%', 'price' => 680.00, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Нитроглицерин 1%', 'price' => 320.00, 'quantity' => 120, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Эналаприл 0.1%', 'price' => 580.00, 'quantity' => 70, 'prescription_required' => true, 'unit' => 'мл'],
 
@@ -99,7 +102,7 @@ class DrugSeeder extends Seeder
             ['name' => 'Фуросемид 5%', 'price' => 220.00, 'quantity' => 170, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Спиронолактон 2%', 'price' => 380.00, 'quantity' => 100, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Гидрохлоротиазид 2.5%', 'price' => 280.00, 'quantity' => 140, 'prescription_required' => true, 'unit' => 'мл'],
-            ['name' => 'Маннитол 20%', 'price' => 450.00, 'quantity' => 80, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Маннитол 20%', 'price' => 450.00, 'prescription_required' => true, 'unit' => 'мл'],
 
             // Препараты для нервной системы
             ['name' => 'Фенобарбитал 5%', 'price' => 320.00, 'quantity' => 120, 'prescription_required' => true, 'unit' => 'мл'],
@@ -107,11 +110,11 @@ class DrugSeeder extends Seeder
             ['name' => 'Мидазолам 1%', 'price' => 580.00, 'quantity' => 70, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Кетамин 10%', 'price' => 680.00, 'quantity' => 60, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Ксилазин 2%', 'price' => 420.00, 'quantity' => 110, 'prescription_required' => true, 'unit' => 'мл'],
-            ['name' => 'Медетомидин 0.1%', 'price' => 720.00, 'quantity' => 50, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Медетомидин 0.1%', 'price' => 720.00, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Ацепромазин 1%', 'price' => 380.00, 'quantity' => 100, 'prescription_required' => true, 'unit' => 'мл'],
 
             // Препараты для эндокринной системы
-            ['name' => 'Инсулин 40 ЕД/мл', 'price' => 580.00, 'quantity' => 80, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Инсулин 40 ЕД/мл', 'price' => 580.00, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Левтироксин 0.1%', 'price' => 420.00, 'quantity' => 110, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Преднизолон 1%', 'price' => 280.00, 'quantity' => 150, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Дексаметазон 0.4%', 'price' => 320.00, 'quantity' => 130, 'prescription_required' => true, 'unit' => 'мл'],
@@ -141,7 +144,7 @@ class DrugSeeder extends Seeder
 
             // Препараты для репродуктивной системы
             ['name' => 'Окситоцин 10 ЕД/мл', 'price' => 280.00, 'quantity' => 150, 'prescription_required' => true, 'unit' => 'мл'],
-            ['name' => 'Простагландин F2α 0.1%', 'price' => 580.00, 'quantity' => 80, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Простагландин F2α 0.1%', 'price' => 580.00, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Гонадотропин 1000 ЕД/мл', 'price' => 1200.00, 'quantity' => 40, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Прогестерон 2.5%', 'price' => 450.00, 'quantity' => 100, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Эстрадиол 0.1%', 'price' => 380.00, 'quantity' => 120, 'prescription_required' => true, 'unit' => 'мл'],
@@ -155,9 +158,9 @@ class DrugSeeder extends Seeder
 
             // Препараты для экстренной помощи
             ['name' => 'Адреналин 0.1%', 'price' => 450.00, 'quantity' => 100, 'prescription_required' => true, 'unit' => 'мл'],
-            ['name' => 'Норадреналин 0.1%', 'price' => 520.00, 'quantity' => 80, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Норадреналин 0.1%', 'price' => 520.00, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Допамин 4%', 'price' => 680.00, 'quantity' => 60, 'prescription_required' => true, 'unit' => 'мл'],
-            ['name' => 'Добутамин 12.5 мг/мл', 'price' => 720.00, 'quantity' => 50, 'prescription_required' => true, 'unit' => 'мл'],
+            ['name' => 'Добутамин 12.5 мг/мл', 'price' => 720.00, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Атропин 0.1%', 'price' => 280.00, 'quantity' => 150, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Лидокаин 2%', 'price' => 180.00, 'quantity' => 200, 'prescription_required' => true, 'unit' => 'мл'],
             ['name' => 'Бупивакаин 0.5%', 'price' => 320.00, 'quantity' => 130, 'prescription_required' => true, 'unit' => 'мл'],
@@ -170,21 +173,33 @@ class DrugSeeder extends Seeder
             ['name' => 'Эозин 1%', 'price' => 150.00, 'quantity' => 200, 'prescription_required' => false, 'unit' => 'мл']
         ];
 
+        // Получаем все филиалы
+        $branches = \App\Models\Branch::all();
+
         foreach ($drugs as $drug) {
             $unit = Unit::where('symbol', $drug['unit'])->first();
             
             if ($unit) {
-                Drug::firstOrCreate(
+                $createdDrug = Drug::firstOrCreate(
                     [
                         'name' => $drug['name'],
                         'unit_id' => $unit->id
                     ],
                     [
                         'price' => $drug['price'],
-                        'quantity' => $drug['quantity'],
                         'prescription_required' => $drug['prescription_required']
                     ]
                 );
+
+                // Attach препарат ко всем филиалам с рандомным количеством
+                foreach ($branches as $branch) {
+                    // Проверяем, не прикреплен ли уже препарат к филиалу
+                    if (!$createdDrug->branches()->where('branch_id', $branch->id)->exists()) {
+                        $createdDrug->branches()->attach($branch->id, [
+                            'quantity' => rand(50, 200), // Рандомное количество от 50 до 200
+                        ]);
+                    }
+                }
             }
         }
     }

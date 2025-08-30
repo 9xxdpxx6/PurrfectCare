@@ -33,6 +33,16 @@
                     <div class="col-sm-8">{{ $item->supplier->name }}</div>
                 </div>
                 <div class="row mb-2">
+                    <div class="col-sm-4 fw-bold">Филиал:</div>
+                    <div class="col-sm-8">
+                        @if($item->branch)
+                            <span class="">{{ $item->branch->name }}</span>
+                        @else
+                            <span class="text-muted">Не указан</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="row mb-2">
                     <div class="col-sm-4 fw-bold">Количество:</div>
                     <div class="col-sm-8">{{ $item->quantity }}{{ $item->drug->unit ? ' ' . $item->drug->unit->symbol : '' }}</div>
                 </div>

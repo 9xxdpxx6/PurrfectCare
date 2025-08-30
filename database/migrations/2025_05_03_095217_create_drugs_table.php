@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('price', 10, 2);
-            $table->integer('quantity');
             $table->boolean('prescription_required')->default(false);
             $table->foreignId('unit_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
@@ -25,6 +24,23 @@ return new class extends Migration
             $table->index('unit_id'); // Быстрый поиск препаратов по единице измерения
             $table->index('prescription_required'); // Быстрый поиск препаратов по наличию рецепта
         });
+
+        // Создаем таблицу branch_drug для управления запасами по филиалам
+        Schema::create('branch_drug', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
+            $table->foreignId('drug_id')->constrained()->onDelete('cascade');
+            $table->integer('quantity')->default(0);
+            $table->timestamps();
+
+            // Unique constraint на комбинацию branch_id и drug_id
+            $table->unique(['branch_id', 'drug_id']);
+
+            // Индексы для производительности
+            $table->index('branch_id');
+            $table->index('drug_id');
+            $table->index('quantity');
+        });
     }
 
     /**
@@ -32,6 +48,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('branch_drug');
         Schema::dropIfExists('drugs');
     }
 };

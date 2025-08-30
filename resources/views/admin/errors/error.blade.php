@@ -27,7 +27,7 @@
                                 <i class="bi bi-lock display-1 text-warning"></i>
                                 @break
                             @case(422)
-                                <i class="bi bi-file-earmark-excel display-1 text-warning"></i>
+                                <i class="bi bi-exclamation-circle display-1 text-warning"></i>
                                 @break
                             @case(429)
                                 <i class="bi bi-hourglass-split display-1 text-info"></i>
@@ -56,7 +56,7 @@
                                 Требуется авторизация
                                 @break
                             @case(422)
-                                Ошибка валидации
+                                Необработанная ошибка
                                 @break
                             @case(429)
                                 Слишком много запросов
@@ -92,7 +92,7 @@
                                 Для доступа к этому ресурсу необходимо авторизоваться.
                                 @break
                             @case(422)
-                                Данные не прошли валидацию. Проверьте введенную информацию.
+                                Произошла ошибка при обработке запроса.
                                 @break
                             @case(429)
                                 Превышен лимит запросов. Подождите немного и попробуйте снова.

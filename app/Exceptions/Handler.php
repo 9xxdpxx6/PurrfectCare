@@ -35,8 +35,18 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
+        // ValidationException всегда обрабатываем стандартно - не перенаправляем на страницу ошибки
+        if ($e instanceof \Illuminate\Validation\ValidationException) {
+            \Log::info('ValidationException caught, using standard Laravel handling');
+            return parent::render($request, $e);
+        }
+        
         // Проверяем, является ли запрос админским
         if ($this->isAdminRequest($request)) {
+            \Log::info('Admin request error, using custom error handling', [
+                'exception_type' => get_class($e),
+                'message' => $e->getMessage()
+            ]);
             return $this->renderAdminError($request, $e);
         }
 
@@ -78,9 +88,7 @@ class Handler extends ExceptionHandler
         }
 
         // Маппинг типов исключений на HTTP коды
-        if ($e instanceof \Illuminate\Validation\ValidationException) {
-            return 422;
-        }
+        // ValidationException не обрабатываем - пусть Laravel сам показывает ошибки валидации
 
         if ($e instanceof \Illuminate\Auth\AuthenticationException) {
             return 401;

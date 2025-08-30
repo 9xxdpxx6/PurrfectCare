@@ -53,7 +53,7 @@
     </div>
     <div class="mt-4 d-flex flex-column flex-md-row">
         <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>
+            <i class="bi bi-x-lg"></i> <spa class="d-none d-md-inline">Отмена</span>
         </a>
 
         <!-- Кнопка "Сбросить пароль" -->

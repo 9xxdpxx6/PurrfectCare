@@ -31,11 +31,11 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required autofocus>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" autofocus>
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Пароль</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
+                                <input type="password" class="form-control" id="password" name="password">
                             </div>
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="remember" name="remember">

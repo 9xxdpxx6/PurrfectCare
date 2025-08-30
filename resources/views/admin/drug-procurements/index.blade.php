@@ -44,6 +44,19 @@
                 @endif
             </select>
         </div>
+        <div class="flex-grow-1" style="min-width:180px;">
+            <label for="branch" class="form-label mb-1">Филиал</label>
+            <select name="branch" id="branch" class="form-select tomselect" data-url="{{ route('admin.drug-procurements.branch-options') }}">
+                @if(request('branch'))
+                    @php
+                        $selectedBranch = \App\Models\Branch::find(request('branch'));
+                    @endphp
+                    @if($selectedBranch)
+                        <option value="{{ $selectedBranch->id }}" selected>{{ $selectedBranch->name }}</option>
+                    @endif
+                @endif
+            </select>
+        </div>
         <div class="flex-grow-1" style="min-width:170px;">
             <label for="sort" class="form-label mb-1">Сортировка</label>
             <select name="sort" id="sort" class="form-control" data-tomselect>
@@ -113,6 +126,9 @@
                             <h5 class="card-title mb-1">{{ $procurement->drug->name }}</h5>
                             <h6 class="card-subtitle mb-2 text-muted">
                                 Поставщик: {{ $procurement->supplier->name }}
+                                @if($procurement->branch)
+                                    <br><small class="text-muted">Филиал: {{ $procurement->branch->name }}</small>
+                                @endif
                             </h6>
                             <div class="row w-100 g-1">
                                 <div class="col-12 col-lg-6">
@@ -222,6 +238,30 @@
             }
         });
         
+        // TomSelect для филиалов с динамической загрузкой
+        new createTomSelect('#branch', {
+            placeholder: 'Выберите филиал...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
+        });
+
         // TomSelect для препаратов с динамической загрузкой
         new createTomSelect('#drug', {
             placeholder: 'Выберите препарат...',

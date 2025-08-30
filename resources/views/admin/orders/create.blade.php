@@ -331,7 +331,7 @@
                                 <h6 class="mb-0">Препараты</h6>
                             </div>
                             <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mt-md-0">
-                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addDrugItem()">
+                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addDrugItem()" id="addDrugBtn">
                                     <i class="bi bi-plus-lg"></i> Добавить препарат
                                 </button>
                             </div>
@@ -352,7 +352,7 @@
                                                             <option value="{{ $drug->id }}" selected>{{ $drug->name }}</option>
                                                         @endif
                                                     </select>
-                                                    <input type="hidden" name="items[{{ $index }}][item_type]" value="drug">
+                                                                                                <input type="hidden" name="items[{{ $index }}][item_type]" value="drug">
                                                 </div>
                                                 
                                                 <div class="col-6 col-lg-3">
@@ -607,7 +607,7 @@
                 <label class="form-label">Препарат</label>
                 <select name="items[INDEX][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.drug-options') }}">
                 </select>
-                <input type="hidden" name="items[INDEX][item_type]" value="drug">
+                                                <input type="hidden" name="items[INDEX][item_type]" value="drug">
             </div>
             
             <div class="col-6 col-lg-3">
@@ -729,6 +729,7 @@
 <script>
     let itemIndex = 0;
     let petTomSelect; // Глобальная переменная для доступа из других функций
+    let branchTomSelect; // Глобальная переменная для доступа из других функций
     
     const itemUrls = {
         service: '{{ route("admin.orders.service-options") }}',
@@ -919,7 +920,7 @@
             }
         });
 
-        new createTomSelect('#branch_id', {
+        branchTomSelect = new createTomSelect('#branch_id', {
             placeholder: 'Выберите филиал...',
             valueField: 'value',
             labelField: 'text',
@@ -1452,6 +1453,8 @@
                     }
                 }
                 
+
+                
                 // Если это анализы или вакцинации и запрос пустой, загружаем последние 20 записей
                 if ((type === 'lab_test' || type === 'vaccination') && !query.trim()) {
                     url = this.input.dataset.url + '?recent=20&filter=false';
@@ -1517,8 +1520,29 @@
                     
                     // Помечаем, что значение установлено
                     this.input.setAttribute('data-has-value', 'true');
+                } else if (itemType === 'drug') {
+                    // Для препаратов устанавливаем цену
+                    const priceInput = itemDiv.querySelector('.item-price');
+                    
+                    if (value && value.price !== undefined) {
+                        priceInput.value = value.price;
+                        calculateItemTotal.call(priceInput);
+                    } else {
+                        fetch(this.input.dataset.url + '?selected=' + value)
+                            .then(response => response.json())
+                            .then(data => {
+                                const selectedItem = data.find(item => item.value == value);
+                                if (selectedItem && selectedItem.price) {
+                                    priceInput.value = selectedItem.price;
+                                    calculateItemTotal.call(priceInput);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Ошибка при получении данных препарата:', error);
+                            });
+                    }
                 } else {
-                    // Для услуг и препаратов устанавливаем цену по умолчанию
+                    // Для услуг устанавливаем цену по умолчанию
                     const priceInput = itemDiv.querySelector('.item-price');
                     if (value && value.price !== undefined) {
                         priceInput.value = value.price;

@@ -17,7 +17,7 @@
         @csrf
         
         <div class="row">
-            <div class="col-md-6 col-lg-6 mb-3">
+            <div class="col-md-4 mb-3">
                 <label for="drug_id" class="form-label">Препарат</label>
                 <select name="drug_id" id="drug_id" class="form-select @error('drug_id') is-invalid @enderror" data-url="{{ route('admin.drug-procurements.drug-options') }}">
                     @if(old('drug_id'))
@@ -41,7 +41,24 @@
                 @enderror
             </div>
 
-            <div class="col-md-6 col-lg-6 mb-3">
+            <div class="col-md-4 mb-3">
+                <label for="branch_id" class="form-label">Филиал</label>
+                <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror" data-url="{{ route('admin.drug-procurements.branch-options') }}">
+                    @if(old('branch_id'))
+                        @php
+                            $selectedBranch = \App\Models\Branch::find(old('branch_id'));
+                        @endphp
+                        @if($selectedBranch)
+                            <option value="{{ $selectedBranch->id }}" selected>{{ $selectedBranch->name }}</option>
+                        @endif
+                    @endif
+                </select>
+                @error('branch_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="col-md-4 mb-3">
                 <label for="supplier_id" class="form-label">Поставщик</label>
                 <select name="supplier_id" id="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror" data-url="{{ route('admin.drug-procurements.supplier-options') }}">
                     @if(old('supplier_id'))
@@ -58,7 +75,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-6 col-lg-6 mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="delivery_date" class="form-label">Дата поставки</label>
                 @php
                     $deliveryDate = old('delivery_date');
@@ -78,7 +95,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-6 col-lg-6 mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="manufacture_date" class="form-label">Дата изготовления</label>
                 @php
                     $manufactureDate = old('manufacture_date');
@@ -96,7 +113,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-6 col-lg-6 mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="packaging_date" class="form-label">Дата упаковки</label>
                 @php
                     $packagingDate = old('packaging_date');
@@ -114,7 +131,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-6 col-lg-6 mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="expiry_date" class="form-label">Годен до</label>
                 @php
                     $expiryDate = old('expiry_date');
@@ -132,7 +149,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-6 col-lg-6 mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="price" class="form-label">Цена</label>
                 <div class="input-group">
                     <input type="number" name="price" id="price" class="form-control @error('price') is-invalid @enderror" step="0.01" min="0" value="{{ old('price') }}">
@@ -143,7 +160,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6 col-lg-6 mb-3">
+            <div class="col-md-6 mb-3">
                 <label for="quantity" class="form-label">Количество</label>
                 <div class="input-group">
                     <input type="number" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" min="1" value="{{ old('quantity') }}">
@@ -157,7 +174,7 @@
 
         <div class="mt-4 d-flex justify-content-between">
             <a href="{{ route('admin.drug-procurements.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>
+                <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline">Отмена</span>
             </a>
             <button type="submit" class="btn btn-success">
                 <i class="bi bi-check-lg"></i> Сохранить
@@ -170,6 +187,29 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Tom Select для филиалов
+        const branchSelect = new createTomSelect('#branch_id', {
+            placeholder: 'Выберите филиал...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            allowEmptyOption: false,
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => callback(json))
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
+        });
+
         // Tom Select с динамической загрузкой
         const drugSelect = new createTomSelect('#drug_id', {
             placeholder: 'Выберите препарат...',
@@ -252,9 +292,10 @@
         });
 
         // Инициализируем единицу измерения для предварительно выбранного препарата
-        @if(isset($selectedDrugId) && !old('drug_id'))
-            updateQuantityUnit('{{ $selectedDrugId }}');
-        @endif
+        const selectedDrugId = '{{ $selectedDrugId ?? "" }}';
+        if (selectedDrugId && !'{{ old("drug_id") }}') {
+            updateQuantityUnit(selectedDrugId);
+        }
 
         // Air Datepickers
         createDatepicker('#delivery_date');

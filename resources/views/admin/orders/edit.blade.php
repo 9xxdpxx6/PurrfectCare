@@ -284,9 +284,10 @@
                         <div class="row align-items-center mb-3">
                             <div class="col-md-6 col-lg-8 col-xl-9">
                                 <h6 class="mb-0">Препараты</h6>
+                                <small class="text-muted">Доступные препараты в филиале: {{ $item->branch->name ?? 'Не указан' }}</small>
                             </div>
                             <div class="col-md-6 col-lg-4 col-xl-3 mt-2 mt-md-0">
-                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addDrugItem()">
+                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addDrugItem()" id="addDrugBtn">
                                     <i class="bi bi-plus-lg"></i> Добавить препарат
                                 </button>
                             </div>
@@ -309,6 +310,12 @@
                                                 @endif
                                             </select>
                                             <input type="hidden" name="items[{{ $index }}][item_type]" value="drug">
+                                            <div class="drug-stock-info mt-1" style="display: none;">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-box-seam"></i> 
+                                                    <span class="stock-quantity">0</span> шт. в наличии
+                                                </small>
+                                            </div>
                                         </div>
                                         
                                         <div class="col-6 col-lg-3">
@@ -1653,5 +1660,51 @@
                 console.error('Ошибка при получении препаратов вакцинации:', error);
             });
     }
+
+    // Функция для загрузки информации о stock для существующих препаратов
+    function loadDrugStockInfo() {
+        const branchId = '{{ $item->branch_id }}';
+        if (!branchId) return;
+
+        const drugItems = document.querySelectorAll('.order-item[data-item-type="drug"]');
+        drugItems.forEach(drugItem => {
+            const drugSelect = drugItem.querySelector('.item-select option[selected]');
+            if (!drugSelect) return;
+            
+            const drugId = drugSelect.value;
+            const stockInfo = drugItem.querySelector('.drug-stock-info');
+            const stockQuantity = drugItem.querySelector('.stock-quantity');
+            
+            if (stockInfo && stockQuantity) {
+                // Загружаем информацию о stock
+                fetch(`{{ route('admin.orders.drug-options') }}?selected=${drugId}&branch_id=${branchId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const selectedItem = data.find(item => item.value == drugId);
+                        if (selectedItem && selectedItem.stock !== undefined) {
+                            stockQuantity.textContent = selectedItem.stock;
+                            stockInfo.style.display = 'block';
+                            
+                            // Подсвечиваем цветом в зависимости от наличия
+                            if (selectedItem.stock <= 0) {
+                                stockInfo.className = 'drug-stock-info mt-1 text-danger';
+                            } else if (selectedItem.stock <= 10) {
+                                stockInfo.className = 'drug-stock-info mt-1 text-warning';
+                            } else {
+                                stockInfo.className = 'drug-stock-info mt-1 text-muted';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при получении информации о stock:', error);
+                    });
+            }
+        });
+    }
+
+    // Загружаем информацию о stock при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDrugStockInfo();
+    });
 </script>
 @endpush 

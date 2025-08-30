@@ -116,9 +116,24 @@
                         <p class="card-text">
                             <span>Цена:</span> {{ $drug->price !== null ? number_format($drug->price, 2, ',', ' ') . ' ₽' : '—' }}
                         </p>
-                        <p class="card-text">
-                            <span>Количество:</span> {{ $drug->quantity !== null ? $drug->quantity . ($drug->unit ? ' ' . $drug->unit->symbol : '') : '—' }}
-                        </p>
+                        <div class="branch-stock-info">
+                            @if($drug->branches && $drug->branches->count() > 0)
+                                <p class="card-text mb-1">
+                                    <span>Наличие по филиалам:</span>
+                                </p>
+                                @foreach($drug->branches as $branch)
+                                    <p class="card-text small mb-0">
+                                        <span class="badge bg-{{ $branch->pivot->quantity > 10 ? 'success' : ($branch->pivot->quantity > 0 ? 'warning' : 'danger') }}">
+                                            {{ $branch->name }}: {{ $branch->pivot->quantity }} {{ $drug->unit ? $drug->unit->symbol : 'шт.' }}
+                                        </span>
+                                    </p>
+                                @endforeach
+                            @else
+                                <p class="card-text">
+                                    <span class="text-muted">Нет в наличии</span>
+                                </p>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap">

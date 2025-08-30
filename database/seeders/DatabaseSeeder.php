@@ -50,98 +50,93 @@ class DatabaseSeeder extends Seeder
     {
         $startTime = microtime(true);
         
-        DB::transaction(function () {
-            // Отключаем события и внешние ключи для ускорения
-            $this->disableModelEvents();
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
-            
-            echo "Заполнение справочных данных...\n";
-            
-            // Вызываем сидеры для справочных данных
-            $this->call(BranchSeeder::class);
-            $this->call(UnitSeeder::class);
-            $this->call(StatusSeeder::class);
-            $this->call(SpeciesSeeder::class);
-            $this->call(BreedSeeder::class);
-            $this->call(LabTestTypeSeeder::class);
-            $this->call(LabTestParamSeeder::class);
-            $this->call(DictionarySymptomSeeder::class);
-            $this->call(DictionaryDiagnosisSeeder::class);
-            $this->call(ServiceSeeder::class);
-            $this->call(VaccinationTypeSeeder::class);
-            $this->call(SpecialtySeeder::class);
-            $this->call(SupplierSeeder::class);
+        // Отключаем события и внешние ключи для ускорения
+        $this->disableModelEvents();
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        
+        echo "Заполнение справочных данных...\n";
+        
+        // Вызываем сидеры для справочных данных
+        $this->call(BranchSeeder::class);
+        $this->call(UnitSeeder::class);
+        $this->call(StatusSeeder::class);
+        $this->call(SpeciesSeeder::class);
+        $this->call(BreedSeeder::class);
+        $this->call(LabTestTypeSeeder::class);
+        $this->call(LabTestParamSeeder::class);
+        $this->call(DictionarySymptomSeeder::class);
+        $this->call(DictionaryDiagnosisSeeder::class);
+        $this->call(ServiceSeeder::class);
+        $this->call(SpecialtySeeder::class);
+        $this->call(SupplierSeeder::class);
+        $this->call(DrugSeeder::class);
+        $this->call(VaccinationTypeSeeder::class);
 
-            echo "Создание пользователей...\n";
-            // Массовая вставка пользователей
-            $this->createInChunks(User::class, 1200, 200);
+        echo "Создание пользователей...\n";
+        // Массовая вставка пользователей
+        $this->createInChunks(User::class, 1200, 200);
+        
+        echo "Создание питомцев...\n";
+        // Массовая вставка питомцев
+        $this->createInChunks(Pet::class, 2000, 200);
+        
+        echo "Создание сотрудников...\n";
+        // Массовая вставка сотрудников
+        $this->createInChunks(Employee::class, 300, 100);
+        
+        echo "Создание поставок препаратов...\n";
+        // Массовая вставка поставок
+        $this->createInChunks(DrugProcurement::class, 1500, 200);
+        
+        echo "Создание лабораторных анализов...\n";
+        // Массовая вставка лабораторных анализов
+        $this->createInChunks(LabTest::class, 1000, 200);
+        
+        echo "Создание результатов анализов...\n";
+        // Массовая вставка результатов анализов
+        $this->createInChunks(LabTestResult::class, 3000, 300);
+        
+        echo "Создание расписания...\n";
+        // Массовая вставка расписания
+        $this->createInChunks(Schedule::class, 6000, 500);
+        
+        echo "Создание приемов...\n";
+        // Массовая вставка приемов
+        $this->createInChunks(Visit::class, 8000, 500);
+        
+        echo "Создание заказов...\n";
+        // Создаем заказы с правильным распределением по клиентам
+        $this->createOrdersWithItemsInChunks();
+        
+        echo "Создание вакцинаций...\n";
+        // Массовая вставка вакцинаций
+        $this->createInChunks(Vaccination::class, 1500, 200);
+        
+        echo "Создание симптомов...\n";
+        // Массовая вставка симптомов
+        $this->createInChunks(Symptom::class, 4000, 400);
+        
+        echo "Создание диагнозов...\n";
+        // Массовая вставка диагнозов
+        $this->createInChunks(Diagnosis::class, 3000, 300);
+        
+        echo "Создание связей между филиалами и услугами...\n";
+        // Создаем связи между филиалами и услугами
+        $this->createServiceBranchLinks();
+        
+        echo "Создание связей сотрудников со специальностями и филиалами...\n";
+        // Создаем связи сотрудников со специальностями и филиалами
+        $this->createEmployeeRelations();
+        
+        echo "Создание связей между приемами и заказами...\n";
+        // Создаем связи между приемами и заказами
+        $this->createVisitOrderLinks();
             
-            echo "Создание питомцев...\n";
-            // Массовая вставка питомцев
-            $this->createInChunks(Pet::class, 2000, 200);
-            
-            echo "Создание сотрудников...\n";
-            // Массовая вставка сотрудников
-            $this->createInChunks(Employee::class, 300, 100);
-            
-            echo "Создание препаратов...\n";
-            // Массовая вставка препаратов
-            $this->createInChunks(Drug::class, 1000, 200);
-            
-            echo "Создание поставок препаратов...\n";
-            // Массовая вставка поставок
-            $this->createInChunks(DrugProcurement::class, 1500, 200);
-            
-            echo "Создание лабораторных анализов...\n";
-            // Массовая вставка лабораторных анализов
-            $this->createInChunks(LabTest::class, 1000, 200);
-            
-            echo "Создание результатов анализов...\n";
-            // Массовая вставка результатов анализов
-            $this->createInChunks(LabTestResult::class, 3000, 300);
-            
-            echo "Создание расписания...\n";
-            // Массовая вставка расписания
-            $this->createInChunks(Schedule::class, 6000, 500);
-            
-            echo "Создание приемов...\n";
-            // Массовая вставка приемов
-            $this->createInChunks(Visit::class, 8000, 500);
-            
-            echo "Создание заказов...\n";
-            // Создаем заказы с правильным распределением по клиентам
-            $this->createOrdersWithItemsInChunks();
-            
-            echo "Создание вакцинаций...\n";
-            // Массовая вставка вакцинаций
-            $this->createInChunks(Vaccination::class, 1500, 200);
-            
-            echo "Создание симптомов...\n";
-            // Массовая вставка симптомов
-            $this->createInChunks(Symptom::class, 4000, 400);
-            
-            echo "Создание диагнозов...\n";
-            // Массовая вставка диагнозов
-            $this->createInChunks(Diagnosis::class, 3000, 300);
-            
-            echo "Создание связей между филиалами и услугами...\n";
-            // Создаем связи между филиалами и услугами
-            $this->createServiceBranchLinks();
-            
-            echo "Создание связей сотрудников со специальностями и филиалами...\n";
-            // Создаем связи сотрудников со специальностями и филиалами
-            $this->createEmployeeRelations();
-            
-            echo "Создание связей между приемами и заказами...\n";
-            // Создаем связи между приемами и заказами
-            $this->createVisitOrderLinks();
-            
-            // Включаем обратно внешние ключи
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
-            
-            // Восстанавливаем события
-            $this->restoreModelEvents();
-        });
+        // Включаем обратно внешние ключи
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        
+        // Восстанавливаем события
+        $this->restoreModelEvents();
         
         $endTime = microtime(true);
         echo "Затрачено времени: " . round($endTime - $startTime, 2) . " секунд\n";
@@ -478,7 +473,7 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * Создает связи между приемами и заказами для конверсии 70-90% (оптимизированная версия)
+     * Создает связи между приемами и заказами для конверсии 75-85%
      */
     private function createVisitOrderLinks(): void
     {
@@ -498,33 +493,48 @@ class DatabaseSeeder extends Seeder
             return $order->client_id . '_' . $order->pet_id;
         });
 
-        // Определяем все визиты, которые могут быть связаны (т.е. имеют соответствующие заказы)
-        $linkableVisits = $allVisits->filter(function ($visit) use ($ordersByClientPet) {
-            $key = $visit->client_id . '_' . $visit->pet_id;
-            return $ordersByClientPet->has($key) && $ordersByClientPet->get($key)->isNotEmpty();
-        });
-
         // Целевая конверсия: 75-85% от общего количества визитов
         $targetConversionRate = $this->faker->numberBetween(75, 85) / 100;
         $totalVisitsCount = $allVisits->count();
         $targetLinkedVisitsCount = (int)($totalVisitsCount * $targetConversionRate);
 
-        // Если linkableVisits меньше, чем targetLinkedVisitsCount, мы можем связать только все доступные
-        $visitsToActuallyLink = $linkableVisits->shuffle()->take($targetLinkedVisitsCount);
+        echo "\tЦелевая конверсия: " . ($targetConversionRate * 100) . "%\n";
+        echo "\tЦель: связать {$targetLinkedVisitsCount} из {$totalVisitsCount} приемов\n";
+
+        // Фильтруем визиты, для которых есть заказы того же клиента и питомца
+        $linkableVisits = $allVisits->filter(function ($visit) use ($ordersByClientPet) {
+            $key = $visit->client_id . '_' . $visit->pet_id;
+            return $ordersByClientPet->has($key) && $ordersByClientPet->get($key)->isNotEmpty();
+        });
+
+        echo "\tВизитов с возможными заказами: " . $linkableVisits->count() . "\n";
+
+        // Выбираем визиты для связывания - сначала те, у которых есть заказы
+        $visitsToLink = $linkableVisits->shuffle();
         
+        // Если связываемых визитов меньше цели, добавляем случайные визиты и будем искать заказы других клиентов
+        if ($visitsToLink->count() < $targetLinkedVisitsCount) {
+            $remainingVisits = $allVisits->diff($linkableVisits)->shuffle();
+            $additionalVisitsNeeded = $targetLinkedVisitsCount - $visitsToLink->count();
+            $visitsToLink = $visitsToLink->concat($remainingVisits->take($additionalVisitsNeeded));
+        } else {
+            $visitsToLink = $visitsToLink->take($targetLinkedVisitsCount);
+        }
+
         // Подготавливаем данные для массовой вставки
         $visitOrderData = [];
-        $usedOrders = collect();
+        $orderUsageCount = []; // Счетчик использования заказов
 
         $processedCount = 0;
-        $totalToProcess = $visitsToActuallyLink->count();
+        $successfullyLinked = 0;
+        $totalToProcess = $visitsToLink->count();
         
-        echo "\tПопытка связать {$totalToProcess} приемов для достижения конверсии...\n";
+        echo "\tОбрабатываем {$totalToProcess} приемов...\n";
 
-        foreach ($visitsToActuallyLink as $visit) {
+        foreach ($visitsToLink as $visit) {
             $processedCount++;
             if ($processedCount % 1000 == 0) {
-                echo "\tОбработано приемов для связывания: $processedCount/$totalToProcess\n";
+                echo "\tОбработано приемов: $processedCount/$totalToProcess, связано: $successfullyLinked\n";
             }
             
             $clientId = $visit->client_id;
@@ -533,24 +543,47 @@ class DatabaseSeeder extends Seeder
 
             $clientPetKey = $clientId . '_' . $petId;
 
-            // Ищем доступные заказы того же клиента и питомца, которые еще не были использованы для ЭТОГО визита
-            $availableClientOrders = $ordersByClientPet->get($clientPetKey, collect());
+            // Ищем заказы того же клиента и питомца
+            $availableOrders = $ordersByClientPet->get($clientPetKey, collect());
             
-            // Отфильтровываем заказы, которые уже были использованы для других визитов в этом цикле
-            $availableClientOrders = $availableClientOrders->whereNotIn('id', $usedOrders->pluck('id'));
-            
-            if ($availableClientOrders->isNotEmpty()) {
-                // 80% приемов получают 1 заказ, 20% - 2 заказа
-                $orderCount = $this->faker->boolean(80) ? 1 : min(2, $availableClientOrders->count());
-                
-                $ordersToLink = $availableClientOrders->random($orderCount);
+            // Если нет заказов для этого клиента+питомца, ищем заказы только этого клиента
+            if ($availableOrders->isEmpty()) {
+                $clientOrders = $allOrders->where('client_id', $clientId);
+                if ($clientOrders->isNotEmpty()) {
+                    $availableOrders = $clientOrders->random(min(3, $clientOrders->count()));
+                }
+            }
 
-                foreach ($ordersToLink as $order) {
-                    $visitOrderData[] = [
-                        'visit_id' => $visitId,
-                        'order_id' => $order->id,
-                    ];
-                    $usedOrders->push($order); // Mark this order as used
+            // Если все еще нет заказов, берем случайные заказы (10% случаев)
+            if ($availableOrders->isEmpty() && $this->faker->boolean(10)) {
+                $availableOrders = $allOrders->random(min(2, $allOrders->count()));
+            }
+            
+            if ($availableOrders->isNotEmpty()) {
+                // 85% приемов получают 1 заказ, 15% - 2 заказа
+                $orderCount = $this->faker->boolean(85) ? 1 : min(2, $availableOrders->count());
+                
+                // Фильтруем заказы, которые уже использовались слишком много раз (максимум 3 раза)
+                $availableOrdersFiltered = $availableOrders->filter(function ($order) use ($orderUsageCount) {
+                    return !isset($orderUsageCount[$order->id]) || $orderUsageCount[$order->id] < 3;
+                });
+                
+                if ($availableOrdersFiltered->isNotEmpty()) {
+                    $ordersToLink = $availableOrdersFiltered->random(min($orderCount, $availableOrdersFiltered->count()));
+
+                    foreach ($ordersToLink as $order) {
+                        $visitOrderData[] = [
+                            'visit_id' => $visitId,
+                            'order_id' => $order->id,
+                        ];
+                        
+                        // Увеличиваем счетчик использования заказа
+                        if (!isset($orderUsageCount[$order->id])) {
+                            $orderUsageCount[$order->id] = 0;
+                        }
+                        $orderUsageCount[$order->id]++;
+                    }
+                    $successfullyLinked++;
                 }
             }
 
@@ -567,9 +600,11 @@ class DatabaseSeeder extends Seeder
         }
 
         $totalCreated = VisitOrder::count();
-        $conversion = round(($totalCreated / $totalVisitsCount) * 100, 1);
+        $actualLinkedVisits = DB::table('visit_orders')->distinct('visit_id')->count('visit_id');
+        $conversion = round(($actualLinkedVisits / $totalVisitsCount) * 100, 1);
 
-        echo "Создано связей visit_orders: $totalCreated из " . $totalVisitsCount . " приемов\n";
+        echo "Создано связей visit_orders: $totalCreated\n";
+        echo "Визитов с заказами: $actualLinkedVisits из {$totalVisitsCount} приемов\n";
         echo "Конверсия: {$conversion}%\n";
 
         // Быстрая проверка ограничений
@@ -591,4 +626,3 @@ class DatabaseSeeder extends Seeder
         echo "Максимум приёмов на заказ: " . ($maxVisitsPerOrder ? $maxVisitsPerOrder->visit_count : 0) . "\n";
     }
 }
-

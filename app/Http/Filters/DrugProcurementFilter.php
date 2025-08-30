@@ -9,6 +9,7 @@ class DrugProcurementFilter extends AbstractFilter
     const SEARCH = 'search';
     const SUPPLIER = 'supplier';
     const DRUG = 'drug';
+    const BRANCH = 'branch';
     const DELIVERY_DATE_FROM = 'delivery_date_from';
     const DELIVERY_DATE_TO = 'delivery_date_to';
     const EXPIRY_DATE_FROM = 'expiry_date_from';
@@ -23,6 +24,7 @@ class DrugProcurementFilter extends AbstractFilter
             self::SEARCH => [$this, 'search'],
             self::SUPPLIER => [$this, 'supplier'],
             self::DRUG => [$this, 'drug'],
+            self::BRANCH => [$this, 'branch'],
             self::DELIVERY_DATE_FROM => [$this, 'deliveryDateFrom'],
             self::DELIVERY_DATE_TO => [$this, 'deliveryDateTo'],
             self::EXPIRY_DATE_FROM => [$this, 'expiryDateFrom'],
@@ -40,6 +42,8 @@ class DrugProcurementFilter extends AbstractFilter
                 $q->where('name', 'like', "%{$value}%");
             })->orWhereHas('supplier', function (Builder $q) use ($value) {
                 $q->where('name', 'like', "%{$value}%");
+            })->orWhereHas('branch', function (Builder $q) use ($value) {
+                $q->where('name', 'like', "%{$value}%");
             });
         });
     }
@@ -52,6 +56,11 @@ class DrugProcurementFilter extends AbstractFilter
     protected function drug(Builder $builder, $value)
     {
         $builder->where('drug_id', $value);
+    }
+
+    protected function branch(Builder $builder, $value)
+    {
+        $builder->where('branch_id', $value);
     }
 
     protected function deliveryDateFrom(Builder $builder, $value)
@@ -148,6 +157,7 @@ class DrugProcurementFilter extends AbstractFilter
     public function apply(Builder $builder)
     {
         parent::apply($builder);
+        
         // Если сортировка не указана, сортируем по дате поставки DESC
         if (!isset($this->queryParams['sort']) || !$this->queryParams['sort']) {
             $builder->orderByDesc('id');

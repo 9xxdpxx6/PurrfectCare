@@ -39,7 +39,7 @@ class DrugController extends AdminController
         
         $filter = app()->make(DrugFilter::class, ['queryParams' => $queryParams]);
         
-        $query = $this->model::with(['unit', 'procurements.supplier']);
+        $query = $this->model::with(['unit', 'procurements.supplier', 'branches']);
         $filter->apply($query);
         
         $items = $query->paginate(25)->appends($request->query());

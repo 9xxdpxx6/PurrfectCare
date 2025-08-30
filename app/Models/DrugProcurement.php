@@ -14,6 +14,7 @@ class DrugProcurement extends Model
     protected $fillable = [
         'supplier_id',
         'drug_id',
+        'branch_id',
         'delivery_date',
         'expiry_date',
         'manufacture_date',
@@ -53,5 +54,10 @@ class DrugProcurement extends Model
     public function drug()
     {
         return $this->belongsTo(Drug::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

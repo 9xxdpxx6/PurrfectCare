@@ -36,4 +36,14 @@ class Branch extends Model
     public function services() {
         return $this->belongsToMany(Service::class, 'branch_service');
     }
+
+    public function drugs()
+    {
+        return $this->belongsToMany(Drug::class, 'branch_drug');
+    }
+
+    public function procurements()
+    {
+        return $this->hasMany(DrugProcurement::class);
+    }
 }

@@ -60,7 +60,7 @@
             <div class="d-flex flex-column flex-sm-row gap-2 justify-content-between">
                 <!-- Левая группа - Отмена -->
                 <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary order-sm-first">
-                    <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>
+                    <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline">Отмена</span>
                 </a>
                 
                 <!-- Правая группа - Сброс пароля и Сохранить -->

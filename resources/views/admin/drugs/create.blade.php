@@ -23,11 +23,7 @@
             <input type="number" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}">
             @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
-        <div class="col-md-6 col-lg-4">
-            <label for="quantity" class="form-label">Количество</label>
-            <input type="number" min="0" class="form-control @error('quantity') is-invalid @enderror" id="quantity" name="quantity" value="{{ old('quantity') }}">
-            @error('quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror
-        </div>
+
         <div class="col-md-6 col-lg-4">
             <label for="unit_id" class="form-label">Единица измерения</label>
             <select class="form-select @error('unit_id') is-invalid @enderror" id="unit_id" name="unit_id">
@@ -50,7 +46,7 @@
     </div>
     <div class="mt-4 d-flex justify-content-between">
         <a href="{{ route('admin.drugs.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline"></span>Отмена</span>
+            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline">Отмена</span>
         </a>
         <button type="submit" class="btn btn-success">
             <i class="bi bi-check-lg"></i> Сохранить

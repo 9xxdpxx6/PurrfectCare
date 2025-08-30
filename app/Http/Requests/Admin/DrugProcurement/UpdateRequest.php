@@ -16,6 +16,7 @@ class UpdateRequest extends FormRequest
         return [
             'supplier_id' => 'required|exists:suppliers,id',
             'drug_id' => 'required|exists:drugs,id',
+            'branch_id' => 'required|exists:branches,id',
             'delivery_date' => 'required|date',
             'expiry_date' => 'required|date|after:delivery_date',
             'manufacture_date' => 'required|date|before_or_equal:delivery_date',
@@ -32,6 +33,8 @@ class UpdateRequest extends FormRequest
             'supplier_id.exists' => 'Выбранный поставщик не найден',
             'drug_id.required' => 'Необходимо выбрать препарат',
             'drug_id.exists' => 'Выбранный препарат не найден',
+            'branch_id.required' => 'Необходимо выбрать филиал',
+            'branch_id.exists' => 'Выбранный филиал не найден',
             'delivery_date.required' => 'Необходимо указать дату поставки',
             'delivery_date.date' => 'Неверный формат даты поставки',
             'expiry_date.required' => 'Необходимо указать дату истечения срока годности',
