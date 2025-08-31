@@ -19,9 +19,11 @@ class UserController extends AdminController
 {
     public function __construct()
     {
+        parent::__construct();
         $this->model = User::class;
         $this->viewPath = 'users';
         $this->routePrefix = 'users';
+        $this->permissionPrefix = 'clients';
     }
 
     public function index(Request $request) : View

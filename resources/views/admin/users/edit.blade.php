@@ -69,9 +69,11 @@
                         onclick="return confirm('Сбросить пароль для клиента {{ $item->name }}? Новый пароль будет отправлен на email: {{ $item->email }}')">
                         <i class="bi bi-key"></i> <span class="d-inline">Сбросить пароль</span>
                     </a>
+                    @can('clients.update')
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-check-lg"></i> Сохранить
                     </button>
+                    @endcan
                 </div>
             </div>
         </form>

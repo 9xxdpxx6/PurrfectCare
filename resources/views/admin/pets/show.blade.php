@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Питомец: {{ $pet->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0 text-nowrap">
+        @can('pets.update')
         <a href="{{ route('admin.pets.edit', $pet) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
+        @endcan
         <a href="{{ route('admin.pets.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
@@ -459,23 +461,34 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @can('visits.create')
                     <a href="{{ route('admin.visits.create', ['pet' => $pet->id]) }}" class="btn btn-outline-info">
                         <i class="bi bi-calendar-plus"></i> Записать на приём
                     </a>
+                    @endcan
+                    @can('orders.create')
                     <a href="{{ route('admin.orders.create', ['pet' => $pet->id]) }}" class="btn btn-outline-success">
                         <i class="bi bi-bag-plus"></i> Добавить заказ
                     </a>
+                    @endcan
+                    @can('lab_tests.create')
                     <a href="{{ route('admin.lab-tests.create', ['pet' => $pet->id]) }}" class="btn btn-outline-secondary">
                         <i class="bi bi-clipboard-data"></i> Добавить анализ
                     </a>
+                    @endcan
+                    @can('vaccinations.create')
                     <a href="{{ route('admin.vaccinations.create', ['pet' => $pet->id]) }}" class="btn btn-outline-primary">
                         <i class="bi bi-shield-plus"></i> Добавить вакцинацию
                     </a>
+                    @endcan
                     <hr>
+                    @can('pets.update')
                     <a href="{{ route('admin.pets.edit', $pet) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
+                    @endcan
                     <hr>
+                    @can('pets.delete')
                     <form action="{{ route('admin.pets.destroy', $pet) }}" method="POST" class="d-grid">
                         @csrf
                         @method('DELETE')
@@ -483,6 +496,7 @@
                             <i class="bi bi-trash"></i> Удалить
                         </button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>

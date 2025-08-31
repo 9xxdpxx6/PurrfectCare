@@ -3,9 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Log;
-use Monolog\Logger;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,15 +21,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Paginator::defaultView('vendor.pagination.custom');
-        
-        // Устанавливаем английскую локаль для логирования
-        setlocale(LC_TIME, 'en_US.UTF-8', 'en_US', 'en');
-        
-        // Принудительно устанавливаем английский для Monolog
-        if (class_exists('Monolog\Logger')) {
-            // Убираем неправильный вызов статического метода
-            // Logger::setTimezone(new \DateTimeZone('UTC'));
-        }
+                            // Настройка Spatie Permissions для работы с разными guard'ами
+                    Gate::before(function ($user, $ability) {
+                        // Если пользователь аутентифицирован через admin guard
+                        if (Auth::guard('admin')->check()) {
+                            $adminUser = Auth::guard('admin')->user();
+                            if ($adminUser && $adminUser->hasRole('super-admin')) {
+                                return true;
+                            }
+                        }
+                    });
     }
 }

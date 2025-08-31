@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Вакцинации - {{ $items->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('vaccinations.create')
         <a href="{{ route('admin.vaccinations.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить вакцинацию</span>
         </a>
+        @endcan
     </div>
 </div>
 
@@ -168,14 +170,19 @@
                         </div>
                     </div>
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
+                        @can('vaccinations.read')
                         <a href="{{ route('admin.vaccinations.show', $vaccination) }}" class="btn btn-outline-info" title="Просмотр">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>
                         </a>
+                        @endcan
+                        @can('vaccinations.update')
                         <a href="{{ route('admin.vaccinations.edit', $vaccination) }}" class="btn btn-outline-warning" title="Редактировать">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </a>
+                        @endcan
+                        @can('vaccinations.delete')
                         <form action="{{ route('admin.vaccinations.destroy', $vaccination) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
@@ -185,6 +192,7 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -197,9 +205,11 @@
         <i class="bi bi-shield-x display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Вакцинации не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте новую вакцинацию.</p>
+        @can('vaccinations.create')
         <a href="{{ route('admin.vaccinations.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> Добавить вакцинацию
         </a>
+        @endcan
     </div>
 @endif
 

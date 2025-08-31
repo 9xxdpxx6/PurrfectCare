@@ -633,8 +633,6 @@ function initTomSelectForDrug(select) {
         return null;
     }
     
-    // console.log('Initializing TomSelect for select:', select, 'value:', select.value, 'options count:', select.options ? select.options.length : 0);
-    
     // Проверяем, что TomSelect еще не инициализирован
     if (select.tomselect) {
         return select.tomselect;

@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class BreedController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'breeds';
 
     public function __construct(BreedService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

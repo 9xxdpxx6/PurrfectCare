@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Gate;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -48,7 +49,7 @@ class RouteServiceProvider extends ServiceProvider
                 });
 
             // Admin routes grouped by sections, loaded from routes/admin/*.php (with auth)
-            Route::middleware(['web', 'admin.auth'])
+            Route::middleware(['web', 'admin.auth', 'admin.context'])
                 ->prefix('admin')
                 ->as('admin.')
                 ->group(function () {

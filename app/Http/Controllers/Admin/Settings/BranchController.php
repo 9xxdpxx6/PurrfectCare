@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class BranchController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'branches';
 
     public function __construct(BranchService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

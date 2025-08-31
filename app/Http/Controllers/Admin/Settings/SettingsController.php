@@ -13,6 +13,71 @@ abstract class SettingsController extends Controller
 {
     use JsonResponse;
 
+    protected $permissionPrefix;
+
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $this->checkPermissions($request);
+            return $next($request);
+        });
+    }
+
+    /**
+     * Проверка прав доступа
+     */
+    protected function checkPermissions(Request $request)
+    {
+        $user = auth()->guard('admin')->user();
+        
+        if (!$user) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Super admin имеет доступ ко всему
+        if ($user->hasRole('super-admin')) {
+            return;
+        }
+
+        // Определяем действие и проверяем разрешение
+        $action = $this->getActionFromRequest($request);
+        $permission = $this->getPermissionForAction($action);
+        
+        if ($permission && !$user->can($permission)) {
+            abort(403, 'У вас нет прав для выполнения этого действия');
+        }
+    }
+
+    /**
+     * Определение действия из запроса
+     */
+    protected function getActionFromRequest(Request $request): string
+    {
+        $routeName = $request->route()->getName();
+        
+        if (str_contains($routeName, '.create')) return 'create';
+        if (str_contains($routeName, '.edit')) return 'update';
+        if (str_contains($routeName, '.destroy')) return 'delete';
+        if (str_contains($routeName, '.store')) return 'create';
+        if (str_contains($routeName, '.update')) return 'update';
+        
+        return 'read';
+    }
+
+    /**
+     * Получение разрешения для действия
+     */
+    protected function getPermissionForAction(string $action): ?string
+    {
+        if (!$this->permissionPrefix) {
+            // Автоматически определяем префикс из namespace
+            $className = class_basename($this);
+            $this->permissionPrefix = strtolower(str_replace('Controller', '', $className));
+        }
+        
+        return "settings.{$this->permissionPrefix}.{$action}";
+    }
+
     /**
      * Показать главную страницу настроек
      */
@@ -137,3 +202,4 @@ abstract class SettingsController extends Controller
         }
     }
 } 
+

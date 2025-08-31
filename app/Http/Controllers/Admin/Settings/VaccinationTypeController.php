@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class VaccinationTypeController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'vaccination-types';
 
     public function __construct(VaccinationTypeService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

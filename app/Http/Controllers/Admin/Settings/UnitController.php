@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class UnitController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'units';
 
     public function __construct(UnitService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

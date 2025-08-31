@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Анализ от {{ $item->received_at->format('d.m.Y') ?? '...' }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('lab_tests.update')
         <a href="{{ route('admin.lab-tests.edit', $item) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
+        @endcan
         <a href="{{ route('admin.lab-tests.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
@@ -155,9 +157,11 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @can('lab_tests.update')
                     <a href="{{ route('admin.lab-tests.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать анализ
                     </a>
+                    @endcan
                     @if($item->pet)
                         <a href="{{ route('admin.pets.show', $item->pet) }}" class="btn btn-outline-success">
                             <i class="bi bi-heart"></i> Карточка питомца
@@ -174,6 +178,7 @@
                         </a>
                     @endif
                     <hr>
+                    @can('lab_tests.delete')
                     <form action="{{ route('admin.lab-tests.destroy', $item) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
@@ -182,6 +187,7 @@
                             <i class="bi bi-trash"></i> Удалить анализ
                         </button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>

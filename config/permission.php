@@ -139,6 +139,11 @@ return [
     'team_resolver' => \Spatie\Permission\DefaultTeamResolver::class,
 
     /*
+     * Guard names for the application
+     */
+    'guards' => ['web', 'admin'],
+
+    /*
      * Passport Client Credentials Grant
      * When set to true the package will use Passports Client to check permissions
      */

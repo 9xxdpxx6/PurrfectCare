@@ -241,9 +241,11 @@
                         <a href="{{ route('admin.lab-tests.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i> Отмена
                         </a>
+                        @can('lab_tests.create')
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-lg"></i> Добавить
                         </button>
+                        @endcan
                     </div>
                 </form>
             </div>

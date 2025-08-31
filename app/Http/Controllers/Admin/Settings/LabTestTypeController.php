@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class LabTestTypeController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'lab-test-types';
 
     public function __construct(LabTestTypeService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

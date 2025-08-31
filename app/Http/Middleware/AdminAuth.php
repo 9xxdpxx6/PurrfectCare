@@ -20,6 +20,13 @@ class AdminAuth
             return redirect('/admin/login');
         }
 
+        // Проверяем, что пользователь имеет хотя бы одну роль
+        $user = Auth::guard('admin')->user();
+        if (!$user || !$user->hasAnyRole(['super-admin', 'admin', 'manager', 'veterinarian', 'accountant'])) {
+            Auth::guard('admin')->logout();
+            return redirect('/admin/login')->with('error', 'У вас нет доступа к админ-панели');
+        }
+
         return $next($request);
     }
 }

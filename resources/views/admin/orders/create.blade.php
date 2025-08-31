@@ -552,9 +552,11 @@
                 <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-x-lg"></i> Отмена
                 </a>
+                @can('orders.create')
                 <button type="submit" class="btn btn-success">
                     <i class="bi bi-check-lg"></i> Добавить заказ
                 </button>
+                @endcan
             </div>
         </div>
     </div>
@@ -872,17 +874,13 @@
                     // Убираем флаг инициализации после восстановления всех значений
                     clientTomSelect.isInitializing = false;
                     petTomSelect.isInitializing = false;
-                    
-                    console.log('Инициализация завершена, приемы сохранены');
                 }, 300);
             }, 200);
         }, 100);
         
         // Дополнительная проверка через 1 секунду для гарантии сохранения приемов
         setTimeout(() => {
-            console.log('Финальная проверка приемов...');
             const currentVisits = visitsTomSelect.getValue();
-            console.log('Текущие приемы после инициализации:', currentVisits);
         }, 1000);
         
         // Обработчик изменения клиента
@@ -1194,7 +1192,6 @@
                 if (selectedOption) {
                     selectedValue = selectedOption.value;
                     selectedText = selectedOption.textContent;
-                    console.log(`Сохраняем значение для ${itemType}:`, selectedValue, selectedText);
                 }
                 
                 initItemTomSelect(itemSelect, itemType);
@@ -1213,7 +1210,6 @@
                             }
                             // Устанавливаем значение
                             itemSelect.tomselect.setValue(selectedValue);
-                            console.log(`Восстановлено значение для ${itemType}:`, selectedValue, selectedText);
                         }
                     }, 300); // Увеличиваем задержку
                 }
@@ -1429,7 +1425,6 @@
                 if (type === 'lab_test' || type === 'vaccination') {
                     const selectedOption = this.input.querySelector('option[selected]');
                     if (selectedOption) {
-                        console.log(`Найден выбранный элемент ${type}:`, selectedOption.value, selectedOption.textContent);
                         // Убеждаемся, что опция добавлена в TomSelect
                         this.addOption({
                             value: selectedOption.value,

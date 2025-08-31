@@ -29,9 +29,11 @@ class EmployeeController extends AdminController
 
     public function __construct()
     {
+        parent::__construct();
         $this->model = Employee::class;
         $this->viewPath = 'employees';
         $this->routePrefix = 'employees';
+        $this->permissionPrefix = 'employees';
     }
 
         public function index(Request $request) : View

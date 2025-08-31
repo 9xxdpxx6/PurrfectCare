@@ -223,9 +223,11 @@
                         <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline">Отмена</span>
                         </a>
+                        @can('visits.update')
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-lg"></i> Сохранить изменения
                         </button>
+                        @endcan
                     </div>
                 </form>
             </div>

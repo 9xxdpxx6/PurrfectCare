@@ -71,6 +71,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SupplierSeeder::class);
         $this->call(DrugSeeder::class);
         $this->call(VaccinationTypeSeeder::class);
+        $this->call(PermissionsSeeder::class);
 
         echo "Создание пользователей...\n";
         // Массовая вставка пользователей

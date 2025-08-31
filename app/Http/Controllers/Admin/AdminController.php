@@ -15,6 +15,60 @@ abstract class AdminController extends Controller
     protected $viewPath;
     protected $routePrefix;
     protected $validationRules = [];
+    protected $permissionPrefix;
+
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $this->checkPermissions($request);
+            return $next($request);
+        });
+    }
+
+    protected function checkPermissions(Request $request)
+    {
+        $user = auth()->guard('admin')->user();
+        
+        if (!$user) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Super admin имеет доступ ко всему
+        if ($user->hasRole('super-admin')) {
+            return;
+        }
+
+        // Определяем действие и проверяем разрешение
+        $action = $this->getActionFromRequest($request);
+        $permission = $this->getPermissionForAction($action);
+        
+        if ($permission && !$user->can($permission)) {
+            abort(403, 'У вас нет прав для выполнения этого действия');
+        }
+    }
+
+    protected function getActionFromRequest(Request $request): string
+    {
+        $routeName = $request->route()->getName();
+        
+        if (str_contains($routeName, '.create')) return 'create';
+        if (str_contains($routeName, '.edit')) return 'update';
+        if (str_contains($routeName, '.destroy')) return 'delete';
+        if (str_contains($routeName, '.store')) return 'create';
+        if (str_contains($routeName, '.update')) return 'update';
+        
+        return 'read';
+    }
+
+    protected function getPermissionForAction(string $action): ?string
+    {
+        if (!$this->permissionPrefix) {
+            // Автоматически определяем префикс из routePrefix
+            $this->permissionPrefix = $this->routePrefix;
+        }
+        
+        return "{$this->permissionPrefix}.{$action}";
+    }
 
     public function index(Request $request): View
     {

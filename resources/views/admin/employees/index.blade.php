@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Сотрудники - {{ $employees->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('employees.create')
         <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить сотрудника</span>
         </a>
+        @endcan
     </div>
 </div>
 
@@ -93,14 +95,19 @@
                         </p>
                     </div>
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap mt-3 mt-lg-0">
+                        @can('employees.read')
                         <a href="{{ route('admin.employees.show', $employee) }}" class="btn btn-outline-info">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>
                         </a>
+                        @endcan
+                        @can('employees.update')
                         <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-outline-warning">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </a>
+                        @endcan
+                        @can('employees.delete')
                         <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
@@ -109,6 +116,7 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -121,9 +129,11 @@
         <i class="bi bi-emoji-angry display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Сотрудники не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте нового сотрудника.</p>
+        @can('employees.create')
         <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> Добавить сотрудника
         </a>
+        @endcan
     </div>
 @endif
 

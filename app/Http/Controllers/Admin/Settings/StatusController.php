@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class StatusController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'statuses';
 
     public function __construct(StatusService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

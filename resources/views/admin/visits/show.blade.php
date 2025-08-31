@@ -11,9 +11,11 @@
         @endif
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
+        @can('visits.update')
         <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-outline-warning">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
+        @endcan
         <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
@@ -286,9 +288,12 @@
             <div class="card-body">
                 <div class="d-grid gap-2">
                     <!-- Основные действия -->
+                    @can('visits.update')
                     <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать приём
                     </a>
+                    @endcan
+                    @can('orders.create')
                     @php
                         $orderParams = ['visit' => $item->id];
                         if($item->pet) $orderParams['pet'] = $item->pet->id;
@@ -297,6 +302,7 @@
                     <a href="{{ route('admin.orders.create', $orderParams) }}" class="btn btn-outline-primary">
                         <i class="bi bi-bag-plus"></i> Добавить заказ
                     </a>
+                    @endcan
                     
                     <hr>
                     
@@ -320,6 +326,7 @@
                     <hr>
                     
                     <!-- Удаление -->
+                    @can('visits.delete')
                     <form action="{{ route('admin.visits.destroy', $item) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
@@ -328,6 +335,7 @@
                             <i class="bi bi-trash"></i> Удалить приём
                         </button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>

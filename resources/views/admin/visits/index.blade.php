@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Приёмы - {{ $items->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('visits.create')
         <a href="{{ route('admin.visits.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить приём</span>
         </a>
+        @endcan
     </div>
 </div>
 
@@ -169,14 +171,19 @@
                     </div>
                     </div>
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start mt-3 mt-lg-0 text-nowrap">
+                        @can('visits.read')
                         <a href="{{ route('admin.visits.show', $visit) }}" class="btn btn-outline-info" title="Просмотр">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>
                         </a>
+                        @endcan
+                        @can('visits.update')
                         <a href="{{ route('admin.visits.edit', $visit) }}" class="btn btn-outline-warning" title="Редактировать">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </a>
+                        @endcan
+                        @can('visits.delete')
                         <form action="{{ route('admin.visits.destroy', $visit) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
@@ -186,6 +193,7 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -198,9 +206,11 @@
         <i class="bi bi-calendar-x display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Приёмы не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте новый приём.</p>
+        @can('visits.create')
         <a href="{{ route('admin.visits.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> Добавить приём
         </a>
+        @endcan
     </div>
 @endif
 

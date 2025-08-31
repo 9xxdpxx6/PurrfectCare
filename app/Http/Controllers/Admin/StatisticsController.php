@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Http\Request;
 use App\Services\Statistics\DashboardStatisticsService;
 use App\Services\Statistics\DashboardMetricsService;
@@ -21,7 +21,7 @@ use App\Models\Service;
 use App\Models\Branch;
 use Carbon\Carbon;
 
-class StatisticsController extends Controller
+class StatisticsController extends AdminController
 {
     protected $dashboardService;
     protected $metricsService;
@@ -42,6 +42,7 @@ class StatisticsController extends Controller
         MedicalStatisticsService $medicalService,
         DateRangeService $dateRangeService
     ) {
+        parent::__construct();
         $this->dashboardService = $dashboardService;
         $this->metricsService = $metricsService;
         $this->weekStatisticsService = $weekStatisticsService;
@@ -50,10 +51,13 @@ class StatisticsController extends Controller
         $this->clientService = $clientService;
         $this->medicalService = $medicalService;
         $this->dateRangeService = $dateRangeService;
+        $this->permissionPrefix = 'statistics';
     }
 
     public function dashboard(Request $request)
     {
+        $this->authorize('statistics_general.read');
+        
         $period = $request->get('period', 'month');
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
@@ -91,6 +95,8 @@ class StatisticsController extends Controller
     
     public function financial(Request $request)
     {
+        $this->authorize('statistics_finance.read');
+        
         $period = $request->get('period', 'month');
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
@@ -132,6 +138,8 @@ class StatisticsController extends Controller
     
     public function operational(Request $request)
     {
+        $this->authorize('statistics_efficiency.read');
+        
         $period = $request->get('period', 'month');
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
@@ -158,6 +166,8 @@ class StatisticsController extends Controller
     
     public function clients(Request $request)
     {
+        $this->authorize('statistics_clients.read');
+        
         $period = $request->get('period', 'month');
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
@@ -181,6 +191,8 @@ class StatisticsController extends Controller
     
     public function medical(Request $request)
     {
+        $this->authorize('statistics_medicine.read');
+        
         $period = $request->get('period', 'month');
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');
@@ -214,6 +226,8 @@ class StatisticsController extends Controller
     
     public function conversion(Request $request)
     {
+        $this->authorize('statistics_conversion.read');
+        
         $period = $request->get('period', 'month');
         $startDateInput = $request->get('start_date');
         $endDateInput = $request->get('end_date');

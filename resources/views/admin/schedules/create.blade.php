@@ -152,9 +152,11 @@
                         <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i> Отмена
                         </a>
+                        @can('schedules.create')
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg"></i> Сохранить
-                        </button>   
+                        </button>
+                        @endcan   
                     </div>
                 </form>
             </div>

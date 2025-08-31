@@ -498,9 +498,11 @@
                 <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-x-lg"></i> Отмена
                 </a>
+                @can('orders.update')
                 <button type="submit" class="btn btn-success">
                     <i class="bi bi-check-lg"></i> Сохранить изменения
                 </button>
+                @endcan
             </div>
         </div>
     </div>
@@ -1040,10 +1042,8 @@
         // TomSelect для приемов
         const visitsTomSelect = new createTomSelect('#visits', {
             onInitialize: function() {
-                console.log('TomSelect для приемов инициализирован');
                 // После инициализации устанавливаем выбранные значения
                 if (selectedVisits && selectedVisits.length > 0) {
-                    console.log('Устанавливаем выбранные приемы:', selectedVisits);
                     selectedVisits.forEach(visitId => {
                         this.setValue(visitId);
                     });
@@ -1162,10 +1162,8 @@
         
         // Восстанавливаем приемы после установки питомца, но НЕ очищаем их
         setTimeout(() => {
-            console.log('Восстановление приемов...');
             // Восстанавливаем выбранные приемы при ошибках валидации
             if (selectedVisits && selectedVisits.length > 0) {
-                console.log('Выбранные приемы:', selectedVisits);
                 // Приемы уже есть в DOM в option-ах, просто устанавливаем их в TomSelect
                 selectedVisits.forEach(visitId => {
                     visitsTomSelect.setValue(visitId);
@@ -1176,36 +1174,28 @@
             clientTomSelect.isInitializing = false;
             petTomSelect.isInitializing = false;
             
-            console.log('Инициализация завершена, приемы сохранены');
         }, 1000); // Увеличиваем задержку для полной загрузки питомца и приемов
         
         // Дополнительная проверка через 1.5 секунды для гарантии сохранения приемов
         setTimeout(() => {
             if (visitsTomSelect && visitsTomSelect.visitsInitialized) {
-                console.log('Финальная проверка приемов...');
                 const currentVisits = visitsTomSelect.getValue();
-                console.log('Текущие приемы после инициализации:', currentVisits);
             }
         }, 1500);
         
         // Инициализируем TomSelect для существующих элементов заказа с задержкой
         setTimeout(() => {
-            console.log('Инициализация существующих элементов заказа...');
             const existingItems = document.querySelectorAll('.order-item');
-            console.log('Найдено элементов:', existingItems.length);
             
             existingItems.forEach((item, index) => {
                 const itemSelect = item.querySelector('.item-select');
                 const itemType = item.getAttribute('data-item-type');
-                
-                console.log(`Элемент ${index}:`, { itemType, hasSelect: !!itemSelect, hasUrl: !!itemUrls[itemType] });
                 
                 if (itemSelect && itemType && itemUrls[itemType]) {
                     itemSelect.dataset.url = itemUrls[itemType];
                     
                     // Проверяем, есть ли уже выбранное значение
                     const hasSelectedValue = itemSelect.querySelector('option[selected]');
-                    console.log(`Элемент ${index} имеет выбранное значение:`, !!hasSelectedValue);
                     
                     initItemTomSelect(itemSelect, itemType);
                     
@@ -1405,10 +1395,8 @@
     }
 
     function initItemTomSelect(select, type) {
-        console.log('Инициализация TomSelect для:', type, select);
         const url = itemUrls[type];
         if (!url) {
-            console.error('URL не найден для типа:', type);
             return;
         }
         
@@ -1483,7 +1471,7 @@
                             }
                         })
                         .catch(error => {
-                            console.error('Ошибка при получении цены вакцинации:', error);
+                            console.error('Ошибка при получении цены вакцинации:');
                         });
                     
                     // Проверяем, есть ли уже связанные препараты с этой вакцинацией

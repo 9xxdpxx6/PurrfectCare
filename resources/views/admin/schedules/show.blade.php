@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Расписание {{ $item->shift_starts_at->format('d.m.Y') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">  
+        @can('schedules.update')
         <a href="{{ route('admin.schedules.edit', $item) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
+        @endcan
         <a href="{{ route('admin.schedules.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
@@ -258,10 +260,13 @@
                     <a href="{{ route('admin.visits.create') }}?schedule_id={{ $item->id }}" class="btn btn-outline-primary">
                         <i class="bi bi-calendar-plus"></i> Запланировать прием
                     </a>
+                    @can('schedules.update')
                     <a href="{{ route('admin.schedules.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать расписание
                     </a>
+                    @endcan
                     <hr>
+                    @can('schedules.delete')
                     <form action="{{ route('admin.schedules.destroy', $item) }}" method="POST"
                         onsubmit="return confirm('Удалить расписание {{ $item->shift_starts_at->format('d.m.Y H:i') }}?\n\nВнимание: Связанные приемы также могут быть затронуты.');">
                         @csrf
@@ -270,6 +275,7 @@
                             <i class="bi bi-trash"></i> Удалить расписание
                         </button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>

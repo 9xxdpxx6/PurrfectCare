@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class SpeciesController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'species';
 
     public function __construct(SpeciesService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

@@ -20,9 +20,11 @@ class ServiceController extends AdminController
 
     public function __construct()
     {
+        parent::__construct();
         $this->model = Service::class;
         $this->viewPath = 'services';
         $this->routePrefix = 'services';
+        $this->permissionPrefix = 'services';
     }
 
     public function create(): View

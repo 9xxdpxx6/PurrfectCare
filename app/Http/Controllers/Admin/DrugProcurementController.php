@@ -22,9 +22,11 @@ class DrugProcurementController extends AdminController
 
     public function __construct()
     {
+        parent::__construct();
         $this->model = DrugProcurement::class;
         $this->viewPath = 'drug-procurements';
         $this->routePrefix = 'drug-procurements';
+        $this->permissionPrefix = 'deliveries';
     }
 
     public function index(Request $request): View

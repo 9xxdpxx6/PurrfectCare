@@ -132,6 +132,9 @@
                                 <span>Единица измерения:</span> 
                                 @if($param->unit)
                                     {{ $param->unit->name }}
+                                    @if($param->unit->symbol)
+                                        ({{ $param->unit->symbol }})
+                                    @endif
                                 @else
                                     Без единицы
                                 @endif
@@ -164,7 +167,12 @@
                                 <label class="form-label small text-muted">Единица измерения</label>
                                 <select class="form-select unit-select" data-field="unit_id" onchange="markAsChanged(this)">
                                     @if($param->unit_id)
-                                        <option value="{{ $param->unit_id }}" selected>{{ $param->unit->name ?? 'Единица' }}</option>
+                                        <option value="{{ $param->unit_id }}" selected>
+                                            {{ $param->unit->name ?? 'Единица' }}
+                                            @if($param->unit && $param->unit->symbol)
+                                                ({{ $param->unit->symbol }})
+                                            @endif
+                                        </option>
                                     @endif
                                 </select>
                             </div>
@@ -801,7 +809,14 @@ let changedRows = new Set();
                 
                 fetch(url)
                     .then(response => response.json())
-                    .then(json => callback(json))
+                    .then(json => {
+                        // Форматируем текст для отображения с символом
+                        const formattedOptions = json.map(option => ({
+                            value: option.value,
+                            text: option.symbol ? `${option.text} (${option.symbol})` : option.text
+                        }));
+                        callback(formattedOptions);
+                    })
                     .catch(() => callback());
             },
             onChange: function() {

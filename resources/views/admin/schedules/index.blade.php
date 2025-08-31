@@ -6,12 +6,16 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Расписания - {{ $items->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('schedules.create')
         <a href="{{ route('admin.schedules.create') }}" class="btn btn-primary me-2">
             <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить расписание</span>
         </a>
+        @endcan
+        @can('schedules.create')
         <a href="{{ route('admin.schedules.create-week') }}" class="btn btn-success">
             <i class="bi bi-calendar-week"></i> <span class="d-none d-lg-inline">Расписание на неделю</span>
         </a>
+        @endcan
     </div>
 </div>
 
@@ -146,14 +150,19 @@
                     </div>
 
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start">
+                        @can('schedules.read')
                         <a href="{{ route('admin.schedules.show', $schedule) }}" class="btn btn-outline-info">
                             <span class="d-none d-lg-inline-block">Просмотр</span>
                             <i class="bi bi-eye"></i>
                         </a>
+                        @endcan
+                        @can('schedules.update')
                         <a href="{{ route('admin.schedules.edit', $schedule) }}" class="btn btn-outline-warning">
                             <span class="d-none d-lg-inline-block">Редактировать</span>
                             <i class="bi bi-pencil"></i>
                         </a>
+                        @endcan
+                        @can('schedules.delete')
                         <form action="{{ route('admin.schedules.destroy', $schedule) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
@@ -163,6 +172,7 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -176,12 +186,16 @@
         <h3 class="mt-3 text-muted">Расписания не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте новое расписание.</p>
         <div class="d-flex gap-2 justify-content-center flex-wrap">
+            @can('schedules.create')
             <a href="{{ route('admin.schedules.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus"></i> Добавить расписание
             </a>
+            @endcan
+            @can('schedules.create')
             <a href="{{ route('admin.schedules.create-week') }}" class="btn btn-success">
                 <i class="bi bi-calendar-week"></i> Расписание на неделю
             </a>
+            @endcan
         </div>
     </div>
 @endif

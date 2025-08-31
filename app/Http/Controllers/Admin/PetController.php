@@ -21,9 +21,11 @@ class PetController extends AdminController
 
     public function __construct()
     {
+        parent::__construct();
         $this->model = Pet::class;
         $this->viewPath = 'pets';
         $this->routePrefix = 'pets';
+        $this->permissionPrefix = 'pets';
     }
 
     public function create() : View

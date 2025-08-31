@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Анализы - {{ $items->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('lab_tests.create')
         <a href="{{ route('admin.lab-tests.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить анализ</span>
         </a>
+        @endcan
     </div>
 </div>
 
@@ -171,14 +173,19 @@
                             </div>
                         </div>
                         <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap">
+                            @can('lab_tests.read')
                             <a href="{{ route('admin.lab-tests.show', $labTest) }}" class="btn btn-outline-info">
                                 <span class="d-none d-lg-inline-block">Просмотр</span>
                                 <i class="bi bi-eye"></i>
                             </a>
+                            @endcan
+                            @can('lab_tests.update')
                             <a href="{{ route('admin.lab-tests.edit', $labTest) }}" class="btn btn-outline-warning">
                                 <span class="d-none d-lg-inline-block">Редактировать</span>
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            @endcan
+                            @can('lab_tests.delete')
                             <form action="{{ route('admin.lab-tests.destroy', $labTest) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
@@ -188,6 +195,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -201,9 +209,11 @@
         <i class="bi bi-clipboard-data display-1 text-muted"></i>
         <h3 class="mt-3 text-muted">Анализы не найдены</h3>
         <p class="text-muted">Попробуйте изменить параметры поиска или создайте новый анализ.</p>
+        @can('lab_tests.create')
         <a href="{{ route('admin.lab-tests.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> Добавить анализ
         </a>
+        @endcan
     </div>
 @endif
 

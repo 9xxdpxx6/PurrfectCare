@@ -32,6 +32,7 @@ class ScheduleController extends AdminController
         ScheduleCreationService $creationService,
         DateTimeProcessingService $dateTimeService
     ) {
+        parent::__construct();
         $this->validationService = $validationService;
         $this->creationService = $creationService;
         $this->dateTimeService = $dateTimeService;
@@ -39,6 +40,7 @@ class ScheduleController extends AdminController
         $this->model = Schedule::class;
         $this->viewPath = 'schedules';
         $this->routePrefix = 'schedules';
+        $this->permissionPrefix = 'schedules';
         $this->validationRules = [
             'veterinarian_id' => 'required|exists:employees,id',
             'branch_id' => 'required|exists:branches,id',

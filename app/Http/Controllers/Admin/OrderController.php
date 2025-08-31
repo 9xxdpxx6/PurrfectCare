@@ -31,6 +31,8 @@ class OrderController extends AdminController
     
     public function __construct(OrderManagementService $orderService)
     {
+        parent::__construct(); // Вызываем родительский конструктор для установки middleware
+        
         $this->orderService = $orderService;
         $this->model = Order::class;
         $this->viewPath = 'orders';

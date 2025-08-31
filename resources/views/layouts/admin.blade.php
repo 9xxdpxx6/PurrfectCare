@@ -11,7 +11,5 @@
     @include('layouts.partials.admin.sidebar')
     
     @include('layouts.partials.admin.main-content')
-    
-    @include('layouts.partials.admin.scripts')
 </body>
 </html>

@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Сотрудник: {{ $employee->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('employees.update')
         <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
+        @endcan
         <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
@@ -359,9 +361,11 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @can('employees.update')
                     <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
+                    @endcan
                     <a href="{{ route('admin.employees.resetPassword', $employee) }}" class="btn btn-outline-primary" onclick="return confirm('Вы уверены, что хотите сбросить пароль для сотрудника {{ $employee->name }}? Новый пароль будет отправлен на email: {{ $employee->email }}')">
                         <i class="bi bi-key"></i> Сбросить пароль
                     </a>
@@ -373,6 +377,7 @@
                         <i class="bi bi-calendar-week"></i> Расписание на неделю
                     </a>
                     <hr>
+                    @can('employees.delete')
                     <form action="{{ route('admin.employees.destroy', $employee) }}" method="POST" class="d-grid">
                         @csrf
                         @method('DELETE')
@@ -380,6 +385,7 @@
                             <i class="bi bi-trash"></i> Удалить
                         </button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>

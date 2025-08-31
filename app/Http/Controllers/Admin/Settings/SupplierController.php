@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class SupplierController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'suppliers';
 
     public function __construct(SupplierService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

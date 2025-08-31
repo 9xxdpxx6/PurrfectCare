@@ -23,9 +23,11 @@ class VaccinationController extends AdminController
 
     public function __construct()
     {
+        parent::__construct();
         $this->model = Vaccination::class;
         $this->viewPath = 'vaccinations';
         $this->routePrefix = 'vaccinations';
+        $this->permissionPrefix = 'vaccinations';
     }
 
     public function index(Request $request): View

@@ -30,10 +30,12 @@ class VisitController extends AdminController
     
     public function __construct(VisitManagementService $visitService)
     {
+        parent::__construct();
         $this->visitService = $visitService;
         $this->model = Visit::class;
         $this->viewPath = 'visits';
         $this->routePrefix = 'visits';
+        $this->permissionPrefix = 'visits';
     }
 
     public function create() : View

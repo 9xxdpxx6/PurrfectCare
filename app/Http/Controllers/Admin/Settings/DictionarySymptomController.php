@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class DictionarySymptomController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'symptoms';
 
     public function __construct(DictionarySymptomService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Вакцинация от {{ $item->administered_at->format('d.m.Y') }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
+        @can('vaccinations.update')
         <a href="{{ route('admin.vaccinations.edit', $item) }}" class="btn btn-outline-warning">
             <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Редактировать</span>
         </a>
+        @endcan
         <a href="{{ route('admin.vaccinations.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> <span class="d-none d-md-inline">Назад к списку</span>
         </a>
@@ -224,9 +226,11 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @can('vaccinations.update')
                     <a href="{{ route('admin.vaccinations.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать вакцинацию
                     </a>
+                    @endcan
                     
                     @if($item->pet)
                         <a href="{{ route('admin.pets.show', $item->pet) }}" class="btn btn-outline-success">
@@ -240,6 +244,7 @@
                         </a>
                     @endif
                     <hr>
+                    @can('vaccinations.delete')
                     <form action="{{ route('admin.vaccinations.destroy', $item) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
@@ -248,6 +253,7 @@
                             <i class="bi bi-trash"></i> Удалить вакцинацию
                         </button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>

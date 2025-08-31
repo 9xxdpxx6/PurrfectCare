@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 class DictionaryDiagnosisController extends SettingsController
 {
     protected $service;
+    protected $permissionPrefix = 'diagnoses';
 
     public function __construct(DictionaryDiagnosisService $service)
     {
+        parent::__construct();
         $this->service = $service;
     }
 

@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Услуга: {{ $item->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('services.update')
         <a href="{{ route('admin.services.edit', $item) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>
         </a>
+        @endcan
         <a href="{{ route('admin.services.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> <span class="d-none d-lg-inline">Назад к списку</span>
         </a>
@@ -131,10 +133,13 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @can('services.update')
                     <a href="{{ route('admin.services.edit', $item) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Редактировать услугу
                     </a>
+                    @endcan
 
+                    @can('services.delete')
                     <hr>
 
                     <form action="{{ route('admin.services.destroy', $item) }}" method="POST" class="d-grid">
@@ -144,6 +149,7 @@
                             <i class="bi bi-trash"></i> Удалить услугу
                         </button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>

@@ -65,9 +65,11 @@
         </a>
 
         <!-- Кнопка "Сохранить" -->
+        @can('employees.update')
         <button type="submit" class="btn btn-success mt-3 mt-md-0 ms-md-3">
             <i class="bi bi-check-lg"></i> Сохранить
         </button>
+        @endcan
     </div>
 </form>
 

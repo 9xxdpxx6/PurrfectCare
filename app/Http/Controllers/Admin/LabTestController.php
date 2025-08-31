@@ -24,9 +24,11 @@ class LabTestController extends AdminController
 
     public function __construct()
     {
+        parent::__construct();
         $this->model = LabTest::class;
         $this->viewPath = 'lab-tests';
         $this->routePrefix = 'lab-tests';
+        $this->permissionPrefix = 'lab_tests';
     }
 
     public function index(Request $request): View

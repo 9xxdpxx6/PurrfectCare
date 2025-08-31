@@ -1,0 +1,187 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use App\Models\Employee;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+class PermissionsSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $modules = [
+            'main', 'orders', 'services', 'statistics_general', 'statistics_finance',
+            'statistics_efficiency', 'statistics_clients', 'statistics_medicine',
+            'statistics_conversion', 'clients', 'pets', 'visits', 'vaccinations',
+            'lab_tests', 'drugs', 'employees', 'schedules', 'deliveries',
+            'settings_analysis_types', 'settings_analysis_parameters',
+            'settings_vaccination_types', 'settings_statuses', 'settings_units',
+            'settings_branches', 'settings_specialties', 'settings_animal_types',
+            'settings_breeds', 'settings_suppliers', 'settings_diagnoses',
+            'settings_symptoms',
+        ];
+
+        $crudOperations = ['create', 'read', 'update', 'delete'];
+        $permissions = [];
+
+        foreach ($modules as $module) {
+            if ($module === 'main') {
+                $permissions[] = Permission::firstOrCreate(['name' => 'main.read', 'guard_name' => 'admin']);
+                $permissions[] = Permission::firstOrCreate(['name' => 'main.read', 'guard_name' => 'web']);
+                continue;
+            }
+            foreach ($crudOperations as $operation) {
+                // Permissions for admin guard (Employee model)
+                $permissions[] = Permission::firstOrCreate(['name' => "$module.$operation", 'guard_name' => 'admin']);
+                // Permissions for web guard (User model) - mostly for read access, if applicable
+                // We'll create read permissions for modules that might be relevant to clients
+                if ($operation === 'read' && in_array($module, ['orders', 'pets', 'visits'])) {
+                    $permissions[] = Permission::firstOrCreate(['name' => "$module.$operation", 'guard_name' => 'web']);
+                }
+            }
+        }
+
+        // Create Roles
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'admin']);
+        $managerRole = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'admin']);
+        $veterinarianRole = Role::firstOrCreate(['name' => 'veterinarian', 'guard_name' => 'admin']);
+        $accountantRole = Role::firstOrCreate(['name' => 'accountant', 'guard_name' => 'admin']);
+        $clientRole = Role::firstOrCreate(['name' => 'client', 'guard_name' => 'web']);
+
+
+        // Assign all permissions to super-admin
+        $superAdminRole->givePermissionTo(Permission::where('guard_name', 'admin')->get());
+
+        // Assign permissions to admin
+        $adminRole->givePermissionTo(Permission::where('guard_name', 'admin')
+            ->whereNotIn('name', [
+                'employees.create', 'employees.update', 'employees.delete',
+                'settings_analysis_types.create', 'settings_analysis_types.update', 'settings_analysis_types.delete',
+                'settings_analysis_parameters.create', 'settings_analysis_parameters.update', 'settings_analysis_parameters.delete',
+                'settings_vaccination_types.create', 'settings_vaccination_types.update', 'settings_vaccination_types.delete',
+                'settings_statuses.create', 'settings_statuses.update', 'settings_statuses.delete',
+                'settings_units.create', 'settings_units.update', 'settings_units.delete',
+                'settings_branches.create', 'settings_branches.update', 'settings_branches.delete',
+                'settings_specialties.create', 'settings_specialties.update', 'settings_specialties.delete',
+                'settings_animal_types.create', 'settings_animal_types.update', 'settings_animal_types.delete',
+                'settings_breeds.create', 'settings_breeds.update', 'settings_breeds.delete',
+                'settings_suppliers.create', 'settings_suppliers.update', 'settings_suppliers.delete',
+                'settings_diagnoses.create', 'settings_diagnoses.update', 'settings_diagnoses.delete',
+                'settings_symptoms.create', 'settings_symptoms.update', 'settings_symptoms.delete',
+            ])->get());
+
+
+        // Assign permissions to manager
+        $managerRole->givePermissionTo([
+            'main.read',
+            'orders.create', 'orders.read', 'orders.update',
+            'clients.create', 'clients.read', 'clients.update',
+            'schedules.read',
+            'deliveries.create', 'deliveries.read', 'deliveries.update',
+        ]);
+
+        // Assign permissions to veterinarian
+        $veterinarianRole->givePermissionTo([
+            'main.read',
+            'visits.create', 'visits.read', 'visits.update',
+            'vaccinations.create', 'vaccinations.read', 'vaccinations.update',
+            'lab_tests.create', 'lab_tests.read', 'lab_tests.update',
+            'schedules.read',
+            'pets.create', 'pets.read', 'pets.update',
+        ]);
+
+        // Assign permissions to accountant
+        $accountantRole->givePermissionTo([
+            'main.read',
+            'orders.read',
+            'statistics_finance.read',
+        ]);
+
+        // Assign permissions to client (web guard)
+        $clientRole->givePermissionTo([
+            Permission::firstOrCreate(['name' => 'main.read', 'guard_name' => 'web']),
+            Permission::firstOrCreate(['name' => 'orders.read', 'guard_name' => 'web']),
+            Permission::firstOrCreate(['name' => 'pets.read', 'guard_name' => 'web']),
+            Permission::firstOrCreate(['name' => 'visits.read', 'guard_name' => 'web']),
+        ]);
+
+        // Create a Super Admin Employee
+        $superAdminEmployee = Employee::firstOrCreate(
+            ['email' => 'superadmin@example.com'],
+            [
+                'name' => 'Super Admin',
+                'phone' => '1234567890',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
+        $superAdminEmployee->assignRole('super-admin');
+
+        // Create a normal Admin Employee
+        $adminEmployee = Employee::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'phone' => '0987654321',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
+        $adminEmployee->assignRole('admin');
+
+        // Create a Manager Employee
+        $managerEmployee = Employee::firstOrCreate(
+            ['email' => 'manager@example.com'],
+            [
+                'name' => 'Manager User',
+                'phone' => '1122334455',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
+        $managerEmployee->assignRole('manager');
+
+        // Create a Veterinarian Employee
+        $veterinarianEmployee = Employee::firstOrCreate(
+            ['email' => 'veterinarian@example.com'],
+            [
+                'name' => 'Veterinarian User',
+                'phone' => '2233445566',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
+        $veterinarianEmployee->assignRole('veterinarian');
+
+        // Create an Accountant Employee
+        $accountantEmployee = Employee::firstOrCreate(
+            ['email' => 'accountant@example.com'],
+            [
+                'name' => 'Accountant User',
+                'phone' => '3344556677',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]
+        );
+        $accountantEmployee->assignRole('accountant');
+
+        // Create a normal User (Client)
+        $clientUser = User::firstOrCreate(
+            ['email' => 'client@example.com'],
+            [
+                'name' => 'Client User',
+                'phone' => '4455667788',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $clientUser->assignRole('client');
+    }
+}

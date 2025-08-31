@@ -14,9 +14,12 @@
         <span class="fs-6 badge" style="background-color: {{ $item->status->color ?? '#6c757d' }}; color: white;">{{ $item->status->name }}</span>
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('orders.update')
         <a href="{{ route('admin.orders.edit', $item) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> Редактировать
         </a>
+        @endcan
+        @can('orders.delete')
         <form action="{{ route('admin.orders.destroy', $item) }}" method="POST" class="d-inline me-2">
             @csrf
             @method('DELETE')
@@ -25,6 +28,7 @@
                 <i class="bi bi-trash"></i> Удалить
             </button>
         </form>
+        @endcan
         <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад к списку
         </a>

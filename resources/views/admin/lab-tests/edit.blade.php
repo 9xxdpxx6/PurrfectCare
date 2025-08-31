@@ -246,9 +246,11 @@
                         <a href="{{ route('admin.lab-tests.show', $item) }}" class="btn btn-outline-secondary">
                             <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline">Отмена</span>
                         </a>
+                        @can('lab_tests.update')
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-lg"></i> Сохранить
                         </button>
+                        @endcan
                     </div>
                 </form>
             </div>
