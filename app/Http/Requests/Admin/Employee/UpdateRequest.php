@@ -24,6 +24,8 @@ class UpdateRequest extends FormRequest
             'specialties.*' => 'exists:specialties,id',
             'branches' => 'required|array|min:1',
             'branches.*' => 'exists:branches,id',
+            'roles' => 'nullable|array',
+            'roles.*' => 'exists:roles,id,guard_name,admin',
         ];
     }
 
@@ -66,6 +68,8 @@ class UpdateRequest extends FormRequest
             'branches.array' => 'Филиалы должны быть массивом',
             'branches.min' => 'Необходимо выбрать хотя бы один филиал',
             'branches.*.exists' => 'Выбранный филиал не найден',
+            'roles.array' => 'Роли должны быть массивом',
+            'roles.*.exists' => 'Выбранная роль не найдена',
         ];
     }
 
@@ -77,6 +81,7 @@ class UpdateRequest extends FormRequest
             'phone' => 'телефон',
             'specialties' => 'специальности',
             'branches' => 'филиалы',
+            'roles' => 'роли',
         ];
     }
 } 

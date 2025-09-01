@@ -7,15 +7,16 @@
 @endpush
 
 @section('content')
+@can('notifications.read')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-start align-items-sm-center mb-4">
         <h1 class="h3 mb-3 mb-sm-0">Уведомления</h1>
         <div class="page-actions d-flex flex-row flex-nowrap gap-2 ms-sm-auto">
-            <button type="button" class="btn btn-outline-primary btn-sm" id="refreshNotifications" data-bs-toggle="tooltip" data-bs-title="Обновить список уведомлений">
+            <button type="button" class="btn btn-outline-primary" id="refreshNotifications">
                 <i class="bi bi-arrow-clockwise"></i>
                 <span class="d-none d-md-inline ms-1">Обновить</span>
             </button>
-            <button type="button" class="btn btn-primary btn-sm" id="markAllAsRead" data-bs-toggle="tooltip" data-bs-title="Отметить все уведомления как прочитанные">
+            <button type="button" class="btn btn-primary" id="markAllAsRead">
                 <i class="bi bi-check-all"></i>
                 <span class="d-none d-md-inline ms-1">Отметить все</span>
             </button>
@@ -130,6 +131,7 @@
         </div>
     </div>
 </div>
+@endcan
 @endsection
 
 @push('scripts')
@@ -332,7 +334,7 @@ class NotificationsPage {
                 ...this.filters
             });
 
-            const response = await fetch(`/admin/notifications?${params}`, {
+            const response = await fetch(`/admin/notifications/data?${params}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': this.csrfToken
@@ -376,7 +378,7 @@ class NotificationsPage {
                 sort: 'created_desc'
             });
 
-            const response = await fetch(`/admin/notifications?${params}`, {
+            const response = await fetch(`/admin/notifications/data?${params}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': this.csrfToken

@@ -11,6 +11,7 @@
                 <i class="bi bi-moon-fill"></i>
             </button>
         </div>
+        @can('notifications.read')
         <div class="nav-item text-nowrap me-3">
             <button class="btn btn-link nav-link px-3 text-white position-relative" type="button" id="notificationsToggle">
                 <span class="fs-5"><i class="bi bi-bell-fill"></i></span>
@@ -19,6 +20,7 @@
                 </span>
             </button>
         </div>
+        @endcan
         <div class="nav-item text-nowrap">
             <button class="btn btn-link nav-link px-3 text-white position-relative" type="button" id="profileToggle">
                 <span class="fs-5"><i class="bi bi-person-fill"></i></span> {{ Auth::guard('admin')->user()?->name }}

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Vaccination;
 use App\Models\LabTest;
 use App\Models\Schedule;
+use Spatie\Permission\Models\Role;
 use App\Http\Requests\Admin\Employee\StoreRequest;
 use App\Http\Requests\Admin\Employee\UpdateRequest;
 use App\Http\Filters\EmployeeFilter;
@@ -40,7 +41,7 @@ class EmployeeController extends AdminController
     {
         $filter = app(EmployeeFilter::class, ['queryParams' => array_filter($request->all())]);
         $employees = Employee::filter($filter)
-            ->with(['specialties', 'branches'])
+            ->with(['specialties', 'branches', 'roles'])
             ->paginate(12)
             ->withQueryString();
         $specialties = Specialty::orderBy('name')->get();
@@ -52,7 +53,8 @@ class EmployeeController extends AdminController
     {
         $specialties = Specialty::orderBy('name')->get();
         $branches = Branch::orderBy('name')->get();
-        return view('admin.employees.create', compact('specialties', 'branches'));
+        $roles = Role::where('guard_name', 'admin')->orderBy('name')->get();
+        return view('admin.employees.create', compact('specialties', 'branches', 'roles'));
     }
 
     public function store(StoreRequest $request) : RedirectResponse
@@ -72,6 +74,11 @@ class EmployeeController extends AdminController
             }
             if ($request->filled('branches')) {
                 $employee->branches()->attach($request->input('branches'));
+            }
+            if ($request->filled('roles')) {
+                $roleIds = $request->input('roles');
+                $roleNames = Role::whereIn('id', $roleIds)->pluck('name')->toArray();
+                $employee->syncRoles($roleNames);
             }
             
             DB::commit();
@@ -129,10 +136,11 @@ class EmployeeController extends AdminController
 
     public function edit($id) : View
     {
-        $employee = Employee::with(['specialties', 'branches'])->findOrFail($id);
+        $employee = Employee::with(['specialties', 'branches', 'roles'])->findOrFail($id);
         $specialties = Specialty::orderBy('name')->get();
         $branches = Branch::orderBy('name')->get();
-        return view('admin.employees.edit', compact('employee', 'specialties', 'branches'));
+        $roles = Role::where('guard_name', 'admin')->orderBy('name')->get();
+        return view('admin.employees.edit', compact('employee', 'specialties', 'branches', 'roles'));
     }
 
     public function update(UpdateRequest $request, $id) : RedirectResponse
@@ -149,6 +157,15 @@ class EmployeeController extends AdminController
             $employee->update($validated);
             $employee->specialties()->sync($request->input('specialties', []));
             $employee->branches()->sync($request->input('branches', []));
+            
+            // Синхронизируем роли - конвертируем ID в имена
+            $roleIds = $request->input('roles', []);
+            if (!empty($roleIds)) {
+                $roleNames = Role::whereIn('id', $roleIds)->pluck('name')->toArray();
+                $employee->syncRoles($roleNames);
+            } else {
+                $employee->syncRoles([]);
+            }
             
             DB::commit();
             
@@ -281,7 +298,7 @@ class EmployeeController extends AdminController
 
     public function show($id): View
     {
-        $employee = Employee::with(['specialties', 'branches'])->findOrFail($id);
+        $employee = Employee::with(['specialties', 'branches', 'roles'])->findOrFail($id);
         
         // Получаем общее количество записей
         $ordersTotal = Order::where('manager_id', $id)->count();

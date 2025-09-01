@@ -10,6 +10,7 @@
     </a>
 </div>
 
+
 <form method="POST" action="{{ route('admin.employees.store') }}">
     @csrf
     <div class="row g-3">
@@ -49,6 +50,22 @@
             </select>
             @error('branches')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
+        @can('roles.read')
+        <div class="col-md-6 col-lg-4">
+            <label for="roles" class="form-label">Роли</label>
+            <select id="roles" name="roles[]" class="form-select @error('roles') is-invalid @enderror" multiple data-url="{{ route('admin.roles.options') }}">
+                @if(old('roles'))
+                    @php
+                        $selectedRoles = \Spatie\Permission\Models\Role::whereIn('id', old('roles'))->get();
+                    @endphp
+                    @foreach($selectedRoles as $role)
+                        <option value="{{ $role->id }}" selected>{{ $role->name }}</option>
+                    @endforeach
+                @endif
+            </select>
+            @error('roles')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+        @endcan
     </div>
     <div class="mt-4 d-flex justify-content-between">
         <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">
@@ -74,6 +91,41 @@
                 this.control_input.setAttribute('readonly', 'readonly');
             }
         });
+        
+        @if(auth()->guard('admin')->user()->can('roles.read'))
+        const selectedRoles = @json(old('roles', []));
+        
+        new createTomSelect('#roles', {
+            placeholder: 'Выберите роли...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть выбранные значения и это первая загрузка, передаём их
+                if (selectedRoles.length > 0 && !query) {
+                    url += '&selected=' + selectedRoles.join(',');
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => {
+                        callback(json);
+                    })
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
+        });
+        @endif
     });
 </script>
 @endsection

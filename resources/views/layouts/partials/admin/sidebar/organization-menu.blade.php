@@ -11,6 +11,13 @@
                         Сотрудники
                     </a>
                 </li>
+                @can('roles.read')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.roles.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.roles.index') }}">
+                        Роли
+                    </a>
+                </li>
+                @endcan
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('admin.schedules.*') ? 'text-primary active' : 'text-body' }}" href="{{ route('admin.schedules.index') }}">
                         Расписания

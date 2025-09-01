@@ -11,5 +11,7 @@
     @include('layouts.partials.admin.sidebar')
     
     @include('layouts.partials.admin.main-content')
+    
+    @stack('scripts')
 </body>
 </html>

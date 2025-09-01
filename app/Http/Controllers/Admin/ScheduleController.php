@@ -41,12 +41,6 @@ class ScheduleController extends AdminController
         $this->viewPath = 'schedules';
         $this->routePrefix = 'schedules';
         $this->permissionPrefix = 'schedules';
-        $this->validationRules = [
-            'veterinarian_id' => 'required|exists:employees,id',
-            'branch_id' => 'required|exists:branches,id',
-            'shift_starts_at' => 'required|date',
-            'shift_ends_at' => 'required|date|after:shift_starts_at',
-        ];
     }
 
     public function index(Request $request) : View
@@ -177,12 +171,11 @@ class ScheduleController extends AdminController
         return view("admin.{$this->viewPath}.edit", compact('item', 'veterinarians', 'branches'));
     }
 
-    public function update(Request $request, $id) : RedirectResponse
+    public function update(UpdateRequest $request, $id) : RedirectResponse
     {
         // Обработка полей даты и времени
         $this->dateTimeService->processScheduleDateTimeFields($request);
-        
-        $validated = $request->validate($this->validationRules);
+        $validated = $request->validated();
 
         // Проверяем логические противоречия
         $errors = $this->validationService->validateScheduleConflicts(

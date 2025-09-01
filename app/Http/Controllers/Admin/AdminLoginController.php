@@ -25,8 +25,18 @@ class AdminLoginController extends Controller {
         $remember = $request->boolean('remember');
 
         if (Auth::guard('admin')->attempt($credentials, $remember)) {
-            // Обновляем время последнего входа
+            // Проверяем, что пользователь имеет необходимые роли
             $employee = Auth::guard('admin')->user();
+            
+            if (!$employee || !$employee->roles()->where('guard_name', 'admin')->exists()) {
+                // Если нет прав - делаем logout и показываем ошибку
+                Auth::guard('admin')->logout();
+                throw ValidationException::withMessages([
+                    'email' => ['У вас нет полномочий для доступа к админ-панели.'],
+                ]);
+            }
+            
+            // Обновляем время последнего входа
             $employee->update(['last_login_at' => now()]);
             
             $request->session()->regenerate();

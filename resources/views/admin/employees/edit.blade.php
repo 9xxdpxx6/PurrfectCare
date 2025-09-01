@@ -10,6 +10,7 @@
     </a>
 </div>
 
+
 <form method="POST" action="{{ route('admin.employees.update', $employee) }}">
     @csrf
     @method('PATCH')
@@ -50,10 +51,25 @@
             </select>
             @error('branches')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
+        @can('roles.read')
+        <div class="col-md-6 col-lg-4">
+            <label for="roles" class="form-label">Роли</label>
+            <select id="roles" name="roles[]" class="form-select tomselect @error('roles') is-invalid @enderror" multiple data-url="{{ route('admin.roles.options') }}">
+                @php
+                    $currentRoles = old('roles', $employee->roles->pluck('id')->toArray());
+                    $selectedRoles = \Spatie\Permission\Models\Role::whereIn('id', $currentRoles)->get();
+                @endphp
+                @foreach($selectedRoles as $role)
+                    <option value="{{ $role->id }}" selected>{{ $role->name }}</option>
+                @endforeach
+            </select>
+            @error('roles')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+        @endcan
     </div>
     <div class="mt-4 d-flex flex-column flex-md-row">
         <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-x-lg"></i> <spa class="d-none d-md-inline">Отмена</span>
+            <i class="bi bi-x-lg"></i> <span class="d-none d-md-inline">Отмена</span>
         </a>
 
         <!-- Кнопка "Сбросить пароль" -->
@@ -81,15 +97,47 @@
         new createTomSelect('#branches', {
             placeholder: 'Выберите филиалы...',
         });
+        
+        @if(auth()->guard('admin')->user()->can('roles.read'))
+        const currentRoles = @json(old('roles', $employee->roles->pluck('id')->toArray()));
+        
+        new createTomSelect('#roles', {
+            placeholder: 'Выберите роли...',
+            valueField: 'value',
+            labelField: 'text',
+            searchField: 'text',
+            preload: true,
+            load: function(query, callback) {
+                let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+                
+                // Если есть текущие роли и это первая загрузка, передаём их
+                if (currentRoles.length > 0 && !query) {
+                    url += '&selected=' + currentRoles.join(',');
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(json => {
+                        callback(json);
+                    })
+                    .catch(() => callback());
+            },
+            onItemAdd: function() {
+                this.setTextboxValue('');
+                this.refreshOptions();
+                setTimeout(() => {
+                    this.close();
+                    this.blur();
+                }, 50);
+            }
+        });
+        @endif
     });
 </script>
 @endsection
 
 @push('scripts')
 <script>
-    document.querySelectorAll('.tomselect').forEach(el => {
-        new TomSelect(el, {create: false, allowEmptyOption: true});
-    });
     setTimeout(() => {
         document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
     }, 3000);

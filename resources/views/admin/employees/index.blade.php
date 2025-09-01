@@ -93,6 +93,18 @@
                         <p class="card-text mb-0">
                             <span>Филиал:</span> {{ $employee->branches->pluck('name')->join(', ') ?: '—' }}
                         </p>
+                        @can('roles.read')
+                        <p class="card-text mb-0">
+                            <span>Роли:</span> 
+                            @if($employee->roles->count())
+                                @foreach($employee->roles as $role)
+                                    <span class="badge bg-primary me-1">{{ $role->name }}</span>
+                                @endforeach
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </p>
+                        @endcan
                     </div>
                     <div class="d-flex flex-row flex-lg-column gap-2 ms-lg-4 align-self-start text-nowrap mt-3 mt-lg-0">
                         @can('employees.read')

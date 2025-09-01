@@ -11,43 +11,47 @@ use Illuminate\View\View;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 
-class NotificationController extends Controller
+class NotificationController extends AdminController
 {
     protected $notificationService;
 
     public function __construct(NotificationService $notificationService)
     {
+        parent::__construct();
         $this->notificationService = $notificationService;
+        $this->permissionPrefix = 'notifications';
     }
 
     /**
      * Показать страницу уведомлений
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        if ($request->ajax()) {
-            $filters = $request->only(['status', 'type', 'dateFrom', 'dateTo', 'sort']);
-            $perPage = $request->get('per_page', 25);
-            
-
-            
-            // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
-            $result = $this->notificationService->getAllNotifications($perPage, $filters);
-
-            return response()->json([
-                'notifications' => $result->items(),
-                'pagination' => [
-                    'current_page' => $result->currentPage(),
-                    'last_page' => $result->lastPage(),
-                    'per_page' => $result->perPage(),
-                    'total' => $result->total(),
-                    'from' => $result->firstItem(),
-                    'to' => $result->lastItem(),
-                ]
-            ]);
-        }
-
         return view('admin.notifications.index');
+    }
+
+    /**
+     * Получить уведомления для AJAX запросов
+     */
+    public function getNotifications(Request $request): JsonResponse
+    {
+        $filters = $request->only(['status', 'type', 'dateFrom', 'dateTo', 'sort']);
+        $perPage = $request->get('per_page', 25);
+        
+        // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
+        $result = $this->notificationService->getAllNotifications($perPage, $filters);
+
+        return response()->json([
+            'notifications' => $result->items(),
+            'pagination' => [
+                'current_page' => $result->currentPage(),
+                'last_page' => $result->lastPage(),
+                'per_page' => $result->perPage(),
+                'total' => $result->total(),
+                'from' => $result->firstItem(),
+                'to' => $result->lastItem(),
+            ]
+        ]);
     }
 
     /**

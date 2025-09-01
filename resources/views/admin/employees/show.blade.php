@@ -68,6 +68,18 @@
                             <strong><i class="bi bi-calendar-plus"></i> Добавлен:</strong>
                             {{ $employee->created_at->format('d.m.Y H:i') }}
                         </p>
+                        @can('roles.read')
+                        <p class="mb-2">
+                            <strong><i class="bi bi-shield-check"></i> Роли:</strong>
+                            @if($employee->roles->count())
+                                @foreach($employee->roles as $role)
+                                    <span class="badge bg-primary me-1">{{ $role->name }}</span>
+                                @endforeach
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </p>
+                        @endcan
                     </div>
                 </div>
             </div>

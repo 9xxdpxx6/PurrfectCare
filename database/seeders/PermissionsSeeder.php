@@ -20,8 +20,8 @@ class PermissionsSeeder extends Seeder
             'main', 'orders', 'services', 'statistics_general', 'statistics_finance',
             'statistics_efficiency', 'statistics_clients', 'statistics_medicine',
             'statistics_conversion', 'clients', 'pets', 'visits', 'vaccinations',
-            'lab_tests', 'drugs', 'employees', 'schedules', 'deliveries',
-            'settings_analysis_types', 'settings_analysis_parameters',
+            'lab_tests', 'drugs', 'employees', 'roles', 'schedules', 'deliveries',
+            'notifications', 'settings_analysis_types', 'settings_analysis_parameters',
             'settings_vaccination_types', 'settings_statuses', 'settings_units',
             'settings_branches', 'settings_specialties', 'settings_animal_types',
             'settings_breeds', 'settings_suppliers', 'settings_diagnoses',
@@ -64,6 +64,7 @@ class PermissionsSeeder extends Seeder
         $adminRole->givePermissionTo(Permission::where('guard_name', 'admin')
             ->whereNotIn('name', [
                 'employees.create', 'employees.update', 'employees.delete',
+                'roles.create', 'roles.update', 'roles.delete',
                 'settings_analysis_types.create', 'settings_analysis_types.update', 'settings_analysis_types.delete',
                 'settings_analysis_parameters.create', 'settings_analysis_parameters.update', 'settings_analysis_parameters.delete',
                 'settings_vaccination_types.create', 'settings_vaccination_types.update', 'settings_vaccination_types.delete',
@@ -82,6 +83,7 @@ class PermissionsSeeder extends Seeder
         // Assign permissions to manager
         $managerRole->givePermissionTo([
             'main.read',
+            'notifications.read',
             'orders.create', 'orders.read', 'orders.update',
             'clients.create', 'clients.read', 'clients.update',
             'schedules.read',
@@ -91,6 +93,7 @@ class PermissionsSeeder extends Seeder
         // Assign permissions to veterinarian
         $veterinarianRole->givePermissionTo([
             'main.read',
+            'notifications.read',
             'visits.create', 'visits.read', 'visits.update',
             'vaccinations.create', 'vaccinations.read', 'vaccinations.update',
             'lab_tests.create', 'lab_tests.read', 'lab_tests.update',
@@ -101,6 +104,7 @@ class PermissionsSeeder extends Seeder
         // Assign permissions to accountant
         $accountantRole->givePermissionTo([
             'main.read',
+            'notifications.read',
             'orders.read',
             'statistics_finance.read',
         ]);

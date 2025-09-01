@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('notifications')->name('notifications.')->group(function () {
     Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::get('/data', [NotificationController::class, 'getNotifications'])->name('data');
     Route::get('/recent', [NotificationController::class, 'getRecentNotifications'])->name('recent');
     Route::post('/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
     Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
