@@ -224,7 +224,7 @@ class InventoryManagementService
         
         // Фильтруем только препараты
         $drugItems = collect($items)->filter(function($item) {
-            return $item['item_type'] === 'drug';
+            return $item['item_type'] === 'drug' || $item['item_type'] === 'App\Models\Drug';
         });
         
         if ($drugItems->isEmpty()) {

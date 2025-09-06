@@ -314,7 +314,7 @@ class OrderManagementService
     {
         // Оптимизация: фильтруем только лекарства для проверки доступности
         $drugItems = collect($items)->filter(function($item) {
-            return $item['item_type'] === 'App\Models\Drug';
+            return $item['item_type'] === 'drug' || $item['item_type'] === 'App\Models\Drug';
         })->toArray();
         
         $availability = $this->inventoryService->checkDrugAvailability($drugItems, $branchId);

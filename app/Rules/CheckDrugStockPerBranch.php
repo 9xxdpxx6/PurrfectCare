@@ -37,7 +37,7 @@ class CheckDrugStockPerBranch implements Rule
         }
 
         $drugItems = collect($value)->filter(function($item) {
-            return isset($item['item_type']) && $item['item_type'] === 'drug';
+            return isset($item['item_type']) && ($item['item_type'] === 'drug' || $item['item_type'] === 'App\Models\Drug');
         });
 
         if ($drugItems->isEmpty()) {
@@ -61,7 +61,7 @@ class CheckDrugStockPerBranch implements Rule
         if ($orderId) {
             // Получаем количество препаратов в текущем заказе
             $currentOrderItems = OrderItem::where('order_id', $orderId)
-                ->where('item_type', 'drug')
+                ->where('item_type', 'App\Models\Drug')
                 ->whereIn('item_id', $drugIds)
                 ->get();
             
