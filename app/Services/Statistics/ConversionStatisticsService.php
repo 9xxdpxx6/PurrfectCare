@@ -11,6 +11,8 @@ use App\Models\Status;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Log;
 
 class ConversionStatisticsService
 {
@@ -367,5 +369,211 @@ class ConversionStatisticsService
             'by_time_of_day' => $this->getConversionByTimeOfDay($startDate, $endDate),
             'by_weekdays' => $this->getConversionByWeekdays($startDate, $endDate),
         ];
+    }
+
+    /**
+     * Экспорт данных конверсии
+     */
+    public function exportConversionData($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $overallConversion = $this->getOverallConversion($startDate, $endDate);
+            $conversionByBranches = $this->getConversionByBranches($startDate, $endDate);
+            $conversionByClientTypes = $this->getConversionByClientTypes($startDate, $endDate);
+            $conversionByVeterinarians = $this->getConversionByVeterinarians($startDate, $endDate);
+            $conversionByVisitStatuses = $this->getConversionByVisitStatuses($startDate, $endDate);
+            $conversionByTimeOfDay = $this->getConversionByTimeOfDay($startDate, $endDate);
+            $conversionByWeekdays = $this->getConversionByWeekdays($startDate, $endDate);
+            
+            // Форматируем общие показатели
+            $formattedOverall = [
+                [
+                    'Показатель' => 'Общее количество визитов',
+                    'Значение' => $overallConversion['total_visits'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Общее количество заказов',
+                    'Значение' => $overallConversion['total_orders'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Визиты с заказами',
+                    'Значение' => $overallConversion['visits_with_orders'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Общая конверсия (%)',
+                    'Значение' => $overallConversion['conversion_rate'] . '%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ]
+            ];
+            
+            // Форматируем данные по филиалам
+            $formattedBranches = [];
+            foreach ($conversionByBranches as $data) {
+                $formattedBranches[] = [
+                    'Филиал' => $data['branch'] ? $data['branch']->name : 'Неизвестно',
+                    'Адрес' => $data['branch'] ? $data['branch']->address : '',
+                    'Количество визитов' => $data['visits_count'],
+                    'Количество заказов' => $data['orders_count'],
+                    'Визиты с заказами' => $data['visits_with_orders'],
+                    'Конверсия (%)' => $data['conversion_rate'] . '%'
+                ];
+            }
+            
+            // Форматируем данные по типам клиентов
+            $formattedClientTypes = [];
+            foreach ($conversionByClientTypes as $data) {
+                $formattedClientTypes[] = [
+                    'Тип клиента' => $data['client_type'],
+                    'Количество клиентов' => $data['clients_count'],
+                    'Количество визитов' => $data['visits_count'],
+                    'Визиты с заказами' => $data['visits_with_orders'],
+                    'Конверсия (%)' => $data['conversion_rate'] . '%'
+                ];
+            }
+            
+            // Форматируем данные по ветеринарам
+            $formattedVeterinarians = [];
+            foreach ($conversionByVeterinarians as $data) {
+                $formattedVeterinarians[] = [
+                    'Ветеринар' => $data['veterinarian'] ? $data['veterinarian']->name : 'Неизвестно',
+                    'Email' => $data['veterinarian'] ? $data['veterinarian']->email : '',
+                    'Количество визитов' => $data['visits_count'],
+                    'Визиты с заказами' => $data['visits_with_orders'],
+                    'Конверсия (%)' => $data['conversion_rate'] . '%'
+                ];
+            }
+            
+            // Форматируем данные по статусам визитов
+            $formattedVisitStatuses = [];
+            foreach ($conversionByVisitStatuses as $data) {
+                $formattedVisitStatuses[] = [
+                    'Статус визита' => $data['status'] ? $data['status']->name : 'Неизвестно',
+                    'Количество визитов' => $data['visits_count'],
+                    'Визиты с заказами' => $data['visits_with_orders'],
+                    'Конверсия (%)' => $data['conversion_rate'] . '%'
+                ];
+            }
+            
+            // Форматируем данные по времени суток
+            $formattedTimeOfDay = [];
+            foreach ($conversionByTimeOfDay as $data) {
+                $formattedTimeOfDay[] = [
+                    'Время суток' => $data['time_slot'],
+                    'Количество визитов' => $data['visits_count'],
+                    'Визиты с заказами' => $data['visits_with_orders'],
+                    'Конверсия (%)' => $data['conversion_rate'] . '%'
+                ];
+            }
+            
+            // Форматируем данные по дням недели
+            $formattedWeekdays = [];
+            foreach ($conversionByWeekdays as $data) {
+                $formattedWeekdays[] = [
+                    'День недели' => $data['weekday'],
+                    'Количество визитов' => $data['visits_count'],
+                    'Визиты с заказами' => $data['visits_with_orders'],
+                    'Конверсия (%)' => $data['conversion_rate'] . '%'
+                ];
+            }
+            
+            // Объединяем все данные
+            $allData = array_merge(
+                $formattedOverall, 
+                $formattedBranches, 
+                $formattedClientTypes, 
+                $formattedVeterinarians, 
+                $formattedVisitStatuses, 
+                $formattedTimeOfDay, 
+                $formattedWeekdays
+            );
+            
+            $filename = app(ExportService::class)->generateFilename('conversion_data', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($allData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте данных конверсии', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт конверсии по филиалам
+     */
+    public function exportConversionByBranches($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $conversionByBranches = $this->getConversionByBranches($startDate, $endDate);
+            
+            $formattedData = [];
+            foreach ($conversionByBranches as $data) {
+                $formattedData[] = [
+                    'Филиал' => $data['branch'] ? $data['branch']->name : 'Неизвестно',
+                    'Адрес' => $data['branch'] ? $data['branch']->address : '',
+                    'Количество визитов' => $data['visits_count'],
+                    'Количество заказов' => $data['orders_count'],
+                    'Визиты с заказами' => $data['visits_with_orders'],
+                    'Конверсия (%)' => $data['conversion_rate'] . '%'
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('conversion_by_branches', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте конверсии по филиалам', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт конверсии по ветеринарам
+     */
+    public function exportConversionByVeterinarians($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $conversionByVeterinarians = $this->getConversionByVeterinarians($startDate, $endDate);
+            
+            $formattedData = [];
+            foreach ($conversionByVeterinarians as $data) {
+                $formattedData[] = [
+                    'Ветеринар' => $data['veterinarian'] ? $data['veterinarian']->name : 'Неизвестно',
+                    'Email' => $data['veterinarian'] ? $data['veterinarian']->email : '',
+                    'Количество визитов' => $data['visits_count'],
+                    'Визиты с заказами' => $data['visits_with_orders'],
+                    'Конверсия (%)' => $data['conversion_rate'] . '%'
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('conversion_by_veterinarians', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте конверсии по ветеринарам', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

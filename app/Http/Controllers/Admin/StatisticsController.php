@@ -11,6 +11,7 @@ use App\Services\Statistics\FinancialStatisticsService;
 use App\Services\Statistics\OperationalStatisticsService;
 use App\Services\Statistics\ClientStatisticsService;
 use App\Services\Statistics\MedicalStatisticsService;
+use App\Services\Statistics\ConversionStatisticsService;
 use App\Services\Statistics\DateRangeService;
 use App\Models\Visit;
 use App\Models\Order;
@@ -20,6 +21,8 @@ use App\Models\Employee;
 use App\Models\Service;
 use App\Models\Branch;
 use Carbon\Carbon;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Log;
 
 class StatisticsController extends AdminController
 {
@@ -30,6 +33,7 @@ class StatisticsController extends AdminController
     protected $operationalService;
     protected $clientService;
     protected $medicalService;
+    protected $conversionService;
     protected $dateRangeService;
 
     public function __construct(
@@ -40,6 +44,7 @@ class StatisticsController extends AdminController
         OperationalStatisticsService $operationalService,
         ClientStatisticsService $clientService,
         MedicalStatisticsService $medicalService,
+        ConversionStatisticsService $conversionService,
         DateRangeService $dateRangeService
     ) {
         parent::__construct();
@@ -50,6 +55,7 @@ class StatisticsController extends AdminController
         $this->operationalService = $operationalService;
         $this->clientService = $clientService;
         $this->medicalService = $medicalService;
+        $this->conversionService = $conversionService;
         $this->dateRangeService = $dateRangeService;
         $this->permissionPrefix = 'statistics';
     }
@@ -241,6 +247,257 @@ class StatisticsController extends AdminController
         $conversionMetrics = $this->dashboardService->getConversionMetrics($startDate, $endDate);
         
         return view('admin.statistics.conversion', compact('conversionMetrics', 'period', 'startDate', 'endDate', 'dateRangeString'));
+    }
+
+    /**
+     * Экспорт дашборда
+     */
+    public function exportDashboard(Request $request)
+    {
+        try {
+            $this->authorize('statistics_general.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            return $this->dashboardService->exportMetrics($startDate, $endDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте дашборда', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт финансовой статистики
+     */
+    public function exportFinancial(Request $request)
+    {
+        try {
+            $this->authorize('statistics_financial.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            return $this->financialService->exportRevenue($startDate, $endDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте финансовой статистики', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт заказов
+     */
+    public function exportOrders(Request $request)
+    {
+        try {
+            $this->authorize('statistics_financial.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            return $this->financialService->exportOrders($startDate, $endDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте заказов', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт выручки по категориям
+     */
+    public function exportCategoryRevenue(Request $request)
+    {
+        try {
+            $this->authorize('statistics_financial.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            return $this->financialService->exportCategoryRevenue($startDate, $endDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте выручки по категориям', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт выручки по филиалам
+     */
+    public function exportBranchRevenue(Request $request)
+    {
+        try {
+            $this->authorize('statistics_financial.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            return $this->financialService->exportBranchRevenue($startDate, $endDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте выручки по филиалам', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт статистики по периодам
+     */
+    public function exportPeriodStats(Request $request)
+    {
+        try {
+            $this->authorize('statistics_general.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            return $this->dashboardService->exportPeriodStats($startDate, $endDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте статистики по периодам', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт топ услуг
+     */
+    public function exportTopServices(Request $request)
+    {
+        try {
+            $this->authorize('statistics_general.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            
+            return $this->dashboardService->exportTopServices($startDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте топ услуг', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт медицинской статистики
+     */
+    public function exportMedical(Request $request)
+    {
+        try {
+            $this->authorize('statistics_medicine.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            return $this->medicalService->exportMedicalData($startDate, $endDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте медицинской статистики', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт конверсионной статистики
+     */
+    public function exportConversion(Request $request)
+    {
+        try {
+            $this->authorize('statistics_conversion.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            return $this->conversionService->exportConversionData($startDate, $endDate);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте конверсионной статистики', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
     }
     
 } 

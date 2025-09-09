@@ -19,9 +19,11 @@ use App\Http\Requests\Admin\Order\UpdateRequest;
 use App\Http\Filters\OrderFilter;
 use App\Http\Traits\HasOptionsMethods;
 use App\Services\Order\OrderManagementService;
+use App\Services\Export\ExportService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends AdminController
 {
@@ -272,5 +274,95 @@ class OrderController extends AdminController
     public function managerOptions(Request $request)
     {
         return app(\App\Services\Options\EmployeeOptionsService::class)->getManagerOptions($request);
+    }
+
+    /**
+     * Экспорт заказов
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Преобразуем даты из формата d.m.Y в Y-m-d для фильтров
+            $queryParams = $request->query();
+            if (isset($queryParams['created_at_from']) && $queryParams['created_at_from']) {
+                try {
+                    $queryParams['created_at_from'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['created_at_from'])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Если не удается преобразовать, оставляем как есть
+                }
+            }
+            if (isset($queryParams['created_at_to']) && $queryParams['created_at_to']) {
+                try {
+                    $queryParams['created_at_to'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['created_at_to'])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Если не удается преобразовать, оставляем как есть
+                }
+            }
+            
+            $filter = app(OrderFilter::class, ['queryParams' => $queryParams]);
+            
+            // Получаем данные без пагинации
+            $query = $this->model::select([
+                    'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
+                    'total', 'is_paid', 'closed_at', 'created_at'
+                ])
+                ->with([
+                    'client:id,name,email,phone',
+                    'pet:id,name,breed_id',
+                    'pet.breed:id,name',
+                    'status:id,name,color',
+                    'branch:id,name,address',
+                    'manager:id,name,email',
+                    'items:id,order_id,item_type,item_id,quantity,unit_price',
+                    'visits:id,client_id,pet_id,starts_at,status_id'
+                ])
+                ->filter($filter);
+            
+            $data = $query->get();
+            
+            $formattedData = [];
+            foreach ($data as $order) {
+                // Группируем товары по типам
+                $drugs = $order->items->where('item_type', 'App\Models\Drug');
+                $services = $order->items->where('item_type', 'App\Models\Service');
+                $labTests = $order->items->where('item_type', 'App\Models\LabTest');
+                $vaccinations = $order->items->where('item_type', 'App\Models\VaccinationType');
+                
+                $formattedData[] = [
+                    'ID заказа' => $order->id,
+                    'Клиент' => $order->client ? $order->client->name : 'Не указан',
+                    'Email клиента' => $order->client ? $order->client->email : '',
+                    'Телефон клиента' => $order->client ? $order->client->phone : '',
+                    'Питомец' => $order->pet ? $order->pet->name : 'Не указан',
+                    'Порода' => $order->pet && $order->pet->breed ? $order->pet->breed->name : 'Не указана',
+                    'Статус' => $order->status ? $order->status->name : 'Не указан',
+                    'Филиал' => $order->branch ? $order->branch->name : 'Не указан',
+                    'Адрес филиала' => $order->branch ? $order->branch->address : '',
+                    'Менеджер' => $order->manager ? $order->manager->name : 'Не указан',
+                    'Email менеджера' => $order->manager ? $order->manager->email : '',
+                    'Общая сумма' => number_format($order->total, 2, ',', ' ') . ' руб.',
+                    'Оплачен' => $order->is_paid ? 'Да' : 'Нет',
+                    'Дата закрытия' => $order->closed_at ? \Carbon\Carbon::parse($order->closed_at)->format('d.m.Y H:i') : '',
+                    'Дата создания' => $order->created_at ? $order->created_at->format('d.m.Y H:i') : '',
+                    'Количество препаратов' => $drugs->count(),
+                    'Количество услуг' => $services->count(),
+                    'Количество анализов' => $labTests->count(),
+                    'Количество вакцинаций' => $vaccinations->count(),
+                    'Общее количество позиций' => $order->items->count(),
+                    'Сумма препаратов' => number_format($drugs->sum('unit_price') * $drugs->sum('quantity'), 2, ',', ' ') . ' руб.',
+                    'Сумма услуг' => number_format($services->sum('unit_price') * $services->sum('quantity'), 2, ',', ' ') . ' руб.',
+                    'Сумма анализов' => number_format($labTests->sum('unit_price') * $labTests->sum('quantity'), 2, ',', ' ') . ' руб.',
+                    'Сумма вакцинаций' => number_format($vaccinations->sum('unit_price') * $vaccinations->sum('quantity'), 2, ',', ' ') . ' руб.',
+                    'Количество визитов' => $order->visits->count()
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('orders', 'xlsx');
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте заказов', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
     }
 } 

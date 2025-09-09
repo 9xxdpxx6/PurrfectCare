@@ -7,6 +7,7 @@ use App\Models\Drug;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Services\Export\ExportService;
 
 class InventoryManagementService
 {
@@ -541,5 +542,207 @@ class InventoryManagementService
         }
         
         return $totalValue;
+    }
+
+    /**
+     * Экспорт отчета по инвентарю филиала
+     */
+    public function exportInventoryReport($branchId, $format = 'excel')
+    {
+        try {
+            $branch = Branch::find($branchId);
+            if (!$branch) {
+                throw new \Exception("Филиал с ID {$branchId} не найден");
+            }
+
+            $drugs = $branch->drugs()
+                ->withPivot('quantity')
+                ->with(['unit:id,name,symbol'])
+                ->get();
+
+            $formattedData = [];
+            foreach ($drugs as $drug) {
+                $formattedData[] = [
+                    'ID препарата' => $drug->id,
+                    'Название препарата' => $drug->name,
+                    'Единица измерения' => $drug->unit ? $drug->unit->name : 'Не указана',
+                    'Символ единицы' => $drug->unit ? $drug->unit->symbol : '',
+                    'Количество на складе' => $drug->pivot->quantity,
+                    'Требуется рецепт' => $drug->prescription_required ? 'Да' : 'Нет',
+                    'Описание' => $drug->description ?: 'Нет описания'
+                ];
+            }
+
+            $filename = app(ExportService::class)->generateFilename('inventory_report_' . $branch->name, 'xlsx');
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте отчета по инвентарю', [
+                'branch_id' => $branchId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт движения препаратов за период
+     */
+    public function exportDrugMovements($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            // Получаем все заказы за период с препаратами
+            $orders = Order::whereBetween('created_at', [$startDate, $endDate])
+                ->whereHas('items', function($query) {
+                    $query->where('item_type', 'App\Models\Drug');
+                })
+                ->with([
+                    'items' => function($query) {
+                        $query->where('item_type', 'App\Models\Drug')
+                            ->with(['item:id,name,unit_id', 'item.unit:id,name,symbol']);
+                    },
+                    'branch:id,name',
+                    'client:id,name'
+                ])
+                ->get();
+
+            $formattedData = [];
+            foreach ($orders as $order) {
+                $drugItems = $order->items->where('item_type', 'App\Models\Drug');
+                
+                foreach ($drugItems as $item) {
+                    $drug = $item->item;
+                    $formattedData[] = [
+                        'ID заказа' => $order->id,
+                        'Дата заказа' => $order->created_at ? $order->created_at->format('d.m.Y H:i') : '',
+                        'Клиент' => $order->client ? $order->client->name : 'Не указан',
+                        'Филиал' => $order->branch ? $order->branch->name : 'Не указан',
+                        'ID препарата' => $drug ? $drug->id : 'Неизвестно',
+                        'Название препарата' => $drug ? $drug->name : 'Неизвестно',
+                        'Единица измерения' => $drug && $drug->unit ? $drug->unit->name : 'Не указана',
+                        'Количество' => $item->quantity,
+                        'Цена за единицу' => number_format($item->unit_price, 2, ',', ' ') . ' руб.',
+                        'Общая стоимость' => number_format($item->unit_price * $item->quantity, 2, ',', ' ') . ' руб.',
+                        'Статус заказа' => $order->is_paid ? 'Оплачен' : 'Не оплачен',
+                        'Дата закрытия' => $order->closed_at ? \Carbon\Carbon::parse($order->closed_at)->format('d.m.Y H:i') : ''
+                    ];
+                }
+            }
+
+            $filename = app(ExportService::class)->generateFilename('drug_movements', 'xlsx');
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте движения препаратов', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт сводного отчета по инвентарю всех филиалов
+     */
+    public function exportAllBranchesInventory($format = 'excel')
+    {
+        try {
+            $branches = Branch::with(['drugs' => function($query) {
+                $query->withPivot('quantity')
+                    ->with(['unit:id,name,symbol']);
+            }])->get();
+
+            $formattedData = [];
+            foreach ($branches as $branch) {
+                $drugs = $branch->drugs;
+                
+                if ($drugs->isEmpty()) {
+                    $formattedData[] = [
+                        'Филиал' => $branch->name,
+                        'Адрес филиала' => $branch->address,
+                        'ID препарата' => '',
+                        'Название препарата' => 'Нет препаратов',
+                        'Единица измерения' => '',
+                        'Количество на складе' => 0,
+                        'Требуется рецепт' => '',
+                        'Описание' => ''
+                    ];
+                } else {
+                    foreach ($drugs as $drug) {
+                        $formattedData[] = [
+                            'Филиал' => $branch->name,
+                            'Адрес филиала' => $branch->address,
+                            'ID препарата' => $drug->id,
+                            'Название препарата' => $drug->name,
+                            'Единица измерения' => $drug->unit ? $drug->unit->name : 'Не указана',
+                            'Количество на складе' => $drug->pivot->quantity,
+                            'Требуется рецепт' => $drug->prescription_required ? 'Да' : 'Нет',
+                            'Описание' => $drug->description ?: 'Нет описания'
+                        ];
+                    }
+                }
+            }
+
+            $filename = app(ExportService::class)->generateFilename('all_branches_inventory', 'xlsx');
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте сводного отчета по инвентарю', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт отчета по низким остаткам
+     */
+    public function exportLowStockReport($threshold = 10, $format = 'excel')
+    {
+        try {
+            $branches = Branch::with(['drugs' => function($query) use ($threshold) {
+                $query->withPivot('quantity')
+                    ->with(['unit:id,name,symbol'])
+                    ->wherePivot('quantity', '<=', $threshold);
+            }])->get();
+
+            $formattedData = [];
+            foreach ($branches as $branch) {
+                $lowStockDrugs = $branch->drugs->where('pivot.quantity', '<=', $threshold);
+                
+                foreach ($lowStockDrugs as $drug) {
+                    $formattedData[] = [
+                        'Филиал' => $branch->name,
+                        'Адрес филиала' => $branch->address,
+                        'ID препарата' => $drug->id,
+                        'Название препарата' => $drug->name,
+                        'Единица измерения' => $drug->unit ? $drug->unit->name : 'Не указана',
+                        'Текущий остаток' => $drug->pivot->quantity,
+                        'Пороговое значение' => $threshold,
+                        'Требуется рецепт' => $drug->prescription_required ? 'Да' : 'Нет',
+                        'Описание' => $drug->description ?: 'Нет описания'
+                    ];
+                }
+            }
+
+            $filename = app(ExportService::class)->generateFilename('low_stock_report', 'xlsx');
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте отчета по низким остаткам', [
+                'threshold' => $threshold,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

@@ -21,6 +21,7 @@ Route::prefix('settings')->name('settings.')->group(function () {
     // Системные настройки
     Route::resource('statuses', StatusController::class)->parameters(['statuses' => 'status']);
     Route::resource('units', UnitController::class)->parameters(['units' => 'unit']);
+    Route::get('branches/export', [SettingsBranchController::class, 'export'])->name('branches.export');
     Route::resource('branches', SettingsBranchController::class)->parameters(['branches' => 'branch']);
     Route::resource('specialties', SpecialtyController::class)->parameters(['specialties' => 'specialty']);
 

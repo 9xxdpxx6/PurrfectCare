@@ -8,6 +8,9 @@
         <i class="bi bi-cash-coin"></i> Финансовая статистика
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ route('admin.statistics.financial.export', request()->query()) }}" class="btn btn-outline-success me-2">
+            <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Экспорт отчёта</span>
+        </a>
         <a href="{{ route('admin.statistics.dashboard') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад
         </a>
@@ -163,10 +166,13 @@
     <!-- Топ услуг -->
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-star"></i> Топ доходных услуг
                 </h5>
+                <a href="{{ route('admin.statistics.top-services.export', request()->query()) }}" class="btn btn-outline-success">
+                    <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Скачать отчёт</span>
+                </a>
             </div>
             <div class="card-body">
                 @if($topServices->count() > 0)
@@ -204,10 +210,13 @@
     <!-- Прибыльность по филиалам -->
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-building"></i> Прибыльность по филиалам
                 </h5>
+                <a href="{{ route('admin.statistics.branch-revenue.export', request()->query()) }}" class="btn btn-outline-success">
+                    <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Скачать отчёт</span>
+                </a>
             </div>
             <div class="card-body">
                 @if($branchRevenue->count() > 0)

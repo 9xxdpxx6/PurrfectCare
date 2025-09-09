@@ -10,6 +10,8 @@ Route::get('visits/status-options', [VisitController::class, 'statusOptions'])->
 Route::get('visits/symptom-options', [VisitController::class, 'symptomOptions'])->name('visits.symptom-options');
 Route::get('visits/diagnosis-options', [VisitController::class, 'diagnosisOptions'])->name('visits.diagnosis-options');
 Route::get('visits/available-time', [VisitController::class, 'getAvailableTime'])->name('visits.available-time');
+Route::get('visits/export', [VisitController::class, 'export'])->name('visits.export');
+Route::get('visits/{visit}/export-details', [VisitController::class, 'exportVisitDetails'])->name('visits.export-details');
 Route::resource('visits', VisitController::class);
 
 

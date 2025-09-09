@@ -18,6 +18,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Schedule\StoreWeekRequest;
 use App\Http\Requests\Admin\Schedule\StoreRequest;
 use App\Http\Requests\Admin\Schedule\UpdateRequest;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Log;
 
 class ScheduleController extends AdminController
 {
@@ -311,5 +313,64 @@ class ScheduleController extends AdminController
         return redirect()
             ->route("admin.{$this->routePrefix}.index")
             ->with('success', $successMessage);
+    }
+
+    /**
+     * Экспорт расписания
+     */
+    public function export(Request $request)
+    {
+        try {
+            $filter = app(ScheduleFilter::class, ['queryParams' => $request->query()]);
+            
+            // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+            $query = $this->model::select([
+                    'schedules.id', 'schedules.veterinarian_id', 'schedules.branch_id', 
+                    'schedules.shift_starts_at', 'schedules.shift_ends_at',
+                    'schedules.created_at', 'schedules.updated_at'
+                ])
+                ->with([
+                    'veterinarian:id,name,email',
+                    'branch:id,name,address'
+                ])
+                ->filter($filter);
+            
+            $data = $query->get();
+            
+            // Форматируем данные для экспорта
+            $formattedData = [];
+            foreach ($data as $schedule) {
+                $shiftStart = Carbon::parse($schedule->shift_starts_at);
+                $shiftEnd = Carbon::parse($schedule->shift_ends_at);
+                $workingHours = $shiftEnd->diffInHours($shiftStart);
+                
+                $formattedData[] = [
+                    'ID смены' => $schedule->id,
+                    'Ветеринар' => $schedule->veterinarian ? $schedule->veterinarian->name : 'Не указан',
+                    'Email ветеринара' => $schedule->veterinarian ? $schedule->veterinarian->email : '',
+                    'Филиал' => $schedule->branch ? $schedule->branch->name : 'Не указан',
+                    'Адрес филиала' => $schedule->branch ? $schedule->branch->address : '',
+                    'Дата смены' => $shiftStart->format('d.m.Y'),
+                    'Время начала' => $shiftStart->format('H:i'),
+                    'Время окончания' => $shiftEnd->format('H:i'),
+                    'Продолжительность (часы)' => $workingHours,
+                    'День недели' => $shiftStart->locale('ru')->dayName,
+                    'Дата создания' => $schedule->created_at ? $schedule->created_at->format('d.m.Y H:i') : '',
+                    'Последнее обновление' => $schedule->updated_at ? $schedule->updated_at->format('d.m.Y H:i') : ''
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('schedules', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте расписания', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
     }
 } 

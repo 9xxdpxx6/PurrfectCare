@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Pet;
 use App\Models\Order;
 use Carbon\Carbon;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Log;
 
 class ClientStatisticsService
 {
@@ -137,5 +139,216 @@ class ClientStatisticsService
             })
             ->sortByDesc('total_spent')
             ->take(10);
+    }
+
+    /**
+     * Экспорт данных по клиентам
+     */
+    public function exportClientsData($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $clientsData = $this->getClientsData($startDate, $endDate);
+            $petsData = $this->getPetsData($startDate, $endDate);
+            $topClients = $this->getTopClients($startDate, $endDate);
+            
+            // Форматируем основные показатели
+            $formattedMetrics = [
+                [
+                    'Показатель' => 'Общее количество клиентов',
+                    'Значение' => $clientsData['total_clients'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Новые клиенты',
+                    'Значение' => $clientsData['new_clients'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Постоянные клиенты',
+                    'Значение' => $clientsData['repeat_clients'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Процент новых клиентов',
+                    'Значение' => $clientsData['new_clients_percentage'] . '%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Процент постоянных клиентов',
+                    'Значение' => $clientsData['repeat_clients_percentage'] . '%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Общий доход',
+                    'Значение' => number_format($clientsData['total_revenue'], 2, ',', ' ') . ' руб.',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Доход от новых клиентов',
+                    'Значение' => number_format($clientsData['new_clients_revenue'], 2, ',', ' ') . ' руб.',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Доход от постоянных клиентов',
+                    'Значение' => number_format($clientsData['repeat_clients_revenue'], 2, ',', ' ') . ' руб.',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Процент дохода от новых клиентов',
+                    'Значение' => $clientsData['new_clients_revenue_percentage'] . '%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Процент дохода от постоянных клиентов',
+                    'Значение' => $clientsData['repeat_clients_revenue_percentage'] . '%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Общее количество питомцев',
+                    'Значение' => $petsData['total_pets'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ]
+            ];
+            
+            // Форматируем данные по породам
+            $formattedBreeds = [];
+            foreach ($petsData['by_breed'] as $breed => $count) {
+                $formattedBreeds[] = [
+                    'Порода' => $breed,
+                    'Количество питомцев' => $count
+                ];
+            }
+            
+            // Форматируем данные по видам
+            $formattedSpecies = [];
+            foreach ($petsData['by_species'] as $species => $breeds) {
+                $totalInSpecies = $breeds->sum();
+                $formattedSpecies[] = [
+                    'Вид' => $species,
+                    'Количество питомцев' => $totalInSpecies,
+                    'Популярные породы' => $breeds->take(3)->keys()->implode(', ')
+                ];
+            }
+            
+            // Форматируем топ клиентов
+            $formattedTopClients = [];
+            foreach ($topClients as $data) {
+                $formattedTopClients[] = [
+                    'Клиент' => $data['user'] ? $data['user']->name : 'Неизвестно',
+                    'Email' => $data['user'] ? $data['user']->email : '',
+                    'Количество заказов' => $data['orders_count'],
+                    'Общая сумма (руб.)' => $data['total_spent'],
+                    'Средний чек (руб.)' => $data['average_order']
+                ];
+            }
+            
+            // Объединяем все данные
+            $allData = array_merge($formattedMetrics, $formattedBreeds, $formattedSpecies, $formattedTopClients);
+            
+            $filename = app(ExportService::class)->generateFilename('clients_data', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($allData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте данных по клиентам', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт топ клиентов
+     */
+    public function exportTopClients($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $topClients = $this->getTopClients($startDate, $endDate);
+            
+            $formattedData = [];
+            foreach ($topClients as $data) {
+                $formattedData[] = [
+                    'Клиент' => $data['user'] ? $data['user']->name : 'Неизвестно',
+                    'Email' => $data['user'] ? $data['user']->email : '',
+                    'Количество заказов' => $data['orders_count'],
+                    'Общая сумма (руб.)' => $data['total_spent'],
+                    'Средний чек (руб.)' => $data['average_order']
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('top_clients', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте топ клиентов', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт данных по питомцам
+     */
+    public function exportPetsData($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $petsData = $this->getPetsData($startDate, $endDate);
+            
+            // Форматируем основные показатели
+            $formattedMetrics = [
+                [
+                    'Показатель' => 'Общее количество питомцев',
+                    'Значение' => $petsData['total_pets'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ]
+            ];
+            
+            // Форматируем данные по породам
+            $formattedBreeds = [];
+            foreach ($petsData['by_breed'] as $breed => $count) {
+                $formattedBreeds[] = [
+                    'Порода' => $breed,
+                    'Количество питомцев' => $count
+                ];
+            }
+            
+            // Форматируем данные по видам
+            $formattedSpecies = [];
+            foreach ($petsData['by_species'] as $species => $breeds) {
+                $totalInSpecies = $breeds->sum();
+                $formattedSpecies[] = [
+                    'Вид' => $species,
+                    'Количество питомцев' => $totalInSpecies,
+                    'Популярные породы' => $breeds->take(3)->keys()->implode(', ')
+                ];
+            }
+            
+            // Объединяем все данные
+            $allData = array_merge($formattedMetrics, $formattedBreeds, $formattedSpecies);
+            
+            $filename = app(ExportService::class)->generateFilename('pets_data', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($allData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте данных по питомцам', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

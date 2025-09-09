@@ -13,6 +13,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\Export\ExportService;
 
 class ServiceController extends AdminController
 {
@@ -193,6 +194,45 @@ class ServiceController extends AdminController
             
             return back()
                 ->withErrors(['error' => 'Ошибка при удалении услуги: ' . $e->getMessage()]);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $filter = app()->make(ServiceFilter::class, ['queryParams' => array_filter($request->all())]);
+            
+            $query = $this->model::with('branches');
+            $filter->apply($query);
+            
+            $data = $query->get();
+            
+            // Форматируем данные для экспорта
+            $formattedData = $data->map(function ($service) {
+                return [
+                    'ID' => $service->id,
+                    'Название' => $service->name,
+                    'Описание' => $service->description,
+                    'Цена' => $service->price ? number_format($service->price, 2, ',', ' ') . ' руб.' : 'Не указана',
+                    'Филиалы' => $service->branches->pluck('name')->implode(', '),
+                    'Количество филиалов' => $service->branches->count(),
+                    'Активна' => $service->is_active ? 'Да' : 'Нет',
+                    'Дата создания' => $service->created_at ? $service->created_at->format('d.m.Y H:i') : '',
+                    'Последнее обновление' => $service->updated_at ? $service->updated_at->format('d.m.Y H:i') : '',
+                ];
+            });
+            
+            $filename = app(ExportService::class)->generateFilename('services', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте услуг', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
         }
     }
 } 

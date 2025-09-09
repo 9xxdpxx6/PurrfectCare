@@ -21,6 +21,8 @@ use Illuminate\View\View;
 use App\Http\Requests\Admin\Visit\StoreRequest;
 use App\Http\Requests\Admin\Visit\UpdateRequest;
 use Illuminate\Support\Facades\DB;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Log;
 
 class VisitController extends AdminController
 {
@@ -272,5 +274,246 @@ class VisitController extends AdminController
         return app(\App\Services\Options\DiagnosisOptionsService::class)->getOptions($request);
     }
 
+    /**
+     * Экспорт визитов
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Преобразуем даты из формата d.m.Y в Y-m-d для фильтров
+            $queryParams = $request->query();
+            if (isset($queryParams['date_from']) && $queryParams['date_from']) {
+                try {
+                    $queryParams['date_from'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['date_from'])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Если не удается преобразовать, оставляем как есть
+                }
+            }
+            if (isset($queryParams['date_to']) && $queryParams['date_to']) {
+                try {
+                    $queryParams['date_to'] = \Carbon\Carbon::createFromFormat('d.m.Y', $queryParams['date_to'])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Если не удается преобразовать, оставляем как есть
+                }
+            }
+            
+            $filter = app(VisitFilter::class, ['queryParams' => $queryParams]);
+            
+            // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
+            $query = $this->model::select([
+                    'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
+                    'complaints', 'notes', 'is_completed', 'created_at'
+                ])
+                ->with([
+                    'client:id,name,email,phone',
+                    'pet:id,name,breed_id',
+                    'pet.breed:id,name',
+                    'schedule:id,veterinarian_id,branch_id,shift_starts_at',
+                    'schedule.veterinarian:id,name,email',
+                    'schedule.branch:id,name,address',
+                    'status:id,name,color',
+                    'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom',
+                    'symptoms.dictionarySymptom:id,name',
+                    'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis',
+                    'diagnoses.dictionaryDiagnosis:id,name',
+                    'orders:id,client_id,pet_id,total,is_paid'
+                ])
+                ->filter($filter);
+            
+            $data = $query->get();
+            
+            // Форматируем данные для экспорта
+            $formattedData = [];
+            foreach ($data as $visit) {
+                $formattedData[] = [
+                    'ID визита' => $visit->id,
+                    'Клиент' => $visit->client ? $visit->client->name : 'Не указан',
+                    'Email клиента' => $visit->client ? $visit->client->email : '',
+                    'Телефон клиента' => $visit->client ? $visit->client->phone : '',
+                    'Питомец' => $visit->pet ? $visit->pet->name : 'Не указан',
+                    'Порода' => $visit->pet && $visit->pet->breed ? $visit->pet->breed->name : 'Не указана',
+                    'Ветеринар' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->name : 'Не указан',
+                    'Email ветеринара' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->email : '',
+                    'Филиал' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->name : 'Не указан',
+                    'Адрес филиала' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->address : '',
+                    'Дата и время визита' => $visit->starts_at ? \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') : '',
+                    'Статус' => $visit->status ? $visit->status->name : 'Не указан',
+                    'Жалобы' => $visit->complaints ?: 'Не указаны',
+                    'Заметки' => $visit->notes ?: 'Нет',
+                    'Завершен' => $visit->is_completed ? 'Да' : 'Нет',
+                    'Симптомы' => $visit->symptoms ? $visit->symptoms->map(function($symptom) {
+                        return $symptom->dictionarySymptom ? $symptom->dictionarySymptom->name : $symptom->custom_symptom;
+                    })->implode(', ') : 'Не указаны',
+                    'Диагнозы' => $visit->diagnoses ? $visit->diagnoses->map(function($diagnosis) {
+                        return $diagnosis->dictionaryDiagnosis ? $diagnosis->dictionaryDiagnosis->name : $diagnosis->custom_diagnosis;
+                    })->implode(', ') : 'Не указаны',
+                    'Количество заказов' => $visit->orders ? $visit->orders->count() : 0,
+                    'Общая сумма заказов' => $visit->orders ? number_format($visit->orders->sum('total'), 2, ',', ' ') . ' руб.' : '0,00 руб.',
+                    'Дата создания' => $visit->created_at ? $visit->created_at->format('d.m.Y H:i') : ''
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('visits', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте визитов', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Экспорт деталей визита
+     */
+    public function exportVisitDetails($visitId, $format = 'pdf')
+    {
+        try {
+            $visit = Visit::with([
+                'client:id,name,email,phone,address',
+                'pet:id,name,breed_id,client_id,birthdate,gender,temperature,weight',
+                'pet.breed:id,name,species_id',
+                'pet.breed.species:id,name',
+                'schedule:id,veterinarian_id,branch_id,shift_starts_at,shift_ends_at',
+                'schedule.veterinarian:id,name,email,phone',
+                'schedule.veterinarian.specialties:id,name',
+                'schedule.branch:id,name,address,phone',
+                'status:id,name,color',
+                'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom,notes',
+                'symptoms.dictionarySymptom:id,name',
+                'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis,treatment_plan',
+                'diagnoses.dictionaryDiagnosis:id,name',
+                'orders' => function($query) {
+                    $query->select(['id', 'client_id', 'pet_id', 'branch_id', 'status_id', 'total', 'is_paid', 'closed_at', 'created_at'])
+                        ->with([
+                            'branch:id,name,address',
+                            'status:id,name,color',
+                            'items:id,order_id,item_type,item_id,quantity,unit_price',
+                            'items.item:id,name'
+                        ]);
+                }
+            ])->findOrFail($visitId);
+
+            // Форматируем данные для экспорта
+            $formattedData = [
+                'visit_info' => [
+                    'ID визита' => $visit->id,
+                    'Дата и время' => $visit->starts_at ? \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') : '',
+                    'Статус' => $visit->status ? $visit->status->name : 'Не указан',
+                    'Завершен' => $visit->is_completed ? 'Да' : 'Нет',
+                    'Жалобы' => $visit->complaints ?: 'Не указаны',
+                    'Заметки' => $visit->notes ?: 'Нет',
+                    'Дата создания' => $visit->created_at ? $visit->created_at->format('d.m.Y H:i') : '',
+                    'Последнее обновление' => $visit->updated_at ? $visit->updated_at->format('d.m.Y H:i') : ''
+                ],
+                'client_info' => [
+                    'ID клиента' => $visit->client ? $visit->client->id : '',
+                    'Имя' => $visit->client ? $visit->client->name : 'Не указан',
+                    'Email' => $visit->client ? $visit->client->email : '',
+                    'Телефон' => $visit->client ? $visit->client->phone : '',
+                    'Адрес' => $visit->client ? $visit->client->address : ''
+                ],
+                'pet_info' => [
+                    'ID питомца' => $visit->pet ? $visit->pet->id : '',
+                    'Имя' => $visit->pet ? $visit->pet->name : 'Не указан',
+                    'Порода' => $visit->pet && $visit->pet->breed ? $visit->pet->breed->name : 'Не указана',
+                    'Вид' => $visit->pet && $visit->pet->breed && $visit->pet->breed->species ? $visit->pet->breed->species->name : 'Не указан',
+                    'Пол' => $visit->pet ? $visit->pet->gender : '',
+                    'Дата рождения' => $visit->pet && $visit->pet->birthdate ? $visit->pet->birthdate->format('d.m.Y') : '',
+                    'Возраст' => $visit->pet && $visit->pet->birthdate ? $visit->pet->birthdate->age . ' лет' : '',
+                    'Температура' => $visit->pet && $visit->pet->temperature ? $visit->pet->temperature . '°C' : 'Не измерена',
+                    'Вес' => $visit->pet && $visit->pet->weight ? $visit->pet->weight . ' кг' : 'Не измерен'
+                ],
+                'veterinarian_info' => [
+                    'ID ветеринара' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->id : '',
+                    'Имя' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->name : 'Не указан',
+                    'Email' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->email : '',
+                    'Телефон' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->phone : '',
+                    'Специализации' => $visit->schedule && $visit->schedule->veterinarian && $visit->schedule->veterinarian->specialties ? 
+                        $visit->schedule->veterinarian->specialties->pluck('name')->implode(', ') : 'Не указаны'
+                ],
+                'branch_info' => [
+                    'ID филиала' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->id : '',
+                    'Название' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->name : 'Не указан',
+                    'Адрес' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->address : '',
+                    'Телефон' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->phone : ''
+                ],
+                'schedule_info' => [
+                    'ID расписания' => $visit->schedule ? $visit->schedule->id : '',
+                    'Начало смены' => $visit->schedule && $visit->schedule->shift_starts_at ? 
+                        \Carbon\Carbon::parse($visit->schedule->shift_starts_at)->format('d.m.Y H:i') : '',
+                    'Окончание смены' => $visit->schedule && $visit->schedule->shift_ends_at ? 
+                        \Carbon\Carbon::parse($visit->schedule->shift_ends_at)->format('d.m.Y H:i') : ''
+                ],
+                'symptoms' => $visit->symptoms->map(function($symptom) {
+                    return [
+                        'ID симптома' => $symptom->id,
+                        'Название' => $symptom->dictionarySymptom ? $symptom->dictionarySymptom->name : $symptom->custom_symptom,
+                        'Тип' => $symptom->dictionarySymptom ? 'Справочный' : 'Пользовательский',
+                        'Заметки' => $symptom->notes ?: 'Нет'
+                    ];
+                }),
+                'diagnoses' => $visit->diagnoses->map(function($diagnosis) {
+                    return [
+                        'ID диагноза' => $diagnosis->id,
+                        'Название' => $diagnosis->dictionaryDiagnosis ? $diagnosis->dictionaryDiagnosis->name : $diagnosis->custom_diagnosis,
+                        'Тип' => $diagnosis->dictionaryDiagnosis ? 'Справочный' : 'Пользовательский',
+                        'План лечения' => $diagnosis->treatment_plan ?: 'Не указан'
+                    ];
+                }),
+                'orders' => $visit->orders->map(function($order) {
+                    return [
+                        'ID заказа' => $order->id,
+                        'Филиал' => $order->branch ? $order->branch->name : 'Не указан',
+                        'Адрес филиала' => $order->branch ? $order->branch->address : '',
+                        'Статус' => $order->status ? $order->status->name : 'Не указан',
+                        'Общая сумма' => number_format($order->total, 2, ',', ' ') . ' руб.',
+                        'Оплачен' => $order->is_paid ? 'Да' : 'Нет',
+                        'Дата закрытия' => $order->closed_at ? \Carbon\Carbon::parse($order->closed_at)->format('d.m.Y H:i') : 'Не закрыт',
+                        'Дата создания' => $order->created_at ? $order->created_at->format('d.m.Y H:i') : '',
+                        'Позиции' => $order->items ? $order->items->map(function($item) {
+                            return [
+                                'Тип' => class_basename($item->item_type),
+                                'Название' => $item->item ? $item->item->name : 'Неизвестно',
+                                'Количество' => $item->quantity,
+                                'Цена за единицу' => number_format($item->unit_price, 2, ',', ' ') . ' руб.',
+                                'Общая стоимость' => number_format($item->quantity * $item->unit_price, 2, ',', ' ') . ' руб.'
+                            ];
+                        })->toArray() : []
+                    ];
+                }),
+                'summary' => [
+                    'Количество симптомов' => $visit->symptoms->count(),
+                    'Количество диагнозов' => $visit->diagnoses->count(),
+                    'Количество заказов' => $visit->orders->count(),
+                    'Общая сумма заказов' => number_format($visit->orders->sum('total'), 2, ',', ' ') . ' руб.',
+                    'Количество позиций в заказах' => $visit->orders->sum(function($order) {
+                        return $order->items ? $order->items->count() : 0;
+                    })
+                ]
+            ];
+
+            $filename = app(ExportService::class)->generateFilename('visit_details_' . $visit->id, $format);
+            
+            if ($format === 'pdf') {
+                return app(ExportService::class)->toPdf($formattedData, $filename);
+            } else {
+                return app(ExportService::class)->toExcel($formattedData, $filename);
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте деталей визита', [
+                'visit_id' => $visitId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
 
 } 

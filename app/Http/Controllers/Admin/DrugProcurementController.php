@@ -10,6 +10,7 @@ use App\Http\Requests\Admin\DrugProcurement\StoreRequest;
 use App\Http\Requests\Admin\DrugProcurement\UpdateRequest;
 use App\Http\Filters\DrugProcurementFilter;
 use App\Http\Traits\HasOptionsMethods;
+use App\Services\Export\ExportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -317,5 +318,64 @@ class DrugProcurementController extends AdminController
             });
 
         return response()->json($branches);
+    }
+
+    /**
+     * Экспорт поставок препаратов
+     */
+    public function export(Request $request)
+    {
+        try {
+            $filter = app()->make(DrugProcurementFilter::class, ['queryParams' => array_filter($request->all())]);
+
+            // Получаем данные без пагинации
+            $query = $this->model::select([
+                    'id', 'drug_id', 'supplier_id', 'branch_id', 'quantity', 'price', 'delivery_date', 'expiry_date',
+                    'manufacture_date', 'packaging_date', 'created_at', 'updated_at'
+                ])
+                ->with([
+                    'drug:id,name,unit_id,prescription_required,description',
+                    'drug.unit:id,name,symbol',
+                    'supplier:id,name',
+                    'branch:id,name,address'
+                ]);
+                
+            $filter->apply($query);
+            
+            $data = $query->get();
+            
+            $formattedData = [];
+            foreach ($data as $procurement) {
+                $formattedData[] = [
+                    'ID поставки' => $procurement->id,
+                    'Препарат' => $procurement->drug ? $procurement->drug->name : 'Не указан',
+                    'ID препарата' => $procurement->drug ? $procurement->drug->id : '',
+                    'Единица измерения' => $procurement->drug && $procurement->drug->unit ? $procurement->drug->unit->name : 'Не указана',
+                    'Символ единицы' => $procurement->drug && $procurement->drug->unit ? $procurement->drug->unit->symbol : '',
+                    'Поставщик' => $procurement->supplier ? $procurement->supplier->name : 'Не указан',
+                    'ID поставщика' => $procurement->supplier ? $procurement->supplier->id : '',
+                    'Филиал' => $procurement->branch ? $procurement->branch->name : 'Не указан',
+                    'Адрес филиала' => $procurement->branch ? $procurement->branch->address : '',
+                    'Количество' => $procurement->quantity,
+                    'Цена за единицу' => number_format($procurement->price, 2, ',', ' ') . ' руб.',
+                    'Общая стоимость' => number_format($procurement->price * $procurement->quantity, 2, ',', ' ') . ' руб.',
+                    'Дата поставки' => $procurement->delivery_date ? \Carbon\Carbon::parse($procurement->delivery_date)->format('d.m.Y') : '',
+                    'Срок годности' => $procurement->expiry_date ? \Carbon\Carbon::parse($procurement->expiry_date)->format('d.m.Y') : '',
+                    'Дата производства' => $procurement->manufacture_date ? \Carbon\Carbon::parse($procurement->manufacture_date)->format('d.m.Y') : '',
+                    'Дата упаковки' => $procurement->packaging_date ? \Carbon\Carbon::parse($procurement->packaging_date)->format('d.m.Y') : '',
+                    'Требуется рецепт' => $procurement->drug && $procurement->drug->prescription_required ? 'Да' : 'Нет',
+                    'Описание препарата' => $procurement->drug && $procurement->drug->description ? $procurement->drug->description : 'Нет описания',
+                    'Дата создания' => $procurement->created_at ? $procurement->created_at->format('d.m.Y H:i') : '',
+                    'Последнее обновление' => $procurement->updated_at ? $procurement->updated_at->format('d.m.Y H:i') : ''
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('drug_procurements', 'xlsx');
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте поставок препаратов', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
     }
 } 

@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\EmployeePasswordReset;
+use App\Services\Export\ExportService;
 
 class EmployeeController extends AdminController
 {
@@ -337,5 +338,45 @@ class EmployeeController extends AdminController
     public function specialtyOptions(Request $request)
     {
         return app(\App\Services\Options\SpecialtyOptionsService::class)->getOptions($request);
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $filter = app(EmployeeFilter::class, ['queryParams' => array_filter($request->all())]);
+            
+            $data = Employee::filter($filter)
+                ->with(['specialties', 'branches', 'roles'])
+                ->get();
+            
+            // Форматируем данные для экспорта
+            $formattedData = $data->map(function ($employee) {
+                return [
+                    'ID' => $employee->id,
+                    'Имя' => $employee->name,
+                    'Email' => $employee->email,
+                    'Телефон' => $employee->phone,
+                    'Активен' => $employee->is_active ? 'Да' : 'Нет',
+                    'Специализации' => $employee->specialties->pluck('name')->implode(', '),
+                    'Филиалы' => $employee->branches->pluck('name')->implode(', '),
+                    'Роли' => $employee->roles->pluck('name')->implode(', '),
+                    'Последний вход' => $employee->last_login_at ? $employee->last_login_at->format('d.m.Y H:i') : 'Никогда',
+                    'Дата создания' => $employee->created_at ? $employee->created_at->format('d.m.Y H:i') : '',
+                    'Последнее обновление' => $employee->updated_at ? $employee->updated_at->format('d.m.Y H:i') : '',
+                ];
+            });
+            
+            $filename = app(ExportService::class)->generateFilename('employees', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте сотрудников', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
     }
 }

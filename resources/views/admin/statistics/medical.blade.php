@@ -8,6 +8,9 @@
         <i class="bi bi-heart-pulse"></i> Медицинская статистика
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ route('admin.statistics.medical.export', request()->query()) }}" class="btn btn-outline-success me-2">
+            <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Экспорт в Excel</span>
+        </a>
         <a href="{{ route('admin.statistics.dashboard') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад
         </a>

@@ -6,6 +6,9 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Приёмы - {{ $items->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ route('admin.visits.export', request()->query()) }}" class="btn btn-outline-success me-2">
+            <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Экспорт данных</span>
+        </a>
         @can('visits.create')
         <a href="{{ route('admin.visits.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить приём</span>

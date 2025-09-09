@@ -10,6 +10,8 @@ use App\Models\Employee;
 use Carbon\Carbon;
 use App\Services\Statistics\ConversionStatisticsService;
 use Illuminate\Support\Facades\DB;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Log;
 
 class DashboardStatisticsService
 {
@@ -127,5 +129,165 @@ class DashboardStatisticsService
     {
         $conversionService = new ConversionStatisticsService();
         return $conversionService->getAllConversionMetrics($startDate, $endDate);
+    }
+
+    /**
+     * Экспорт метрик дашборда
+     */
+    public function exportMetrics($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $metrics = $this->getMetrics($startDate, $endDate);
+            $periodStats = $this->getPeriodStats($startDate, $endDate);
+            $topServices = $this->getTopServices($startDate);
+            
+            // Форматируем основные метрики
+            $formattedMetrics = [
+                [
+                    'Показатель' => 'Общее количество визитов',
+                    'Значение' => $metrics['total_visits'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Общее количество заказов',
+                    'Значение' => $metrics['total_orders'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Общая выручка',
+                    'Значение' => number_format($metrics['total_revenue'], 2, ',', ' ') . ' руб.',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Общее количество услуг',
+                    'Значение' => $metrics['total_services'],
+                    'Период' => 'Всего в системе'
+                ],
+                [
+                    'Показатель' => 'Общее количество ветеринаров',
+                    'Значение' => $metrics['total_veterinarians'],
+                    'Период' => 'Всего в системе'
+                ],
+                [
+                    'Показатель' => 'Конверсия визитов в заказы',
+                    'Значение' => number_format($metrics['conversion_rate'], 2) . '%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Визиты с заказами',
+                    'Значение' => $metrics['visits_with_orders'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ]
+            ];
+            
+            // Форматируем статистику по дням
+            $formattedPeriodStats = [];
+            foreach ($periodStats as $date => $stats) {
+                $formattedPeriodStats[] = [
+                    'Дата' => $date,
+                    'Визиты' => $stats['visits'],
+                    'Заказы' => $stats['orders'],
+                    'Выручка' => number_format($stats['revenue'], 2, ',', ' ') . ' руб.'
+                ];
+            }
+            
+            // Форматируем топ услуг
+            $formattedTopServices = [];
+            foreach ($topServices as $service) {
+                $formattedTopServices[] = [
+                    'Услуга' => $service['service'] ? $service['service']->name : 'Неизвестно',
+                    'Количество заказов' => $service['count'],
+                    'Выручка' => number_format($service['revenue'], 2, ',', ' ') . ' руб.'
+                ];
+            }
+            
+            // Объединяем все данные
+            $allData = array_merge($formattedMetrics, $formattedPeriodStats, $formattedTopServices);
+            
+            $filename = app(ExportService::class)->generateFilename('dashboard_metrics', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($allData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте метрик дашборда', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт детальной статистики по дням
+     */
+    public function exportPeriodStats($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $periodStats = $this->getPeriodStats($startDate, $endDate);
+            
+            $formattedData = [];
+            foreach ($periodStats as $date => $stats) {
+                $formattedData[] = [
+                    'Дата' => $date,
+                    'Количество визитов' => $stats['visits'],
+                    'Количество заказов' => $stats['orders'],
+                    'Выручка (руб.)' => $stats['revenue'],
+                    'Средний чек' => $stats['orders'] > 0 ? number_format($stats['revenue'] / $stats['orders'], 2, ',', ' ') : '0,00'
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('period_stats', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте статистики по периодам', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт топ услуг
+     */
+    public function exportTopServices($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $topServices = $this->getTopServices($startDate);
+            
+            $formattedData = [];
+            foreach ($topServices as $service) {
+                $formattedData[] = [
+                    'Услуга' => $service['service'] ? $service['service']->name : 'Неизвестно',
+                    'Описание' => $service['service'] ? $service['service']->description : '',
+                    'Количество заказов' => $service['count'],
+                    'Выручка (руб.)' => $service['revenue'],
+                    'Средняя цена' => $service['count'] > 0 ? number_format($service['revenue'] / $service['count'], 2, ',', ' ') : '0,00',
+                    'Период' => $startDate . ' - ' . $endDate
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('top_services', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте топ услуг', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

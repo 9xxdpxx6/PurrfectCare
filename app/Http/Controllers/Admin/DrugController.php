@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\Export\ExportService;
 
 class DrugController extends AdminController
 {
@@ -198,4 +199,83 @@ class DrugController extends AdminController
     }
 
     // Метод supplierOptions теперь наследуется из трейта HasOptionsMethods
+
+    public function export(Request $request)
+    {
+        try {
+            // Фильтруем только непустые параметры, но сохраняем '0' как валидное значение
+            $queryParams = array_filter($request->all(), function($value, $key) {
+                // Сохраняем '0' для prescription_required, но удаляем пустые строки
+                if ($key === 'prescription_required') {
+                    return $value !== '' && $value !== null;
+                }
+                return $value !== '' && $value !== null;
+            }, ARRAY_FILTER_USE_BOTH);
+            
+            $filter = app()->make(DrugFilter::class, ['queryParams' => $queryParams]);
+            
+            $query = $this->model::with(['unit', 'procurements.supplier', 'branches']);
+            $filter->apply($query);
+            
+            $data = $query->get();
+            
+            // Подготавливаем данные для каждого препарата
+            foreach ($data as $drug) {
+                $uniqueSuppliers = $drug->procurements
+                    ->pluck('supplier')
+                    ->filter()
+                    ->unique('id')
+                    ->take(2);
+                
+                $supplierCount = $drug->procurements
+                    ->pluck('supplier')
+                    ->filter()
+                    ->unique('id')
+                    ->count();
+                
+                // Формируем строку с поставщиками
+                $supplierNames = $uniqueSuppliers->pluck('name')->toArray();
+                if ($supplierCount > 2) {
+                    $supplierNames[] = '...';
+                }
+                
+                $drug->suppliers_display = $supplierNames;
+                
+                // Получаем последнюю поставку для даты информации
+                $drug->latest_procurement = $drug->procurements
+                    ->sortByDesc('delivery_date')
+                    ->first();
+            }
+            
+            // Форматируем данные для экспорта
+            $formattedData = $data->map(function ($drug) {
+                return [
+                    'ID' => $drug->id,
+                    'Название' => $drug->name,
+                    'Единица измерения' => $drug->unit ? $drug->unit->name : 'Не указана',
+                    'Требуется рецепт' => $drug->prescription_required ? 'Да' : 'Нет',
+                    'Описание' => $drug->description,
+                    'Поставщики' => implode(', ', $drug->suppliers_display),
+                    'Количество поставщиков' => $drug->procurements->pluck('supplier')->filter()->unique('id')->count(),
+                    'Последняя поставка' => $drug->latest_procurement ? $drug->latest_procurement->delivery_date->format('d.m.Y') : 'Нет данных',
+                    'Количество филиалов' => $drug->branches->count(),
+                    'Филиалы' => $drug->branches->pluck('name')->implode(', '),
+                    'Дата создания' => $drug->created_at ? $drug->created_at->format('d.m.Y H:i') : '',
+                    'Последнее обновление' => $drug->updated_at ? $drug->updated_at->format('d.m.Y H:i') : '',
+                ];
+            });
+            
+            $filename = app(ExportService::class)->generateFilename('drugs', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте препаратов', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
+        }
+    }
 }

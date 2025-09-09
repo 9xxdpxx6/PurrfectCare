@@ -9,10 +9,10 @@
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
-            <a href="{{ route('admin.visits.create') }}" class="btn btn-sm btn-outline-primary">
+            <a href="{{ route('admin.visits.create') }}" class="btn btn-outline-primary">
                 <i class="bi bi-calendar-plus"></i> Новый приём
             </a>
-            <a href="{{ route('admin.orders.create') }}" class="btn btn-sm btn-outline-success">
+            <a href="{{ route('admin.orders.create') }}" class="btn btn-outline-success">
                 <i class="bi bi-bag-plus"></i> Новый заказ
             </a>
         </div>
@@ -156,7 +156,7 @@
                 <h5 class="card-title mb-0">
                     <i class="bi bi-calendar-day"></i> Сегодняшние приёмы
                 </h5>
-                <a href="{{ route('admin.visits.index') }}" class="btn btn-sm btn-outline-primary">Все приёмы</a>
+                <a href="{{ route('admin.visits.index') }}" class="btn btn-outline-primary">Все приёмы</a>
             </div>
             <div class="card-body">
                 @if($todayVisits->count() > 0)
@@ -209,7 +209,7 @@
                 <h5 class="card-title mb-0">
                     <i class="bi bi-bag"></i> Последние заказы
                 </h5>
-                <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-success">Все заказы</a>
+                <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-success">Все заказы</a>
             </div>
             <div class="card-body">
                 @if($recentOrders->count() > 0)
@@ -456,37 +456,37 @@
             <div class="card-body d-flex flex-column justify-content-center">
                 <div class="row">
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.visits.create') }}" class="btn btn-sm w-100 action-btn action-btn-primary text-start ms-3">
+                        <a href="{{ route('admin.visits.create') }}" class="btn w-100 action-btn action-btn-primary text-start ms-3">
                             <i class="bi bi-calendar-plus"></i> Новый приём
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.orders.create') }}" class="btn btn-sm w-100 action-btn action-btn-success text-start ms-3">
+                        <a href="{{ route('admin.orders.create') }}" class="btn w-100 action-btn action-btn-success text-start ms-3">
                             <i class="bi bi-bag-plus"></i> Новый заказ
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.users.create') }}" class="btn btn-sm w-100 action-btn action-btn-info text-start ms-3">
+                        <a href="{{ route('admin.users.create') }}" class="btn w-100 action-btn action-btn-info text-start ms-3">
                             <i class="bi bi-person-plus"></i> Новый клиент
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.pets.create') }}" class="btn btn-sm w-100 action-btn action-btn-warning text-start ms-3">
+                        <a href="{{ route('admin.pets.create') }}" class="btn w-100 action-btn action-btn-warning text-start ms-3">
                             <i class="bi bi-heart"></i> Новый питомец
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.schedules.index') }}" class="btn btn-sm w-100 action-btn action-btn-secondary text-start ms-3">
+                        <a href="{{ route('admin.schedules.index') }}" class="btn w-100 action-btn action-btn-secondary text-start ms-3">
                             <i class="bi bi-calendar-week"></i> Расписание
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.drugs.index') }}" class="btn btn-sm w-100 action-btn action-btn-dark text-start ms-3">
+                        <a href="{{ route('admin.drugs.index') }}" class="btn w-100 action-btn action-btn-dark text-start ms-3">
                             <i class="bi bi-capsule"></i> Препараты
                         </a>
                     </div>
                     <div class="col-6 mb-2">
-                        <a href="{{ route('admin.settings.index') }}" class="btn btn-sm w-100 action-btn action-btn-light text-start ms-3">
+                        <a href="{{ route('admin.settings.index') }}" class="btn w-100 action-btn action-btn-light text-start ms-3">
                             <i class="bi bi-gear"></i> Настройки
                         </a>
                     </div>

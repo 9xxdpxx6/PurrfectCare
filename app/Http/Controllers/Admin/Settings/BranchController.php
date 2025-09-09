@@ -7,6 +7,8 @@ use App\Services\Settings\BranchService;
 use App\Http\Requests\Admin\Settings\Branch\StoreRequest;
 use App\Http\Requests\Admin\Settings\Branch\UpdateRequest;
 use Illuminate\Http\Request;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Log;
 
 class BranchController extends SettingsController
 {
@@ -64,6 +66,44 @@ class BranchController extends SettingsController
             return $this->successResponse();
         } catch (\Exception $e) {
             return $this->dependencyErrorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Экспорт филиалов
+     */
+    public function export(Request $request)
+    {
+        try {
+            $branches = $this->service->getAll($request->all());
+            
+            // Форматируем данные для экспорта
+            $formattedData = $branches->map(function ($branch) {
+                return [
+                    'ID' => $branch->id,
+                    'Название' => $branch->name,
+                    'Адрес' => $branch->address,
+                    'Телефон' => $branch->phone,
+                    'Время открытия' => $branch->opens_at ? $branch->opens_at->format('H:i') : 'Не указано',
+                    'Время закрытия' => $branch->closes_at ? $branch->closes_at->format('H:i') : 'Не указано',
+                    'Количество сотрудников' => $branch->veterinarians ? $branch->veterinarians->count() : 0,
+                    'Количество услуг' => $branch->services ? $branch->services->count() : 0,
+                    'Дата создания' => $branch->created_at ? $branch->created_at->format('d.m.Y H:i') : '',
+                    'Последнее обновление' => $branch->updated_at ? $branch->updated_at->format('d.m.Y H:i') : '',
+                ];
+            });
+            
+            $filename = app(ExportService::class)->generateFilename('branches', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте филиалов', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return $this->errorResponse('Ошибка при экспорте: ' . $e->getMessage());
         }
     }
 } 

@@ -8,6 +8,8 @@ use App\Models\Status;
 use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Services\Export\ExportService;
+use Illuminate\Support\Facades\Log;
 
 class OperationalStatisticsService
 {
@@ -204,5 +206,206 @@ class OperationalStatisticsService
             'schedules_with_visits' => $schedulesWithVisits,
             'utilization_percentage' => $totalSchedules > 0 ? round(($schedulesWithVisits / $totalSchedules) * 100, 1) : 0,
         ];
+    }
+
+    /**
+     * Экспорт данных по визитам
+     */
+    public function exportVisitsData($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $visitsData = $this->getVisitsData($startDate, $endDate);
+            $statusStats = $this->getStatusStats($startDate, $endDate);
+            
+            // Форматируем основные показатели
+            $formattedMetrics = [
+                [
+                    'Показатель' => 'Общее количество визитов',
+                    'Значение' => $visitsData['total'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Завершенные визиты',
+                    'Значение' => $visitsData['completed'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Отмененные визиты',
+                    'Значение' => $visitsData['cancelled'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Процент завершенных',
+                    'Значение' => $visitsData['total'] > 0 ? number_format(($visitsData['completed'] / $visitsData['total']) * 100, 2) . '%' : '0%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Процент отмененных',
+                    'Значение' => $visitsData['total'] > 0 ? number_format(($visitsData['cancelled'] / $visitsData['total']) * 100, 2) . '%' : '0%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ]
+            ];
+            
+            // Форматируем статистику по дням
+            $formattedByDay = [];
+            foreach ($visitsData['by_day'] as $date => $count) {
+                $formattedByDay[] = [
+                    'Дата' => Carbon::parse($date)->format('d.m.Y'),
+                    'Количество визитов' => $count,
+                    'День недели' => Carbon::parse($date)->locale('ru')->dayName
+                ];
+            }
+            
+            // Форматируем статистику по статусам
+            $formattedStatusStats = [];
+            foreach ($statusStats as $status => $data) {
+                $formattedStatusStats[] = [
+                    'Статус' => $status,
+                    'Количество' => $data['count'],
+                    'Процент' => $data['percentage'] . '%'
+                ];
+            }
+            
+            // Объединяем все данные
+            $allData = array_merge($formattedMetrics, $formattedByDay, $formattedStatusStats);
+            
+            $filename = app(ExportService::class)->generateFilename('visits_data', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($allData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте данных по визитам', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт загруженности сотрудников
+     */
+    public function exportEmployeeLoad($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $employeeLoad = $this->getEmployeeLoad($startDate, $endDate);
+            
+            $formattedData = [];
+            foreach ($employeeLoad as $data) {
+                $employee = $data['employee'];
+                $formattedData[] = [
+                    'Сотрудник' => $employee ? $employee->name : 'Неизвестно',
+                    'Email' => $employee ? $employee->email : '',
+                    'Специализации' => $employee && $employee->specialties ? $employee->specialties->pluck('name')->implode(', ') : 'Не указаны',
+                    'Количество визитов' => $data['visits_count'],
+                    'Рабочих дней' => $data['working_days'],
+                    'Среднее визитов в день' => number_format($data['avg_visits_per_day'], 2, ',', ' '),
+                    'Процент от общих визитов' => $data['visits_percentage'] . '%',
+                    'Уровень загруженности' => $data['load_level'],
+                    'Теоретический максимум' => $data['theoretical_max'],
+                    'Порог низкой загруженности' => $data['thresholds']['low'],
+                    'Порог средней загруженности' => $data['thresholds']['medium'],
+                    'Прогресс (%)' => $data['progress_percentage'] . '%'
+                ];
+            }
+            
+            $filename = app(ExportService::class)->generateFilename('employee_load', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте загруженности сотрудников', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Экспорт операционных данных (визиты + загруженность)
+     */
+    public function exportOperationalData($startDate, $endDate, $format = 'excel')
+    {
+        try {
+            $visitsData = $this->getVisitsData($startDate, $endDate);
+            $employeeLoad = $this->getEmployeeLoad($startDate, $endDate);
+            $scheduleStats = $this->getScheduleStats($startDate, $endDate);
+            
+            // Форматируем основные показатели
+            $formattedMetrics = [
+                [
+                    'Показатель' => 'Общее количество визитов',
+                    'Значение' => $visitsData['total'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Завершенные визиты',
+                    'Значение' => $visitsData['completed'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Отмененные визиты',
+                    'Значение' => $visitsData['cancelled'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Общее количество смен',
+                    'Значение' => $scheduleStats['total_schedules'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Смены с визитами',
+                    'Значение' => $scheduleStats['schedules_with_visits'],
+                    'Период' => $startDate . ' - ' . $endDate
+                ],
+                [
+                    'Показатель' => 'Утилизация смен (%)',
+                    'Значение' => $scheduleStats['utilization_percentage'] . '%',
+                    'Период' => $startDate . ' - ' . $endDate
+                ]
+            ];
+            
+            // Форматируем данные по сотрудникам
+            $formattedEmployeeData = [];
+            foreach ($employeeLoad as $data) {
+                $employee = $data['employee'];
+                $formattedEmployeeData[] = [
+                    'Сотрудник' => $employee ? $employee->name : 'Неизвестно',
+                    'Email' => $employee ? $employee->email : '',
+                    'Специализации' => $employee && $employee->specialties ? $employee->specialties->pluck('name')->implode(', ') : 'Не указаны',
+                    'Количество визитов' => $data['visits_count'],
+                    'Рабочих дней' => $data['working_days'],
+                    'Среднее визитов в день' => number_format($data['avg_visits_per_day'], 2, ',', ' '),
+                    'Процент от общих визитов' => $data['visits_percentage'] . '%',
+                    'Уровень загруженности' => $data['load_level'],
+                    'Теоретический максимум' => $data['theoretical_max'],
+                    'Прогресс (%)' => $data['progress_percentage'] . '%'
+                ];
+            }
+            
+            // Объединяем все данные
+            $allData = array_merge($formattedMetrics, $formattedEmployeeData);
+            
+            $filename = app(ExportService::class)->generateFilename('operational_data', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($allData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте операционных данных', [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

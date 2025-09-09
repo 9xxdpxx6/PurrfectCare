@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UserPasswordReset;
+use App\Services\Export\ExportService;
 
 class UserController extends AdminController
 {
@@ -239,6 +240,53 @@ class UserController extends AdminController
             
             return back()
                 ->withErrors(['error' => 'Ошибка при сбросе пароля: ' . $e->getMessage()]);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            // Собираем все параметры, включая '0' значения для фильтров
+            $queryParams = $request->all();
+            
+            $filter = app()->make(UserFilter::class, ['queryParams' => $queryParams]);
+            
+            $query = $this->model::query();
+            $filter->apply($query);
+            
+            // Загружаем связи и считаем количество для экспорта
+            $data = $query->with(['pets', 'orders', 'visits'])
+                ->withCount(['pets', 'orders', 'visits'])
+                ->get();
+            
+            // Форматируем данные для экспорта
+            $formattedData = $data->map(function ($user) {
+                return [
+                    'ID' => $user->id,
+                    'Имя' => $user->name,
+                    'Email' => $user->email,
+                    'Телефон' => $user->phone,
+                    'Адрес' => $user->address,
+                    'Telegram' => $user->telegram,
+                    'Количество питомцев' => $user->pets_count,
+                    'Количество заказов' => $user->orders_count,
+                    'Количество визитов' => $user->visits_count,
+                    'Дата регистрации' => $user->created_at ? $user->created_at->format('d.m.Y H:i') : '',
+                    'Последнее обновление' => $user->updated_at ? $user->updated_at->format('d.m.Y H:i') : '',
+                ];
+            });
+            
+            $filename = app(ExportService::class)->generateFilename('clients', 'xlsx');
+            
+            return app(ExportService::class)->toExcel($formattedData, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при экспорте клиентов', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
         }
     }
 } 
