@@ -301,55 +301,35 @@ class VisitController extends AdminController
             
             // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
             $query = $this->model::select([
-                    'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
-                    'complaints', 'notes', 'is_completed', 'created_at'
+                    'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id', 'is_completed'
                 ])
                 ->with([
-                    'client:id,name,email,phone',
+                    'client:id,name,phone',
                     'pet:id,name,breed_id',
                     'pet.breed:id,name',
                     'schedule:id,veterinarian_id,branch_id,shift_starts_at',
-                    'schedule.veterinarian:id,name,email',
-                    'schedule.branch:id,name,address',
-                    'status:id,name,color',
-                    'symptoms:id,visit_id,dictionary_symptom_id,custom_symptom',
-                    'symptoms.dictionarySymptom:id,name',
-                    'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis',
-                    'diagnoses.dictionaryDiagnosis:id,name',
-                    'orders:id,client_id,pet_id,total,is_paid'
+                    'schedule.veterinarian:id,name',
+                    'schedule.branch:id,name',
+                    'status:id,name,color'
                 ])
                 ->filter($filter);
             
-            $data = $query->get();
+            // Ограничиваем количество записей для экспорта (максимум 1000)
+            $data = $query->limit(1000)->get();
             
             // Форматируем данные для экспорта
             $formattedData = [];
             foreach ($data as $visit) {
                 $formattedData[] = [
-                    'ID визита' => $visit->id,
+                    'ID' => $visit->id,
                     'Клиент' => $visit->client ? $visit->client->name : 'Не указан',
-                    'Email клиента' => $visit->client ? $visit->client->email : '',
                     'Телефон клиента' => $visit->client ? $visit->client->phone : '',
                     'Питомец' => $visit->pet ? $visit->pet->name : 'Не указан',
                     'Порода' => $visit->pet && $visit->pet->breed ? $visit->pet->breed->name : 'Не указана',
                     'Ветеринар' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->name : 'Не указан',
-                    'Email ветеринара' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->email : '',
                     'Филиал' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->name : 'Не указан',
-                    'Адрес филиала' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->address : '',
                     'Дата и время визита' => $visit->starts_at ? \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') : '',
                     'Статус' => $visit->status ? $visit->status->name : 'Не указан',
-                    'Жалобы' => $visit->complaints ?: 'Не указаны',
-                    'Заметки' => $visit->notes ?: 'Нет',
-                    'Завершен' => $visit->is_completed ? 'Да' : 'Нет',
-                    'Симптомы' => $visit->symptoms ? $visit->symptoms->map(function($symptom) {
-                        return $symptom->dictionarySymptom ? $symptom->dictionarySymptom->name : $symptom->custom_symptom;
-                    })->implode(', ') : 'Не указаны',
-                    'Диагнозы' => $visit->diagnoses ? $visit->diagnoses->map(function($diagnosis) {
-                        return $diagnosis->dictionaryDiagnosis ? $diagnosis->dictionaryDiagnosis->name : $diagnosis->custom_diagnosis;
-                    })->implode(', ') : 'Не указаны',
-                    'Количество заказов' => $visit->orders ? $visit->orders->count() : 0,
-                    'Общая сумма заказов' => $visit->orders ? number_format($visit->orders->sum('total'), 2, ',', ' ') . ' руб.' : '0,00 руб.',
-                    'Дата создания' => $visit->created_at ? $visit->created_at->format('d.m.Y H:i') : ''
                 ];
             }
             

@@ -255,15 +255,17 @@ class UserController extends AdminController
             $filter->apply($query);
             
             // Загружаем связи и считаем количество для экспорта
+            // Ограничиваем количество записей для экспорта (максимум 2000)
             $data = $query->with(['pets', 'orders', 'visits'])
                 ->withCount(['pets', 'orders', 'visits'])
+                ->limit(2000)
                 ->get();
             
             // Форматируем данные для экспорта
             $formattedData = $data->map(function ($user) {
                 return [
                     'ID' => $user->id,
-                    'Имя' => $user->name,
+                    'ФИО' => $user->name,
                     'Email' => $user->email,
                     'Телефон' => $user->phone,
                     'Адрес' => $user->address,
@@ -272,7 +274,6 @@ class UserController extends AdminController
                     'Количество заказов' => $user->orders_count,
                     'Количество визитов' => $user->visits_count,
                     'Дата регистрации' => $user->created_at ? $user->created_at->format('d.m.Y H:i') : '',
-                    'Последнее обновление' => $user->updated_at ? $user->updated_at->format('d.m.Y H:i') : '',
                 ];
             });
             

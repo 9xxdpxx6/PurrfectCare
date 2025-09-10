@@ -312,22 +312,15 @@ class OrderController extends AdminController
                     'pet.breed:id,name',
                     'status:id,name,color',
                     'branch:id,name,address',
-                    'manager:id,name,email',
-                    'items:id,order_id,item_type,item_id,quantity,unit_price',
-                    'visits:id,client_id,pet_id,starts_at,status_id'
+                    'manager:id,name,email'
                 ])
                 ->filter($filter);
             
-            $data = $query->get();
+            // Ограничиваем количество записей для экспорта (максимум 1000)
+            $data = $query->limit(1000)->get();
             
             $formattedData = [];
             foreach ($data as $order) {
-                // Группируем товары по типам
-                $drugs = $order->items->where('item_type', 'App\Models\Drug');
-                $services = $order->items->where('item_type', 'App\Models\Service');
-                $labTests = $order->items->where('item_type', 'App\Models\LabTest');
-                $vaccinations = $order->items->where('item_type', 'App\Models\VaccinationType');
-                
                 $formattedData[] = [
                     'ID заказа' => $order->id,
                     'Клиент' => $order->client ? $order->client->name : 'Не указан',
@@ -343,17 +336,7 @@ class OrderController extends AdminController
                     'Общая сумма' => number_format($order->total, 2, ',', ' ') . ' руб.',
                     'Оплачен' => $order->is_paid ? 'Да' : 'Нет',
                     'Дата закрытия' => $order->closed_at ? \Carbon\Carbon::parse($order->closed_at)->format('d.m.Y H:i') : '',
-                    'Дата создания' => $order->created_at ? $order->created_at->format('d.m.Y H:i') : '',
-                    'Количество препаратов' => $drugs->count(),
-                    'Количество услуг' => $services->count(),
-                    'Количество анализов' => $labTests->count(),
-                    'Количество вакцинаций' => $vaccinations->count(),
-                    'Общее количество позиций' => $order->items->count(),
-                    'Сумма препаратов' => number_format($drugs->sum('unit_price') * $drugs->sum('quantity'), 2, ',', ' ') . ' руб.',
-                    'Сумма услуг' => number_format($services->sum('unit_price') * $services->sum('quantity'), 2, ',', ' ') . ' руб.',
-                    'Сумма анализов' => number_format($labTests->sum('unit_price') * $labTests->sum('quantity'), 2, ',', ' ') . ' руб.',
-                    'Сумма вакцинаций' => number_format($vaccinations->sum('unit_price') * $vaccinations->sum('quantity'), 2, ',', ' ') . ' руб.',
-                    'Количество визитов' => $order->visits->count()
+                    'Дата создания' => $order->created_at ? $order->created_at->format('d.m.Y H:i') : ''
                 ];
             }
             

@@ -205,7 +205,8 @@ class ServiceController extends AdminController
             $query = $this->model::with('branches');
             $filter->apply($query);
             
-            $data = $query->get();
+            // Ограничиваем количество записей для экспорта (максимум 2000)
+            $data = $query->limit(2000)->get();
             
             // Форматируем данные для экспорта
             $formattedData = $data->map(function ($service) {
@@ -216,9 +217,8 @@ class ServiceController extends AdminController
                     'Цена' => $service->price ? number_format($service->price, 2, ',', ' ') . ' руб.' : 'Не указана',
                     'Филиалы' => $service->branches->pluck('name')->implode(', '),
                     'Количество филиалов' => $service->branches->count(),
-                    'Активна' => $service->is_active ? 'Да' : 'Нет',
-                    'Дата создания' => $service->created_at ? $service->created_at->format('d.m.Y H:i') : '',
-                    'Последнее обновление' => $service->updated_at ? $service->updated_at->format('d.m.Y H:i') : '',
+                    'Длительность' => $service->duration ? $service->duration . ' мин' : 'Не указана',
+                    'Дата добавления' => $service->created_at ? $service->created_at->format('d.m.Y H:i') : '',
                 ];
             });
             

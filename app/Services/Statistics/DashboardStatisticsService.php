@@ -67,8 +67,7 @@ class DashboardStatisticsService
 
         $stats = [];
         $current = $start->clone();
-        $period = $end->diffInDays($current);
-        $dateFormat = $period > 180 ? 'd.m.Y' : 'd.m';
+        $dateFormat = 'd.m.Y'; // Всегда используем полный формат даты
         
         while ($current <= $end) {
             $dateKey = $current->format('Y-m-d');
@@ -141,22 +140,35 @@ class DashboardStatisticsService
             $periodStats = $this->getPeriodStats($startDate, $endDate);
             $topServices = $this->getTopServices($startDate);
             
+            // Форматируем период в нужном формате
+            $periodFormatted = Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y');
+            
             // Форматируем основные метрики
             $formattedMetrics = [
                 [
                     'Показатель' => 'Общее количество визитов',
                     'Значение' => $metrics['total_visits'],
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Общее количество заказов',
                     'Значение' => $metrics['total_orders'],
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Общая выручка',
                     'Значение' => number_format($metrics['total_revenue'], 2, ',', ' ') . ' руб.',
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
+                ],
+                [
+                    'Показатель' => 'Конверсия визитов в заказы',
+                    'Значение' => number_format($metrics['conversion_rate'], 2) . '%',
+                    'Период' => $periodFormatted
+                ],
+                [
+                    'Показатель' => 'Визиты с заказами',
+                    'Значение' => $metrics['visits_with_orders'],
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Общее количество услуг',
@@ -167,16 +179,6 @@ class DashboardStatisticsService
                     'Показатель' => 'Общее количество ветеринаров',
                     'Значение' => $metrics['total_veterinarians'],
                     'Период' => 'Всего в системе'
-                ],
-                [
-                    'Показатель' => 'Конверсия визитов в заказы',
-                    'Значение' => number_format($metrics['conversion_rate'], 2) . '%',
-                    'Период' => $startDate . ' - ' . $endDate
-                ],
-                [
-                    'Показатель' => 'Визиты с заказами',
-                    'Значение' => $metrics['visits_with_orders'],
-                    'Период' => $startDate . ' - ' . $endDate
                 ]
             ];
             
@@ -187,26 +189,44 @@ class DashboardStatisticsService
                     'Дата' => $date,
                     'Визиты' => $stats['visits'],
                     'Заказы' => $stats['orders'],
-                    'Выручка' => number_format($stats['revenue'], 2, ',', ' ') . ' руб.'
+                    'Выручка (руб.)' => number_format($stats['revenue'], 2, ',', ' ') . ' руб.'
                 ];
             }
             
             // Форматируем топ услуг
             $formattedTopServices = [];
+            $isFirstService = true;
             foreach ($topServices as $service) {
                 $formattedTopServices[] = [
                     'Услуга' => $service['service'] ? $service['service']->name : 'Неизвестно',
+                    'Описание' => $service['service'] ? $service['service']->description : '',
                     'Количество заказов' => $service['count'],
-                    'Выручка' => number_format($service['revenue'], 2, ',', ' ') . ' руб.'
+                    'Выручка (руб.)' => number_format($service['revenue'], 2, ',', ' '),
+                    'Средняя цена (руб.)' => $service['count'] > 0 ? number_format($service['revenue'] / $service['count'], 2, ',', ' ') : '0,00',
+                    'Период' => $isFirstService ? $periodFormatted : ''
                 ];
+                $isFirstService = false;
             }
             
-            // Объединяем все данные
-            $allData = array_merge($formattedMetrics, $formattedPeriodStats, $formattedTopServices);
+            // Создаем данные для нескольких листов
+            $sheetsData = [
+                'Обзор' => [
+                    'data' => $formattedMetrics,
+                    'headers' => ['Показатель', 'Значение', 'Период']
+                ],
+                'По дням' => [
+                    'data' => $formattedPeriodStats,
+                    'headers' => ['Дата', 'Визиты', 'Заказы', 'Выручка (руб.)']
+                ],
+                'Топ услуг' => [
+                    'data' => $formattedTopServices,
+                    'headers' => ['Услуга', 'Описание', 'Количество заказов', 'Выручка (руб.)', 'Средняя цена (руб.)', 'Период']
+                ]
+            ];
             
             $filename = app(ExportService::class)->generateFilename('dashboard_metrics', 'xlsx');
             
-            return app(ExportService::class)->toExcel($allData, $filename);
+            return app(ExportService::class)->toExcelMultipleSheets($sheetsData, $filename);
             
         } catch (\Exception $e) {
             Log::error('Ошибка при экспорте метрик дашборда', [
@@ -263,16 +283,21 @@ class DashboardStatisticsService
         try {
             $topServices = $this->getTopServices($startDate);
             
+            // Форматируем период в нужном формате
+            $periodFormatted = Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y');
+            
             $formattedData = [];
+            $isFirstService = true;
             foreach ($topServices as $service) {
                 $formattedData[] = [
                     'Услуга' => $service['service'] ? $service['service']->name : 'Неизвестно',
                     'Описание' => $service['service'] ? $service['service']->description : '',
                     'Количество заказов' => $service['count'],
-                    'Выручка (руб.)' => $service['revenue'],
-                    'Средняя цена' => $service['count'] > 0 ? number_format($service['revenue'] / $service['count'], 2, ',', ' ') : '0,00',
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Выручка (руб.)' => number_format($service['revenue'], 2, ',', ' '),
+                    'Средняя цена (руб.)' => $service['count'] > 0 ? number_format($service['revenue'] / $service['count'], 2, ',', ' ') : '0,00',
+                    'Период' => $isFirstService ? $periodFormatted : '' // Период только в первой строке
                 ];
+                $isFirstService = false;
             }
             
             $filename = app(ExportService::class)->generateFilename('top_services', 'xlsx');

@@ -214,54 +214,22 @@ class DrugController extends AdminController
             
             $filter = app()->make(DrugFilter::class, ['queryParams' => $queryParams]);
             
-            $query = $this->model::with(['unit', 'procurements.supplier', 'branches']);
+            $query = $this->model::with(['unit', 'branches']);
             $filter->apply($query);
             
-            $data = $query->get();
-            
-            // Подготавливаем данные для каждого препарата
-            foreach ($data as $drug) {
-                $uniqueSuppliers = $drug->procurements
-                    ->pluck('supplier')
-                    ->filter()
-                    ->unique('id')
-                    ->take(2);
-                
-                $supplierCount = $drug->procurements
-                    ->pluck('supplier')
-                    ->filter()
-                    ->unique('id')
-                    ->count();
-                
-                // Формируем строку с поставщиками
-                $supplierNames = $uniqueSuppliers->pluck('name')->toArray();
-                if ($supplierCount > 2) {
-                    $supplierNames[] = '...';
-                }
-                
-                $drug->suppliers_display = $supplierNames;
-                
-                // Получаем последнюю поставку для даты информации
-                $drug->latest_procurement = $drug->procurements
-                    ->sortByDesc('delivery_date')
-                    ->first();
-            }
+            // Ограничиваем количество записей для экспорта (максимум 1000)
+            $data = $query->limit(1000)->get();
             
             // Форматируем данные для экспорта
             $formattedData = $data->map(function ($drug) {
                 return [
                     'ID' => $drug->id,
                     'Название' => $drug->name,
-                    'Единица измерения' => $drug->unit ? $drug->unit->name : 'Не указана',
+                    'Единица измерения' => $drug->unit ? $drug->unit->symbol : 'Не указана',
                     'Требуется рецепт' => $drug->prescription_required ? 'Да' : 'Нет',
-                    'Описание' => $drug->description,
-                    'Поставщики' => implode(', ', $drug->suppliers_display),
-                    'Количество поставщиков' => $drug->procurements->pluck('supplier')->filter()->unique('id')->count(),
-                    'Последняя поставка' => $drug->latest_procurement ? $drug->latest_procurement->delivery_date->format('d.m.Y') : 'Нет данных',
                     'Количество филиалов' => $drug->branches->count(),
                     'Филиалы' => $drug->branches->pluck('name')->implode(', '),
-                    'Дата создания' => $drug->created_at ? $drug->created_at->format('d.m.Y H:i') : '',
-                    'Последнее обновление' => $drug->updated_at ? $drug->updated_at->format('d.m.Y H:i') : '',
+                    'Дата добавления' => $drug->created_at ? $drug->created_at->format('d.m.Y H:i') : '',
                 ];
             });
             

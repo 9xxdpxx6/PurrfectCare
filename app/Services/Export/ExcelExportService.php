@@ -11,6 +11,8 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ExcelExportService
@@ -107,16 +109,23 @@ class ExcelExportService
         return Excel::download($export, $filename);
     }
 
+
     /**
-     * Export multiple sheets to Excel
+     * Export multiple sheets to Excel format
      *
-     * @param array $sheetsData Array of ['name' => 'Sheet Name', 'data' => $data, 'headers' => $headers]
+     * @param array $sheetsData Array of sheet data with structure:
+     * [
+     *   'sheet_name' => [
+     *     'data' => [...],
+     *     'headers' => [...]
+     *   ]
+     * ]
      * @param string $filename
      * @return BinaryFileResponse
      */
     public function exportMultipleSheets(array $sheetsData, string $filename): BinaryFileResponse
     {
-        $export = new class($sheetsData) implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths {
+        $export = new class($sheetsData) implements WithMultipleSheets {
             protected $sheetsData;
 
             public function __construct($sheetsData)
@@ -124,39 +133,73 @@ class ExcelExportService
                 $this->sheetsData = $sheetsData;
             }
 
-            public function collection()
+            public function sheets(): array
             {
-                return collect($this->sheetsData);
-            }
+                $sheets = [];
+                
+                foreach ($this->sheetsData as $sheetName => $sheetData) {
+                    $sheets[] = new class($sheetName, $sheetData) implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithTitle {
+                        protected $sheetName;
+                        protected $data;
+                        protected $headers;
 
-            public function headings(): array
-            {
-                return ['Sheet Name', 'Data Count'];
-            }
+                        public function __construct($sheetName, $sheetData)
+                        {
+                            $this->sheetName = $sheetName;
+                            $this->data = $sheetData['data'] ?? [];
+                            $this->headers = $sheetData['headers'] ?? [];
+                        }
 
-            public function map($row): array
-            {
-                return [
-                    $row['name'],
-                    is_array($row['data']) ? count($row['data']) : $row['data']->count()
-                ];
-            }
+                        public function collection()
+                        {
+                            return collect($this->data);
+                        }
 
-            public function styles(Worksheet $sheet)
-            {
-                return [
-                    1 => [
-                        'font' => ['bold' => true]
-                    ]
-                ];
-            }
+                        public function headings(): array
+                        {
+                            if (!empty($this->headers)) {
+                                return array_values($this->headers);
+                            }
+                            
+                            if (!empty($this->data)) {
+                                return array_keys($this->data[0] ?? []);
+                            }
+                            
+                            return [];
+                        }
 
-            public function columnWidths(): array
-            {
-                return [
-                    'A' => 20,
-                    'B' => 15
-                ];
+                        public function map($row): array
+                        {
+                            return array_values($row);
+                        }
+
+                        public function title(): string
+                        {
+                            return $this->sheetName;
+                        }
+
+                        public function styles(Worksheet $sheet)
+                        {
+                            return [
+                                1 => ['font' => ['bold' => true]],
+                            ];
+                        }
+
+                        public function columnWidths(): array
+                        {
+                            $widths = [];
+                            $headers = $this->headings();
+                            
+                            foreach ($headers as $index => $header) {
+                                $widths[chr(65 + $index)] = 15;
+                            }
+                            
+                            return $widths;
+                        }
+                    };
+                }
+                
+                return $sheets;
             }
         };
 

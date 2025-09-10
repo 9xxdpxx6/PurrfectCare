@@ -75,7 +75,8 @@ class BranchController extends SettingsController
     public function export(Request $request)
     {
         try {
-            $branches = $this->service->getAll($request->all());
+            // Ограничиваем количество записей для экспорта (максимум 100)
+            $branches = $this->service->getAll($request->all())->take(100);
             
             // Форматируем данные для экспорта
             $formattedData = $branches->map(function ($branch) {

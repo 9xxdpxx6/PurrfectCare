@@ -342,7 +342,8 @@ class DrugProcurementController extends AdminController
                 
             $filter->apply($query);
             
-            $data = $query->get();
+            // Ограничиваем количество записей для экспорта (максимум 2000)
+            $data = $query->limit(2000)->get();
             
             $formattedData = [];
             foreach ($data as $procurement) {

@@ -304,7 +304,8 @@ class PetController extends AdminController
                 
             $filter->apply($query);
             
-            $data = $query->get();
+            // Ограничиваем количество записей для экспорта (максимум 2000)
+            $data = $query->limit(2000)->get();
             
             // Подсчитаем статистику для каждого питомца
             foreach ($data as $pet) {
@@ -323,7 +324,7 @@ class PetController extends AdminController
                     'Email владельца' => $pet->client ? $pet->client->email : '',
                     'Телефон владельца' => $pet->client ? $pet->client->phone : '',
                     'Порода' => $pet->breed ? $pet->breed->name : 'Не указана',
-                    'Пол' => $pet->gender,
+                    'Пол' => $pet->gender === 'male' ? 'Самец' : ($pet->gender === 'female' ? 'Самка' : 'Неизвестно'),
                     'Дата рождения' => $pet->birthdate ? $pet->birthdate->format('d.m.Y') : '',
                     'Возраст (лет)' => $pet->birthdate ? $pet->birthdate->age : '',
                     'Температура' => $pet->temperature ? $pet->temperature . '°C' : '',
@@ -413,7 +414,7 @@ class PetController extends AdminController
                     'Адрес владельца' => $pet->client ? $pet->client->address : '',
                     'Порода' => $pet->breed ? $pet->breed->name : 'Не указана',
                     'Вид' => $pet->breed && $pet->breed->species ? $pet->breed->species->name : 'Не указан',
-                    'Пол' => $pet->gender,
+                    'Пол' => $pet->gender === 'male' ? 'Самец' : ($pet->gender === 'female' ? 'Самка' : 'Неизвестно'),
                     'Дата рождения' => $pet->birthdate ? $pet->birthdate->format('d.m.Y') : '',
                     'Возраст' => $pet->birthdate ? $pet->birthdate->age . ' лет' : '',
                     'Температура' => $pet->temperature ? $pet->temperature . '°C' : 'Не измерена',

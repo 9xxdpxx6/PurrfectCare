@@ -293,14 +293,22 @@ class StatisticsController extends AdminController
             $startDate = $dateRange['startDate'];
             $endDate = $dateRange['endDate'];
             
-            return $this->financialService->exportRevenue($startDate, $endDate);
+            $response = $this->financialService->exportRevenue($startDate, $endDate);
+            
+            // Добавляем заголовки для правильного скачивания файла
+            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', '0');
+            $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            
+            return $response;
             
         } catch (\Exception $e) {
             Log::error('Ошибка при экспорте финансовой статистики', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
         }
     }
@@ -431,8 +439,9 @@ class StatisticsController extends AdminController
             
             $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
             $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
             
-            return $this->dashboardService->exportTopServices($startDate);
+            return $this->dashboardService->exportTopServices($startDate, $endDate);
             
         } catch (\Exception $e) {
             Log::error('Ошибка при экспорте топ услуг', [

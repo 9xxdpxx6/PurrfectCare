@@ -335,7 +335,8 @@ class ScheduleController extends AdminController
                 ])
                 ->filter($filter);
             
-            $data = $query->get();
+            // Ограничиваем количество записей для экспорта (максимум 5000)
+            $data = $query->limit(5000)->get();
             
             // Форматируем данные для экспорта
             $formattedData = [];
@@ -345,7 +346,7 @@ class ScheduleController extends AdminController
                 $workingHours = $shiftEnd->diffInHours($shiftStart);
                 
                 $formattedData[] = [
-                    'ID смены' => $schedule->id,
+                    'ID' => $schedule->id,
                     'Ветеринар' => $schedule->veterinarian ? $schedule->veterinarian->name : 'Не указан',
                     'Email ветеринара' => $schedule->veterinarian ? $schedule->veterinarian->email : '',
                     'Филиал' => $schedule->branch ? $schedule->branch->name : 'Не указан',
@@ -355,8 +356,6 @@ class ScheduleController extends AdminController
                     'Время окончания' => $shiftEnd->format('H:i'),
                     'Продолжительность (часы)' => $workingHours,
                     'День недели' => $shiftStart->locale('ru')->dayName,
-                    'Дата создания' => $schedule->created_at ? $schedule->created_at->format('d.m.Y H:i') : '',
-                    'Последнее обновление' => $schedule->updated_at ? $schedule->updated_at->format('d.m.Y H:i') : ''
                 ];
             }
             

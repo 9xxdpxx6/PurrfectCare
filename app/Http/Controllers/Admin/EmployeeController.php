@@ -347,22 +347,22 @@ class EmployeeController extends AdminController
             
             $data = Employee::filter($filter)
                 ->with(['specialties', 'branches', 'roles'])
+                ->limit(1000)
                 ->get();
             
             // Форматируем данные для экспорта
             $formattedData = $data->map(function ($employee) {
                 return [
                     'ID' => $employee->id,
-                    'Имя' => $employee->name,
+                    'ФИО' => $employee->name,
                     'Email' => $employee->email,
                     'Телефон' => $employee->phone,
                     'Активен' => $employee->is_active ? 'Да' : 'Нет',
-                    'Специализации' => $employee->specialties->pluck('name')->implode(', '),
+                    'Специальности' => $employee->specialties->pluck('name')->implode(', '),
                     'Филиалы' => $employee->branches->pluck('name')->implode(', '),
                     'Роли' => $employee->roles->pluck('name')->implode(', '),
                     'Последний вход' => $employee->last_login_at ? $employee->last_login_at->format('d.m.Y H:i') : 'Никогда',
-                    'Дата создания' => $employee->created_at ? $employee->created_at->format('d.m.Y H:i') : '',
-                    'Последнее обновление' => $employee->updated_at ? $employee->updated_at->format('d.m.Y H:i') : '',
+                    'Дата добавления' => $employee->created_at ? $employee->created_at->format('d.m.Y H:i') : '',
                 ];
             });
             

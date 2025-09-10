@@ -155,80 +155,111 @@ class FinancialStatisticsService
             $branchRevenue = $this->getBranchRevenue($startDate, $endDate);
             $revenueData = $this->getRevenueData($startDate, $endDate);
             
-            // Форматируем основные показатели
-            $formattedMetrics = [
-                [
-                    'Показатель' => 'Общая выручка',
-                    'Значение' => number_format($totalRevenue, 2, ',', ' ') . ' руб.',
-                    'Период' => $startDate . ' - ' . $endDate
+            // Подготавливаем данные для многостраничного экспорта
+            $sheetsData = [
+                'Обзор' => [
+                    'data' => [
+                        [
+                            'Показатель' => 'Общая выручка',
+                            'Значение' => number_format($totalRevenue, 2, ',', ' ') . ' руб.',
+                            'Период' => Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y')
+                        ],
+                        [
+                            'Показатель' => 'Количество заказов',
+                            'Значение' => $totalOrders,
+                            'Период' => Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y')
+                        ],
+                        [
+                            'Показатель' => 'Средний чек',
+                            'Значение' => $totalOrders > 0 ? number_format($totalRevenue / $totalOrders, 2, ',', ' ') . ' руб.' : '0,00 руб.',
+                            'Период' => Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y')
+                        ],
+                        [
+                            'Показатель' => 'Количество дней',
+                            'Значение' => count($revenueData),
+                            'Период' => Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y')
+                        ],
+                        [
+                            'Показатель' => 'Средняя дневная выручка',
+                            'Значение' => count($revenueData) > 0 ? number_format($totalRevenue / count($revenueData), 2, ',', ' ') . ' руб.' : '0,00 руб.',
+                            'Период' => Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y')
+                        ]
+                    ],
+                    'headers' => ['Показатель', 'Значение', 'Период']
                 ],
-                [
-                    'Показатель' => 'Количество заказов',
-                    'Значение' => $totalOrders,
-                    'Период' => $startDate . ' - ' . $endDate
+                
+                'По категориям' => [
+                    'data' => [
+                        [
+                            'Категория' => 'Услуги',
+                            'Выручка (руб.)' => $categoryRevenue['services'],
+                            'Процент' => $totalRevenue > 0 ? number_format(($categoryRevenue['services'] / $totalRevenue) * 100, 2) . '%' : '0%',
+                            'Период' => Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y')
+                        ],
+                        [
+                            'Категория' => 'Препараты',
+                            'Выручка (руб.)' => $categoryRevenue['drugs'],
+                            'Процент' => $totalRevenue > 0 ? number_format(($categoryRevenue['drugs'] / $totalRevenue) * 100, 2) . '%' : '0%',
+                            'Период' => ''
+                        ],
+                        [
+                            'Категория' => 'Лабораторные анализы',
+                            'Выручка (руб.)' => $categoryRevenue['lab_tests'],
+                            'Процент' => $totalRevenue > 0 ? number_format(($categoryRevenue['lab_tests'] / $totalRevenue) * 100, 2) . '%' : '0%',
+                            'Период' => ''
+                        ],
+                        [
+                            'Категория' => 'Вакцинации',
+                            'Выручка (руб.)' => $categoryRevenue['vaccinations'],
+                            'Процент' => $totalRevenue > 0 ? number_format(($categoryRevenue['vaccinations'] / $totalRevenue) * 100, 2) . '%' : '0%',
+                            'Период' => ''
+                        ]
+                    ],
+                    'headers' => ['Категория', 'Выручка (руб.)', 'Процент', 'Период']
                 ],
-                [
-                    'Показатель' => 'Средний чек',
-                    'Значение' => $totalOrders > 0 ? number_format($totalRevenue / $totalOrders, 2, ',', ' ') . ' руб.' : '0,00 руб.',
-                    'Период' => $startDate . ' - ' . $endDate
+                
+                'По филиалам' => [
+                    'data' => array_map(function($branchData, $index) use ($totalRevenue, $startDate, $endDate) {
+                        $revenuePercentage = $totalRevenue > 0 ? ($branchData['revenue'] / $totalRevenue) * 100 : 0;
+                        
+                        return [
+                            'Филиал' => $branchData['branch'] ? $branchData['branch']->name : 'Неизвестно',
+                            'Адрес' => $branchData['branch'] ? $branchData['branch']->address : '',
+                            'Выручка (руб.)' => $branchData['revenue'],
+                            'Процент' => number_format($revenuePercentage, 2) . '%',
+                            'Количество заказов' => $branchData['orders_count'],
+                            'Средний чек (руб.)' => $branchData['orders_count'] > 0 ? number_format($branchData['revenue'] / $branchData['orders_count'], 2, ',', ' ') : '0,00',
+                            'Период' => $index === 0 ? Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y') : ''
+                        ];
+                    }, $branchRevenue->toArray(), range(0, count($branchRevenue->toArray()) - 1)),
+                    'headers' => ['Филиал', 'Адрес', 'Выручка (руб.)', 'Процент', 'Количество заказов', 'Средний чек (руб.)', 'Период']
+                ],
+                
+                'По дням' => [
+                    'data' => array_map(function($date, $revenue) use ($startDate, $endDate) {
+                        $dayOfWeek = Carbon::parse($date)->locale('ru')->dayName;
+                        
+                        // Проверяем есть ли расписания в этот день
+                        $hasSchedule = \App\Models\Schedule::whereDate('shift_starts_at', $date)->exists();
+                        $isWorkingDay = $hasSchedule ? 'Рабочий' : 'Выходной';
+                        
+                        return [
+                            'Дата' => Carbon::parse($date)->format('d.m.Y'),
+                            'День недели' => $dayOfWeek,
+                            'Тип дня' => $isWorkingDay,
+                            'Выручка (руб.)' => $revenue
+                        ];
+                    }, array_keys($revenueData), array_values($revenueData)),
+                    'headers' => ['Дата', 'День недели', 'Тип дня', 'Выручка (руб.)']
                 ]
             ];
             
-            // Форматируем выручку по категориям
-            $formattedCategoryRevenue = [
-                [
-                    'Категория' => 'Услуги',
-                    'Выручка (руб.)' => $categoryRevenue['services'],
-                    'Процент' => $totalRevenue > 0 ? number_format(($categoryRevenue['services'] / $totalRevenue) * 100, 2) . '%' : '0%'
-                ],
-                [
-                    'Категория' => 'Препараты',
-                    'Выручка (руб.)' => $categoryRevenue['drugs'],
-                    'Процент' => $totalRevenue > 0 ? number_format(($categoryRevenue['drugs'] / $totalRevenue) * 100, 2) . '%' : '0%'
-                ],
-                [
-                    'Категория' => 'Лабораторные анализы',
-                    'Выручка (руб.)' => $categoryRevenue['lab_tests'],
-                    'Процент' => $totalRevenue > 0 ? number_format(($categoryRevenue['lab_tests'] / $totalRevenue) * 100, 2) . '%' : '0%'
-                ],
-                [
-                    'Категория' => 'Вакцинации',
-                    'Выручка (руб.)' => $categoryRevenue['vaccinations'],
-                    'Процент' => $totalRevenue > 0 ? number_format(($categoryRevenue['vaccinations'] / $totalRevenue) * 100, 2) . '%' : '0%'
-                ]
-            ];
+            $filename = app(ExportService::class)->generateFilename('financial_report', 'xlsx');
             
-            // Форматируем выручку по филиалам
-            $formattedBranchRevenue = [];
-            foreach ($branchRevenue as $branchData) {
-                $formattedBranchRevenue[] = [
-                    'Филиал' => $branchData['branch'] ? $branchData['branch']->name : 'Неизвестно',
-                    'Адрес' => $branchData['branch'] ? $branchData['branch']->address : '',
-                    'Выручка (руб.)' => $branchData['revenue'],
-                    'Количество заказов' => $branchData['orders_count'],
-                    'Средний чек' => $branchData['orders_count'] > 0 ? number_format($branchData['revenue'] / $branchData['orders_count'], 2, ',', ' ') : '0,00'
-                ];
-            }
-            
-            // Форматируем выручку по дням
-            $formattedRevenueData = [];
-            foreach ($revenueData as $date => $revenue) {
-                $formattedRevenueData[] = [
-                    'Дата' => Carbon::parse($date)->format('d.m.Y'),
-                    'Выручка (руб.)' => $revenue,
-                    'День недели' => Carbon::parse($date)->locale('ru')->dayName
-                ];
-            }
-            
-            // Объединяем все данные
-            $allData = array_merge($formattedMetrics, $formattedCategoryRevenue, $formattedBranchRevenue, $formattedRevenueData);
-            
-            $filename = app(ExportService::class)->generateFilename('revenue_report', 'xlsx');
-            
-            return app(ExportService::class)->toExcel($allData, $filename);
+            return app(ExportService::class)->toExcelMultipleSheets($sheetsData, $filename);
             
         } catch (\Exception $e) {
-            Log::error('Ошибка при экспорте отчета по выручке', [
+            Log::error('Ошибка при экспорте финансового отчёта', [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'error' => $e->getMessage(),
@@ -334,15 +365,21 @@ class FinancialStatisticsService
         try {
             $branchRevenue = $this->getBranchRevenue($startDate, $endDate);
             
+            // Форматируем период в нужном формате
+            $periodFormatted = Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y');
+            
             $formattedData = [];
+            $isFirstRow = true;
             foreach ($branchRevenue as $branchData) {
                 $formattedData[] = [
                     'Филиал' => $branchData['branch'] ? $branchData['branch']->name : 'Неизвестно',
                     'Адрес' => $branchData['branch'] ? $branchData['branch']->address : '',
                     'Выручка (руб.)' => $branchData['revenue'],
                     'Количество заказов' => $branchData['orders_count'],
-                    'Средний чек (руб.)' => $branchData['orders_count'] > 0 ? number_format($branchData['revenue'] / $branchData['orders_count'], 2, ',', ' ') : '0,00'
+                    'Средний чек (руб.)' => $branchData['orders_count'] > 0 ? number_format($branchData['revenue'] / $branchData['orders_count'], 2, ',', ' ') : '0,00',
+                    'Период' => $isFirstRow ? $periodFormatted : '' // Период только в первой строке
                 ];
+                $isFirstRow = false;
             }
             
             $filename = app(ExportService::class)->generateFilename('branch_revenue', 'xlsx');

@@ -66,6 +66,18 @@ class ExportService
     }
 
     /**
+     * Export data to Excel with multiple sheets
+     *
+     * @param array $sheetsData
+     * @param string $filename
+     * @return BinaryFileResponse
+     */
+    public function toExcelMultipleSheets(array $sheetsData, string $filename): BinaryFileResponse
+    {
+        return $this->excelService->exportMultipleSheets($sheetsData, $filename);
+    }
+
+    /**
      * Format data from query builder or collection
      *
      * @param mixed $query
