@@ -12,7 +12,7 @@
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0 gap-2">
         <a href="{{ route('admin.visits.export-details', $item) }}" class="btn btn-outline-danger">
-            <i class="bi bi-file-earmark-pdf"></i> <span class="d-none d-lg-inline">Скачать медкарту (PDF)</span>
+            <i class="bi bi-file-earmark-pdf"></i> <span class="d-none d-lg-inline">Детали приёма (PDF)</span>
         </a>
         @can('visits.update')
         <a href="{{ route('admin.visits.edit', $item) }}" class="btn btn-outline-warning">

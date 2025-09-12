@@ -512,7 +512,7 @@ class VisitController extends AdminController
         $orders = $data['orders'];
         $summary = $data['summary'];
         
-        $html = view('admin.visits.visit-details-pdf', compact(
+        $html = view('admin.exports.visit-details-pdf', compact(
             'visitInfo', 'clientInfo', 'petInfo', 'veterinarianInfo', 
             'branchInfo', 'symptoms', 'diagnoses', 'orders', 'summary'
         ))->render();

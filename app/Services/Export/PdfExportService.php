@@ -48,13 +48,13 @@ class PdfExportService
         $collection = $data instanceof Collection ? $data : collect($data);
         
         if ($collection->isEmpty()) {
-            return $this->getEmptyTemplate();
+            return view('admin.exports.pdf-empty')->render();
         }
 
         $tableHeaders = $this->getHeaders($collection->first(), $headers);
         $rows = $this->formatRows($collection, $tableHeaders);
 
-        return $this->getTableTemplate($tableHeaders, $rows);
+        return view('admin.exports.pdf-table', compact('tableHeaders', 'rows'))->render();
     }
 
     /**
@@ -147,93 +147,6 @@ class PdfExportService
         return (string) $value;
     }
 
-    /**
-     * Get table template HTML
-     *
-     * @param array $headers
-     * @param array $rows
-     * @return string
-     */
-    protected function getTableTemplate(array $headers, array $rows): string
-    {
-        $html = '<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Export Report</title>
-    <style>
-        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: bold; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .footer { margin-top: 20px; text-align: center; font-size: 10px; color: #666; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h2>Отчет</h2>
-        <p>Дата создания: ' . now()->format('d.m.Y H:i') . '</p>
-    </div>
-    
-    <table>
-        <thead>
-            <tr>';
-
-        foreach ($headers as $header) {
-            $html .= '<th>' . htmlspecialchars($header) . '</th>';
-        }
-
-        $html .= '</tr>
-        </thead>
-        <tbody>';
-
-        foreach ($rows as $row) {
-            $html .= '<tr>';
-            foreach ($row as $cell) {
-                $html .= '<td>' . htmlspecialchars($cell) . '</td>';
-            }
-            $html .= '</tr>';
-        }
-
-        $html .= '</tbody>
-    </table>
-    
-    <div class="footer">
-        <p>Страница 1 из 1</p>
-    </div>
-</body>
-</html>';
-
-        return $html;
-    }
-
-    /**
-     * Get empty template HTML
-     *
-     * @return string
-     */
-    protected function getEmptyTemplate(): string
-    {
-        return '<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Export Report</title>
-    <style>
-        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; margin: 20px; text-align: center; }
-        .empty { margin-top: 50px; color: #666; }
-    </style>
-</head>
-<body>
-    <div class="empty">
-        <h3>Нет данных для экспорта</h3>
-        <p>Дата создания: ' . now()->format('d.m.Y H:i') . '</p>
-    </div>
-</body>
-</html>';
-    }
 
     /**
      * Export with custom template
@@ -278,7 +191,8 @@ class PdfExportService
      */
     protected function generateCustomHtml($data, array $headers = [], string $template = 'default', array $options = []): string
     {
-        // This can be extended to use Blade templates
+        // Use the same logic as generateHtml for now
+        // Can be extended to use different templates based on $template parameter
         return $this->generateHtml($data, $headers, $template);
     }
 }

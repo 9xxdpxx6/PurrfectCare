@@ -403,7 +403,6 @@ class PetController extends AdminController
                 }
             ])->findOrFail($petId);
 
-            Log::info('Pet found for export', ['pet_name' => $pet->name, 'visits_count' => $pet->visits->count()]);
 
             // Форматируем данные для экспорта
             $formattedData = [
@@ -527,7 +526,7 @@ class PetController extends AdminController
         $orders = $data['orders'];
         $summary = $data['summary'];
         
-        $html = view('admin.pets.medical-history-pdf', compact(
+        $html = view('admin.exports.medical-history-pdf', compact(
             'petInfo', 'visits', 'vaccinations', 'labTests', 'orders', 'summary'
         ))->render();
         
