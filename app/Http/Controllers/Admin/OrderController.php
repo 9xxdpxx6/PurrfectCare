@@ -345,4 +345,106 @@ class OrderController extends AdminController
             return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * Печать чека заказа
+     */
+    public function printReceipt($id)
+    {
+        try {
+            // Получаем заказ с полными данными
+            $order = $this->model::select([
+                    'id', 'client_id', 'pet_id', 'status_id', 'branch_id', 'manager_id',
+                    'notes', 'total', 'is_paid', 'closed_at', 'created_at', 'updated_at'
+                ])
+                ->with([
+                    'client:id,name,email,phone,address',
+                    'pet:id,name,breed_id,client_id,birthdate,gender',
+                    'pet.breed:id,name,species_id',
+                    'pet.breed.species:id,name',
+                    'status:id,name,color',
+                    'branch:id,name,address,phone',
+                    'manager:id,name,email',
+                    'items:id,order_id,item_type,item_id,quantity,unit_price',
+                    'items.item:id,name',
+                    'visits:id,client_id,pet_id,starts_at,status_id,is_completed'
+                ])
+                ->findOrFail($id);
+
+            // Подготавливаем данные для чека
+            $receiptData = $this->prepareReceiptData($order);
+            
+            // Генерируем HTML для чека
+            $html = view('admin.exports.order-receipt', $receiptData)->render();
+            
+            // Создаем PDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+            $pdf->setPaper('A4', 'portrait');
+            $pdf->setOptions([
+                'defaultFont' => 'DejaVu Sans',
+                'isRemoteEnabled' => false,
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => true,
+                'defaultMediaType' => 'print',
+                'isFontSubsettingEnabled' => true,
+            ]);
+            
+            $filename = "receipt_order_{$order->id}_" . now()->format('Y-m-d_H-i-s') . '.pdf';
+            return $pdf->download($filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Ошибка при печати чека заказа', [
+                'order_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Ошибка при печати чека: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Подготовка данных для чека заказа
+     */
+    protected function prepareReceiptData($order)
+    {
+        // Группируем элементы заказа по типам
+        $services = [];
+        $drugs = [];
+        $labTests = [];
+        $vaccinations = [];
+
+        foreach ($order->items as $item) {
+            $itemData = [
+                'name' => $item->item_name,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'total' => $item->total
+            ];
+
+            switch ($item->item_type) {
+                case 'App\Models\Service':
+                    $services[] = $itemData;
+                    break;
+                case 'App\Models\Drug':
+                    $drugs[] = $itemData;
+                    break;
+                case 'App\Models\LabTest':
+                    $labTests[] = $itemData;
+                    break;
+                case 'App\Models\VaccinationType':
+                    $vaccinations[] = $itemData;
+                    break;
+            }
+        }
+
+        return [
+            'order' => $order,
+            'services' => $services,
+            'drugs' => $drugs,
+            'labTests' => $labTests,
+            'vaccinations' => $vaccinations,
+            'currentDate' => now()->format('d.m.Y H:i'),
+            'receiptNumber' => 'R-' . str_pad($order->id, 6, '0', STR_PAD_LEFT)
+        ];
+    }
 } 

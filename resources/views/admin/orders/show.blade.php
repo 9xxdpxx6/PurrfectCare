@@ -14,6 +14,9 @@
         <span class="fs-6 badge" style="background-color: {{ $item->status->color ?? '#6c757d' }}; color: white;">{{ $item->status->name }}</span>
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ route('admin.orders.print-receipt', $item) }}" class="btn btn-outline-primary me-2">
+            <i class="bi bi-printer"></i> Печать чека
+        </a>
         @can('orders.update')
         <a href="{{ route('admin.orders.edit', $item) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> Редактировать

@@ -14,6 +14,7 @@ Route::get('orders/lab-test-options', [OrderController::class, 'orderLabTestOpti
 Route::get('orders/vaccination-options', [OrderController::class, 'orderVaccinationOptions'])->name('orders.vaccination-options');
 Route::get('orders/visit-options', [OrderController::class, 'orderVisitOptions'])->name('orders.visit-options');
 Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
+Route::get('orders/{order}/print-receipt', [OrderController::class, 'printReceipt'])->name('orders.print-receipt');
 Route::resource('orders', OrderController::class);
 
 
