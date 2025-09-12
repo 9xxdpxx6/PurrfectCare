@@ -368,7 +368,7 @@ class VisitController extends AdminController
                 'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis,treatment_plan',
                 'diagnoses.dictionaryDiagnosis:id,name',
                 'orders' => function($query) {
-                    $query->select(['id', 'client_id', 'pet_id', 'branch_id', 'status_id', 'total', 'is_paid', 'closed_at', 'created_at'])
+                    $query->select(['orders.id', 'orders.client_id', 'orders.pet_id', 'orders.branch_id', 'orders.status_id', 'orders.total', 'orders.is_paid', 'orders.closed_at', 'orders.created_at'])
                         ->with([
                             'branch:id,name,address',
                             'status:id,name,color',
@@ -480,7 +480,7 @@ class VisitController extends AdminController
             $filename = app(ExportService::class)->generateFilename('visit_details_' . $visit->id, $format);
             
             if ($format === 'pdf') {
-                return app(ExportService::class)->toPdf($formattedData, $filename);
+                return $this->exportVisitDetailsPdf($formattedData, $filename);
             } else {
                 return app(ExportService::class)->toExcel($formattedData, $filename);
             }
@@ -494,6 +494,41 @@ class VisitController extends AdminController
             
             return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Экспорт деталей визита в PDF
+     */
+    private function exportVisitDetailsPdf($data, $filename)
+    {
+        // Извлекаем отдельные переменные из массива данных
+        $visitInfo = $data['visit_info'];
+        $clientInfo = $data['client_info'];
+        $petInfo = $data['pet_info'];
+        $veterinarianInfo = $data['veterinarian_info'];
+        $branchInfo = $data['branch_info'];
+        $symptoms = $data['symptoms'];
+        $diagnoses = $data['diagnoses'];
+        $orders = $data['orders'];
+        $summary = $data['summary'];
+        
+        $html = view('admin.visits.visit-details-pdf', compact(
+            'visitInfo', 'clientInfo', 'petInfo', 'veterinarianInfo', 
+            'branchInfo', 'symptoms', 'diagnoses', 'orders', 'summary'
+        ))->render();
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'defaultFont' => 'DejaVu Sans',
+            'isRemoteEnabled' => false,
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'defaultMediaType' => 'print',
+            'isFontSubsettingEnabled' => true,
+        ]);
+        
+        return $pdf->download($filename);
     }
 
 } 

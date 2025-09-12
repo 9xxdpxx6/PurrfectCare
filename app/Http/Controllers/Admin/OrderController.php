@@ -307,12 +307,12 @@ class OrderController extends AdminController
                     'total', 'is_paid', 'closed_at', 'created_at'
                 ])
                 ->with([
-                    'client:id,name,email,phone',
+                    'client:id,name,phone',
                     'pet:id,name,breed_id',
                     'pet.breed:id,name',
                     'status:id,name,color',
-                    'branch:id,name,address',
-                    'manager:id,name,email'
+                    'branch:id,name',
+                    'manager:id,name'
                 ])
                 ->filter($filter);
             
@@ -322,17 +322,14 @@ class OrderController extends AdminController
             $formattedData = [];
             foreach ($data as $order) {
                 $formattedData[] = [
-                    'ID заказа' => $order->id,
+                    'ID' => $order->id,
                     'Клиент' => $order->client ? $order->client->name : 'Не указан',
-                    'Email клиента' => $order->client ? $order->client->email : '',
                     'Телефон клиента' => $order->client ? $order->client->phone : '',
                     'Питомец' => $order->pet ? $order->pet->name : 'Не указан',
                     'Порода' => $order->pet && $order->pet->breed ? $order->pet->breed->name : 'Не указана',
                     'Статус' => $order->status ? $order->status->name : 'Не указан',
                     'Филиал' => $order->branch ? $order->branch->name : 'Не указан',
-                    'Адрес филиала' => $order->branch ? $order->branch->address : '',
                     'Менеджер' => $order->manager ? $order->manager->name : 'Не указан',
-                    'Email менеджера' => $order->manager ? $order->manager->email : '',
                     'Общая сумма' => number_format($order->total, 2, ',', ' ') . ' руб.',
                     'Оплачен' => $order->is_paid ? 'Да' : 'Нет',
                     'Дата закрытия' => $order->closed_at ? \Carbon\Carbon::parse($order->closed_at)->format('d.m.Y H:i') : '',

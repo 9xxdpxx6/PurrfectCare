@@ -132,7 +132,7 @@ class MedicalStatisticsService
     }
 
     /**
-     * Экспорт данных по диагнозам
+     * Экспорт данных по диагнозам - несколько листов
      */
     public function exportDiagnosesData($startDate, $endDate, $format = 'excel')
     {
@@ -141,41 +141,56 @@ class MedicalStatisticsService
             $diagnosesCount = $this->getDiagnosesCount($startDate, $endDate);
             $totalDiagnosesCount = $this->getTotalDiagnosesCount($startDate, $endDate);
             
-            // Форматируем основные показатели
+            // Форматируем период
+            $periodFormatted = Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y');
+            
+            // Лист 1: Обзор
             $formattedMetrics = [
                 [
                     'Показатель' => 'Общее количество диагнозов',
                     'Значение' => $totalDiagnosesCount,
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Уникальных диагнозов',
                     'Значение' => $diagnosesCount,
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Среднее количество диагнозов на визит',
                     'Значение' => $totalDiagnosesCount > 0 ? number_format($totalDiagnosesCount / $diagnosesCount, 2, ',', ' ') : '0,00',
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ]
             ];
             
-            // Форматируем данные по диагнозам
+            // Лист 2: Топ диагнозов
             $formattedDiagnosesData = [];
+            $isFirstDiagnosis = true;
             foreach ($diagnosesData as $diagnosis => $data) {
                 $formattedDiagnosesData[] = [
                     'Диагноз' => $diagnosis,
                     'Количество случаев' => $data['count'],
-                    'Процент от общих диагнозов' => $data['percentage'] . '%'
+                    'Процент от общих диагнозов' => $data['percentage'] . '%',
+                    'Период' => $isFirstDiagnosis ? $periodFormatted : ''
                 ];
+                $isFirstDiagnosis = false;
             }
             
-            // Объединяем все данные
-            $allData = array_merge($formattedMetrics, $formattedDiagnosesData);
+            // Подготавливаем данные для нескольких листов
+            $sheetsData = [
+                'Обзор' => [
+                    'headers' => ['Показатель', 'Значение', 'Период'],
+                    'data' => $formattedMetrics
+                ],
+                'Топ диагнозов' => [
+                    'headers' => ['Диагноз', 'Количество случаев', 'Процент от общих диагнозов', 'Период'],
+                    'data' => $formattedDiagnosesData
+                ]
+            ];
             
             $filename = app(ExportService::class)->generateFilename('diagnoses_data', 'xlsx');
             
-            return app(ExportService::class)->toExcel($allData, $filename);
+            return app(ExportService::class)->toExcelMultipleSheets($sheetsData, $filename);
             
         } catch (\Exception $e) {
             Log::error('Ошибка при экспорте данных по диагнозам', [
@@ -190,7 +205,7 @@ class MedicalStatisticsService
     }
 
     /**
-     * Экспорт данных по вакцинациям
+     * Экспорт данных по вакцинациям - несколько листов
      */
     public function exportVaccinationsData($startDate, $endDate, $format = 'excel')
     {
@@ -199,51 +214,73 @@ class MedicalStatisticsService
             $labTestsData = $this->getLabTestsData($startDate, $endDate);
             $labTestsTypesCount = $this->getLabTestsTypesCount($startDate, $endDate);
             
-            // Форматируем основные показатели
+            // Форматируем период
+            $periodFormatted = Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y');
+            
+            // Лист 1: Обзор
             $totalVaccinations = $vaccinationsData->sum();
             $formattedMetrics = [
                 [
                     'Показатель' => 'Общее количество вакцинаций',
                     'Значение' => $totalVaccinations,
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Количество видов животных',
                     'Значение' => $vaccinationsData->count(),
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Количество типов анализов',
                     'Значение' => $labTestsTypesCount,
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ]
             ];
             
-            // Форматируем данные по вакцинациям по видам
+            // Лист 2: Вакцинации по видам
             $formattedVaccinationsData = [];
+            $isFirstVaccination = true;
             foreach ($vaccinationsData as $species => $count) {
                 $formattedVaccinationsData[] = [
                     'Вид животного' => $species,
                     'Количество вакцинаций' => $count,
-                    'Процент от общих вакцинаций' => $totalVaccinations > 0 ? number_format(($count / $totalVaccinations) * 100, 2) . '%' : '0%'
+                    'Процент от общих вакцинаций' => $totalVaccinations > 0 ? number_format(($count / $totalVaccinations) * 100, 2) . '%' : '0%',
+                    'Период' => $isFirstVaccination ? $periodFormatted : ''
                 ];
+                $isFirstVaccination = false;
             }
             
-            // Форматируем данные по анализам
+            // Лист 3: Анализы
             $formattedLabTestsData = [];
+            $isFirstLabTest = true;
             foreach ($labTestsData as $labTest) {
                 $formattedLabTestsData[] = [
                     'Тип анализа' => $labTest['name'],
-                    'Количество анализов' => $labTest['count']
+                    'Количество анализов' => $labTest['count'],
+                    'Период' => $isFirstLabTest ? $periodFormatted : ''
                 ];
+                $isFirstLabTest = false;
             }
             
-            // Объединяем все данные
-            $allData = array_merge($formattedMetrics, $formattedVaccinationsData, $formattedLabTestsData);
+            // Подготавливаем данные для нескольких листов
+            $sheetsData = [
+                'Обзор' => [
+                    'headers' => ['Показатель', 'Значение', 'Период'],
+                    'data' => $formattedMetrics
+                ],
+                'Вакцинации по видам' => [
+                    'headers' => ['Вид животного', 'Количество вакцинаций', 'Процент от общих вакцинаций', 'Период'],
+                    'data' => $formattedVaccinationsData
+                ],
+                'Анализы' => [
+                    'headers' => ['Тип анализа', 'Количество анализов', 'Период'],
+                    'data' => $formattedLabTestsData
+                ]
+            ];
             
             $filename = app(ExportService::class)->generateFilename('vaccinations_data', 'xlsx');
             
-            return app(ExportService::class)->toExcel($allData, $filename);
+            return app(ExportService::class)->toExcelMultipleSheets($sheetsData, $filename);
             
         } catch (\Exception $e) {
             Log::error('Ошибка при экспорте данных по вакцинациям', [
@@ -258,7 +295,7 @@ class MedicalStatisticsService
     }
 
     /**
-     * Экспорт медицинских данных (диагнозы + вакцинации + анализы)
+     * Экспорт медицинских данных (диагнозы + вакцинации + анализы) - несколько листов
      */
     public function exportMedicalData($startDate, $endDate, $format = 'excel')
     {
@@ -269,66 +306,95 @@ class MedicalStatisticsService
             $diagnosesCount = $this->getDiagnosesCount($startDate, $endDate);
             $totalDiagnosesCount = $this->getTotalDiagnosesCount($startDate, $endDate);
             
-            // Форматируем основные показатели
+            // Форматируем период
+            $periodFormatted = Carbon::parse($startDate)->format('d.m.Y') . ' - ' . Carbon::parse($endDate)->format('d.m.Y');
+            
+            // Лист 1: Обзор
             $totalVaccinations = $vaccinationsData->sum();
             $formattedMetrics = [
                 [
                     'Показатель' => 'Общее количество диагнозов',
                     'Значение' => $totalDiagnosesCount,
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Уникальных диагнозов',
                     'Значение' => $diagnosesCount,
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Общее количество вакцинаций',
                     'Значение' => $totalVaccinations,
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ],
                 [
                     'Показатель' => 'Количество видов животных',
                     'Значение' => $vaccinationsData->count(),
-                    'Период' => $startDate . ' - ' . $endDate
+                    'Период' => $periodFormatted
                 ]
             ];
             
-            // Форматируем данные по диагнозам
+            // Лист 2: Топ диагнозов
             $formattedDiagnosesData = [];
+            $isFirstDiagnosis = true;
             foreach ($diagnosesData as $diagnosis => $data) {
                 $formattedDiagnosesData[] = [
                     'Диагноз' => $diagnosis,
                     'Количество случаев' => $data['count'],
-                    'Процент от общих диагнозов' => $data['percentage'] . '%'
+                    'Процент от общих диагнозов' => $data['percentage'] . '%',
+                    'Период' => $isFirstDiagnosis ? $periodFormatted : ''
                 ];
+                $isFirstDiagnosis = false;
             }
             
-            // Форматируем данные по вакцинациям
+            // Лист 3: Вакцинации по видам
             $formattedVaccinationsData = [];
+            $isFirstVaccination = true;
             foreach ($vaccinationsData as $species => $count) {
                 $formattedVaccinationsData[] = [
                     'Вид животного' => $species,
                     'Количество вакцинаций' => $count,
-                    'Процент от общих вакцинаций' => $totalVaccinations > 0 ? number_format(($count / $totalVaccinations) * 100, 2) . '%' : '0%'
+                    'Процент от общих вакцинаций' => $totalVaccinations > 0 ? number_format(($count / $totalVaccinations) * 100, 2) . '%' : '0%',
+                    'Период' => $isFirstVaccination ? $periodFormatted : ''
                 ];
+                $isFirstVaccination = false;
             }
             
-            // Форматируем данные по анализам
+            // Лист 4: Анализы
             $formattedLabTestsData = [];
+            $isFirstLabTest = true;
             foreach ($labTestsData as $labTest) {
                 $formattedLabTestsData[] = [
                     'Тип анализа' => $labTest['name'],
-                    'Количество анализов' => $labTest['count']
+                    'Количество анализов' => $labTest['count'],
+                    'Период' => $isFirstLabTest ? $periodFormatted : ''
                 ];
+                $isFirstLabTest = false;
             }
             
-            // Объединяем все данные
-            $allData = array_merge($formattedMetrics, $formattedDiagnosesData, $formattedVaccinationsData, $formattedLabTestsData);
+            // Подготавливаем данные для нескольких листов
+            $sheetsData = [
+                'Обзор' => [
+                    'headers' => ['Показатель', 'Значение', 'Период'],
+                    'data' => $formattedMetrics
+                ],
+                'Топ диагнозов' => [
+                    'headers' => ['Диагноз', 'Количество случаев', 'Процент от общих диагнозов', 'Период'],
+                    'data' => $formattedDiagnosesData
+                ],
+                'Вакцинации по видам' => [
+                    'headers' => ['Вид животного', 'Количество вакцинаций', 'Процент от общих вакцинаций', 'Период'],
+                    'data' => $formattedVaccinationsData
+                ],
+                'Анализы' => [
+                    'headers' => ['Тип анализа', 'Количество анализов', 'Период'],
+                    'data' => $formattedLabTestsData
+                ]
+            ];
             
             $filename = app(ExportService::class)->generateFilename('medical_data', 'xlsx');
             
-            return app(ExportService::class)->toExcel($allData, $filename);
+            return app(ExportService::class)->toExcelMultipleSheets($sheetsData, $filename);
             
         } catch (\Exception $e) {
             Log::error('Ошибка при экспорте медицинских данных', [

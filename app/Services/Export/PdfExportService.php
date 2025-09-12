@@ -23,6 +23,14 @@ class PdfExportService
         
         $pdf = Pdf::loadHTML($html);
         $pdf->setPaper('A4', 'landscape');
+        $pdf->setOptions([
+            'defaultFont' => 'DejaVu Sans',
+            'isRemoteEnabled' => false,
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'defaultMediaType' => 'print',
+            'isFontSubsettingEnabled' => true,
+        ]);
         
         return $pdf->download($filename);
     }
@@ -154,7 +162,7 @@ class PdfExportService
     <meta charset="UTF-8">
     <title>Export Report</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; margin: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; font-weight: bold; }
@@ -214,7 +222,7 @@ class PdfExportService
     <meta charset="UTF-8">
     <title>Export Report</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; text-align: center; }
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; margin: 20px; text-align: center; }
         .empty { margin-top: 50px; color: #666; }
     </style>
 </head>
@@ -247,6 +255,14 @@ class PdfExportService
         $orientation = $options['orientation'] ?? 'landscape';
         
         $pdf->setPaper($paper, $orientation);
+        $pdf->setOptions([
+            'defaultFont' => 'DejaVu Sans',
+            'isRemoteEnabled' => false,
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'defaultMediaType' => 'print',
+            'isFontSubsettingEnabled' => true,
+        ]);
         
         return $pdf->download($filename);
     }

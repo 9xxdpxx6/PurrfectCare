@@ -329,7 +329,7 @@ class PetController extends AdminController
                     'Возраст (лет)' => $pet->birthdate ? $pet->birthdate->age : '',
                     'Температура' => $pet->temperature ? $pet->temperature . '°C' : '',
                     'Вес' => $pet->weight ? $pet->weight . ' кг' : '',
-                    'Количество визитов' => $pet->visits_count,
+                    'Количество приемов' => $pet->visits_count,
                     'Количество заказов' => $pet->orders_count,
                     'Количество вакцинаций' => $pet->vaccinations_count,
                     'Количество анализов' => $pet->lab_tests_count,
@@ -354,7 +354,7 @@ class PetController extends AdminController
     /**
      * Экспорт медицинской истории питомца
      */
-    public function exportMedicalHistory($petId, $format = 'pdf')
+    public function exportMedicalHistory(Request $request, $petId, $format = 'pdf')
     {
         try {
             $pet = Pet::with([
@@ -377,7 +377,7 @@ class PetController extends AdminController
                         ->orderBy('starts_at', 'desc');
                 },
                 'vaccinations' => function($query) {
-                    $query->select(['id', 'pet_id', 'veterinarian_id', 'vaccination_type_id', 'administered_at', 'next_due', 'notes', 'created_at'])
+                    $query->select(['id', 'pet_id', 'veterinarian_id', 'vaccination_type_id', 'administered_at', 'next_due', 'created_at'])
                         ->with([
                             'veterinarian:id,name,email',
                             'vaccinationType:id,name'
@@ -385,7 +385,7 @@ class PetController extends AdminController
                         ->orderBy('administered_at', 'desc');
                 },
                 'labTests' => function($query) {
-                    $query->select(['id', 'pet_id', 'veterinarian_id', 'lab_test_type_id', 'received_at', 'completed_at', 'results', 'notes', 'created_at'])
+                    $query->select(['id', 'pet_id', 'veterinarian_id', 'lab_test_type_id', 'received_at', 'completed_at', 'created_at'])
                         ->with([
                             'veterinarian:id,name,email',
                             'labTestType:id,name'
@@ -402,6 +402,8 @@ class PetController extends AdminController
                         ->orderBy('created_at', 'desc');
                 }
             ])->findOrFail($petId);
+
+            Log::info('Pet found for export', ['pet_name' => $pet->name, 'visits_count' => $pet->visits->count()]);
 
             // Форматируем данные для экспорта
             $formattedData = [
@@ -423,7 +425,7 @@ class PetController extends AdminController
                 ],
                 'visits' => $pet->visits->map(function($visit) {
                     return [
-                        'ID визита' => $visit->id,
+                        'ID' => $visit->id,
                         'Дата и время' => $visit->starts_at ? \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') : '',
                         'Ветеринар' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->name : 'Не указан',
                         'Email ветеринара' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->email : '',
@@ -448,32 +450,29 @@ class PetController extends AdminController
                 }),
                 'vaccinations' => $pet->vaccinations->map(function($vaccination) {
                     return [
-                        'ID вакцинации' => $vaccination->id,
+                        'ID' => $vaccination->id,
                         'Тип вакцины' => $vaccination->vaccinationType ? $vaccination->vaccinationType->name : 'Не указан',
                         'Ветеринар' => $vaccination->veterinarian ? $vaccination->veterinarian->name : 'Не указан',
                         'Email ветеринара' => $vaccination->veterinarian ? $vaccination->veterinarian->email : '',
                         'Дата вакцинации' => $vaccination->administered_at ? \Carbon\Carbon::parse($vaccination->administered_at)->format('d.m.Y') : '',
                         'Следующая вакцинация' => $vaccination->next_due ? \Carbon\Carbon::parse($vaccination->next_due)->format('d.m.Y') : 'Не указана',
-                        'Заметки' => $vaccination->notes ?: 'Нет',
                         'Дата создания' => $vaccination->created_at ? $vaccination->created_at->format('d.m.Y H:i') : ''
                     ];
                 }),
                 'lab_tests' => $pet->labTests->map(function($labTest) {
                     return [
-                        'ID анализа' => $labTest->id,
+                        'ID' => $labTest->id,
                         'Тип анализа' => $labTest->labTestType ? $labTest->labTestType->name : 'Не указан',
                         'Ветеринар' => $labTest->veterinarian ? $labTest->veterinarian->name : 'Не указан',
                         'Email ветеринара' => $labTest->veterinarian ? $labTest->veterinarian->email : '',
                         'Дата получения' => $labTest->received_at ? \Carbon\Carbon::parse($labTest->received_at)->format('d.m.Y') : '',
                         'Дата завершения' => $labTest->completed_at ? \Carbon\Carbon::parse($labTest->completed_at)->format('d.m.Y') : 'Не завершен',
-                        'Результаты' => $labTest->results ?: 'Не указаны',
-                        'Заметки' => $labTest->notes ?: 'Нет',
                         'Дата создания' => $labTest->created_at ? $labTest->created_at->format('d.m.Y H:i') : ''
                     ];
                 }),
                 'orders' => $pet->orders->map(function($order) {
                     return [
-                        'ID заказа' => $order->id,
+                        'ID' => $order->id,
                         'Филиал' => $order->branch ? $order->branch->name : 'Не указан',
                         'Адрес филиала' => $order->branch ? $order->branch->address : '',
                         'Статус' => $order->status ? $order->status->name : 'Не указан',
@@ -485,12 +484,12 @@ class PetController extends AdminController
                     ];
                 }),
                 'summary' => [
-                    'Общее количество визитов' => $pet->visits->count(),
+                    'Общее количество приемов' => $pet->visits->count(),
                     'Общее количество вакцинаций' => $pet->vaccinations->count(),
                     'Общее количество анализов' => $pet->labTests->count(),
                     'Общее количество заказов' => $pet->orders->count(),
                     'Общая сумма заказов' => number_format($pet->orders->sum('total'), 2, ',', ' ') . ' руб.',
-                    'Последний визит' => $pet->visits->first() ? \Carbon\Carbon::parse($pet->visits->first()->starts_at)->format('d.m.Y H:i') : 'Нет визитов',
+                    'Последний прием' => $pet->visits->first() ? \Carbon\Carbon::parse($pet->visits->first()->starts_at)->format('d.m.Y H:i') : 'Нет приемов',
                     'Последняя вакцинация' => $pet->vaccinations->first() ? \Carbon\Carbon::parse($pet->vaccinations->first()->administered_at)->format('d.m.Y') : 'Нет вакцинаций',
                     'Последний анализ' => $pet->labTests->first() ? \Carbon\Carbon::parse($pet->labTests->first()->received_at)->format('d.m.Y') : 'Нет анализов'
                 ]
@@ -499,7 +498,7 @@ class PetController extends AdminController
             $filename = app(ExportService::class)->generateFilename('medical_history_' . $pet->name, $format);
             
             if ($format === 'pdf') {
-                return app(ExportService::class)->toPdf($formattedData, $filename);
+                return $this->exportMedicalHistoryPdf($formattedData, $filename);
             } else {
                 return app(ExportService::class)->toExcel($formattedData, $filename);
             }
@@ -514,4 +513,36 @@ class PetController extends AdminController
             return back()->withErrors(['error' => 'Ошибка при экспорте: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * Экспорт медкарты в PDF
+     */
+    private function exportMedicalHistoryPdf($data, $filename)
+    {
+        // Извлекаем отдельные переменные из массива данных
+        $petInfo = $data['pet_info'];
+        $visits = $data['visits'];
+        $vaccinations = $data['vaccinations'];
+        $labTests = $data['lab_tests'];
+        $orders = $data['orders'];
+        $summary = $data['summary'];
+        
+        $html = view('admin.pets.medical-history-pdf', compact(
+            'petInfo', 'visits', 'vaccinations', 'labTests', 'orders', 'summary'
+        ))->render();
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'defaultFont' => 'DejaVu Sans',
+            'isRemoteEnabled' => false,
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'defaultMediaType' => 'print',
+            'isFontSubsettingEnabled' => true,
+        ]);
+        
+        return $pdf->download($filename);
+    }
+
 } 

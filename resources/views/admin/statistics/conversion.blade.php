@@ -498,11 +498,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('period-form').submit();
     };
 
-    const rangePicker = new AirDatepicker('#date_range', {
+    const rangePicker = window.createDatepicker('#date_range', {
         range: true,
         multipleDatesSeparator: ' по ',
-        dateFormat: 'dd.MM.yyyy',
-        autoClose: true,
         onSelect({formattedDate}) {
             if (!formattedDate || formattedDate.length < 2) return;
             hiddenPeriod.value = 'custom';
