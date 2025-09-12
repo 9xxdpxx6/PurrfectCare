@@ -62,9 +62,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Филиалы - {{ $branches->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('settings_branches.export')
         <a href="{{ route('admin.settings.branches.export', request()->query()) }}" class="btn btn-outline-success me-2">
             <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Экспорт в Excel</span>
         </a>
+        @endcan
         <button type="button" class="btn btn-primary" onclick="addNewRow()">
             <i class="bi bi-plus"></i> Добавить филиал
         </button>

@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Питомец: {{ $pet->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0 text-nowrap">
+        @can('pets.export')
         <a href="{{ route('admin.pets.export-medical-history', $pet) }}" class="btn btn-outline-danger me-2">
             <i class="bi bi-file-earmark-pdf"></i> <span class="d-none d-lg-inline">Скачать медкарту (PDF)</span>
         </a>
+        @endcan
         @can('pets.update')
         <a href="{{ route('admin.pets.edit', $pet) }}" class="btn btn-outline-warning me-2">
             <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать</span>

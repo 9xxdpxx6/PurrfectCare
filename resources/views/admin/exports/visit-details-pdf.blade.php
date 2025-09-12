@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Детали визита - {{ $visitInfo['ID визита'] }}</title>
+    <title>Детали приёма - {{ $visitInfo['ID приёма'] }}</title>
     <style>
         body { 
             font-family: DejaVu Sans, Arial, sans-serif; 
@@ -103,19 +103,18 @@
 </head>
 <body>
     <div class="header">
-        <h1>Детали визита</h1>
-        <h2>ID: {{ $visitInfo['ID визита'] }}</h2>
+        <h1>Детали приёма</h1>
+        <h2>ID: {{ $visitInfo['ID приёма'] }}</h2>
         <p>Дата создания отчета: {{ now()->format('d.m.Y H:i') }}</p>
     </div>
 
     <div class="section">
-        <div class="section-title">Информация о визите</div>
+        <div class="section-title">Информация о приёме</div>
         <div class="section-content">
             <table class="info-table">
-                <tr><td>ID визита</td><td>{{ $visitInfo['ID визита'] }}</td></tr>
+                <tr><td>ID приёма</td><td>{{ $visitInfo['ID приёма'] }}</td></tr>
                 <tr><td>Дата и время</td><td>{{ $visitInfo['Дата и время'] }}</td></tr>
                 <tr><td>Статус</td><td>{{ $visitInfo['Статус'] }}</td></tr>
-                <tr><td>Завершен</td><td>{{ $visitInfo['Завершен'] }}</td></tr>
                 <tr><td>Жалобы</td><td>{{ $visitInfo['Жалобы'] }}</td></tr>
                 <tr><td>Заметки</td><td>{{ $visitInfo['Заметки'] }}</td></tr>
                 <tr><td>Дата создания</td><td>{{ $visitInfo['Дата создания'] }}</td></tr>

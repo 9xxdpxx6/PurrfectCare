@@ -320,6 +320,8 @@ class ScheduleController extends AdminController
      */
     public function export(Request $request)
     {
+        $this->authorize('export', $this->model);
+        
         try {
             $filter = app(ScheduleFilter::class, ['queryParams' => $request->query()]);
             

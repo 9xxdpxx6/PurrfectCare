@@ -202,6 +202,8 @@ class DrugController extends AdminController
 
     public function export(Request $request)
     {
+        $this->authorize('export', $this->model);
+        
         try {
             // Фильтруем только непустые параметры, но сохраняем '0' как валидное значение
             $queryParams = array_filter($request->all(), function($value, $key) {

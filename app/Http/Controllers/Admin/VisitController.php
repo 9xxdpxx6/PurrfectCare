@@ -68,10 +68,10 @@ class VisitController extends AdminController
 
     public function edit($id) : View
     {
-        // Загружаем только данные визита с нужными связями
+        // Загружаем только данные приёма с нужными связями
         $item = $this->model::select([
                 'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
-                'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
+                'complaints', 'notes', 'created_at', 'updated_at'
             ])
             ->with([
                 'diagnoses:id,visit_id,dictionary_diagnosis_id,custom_diagnosis,treatment_plan',
@@ -144,7 +144,7 @@ class VisitController extends AdminController
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $query = $this->model::select([
                 'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
-                'complaints', 'notes', 'is_completed', 'created_at'
+                'complaints', 'notes', 'created_at'
             ])
             ->with([
                 'client:id,name,email',
@@ -179,7 +179,7 @@ class VisitController extends AdminController
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         $item = $this->model::select([
                 'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
-                'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
+                'complaints', 'notes', 'created_at', 'updated_at'
             ])
             ->with([
                 'client:id,name,email,phone,address',
@@ -275,10 +275,12 @@ class VisitController extends AdminController
     }
 
     /**
-     * Экспорт визитов
+     * Экспорт приёмов
      */
     public function export(Request $request)
     {
+        $this->authorize('export', $this->model);
+        
         try {
             // Преобразуем даты из формата d.m.Y в Y-m-d для фильтров
             $queryParams = $request->query();
@@ -301,7 +303,7 @@ class VisitController extends AdminController
             
             // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
             $query = $this->model::select([
-                    'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id', 'is_completed'
+                    'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id'
                 ])
                 ->with([
                     'client:id,name,phone',
@@ -328,7 +330,7 @@ class VisitController extends AdminController
                     'Порода' => $visit->pet && $visit->pet->breed ? $visit->pet->breed->name : 'Не указана',
                     'Ветеринар' => $visit->schedule && $visit->schedule->veterinarian ? $visit->schedule->veterinarian->name : 'Не указан',
                     'Филиал' => $visit->schedule && $visit->schedule->branch ? $visit->schedule->branch->name : 'Не указан',
-                    'Дата и время визита' => $visit->starts_at ? \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') : '',
+                    'Дата и время приёма' => $visit->starts_at ? \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') : '',
                     'Статус' => $visit->status ? $visit->status->name : 'Не указан',
                 ];
             }
@@ -338,7 +340,7 @@ class VisitController extends AdminController
             return app(ExportService::class)->toExcel($formattedData, $filename);
             
         } catch (\Exception $e) {
-            Log::error('Ошибка при экспорте визитов', [
+            Log::error('Ошибка при экспорте приёмов', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -348,7 +350,7 @@ class VisitController extends AdminController
     }
 
     /**
-     * Экспорт деталей визита
+     * Экспорт деталей приёма
      */
     public function exportVisitDetails($visitId, $format = 'pdf')
     {
@@ -381,10 +383,9 @@ class VisitController extends AdminController
             // Форматируем данные для экспорта
             $formattedData = [
                 'visit_info' => [
-                    'ID визита' => $visit->id,
+                    'ID приёма' => $visit->id,
                     'Дата и время' => $visit->starts_at ? \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') : '',
                     'Статус' => $visit->status ? $visit->status->name : 'Не указан',
-                    'Завершен' => $visit->is_completed ? 'Да' : 'Нет',
                     'Жалобы' => $visit->complaints ?: 'Не указаны',
                     'Заметки' => $visit->notes ?: 'Нет',
                     'Дата создания' => $visit->created_at ? $visit->created_at->format('d.m.Y H:i') : '',
@@ -486,7 +487,7 @@ class VisitController extends AdminController
             }
             
         } catch (\Exception $e) {
-            Log::error('Ошибка при экспорте деталей визита', [
+            Log::error('Ошибка при экспорте деталей приёма', [
                 'visit_id' => $visitId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -497,7 +498,7 @@ class VisitController extends AdminController
     }
 
     /**
-     * Экспорт деталей визита в PDF
+     * Экспорт деталей приёма в PDF
      */
     private function exportVisitDetailsPdf($data, $filename)
     {

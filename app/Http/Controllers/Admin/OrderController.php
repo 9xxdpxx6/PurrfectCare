@@ -160,7 +160,7 @@ class OrderController extends AdminController
                 'branch:id,name,address',
                 'manager:id,name,email',
                 'items:id,order_id,item_type,item_id,quantity,unit_price',
-                'visits:id,client_id,pet_id,starts_at,status_id,is_completed'
+                'visits:id,client_id,pet_id,starts_at,status_id'
             ])
             ->findOrFail($id);
         return view("admin.{$this->viewPath}.show", compact('item'));
@@ -281,6 +281,8 @@ class OrderController extends AdminController
      */
     public function export(Request $request)
     {
+        $this->authorize('export', $this->model);
+        
         try {
             // Преобразуем даты из формата d.m.Y в Y-m-d для фильтров
             $queryParams = $request->query();
@@ -367,7 +369,7 @@ class OrderController extends AdminController
                     'manager:id,name,email',
                     'items:id,order_id,item_type,item_id,quantity,unit_price',
                     'items.item:id,name',
-                    'visits:id,client_id,pet_id,starts_at,status_id,is_completed'
+                    'visits:id,client_id,pet_id,starts_at,status_id'
                 ])
                 ->findOrFail($id);
 

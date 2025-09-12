@@ -342,6 +342,8 @@ class EmployeeController extends AdminController
 
     public function export(Request $request)
     {
+        $this->authorize('export', $this->model);
+        
         try {
             $filter = app(EmployeeFilter::class, ['queryParams' => array_filter($request->all())]);
             

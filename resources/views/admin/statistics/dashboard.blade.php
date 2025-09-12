@@ -8,9 +8,11 @@
         <i class="bi bi-graph-up"></i> Статистика
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('statistics_general.export')
         <a href="{{ route('admin.statistics.dashboard.export', request()->query()) }}" class="btn btn-outline-success">
             <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Экспорт метрик</span>
         </a>
+        @endcan
     </div>
 </div>
 

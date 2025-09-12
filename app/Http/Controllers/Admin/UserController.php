@@ -245,6 +245,8 @@ class UserController extends AdminController
 
     public function export(Request $request)
     {
+        $this->authorize('export', $this->model);
+        
         try {
             // Собираем все параметры, включая '0' значения для фильтров
             $queryParams = $request->all();

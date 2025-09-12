@@ -28,7 +28,7 @@ class PermissionsSeeder extends Seeder
             'settings_symptoms',
         ];
 
-        $crudOperations = ['create', 'read', 'update', 'delete'];
+        $crudOperations = ['create', 'read', 'update', 'delete', 'export'];
         $permissions = [];
 
         foreach ($modules as $module) {
@@ -41,8 +41,8 @@ class PermissionsSeeder extends Seeder
                 // Permissions for admin guard (Employee model)
                 $permissions[] = Permission::firstOrCreate(['name' => "$module.$operation", 'guard_name' => 'admin']);
                 // Permissions for web guard (User model) - mostly for read access, if applicable
-                // We'll create read permissions for modules that might be relevant to clients
-                if ($operation === 'read' && in_array($module, ['orders', 'pets', 'visits'])) {
+                // We'll create read and export permissions for modules that might be relevant to clients
+                if (in_array($operation, ['read', 'export']) && in_array($module, ['orders', 'pets', 'visits'])) {
                     $permissions[] = Permission::firstOrCreate(['name' => "$module.$operation", 'guard_name' => 'web']);
                 }
             }
@@ -84,37 +84,57 @@ class PermissionsSeeder extends Seeder
         $managerRole->givePermissionTo([
             'main.read',
             'notifications.read',
-            'orders.create', 'orders.read', 'orders.update',
-            'clients.create', 'clients.read', 'clients.update',
-            'schedules.read',
-            'deliveries.create', 'deliveries.read', 'deliveries.update',
+            'orders.create', 'orders.read', 'orders.update', 'orders.export',
+            'visits.create', 'visits.read', 'visits.update', 'visits.export',
+            'clients.create', 'clients.read', 'clients.update', 'clients.export',
+            'pets.create', 'pets.read', 'pets.update', 'pets.export',
+            'schedules.read', 'schedules.export',
+            'deliveries.create', 'deliveries.read', 'deliveries.update', 'deliveries.export',
+            'statistics_general.read', 'statistics_general.export',
+            'statistics_efficiency.read', 'statistics_efficiency.export',
+            'statistics_clients.read', 'statistics_clients.export',
         ]);
 
         // Assign permissions to veterinarian
         $veterinarianRole->givePermissionTo([
             'main.read',
             'notifications.read',
-            'visits.create', 'visits.read', 'visits.update',
-            'vaccinations.create', 'vaccinations.read', 'vaccinations.update',
-            'lab_tests.create', 'lab_tests.read', 'lab_tests.update',
-            'schedules.read',
-            'pets.create', 'pets.read', 'pets.update',
+            'visits.create', 'visits.read', 'visits.update', 'visits.export',
+            'vaccinations.create', 'vaccinations.read', 'vaccinations.update', 'vaccinations.export',
+            'lab_tests.create', 'lab_tests.read', 'lab_tests.update', 'lab_tests.export',
+            'schedules.read', 'schedules.export',
+            'pets.create', 'pets.read', 'pets.update', 'pets.export',
+            'orders.read', 'orders.export', // Может просматривать заказы для своих визитов
+            'clients.read', 'clients.export', // Может просматривать данные клиентов
+            'drugs.read', 'drugs.export', // Может просматривать лекарства
         ]);
 
         // Assign permissions to accountant
         $accountantRole->givePermissionTo([
             'main.read',
             'notifications.read',
-            'orders.read',
-            'statistics_finance.read',
+            'orders.read', 'orders.export',
+            'visits.read', 'visits.export',
+            'clients.read', 'clients.export',
+            'pets.read', 'pets.export',
+            'statistics_finance.read', 'statistics_finance.export',
+            'statistics_general.read', 'statistics_general.export',
+            'statistics_efficiency.read', 'statistics_efficiency.export',
+            'statistics_clients.read', 'statistics_clients.export',
+            'statistics_conversion.read', 'statistics_conversion.export',
+            'drugs.read', 'drugs.export', // Для учета расходов на лекарства
+            'services.read', 'services.export', // Для учета доходов от услуг
         ]);
 
         // Assign permissions to client (web guard)
         $clientRole->givePermissionTo([
             Permission::firstOrCreate(['name' => 'main.read', 'guard_name' => 'web']),
             Permission::firstOrCreate(['name' => 'orders.read', 'guard_name' => 'web']),
+            Permission::firstOrCreate(['name' => 'orders.export', 'guard_name' => 'web']),
             Permission::firstOrCreate(['name' => 'pets.read', 'guard_name' => 'web']),
+            Permission::firstOrCreate(['name' => 'pets.export', 'guard_name' => 'web']),
             Permission::firstOrCreate(['name' => 'visits.read', 'guard_name' => 'web']),
+            Permission::firstOrCreate(['name' => 'visits.export', 'guard_name' => 'web']),
         ]);
 
         // Create a Super Admin Employee

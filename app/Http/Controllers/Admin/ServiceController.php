@@ -199,6 +199,8 @@ class ServiceController extends AdminController
 
     public function export(Request $request)
     {
+        $this->authorize('export', $this->model);
+        
         try {
             $filter = app()->make(ServiceFilter::class, ['queryParams' => array_filter($request->all())]);
             

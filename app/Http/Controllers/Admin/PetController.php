@@ -285,6 +285,8 @@ class PetController extends AdminController
 
     public function export(Request $request)
     {
+        $this->authorize('export', $this->model);
+        
         try {
             $filter = app()->make(PetFilter::class, ['queryParams' => array_filter($request->all())]);
             
@@ -362,7 +364,7 @@ class PetController extends AdminController
                 'breed:id,name,species_id',
                 'breed.species:id,name',
                 'visits' => function($query) {
-                    $query->select(['id', 'pet_id', 'schedule_id', 'starts_at', 'status_id', 'complaints', 'notes', 'is_completed', 'created_at'])
+                    $query->select(['id', 'pet_id', 'schedule_id', 'starts_at', 'status_id', 'complaints', 'notes', 'created_at'])
                         ->with([
                             'schedule:id,veterinarian_id,branch_id,shift_starts_at',
                             'schedule.veterinarian:id,name,email',
@@ -433,7 +435,6 @@ class PetController extends AdminController
                         'Статус' => $visit->status ? $visit->status->name : 'Не указан',
                         'Жалобы' => $visit->complaints ?: 'Не указаны',
                         'Заметки' => $visit->notes ?: 'Нет',
-                        'Завершен' => $visit->is_completed ? 'Да' : 'Нет',
                         'Симптомы' => $visit->symptoms ? $visit->symptoms->map(function($symptom) {
                             return $symptom->dictionarySymptom ? $symptom->dictionarySymptom->name : $symptom->custom_symptom;
                         })->implode(', ') : 'Не указаны',

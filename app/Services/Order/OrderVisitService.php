@@ -70,7 +70,7 @@ class OrderVisitService
     {
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         return $order->visits()
-            ->select(['id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id', 'is_completed'])
+            ->select(['id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id'])
             ->with([
                 'status:id,name',
                 'client:id,name,email',

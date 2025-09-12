@@ -99,7 +99,7 @@ class VisitManagementService
             // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
             $visit = Visit::select([
                     'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
-                    'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
+                    'complaints', 'notes', 'created_at', 'updated_at'
                 ])
                 ->findOrFail($id);
 
@@ -191,7 +191,7 @@ class VisitManagementService
         // Оптимизация: используем индексы на внешние ключи и select для выбора нужных полей
         return Visit::select([
                 'id', 'client_id', 'pet_id', 'schedule_id', 'starts_at', 'status_id',
-                'complaints', 'notes', 'is_completed', 'created_at', 'updated_at'
+                'complaints', 'notes', 'created_at', 'updated_at'
             ])
             ->with([
                 'client:id,name,email,phone',

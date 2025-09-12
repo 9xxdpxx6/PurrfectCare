@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Заказы - {{ $items->total() }}</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
+                    @can('orders.export')
                     <a href="{{ route('admin.orders.export', request()->query()) }}" class="btn btn-outline-success me-2">
                         <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Экспорт заказов</span>
                     </a>
+                    @endcan
                     @can('orders.create')
                     <a href="{{ route('admin.orders.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-lg"></i> Добавить заказ

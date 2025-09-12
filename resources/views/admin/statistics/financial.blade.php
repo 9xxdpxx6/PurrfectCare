@@ -8,9 +8,11 @@
         <i class="bi bi-cash-coin"></i> Финансовая статистика
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('statistics_finance.export')
         <a href="{{ route('admin.statistics.financial.export', request()->query()) }}" class="btn btn-outline-success me-2">
             <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Экспорт отчёта</span>
         </a>
+        @endcan
         <a href="{{ route('admin.statistics.dashboard') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад
         </a>
@@ -170,9 +172,11 @@
                 <h5 class="card-title mb-0">
                     <i class="bi bi-star"></i> Топ доходных услуг
                 </h5>
+                @can('statistics_finance.export')
                 <a href="{{ route('admin.statistics.top-services.export', request()->query()) }}" class="btn btn-outline-success">
                     <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Скачать отчёт</span>
                 </a>
+                @endcan
             </div>
             <div class="card-body">
                 @if($topServices->count() > 0)
@@ -214,9 +218,11 @@
                 <h5 class="card-title mb-0">
                     <i class="bi bi-building"></i> Прибыльность по филиалам
                 </h5>
+                @can('statistics_finance.export')
                 <a href="{{ route('admin.statistics.branch-revenue.export', request()->query()) }}" class="btn btn-outline-success">
                     <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Скачать отчёт</span>
                 </a>
+                @endcan
             </div>
             <div class="card-body">
                 @if($branchRevenue->count() > 0)

@@ -6,9 +6,11 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Питомцы - {{ $items->total() }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        @can('pets.export')
         <a href="{{ route('admin.pets.export', request()->query()) }}" class="btn btn-outline-success me-2">
             <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-lg-inline">Экспорт в Excel</span>
         </a>
+        @endcan
         @can('pets.create')
         <a href="{{ route('admin.pets.create') }}" class="btn btn-primary">
             <i class="bi bi-plus"></i> <span class="d-none d-lg-inline">Добавить питомца</span>

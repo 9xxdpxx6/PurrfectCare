@@ -255,7 +255,7 @@ class StatisticsController extends AdminController
     public function exportDashboard(Request $request)
     {
         try {
-            $this->authorize('statistics_general.read');
+            $this->authorize('statistics_general.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
@@ -283,7 +283,7 @@ class StatisticsController extends AdminController
     public function exportFinancial(Request $request)
     {
         try {
-            $this->authorize('statistics_financial.read');
+            $this->authorize('statistics_finance.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
@@ -319,7 +319,7 @@ class StatisticsController extends AdminController
     public function exportOrders(Request $request)
     {
         try {
-            $this->authorize('statistics_financial.read');
+            $this->authorize('statistics_finance.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
@@ -347,7 +347,7 @@ class StatisticsController extends AdminController
     public function exportCategoryRevenue(Request $request)
     {
         try {
-            $this->authorize('statistics_financial.read');
+            $this->authorize('statistics_finance.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
@@ -375,7 +375,7 @@ class StatisticsController extends AdminController
     public function exportBranchRevenue(Request $request)
     {
         try {
-            $this->authorize('statistics_financial.read');
+            $this->authorize('statistics_finance.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
@@ -403,7 +403,7 @@ class StatisticsController extends AdminController
     public function exportPeriodStats(Request $request)
     {
         try {
-            $this->authorize('statistics_general.read');
+            $this->authorize('statistics_general.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
@@ -431,7 +431,7 @@ class StatisticsController extends AdminController
     public function exportTopServices(Request $request)
     {
         try {
-            $this->authorize('statistics_general.read');
+            $this->authorize('statistics_finance.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
@@ -459,7 +459,7 @@ class StatisticsController extends AdminController
     public function exportMedical(Request $request)
     {
         try {
-            $this->authorize('statistics_medicine.read');
+            $this->authorize('statistics_medicine.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
@@ -487,7 +487,7 @@ class StatisticsController extends AdminController
     public function exportConversion(Request $request)
     {
         try {
-            $this->authorize('statistics_conversion.read');
+            $this->authorize('statistics_conversion.export');
             
             $period = $request->get('period', 'month');
             $startDateInput = $request->get('start_date');
