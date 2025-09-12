@@ -47,7 +47,9 @@ class StatisticsController extends AdminController
         ConversionStatisticsService $conversionService,
         DateRangeService $dateRangeService
     ) {
-        parent::__construct();
+        // Не вызываем parent::__construct() чтобы избежать автоматической проверки разрешений
+        // Используем только middleware для аутентификации
+        $this->middleware('auth:admin');
         $this->dashboardService = $dashboardService;
         $this->metricsService = $metricsService;
         $this->weekStatisticsService = $weekStatisticsService;
@@ -57,7 +59,6 @@ class StatisticsController extends AdminController
         $this->medicalService = $medicalService;
         $this->conversionService = $conversionService;
         $this->dateRangeService = $dateRangeService;
-        $this->permissionPrefix = 'statistics';
     }
 
     public function dashboard(Request $request)

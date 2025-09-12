@@ -225,7 +225,7 @@ class DatabaseSeeder extends Seeder
         echo "\tСбор данных для дополнительных заказов...\n";
         // Additional orders to reach a target count or cover users without pets, etc.
         // This part needs to be carefully adjusted to collect data instead of creating models.
-        $targetOrders = 8000; // Target number of orders, adjust as needed
+        $targetOrders = 1000; // Уменьшили количество заказов для экономии памяти
         $currentOrderCount = count($allOrdersData);
 
         if ($currentOrderCount < $targetOrders) {
@@ -286,6 +286,10 @@ class DatabaseSeeder extends Seeder
         // Bulk insert orders
         $this->insertInChunks(Order::class, $allOrdersData);
         $insertedOrders = Order::select('id', 'client_id', 'pet_id', 'created_at')->orderBy('id')->get();
+        
+        // Очищаем память
+        unset($allOrdersData);
+        gc_collect_cycles();
 
         echo "\tОбработка элементов заказов, вакцинаций и лабораторных тестов...\n";
         $orderIdMap = []; // Map temporary order IDs to actual inserted order IDs
@@ -331,9 +335,17 @@ class DatabaseSeeder extends Seeder
 
         // Bulk insert OrderItems
         $this->insertInChunks(OrderItem::class, $finalOrderItems);
+        
+        // Очищаем память
+        unset($finalOrderItems, $indexedOrderItemsData);
+        gc_collect_cycles();
 
         // Bulk insert Vaccinations
         $this->insertInChunks(Vaccination::class, $finalVaccinationsData);
+        
+        // Очищаем память
+        unset($finalVaccinationsData, $finalLabTestsData);
+        gc_collect_cycles();
 
         echo "\tОбновление сумм заказов...\n";
         // Recalculate and update order totals in bulk
