@@ -86,6 +86,9 @@ class OrderController extends AdminController
             ])
             ->with([
                 'items:id,order_id,item_type,item_id,quantity,unit_price',
+                'items.item' => function($query) {
+                    $query->select(['id']);
+                },
                 'visits:id,client_id,pet_id,starts_at,status_id'
             ])
             ->findOrFail($id);
@@ -160,6 +163,9 @@ class OrderController extends AdminController
                 'branch:id,name,address',
                 'manager:id,name,email',
                 'items:id,order_id,item_type,item_id,quantity,unit_price',
+                'items.item' => function($query) {
+                    $query->select(['id']);
+                },
                 'visits:id,client_id,pet_id,starts_at,status_id'
             ])
             ->findOrFail($id);
@@ -368,7 +374,9 @@ class OrderController extends AdminController
                     'branch:id,name,address,phone',
                     'manager:id,name,email',
                     'items:id,order_id,item_type,item_id,quantity,unit_price',
-                    'items.item:id,name',
+                    'items.item' => function($query) {
+                        $query->select(['id']);
+                    },
                     'visits:id,client_id,pet_id,starts_at,status_id'
                 ])
                 ->findOrFail($id);
@@ -416,6 +424,20 @@ class OrderController extends AdminController
         $vaccinations = [];
 
         foreach ($order->items as $item) {
+            // Отладочная информация для LabTest
+            if ($item->item_type === 'App\Models\LabTest') {
+                \Log::info('LabTest debug', [
+                    'item_id' => $item->id,
+                    'item_type' => $item->item_type,
+                    'item_id_value' => $item->item_id,
+                    'item_name' => $item->item_name,
+                    'item_loaded' => $item->relationLoaded('item'),
+                    'itemable_loaded' => $item->relationLoaded('itemable'),
+                    'has_item' => $item->item ? 'yes' : 'no',
+                    'has_itemable' => $item->itemable ? 'yes' : 'no'
+                ]);
+            }
+            
             $itemData = [
                 'name' => $item->item_name,
                 'quantity' => $item->quantity,
@@ -446,7 +468,7 @@ class OrderController extends AdminController
             'labTests' => $labTests,
             'vaccinations' => $vaccinations,
             'currentDate' => now()->format('d.m.Y H:i'),
-            'receiptNumber' => 'R-' . str_pad($order->id, 6, '0', STR_PAD_LEFT)
+            'receiptNumber' => '№' . str_pad($order->id, 6, '0', STR_PAD_LEFT)
         ];
     }
 } 

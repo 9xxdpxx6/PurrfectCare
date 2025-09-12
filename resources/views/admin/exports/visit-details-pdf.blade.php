@@ -116,7 +116,6 @@
                 <tr><td>Дата и время</td><td>{{ $visitInfo['Дата и время'] }}</td></tr>
                 <tr><td>Статус</td><td>{{ $visitInfo['Статус'] }}</td></tr>
                 <tr><td>Жалобы</td><td>{{ $visitInfo['Жалобы'] }}</td></tr>
-                <tr><td>Заметки</td><td>{{ $visitInfo['Заметки'] }}</td></tr>
                 <tr><td>Дата создания</td><td>{{ $visitInfo['Дата создания'] }}</td></tr>
                 <tr><td>Последнее обновление</td><td>{{ $visitInfo['Последнее обновление'] }}</td></tr>
             </table>
@@ -188,7 +187,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Название</th>
-                                <th>Заметки</th>
+                                <th>Тип</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -196,7 +195,7 @@
                                 <tr>
                                     <td>{{ $symptom['ID симптома'] }}</td>
                                     <td>{{ $symptom['Название'] }}</td>
-                                    <td>{{ $symptom['Заметки'] }}</td>
+                                    <td>{{ $symptom['Тип'] }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

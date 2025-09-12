@@ -83,18 +83,18 @@
                             <span>{{ $item->created_at->format('d.m.Y H:i') }}</span>
                         </div>
                         <div class="d-flex align-items-center mb-2">
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 align-items-center">
                                 @if($item->is_paid)
-                                    <span class="badge bg-success">Оплачен</span>
+                                    <i class="bi bi-check-all text-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Оплачен"></i>
                                 @else
-                                    <span class="badge bg-warning">Не оплачен</span>
+                                    <i class="bi bi-cash text-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Не оплачен"></i>
                                 @endif
                                 
                                 @if($item->closed_at)
-                                    <span class="badge bg-info">Выполнен</span>
+                                    <i class="bi bi-check-circle text-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Выполнен"></i>
                                     <small class="text-muted">({{ $item->closed_at->format('d.m.Y H:i') }})</small>
                                 @else
-                                    <span class="badge bg-secondary">В работе</span>
+                                    <i class="bi bi-clock text-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="В работе"></i>
                                 @endif
                             </div>
                         </div>
@@ -144,7 +144,7 @@
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
                                                 <a href="{{ route('admin.services.show', $orderItem->item) }}" class="text-body text-decoration-none">
-                                                    {{ $orderItem->item->name }}
+                                                    {{ $orderItem->item_name }}
                                                 </a>
                                             @else
                                                 <span class="text-muted">Услуга не найдена</span>
@@ -211,7 +211,7 @@
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
                                                 <a href="{{ route('admin.drugs.show', $orderItem->item) }}" class="text-body text-decoration-none">
-                                                    {{ $orderItem->item->name }}
+                                                    {{ $orderItem->item_name }}
                                                 </a>
                                             @else
                                                 <span class="text-muted">Препарат не найден</span>
@@ -277,7 +277,7 @@
                                     <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
-                                                Анализ #{{ $orderItem->item->id }}
+                                                {{ $orderItem->item_name }}
                                             @else
                                                 <span class="text-muted">Анализ не найден</span>
                                             @endif
@@ -342,7 +342,7 @@
                                     <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
                                         <h6 class="mb-1">
                                             @if($orderItem->item)
-                                                Вакцинация #{{ $orderItem->item->id }}
+                                                {{ $orderItem->item_name }}
                                             @else
                                                 <span class="text-muted">Вакцинация не найдена</span>
                                             @endif

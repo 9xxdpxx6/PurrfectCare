@@ -363,7 +363,7 @@
                         </div>
                         <div id="labTestItems">
                             @php
-                                $labTestItems = $item->items->where('item_type', 'App\Models\LabTestType');
+                                $labTestItems = $item->items->where('item_type', 'App\Models\LabTest');
                                 // dd($labTestItems->toArray());
                             @endphp
                             @foreach($labTestItems as $index => $orderItem)

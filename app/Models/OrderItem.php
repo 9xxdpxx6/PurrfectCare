@@ -57,6 +57,19 @@ class OrderItem extends Model
     public function getItemNameAttribute()
     {
         try {
+            // Отладочная информация для LabTest
+            if ($this->item_type === 'App\Models\LabTest') {
+                \Log::info('OrderItem getItemNameAttribute debug', [
+                    'order_item_id' => $this->id,
+                    'item_type' => $this->item_type,
+                    'item_id' => $this->item_id,
+                    'itemable_loaded' => $this->relationLoaded('itemable'),
+                    'item_loaded' => $this->relationLoaded('item'),
+                    'has_itemable' => $this->itemable ? 'yes' : 'no',
+                    'has_item' => $this->item ? 'yes' : 'no'
+                ]);
+            }
+            
             // Пробуем получить через itemable
             if ($this->relationLoaded('itemable') && $this->itemable) {
                 return $this->itemable->name ?? 'Без названия';
@@ -70,7 +83,16 @@ class OrderItem extends Model
             // Загружаем отношение если оно не загружено
             $itemable = $this->itemable;
             if ($itemable) {
-                return $itemable->name ?? 'Без названия';
+                // Для LabTest нужно загрузить labTestType если не загружен
+                if ($this->item_type === 'App\Models\LabTest' && $itemable instanceof \App\Models\LabTest) {
+                    if (!$itemable->relationLoaded('labTestType')) {
+                        \Log::info('Loading labTestType for LabTest', ['lab_test_id' => $itemable->id]);
+                        $itemable->load('labTestType:id,name');
+                    }
+                }
+                $name = $itemable->name ?? 'Без названия';
+                \Log::info('Final name for LabTest', ['name' => $name]);
+                return $name;
             }
             
             return 'Элемент не найден';

@@ -387,7 +387,6 @@ class VisitController extends AdminController
                     'Дата и время' => $visit->starts_at ? \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') : '',
                     'Статус' => $visit->status ? $visit->status->name : 'Не указан',
                     'Жалобы' => $visit->complaints ?: 'Не указаны',
-                    'Заметки' => $visit->notes ?: 'Нет',
                     'Дата создания' => $visit->created_at ? $visit->created_at->format('d.m.Y H:i') : '',
                     'Последнее обновление' => $visit->updated_at ? $visit->updated_at->format('d.m.Y H:i') : ''
                 ],
@@ -434,8 +433,7 @@ class VisitController extends AdminController
                     return [
                         'ID симптома' => $symptom->id,
                         'Название' => $symptom->dictionarySymptom ? $symptom->dictionarySymptom->name : $symptom->custom_symptom,
-                        'Тип' => $symptom->dictionarySymptom ? 'Справочный' : 'Пользовательский',
-                        'Заметки' => $symptom->notes ?: 'Нет'
+                        'Тип' => $symptom->dictionarySymptom ? 'Справочный' : 'Пользовательский'
                     ];
                 }),
                 'diagnoses' => $visit->diagnoses->map(function($diagnosis) {
