@@ -1,4 +1,4 @@
-@if(auth('admin')->user()->can('visits.read') || auth('admin')->user()->can('vaccinations.read') || auth('admin')->user()->can('lab_tests.read') || auth('admin')->user()->can('drugs.read'))
+@canany(['visits.read', 'vaccinations.read', 'lab_tests.read', 'drugs.read'])
 <ul class="nav flex-column mb-4">
     <li class="nav-item">
         <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#medicineMenu" aria-expanded="true">
@@ -39,4 +39,4 @@
         </div>
     </li>
 </ul>
-@endif
+@endcanany

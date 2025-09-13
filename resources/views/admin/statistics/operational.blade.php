@@ -129,64 +129,75 @@
 <div class="row">
     <div class="col-md-12 mb-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-people"></i> Загруженность ветеринаров
                 </h5>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <select name="branch_filter" id="branch_filter" class="form-select" style="min-width: 200px;" data-url="{{ route('admin.statistics.branch-options') }}">
+                        </select>
+                    </div>
+                    <button type="button" id="toggle-table" class="btn btn-outline-secondary" style="display: none;">
+                        <i class="bi bi-chevron-down"></i> Показать все
+                    </button>
+                </div>
             </div>
             <div class="card-body">
-                @if($employeeLoad->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Ветеринар</th>
-                                    <th class="d-none-mobile">Приёмов</th>
-                                    <th class="d-none-mobile">Средняя загруженность</th>
-                                    <th>Загруженность</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $totalVisits = $visitsData['total'];
-                                @endphp
-                                @foreach($employeeLoad as $employee)
+                <div id="employee-load-container">
+                    @if($employeeLoad->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="employee-load-table">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <strong><a href="{{ route('admin.employees.show', $employee['employee']) }}" class="text-decoration-none text-body">{{ $employee['employee']->name }}</a></strong>
-                                            @if($employee['employee']->specialties->count() > 0)
-                                                <br><small class="text-muted d-none-mobile">
-                                                    {{ $employee['employee']->specialties->pluck('name')->join(', ') }}
-                                                </small>
-                                            @endif
-                                        </td>
-                                        <td class="d-none-mobile">{{ $employee['visits_count'] }}</td>
-                                        <td class="d-none-mobile">
-                                            <span class="badge bg-{{ $employee['load_color'] }}">{{ $employee['load_level'] }}</span>
-                                            <small class="text-muted d-block">{{ number_format($employee['avg_visits_per_day'], 1) }} приёмов/день</small>
-                                        </td>
-                                        <td>
-                                            <div class="progress position-relative" style="height: 20px;">
-                                                <div class="progress-bar bg-{{ $employee['load_color'] }}" 
-                                                     role="progressbar" 
-                                                     style="width: {{ $employee['progress_width'] }}%"
-                                                     aria-valuenow="{{ $employee['avg_visits_per_day'] }}" 
-                                                     aria-valuemin="0" 
-                                                     aria-valuemax="6">
-                                                </div>
-                                                <span class="position-absolute top-50 start-50 translate-middle" style="font-size: 0.75rem; font-weight: 500; color: {{ $employee['progress_width'] > 50 ? 'white' : 'var(--bs-body-color)' }};">
-                                                    {{ $employee['progress_percentage'] }}%
-                                                </span>
-                                            </div>
-                                        </td>
+                                        <th>Ветеринар</th>
+                                        <th class="d-none-mobile">Приёмов</th>
+                                        <th class="d-none-mobile">Средняя загруженность</th>
+                                        <th>Загруженность</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-muted text-center">Нет данных</p>
-                @endif
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $totalVisits = $visitsData['total'];
+                                    @endphp
+                                    @foreach($employeeLoad as $index => $employee)
+                                        <tr class="employee-row @if($index >= 10) d-none @endif" data-index="{{ $index }}">
+                                            <td>
+                                                <strong><a href="{{ route('admin.employees.show', $employee['employee']) }}" class="text-decoration-none text-body">{{ $employee['employee']->name }}</a></strong>
+                                                @if($employee['employee']->specialties->count() > 0)
+                                                    <br><small class="text-muted d-none-mobile">
+                                                        {{ $employee['employee']->specialties->pluck('name')->join(', ') }}
+                                                    </small>
+                                                @endif
+                                            </td>
+                                            <td class="d-none-mobile">{{ $employee['visits_count'] }}</td>
+                                            <td class="d-none-mobile">
+                                                <span class="badge bg-{{ $employee['load_color'] }}">{{ $employee['load_level'] }}</span>
+                                                <small class="text-muted d-block">{{ number_format($employee['avg_visits_per_day'], 1) }} приёмов/день</small>
+                                            </td>
+                                            <td>
+                                                <div class="progress position-relative" style="height: 20px;">
+                                                    <div class="progress-bar bg-{{ $employee['load_color'] }}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ $employee['progress_width'] }}%"
+                                                         aria-valuenow="{{ $employee['avg_visits_per_day'] }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="6">
+                                                    </div>
+                                                    <span class="position-absolute top-50 start-50 translate-middle" style="font-size: 0.75rem; font-weight: 500; color: {{ $employee['progress_width'] > 50 ? 'white' : 'var(--bs-body-color)' }};">
+                                                        {{ $employee['progress_percentage'] }}%
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="text-muted text-center">Нет данных</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -333,6 +344,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const visitsData = @json($visitsData);
     const statusStats = @json($statusStats);
     
+    // Переменные для управления таблицей
+    let isTableExpanded = false;
+    let currentBranchId = '';
+    let allEmployeeData = @json($employeeLoad);
+    
     // График приёмов по дням
     const visitsCtx = document.getElementById('visitsChart').getContext('2d');
     new Chart(visitsCtx, {
@@ -402,6 +418,182 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Инициализация TomSelect для филиалов
+    const branchSelect = new createTomSelect('#branch_filter', {
+        placeholder: 'Выберите филиал...',
+        valueField: 'value',
+        labelField: 'text',
+        searchField: 'text',
+        allowEmptyOption: true,
+        preload: true,
+        load: function(query, callback) {
+            let url = this.input.dataset.url + '?q=' + encodeURIComponent(query);
+            fetch(url)
+                .then(response => response.json())
+                .then(json => {
+                    callback(json);
+                    // Устанавливаем первый филиал по умолчанию
+                    if (json.length > 0 && !currentBranchId) {
+                        this.setValue(json[0].value);
+                        currentBranchId = json[0].value;
+                    }
+                })
+                .catch(() => callback());
+        },
+        onChange: function(value) {
+            currentBranchId = value;
+            loadEmployeeData();
+        }
+    });
+    
+    // Функция загрузки данных загруженности
+    function loadEmployeeData() {
+        const params = new URLSearchParams({
+            period: hiddenPeriod.value,
+            start_date: hiddenStart.value,
+            end_date: hiddenEnd.value,
+            branch_id: currentBranchId
+        });
+        
+        fetch(`{{ route('admin.statistics.employee-load') }}?${params}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Преобразуем объект в массив, если это объект с числовыми ключами
+                    if (Array.isArray(data.employeeLoad)) {
+                        allEmployeeData = data.employeeLoad;
+                    } else if (typeof data.employeeLoad === 'object' && data.employeeLoad !== null) {
+                        allEmployeeData = Object.values(data.employeeLoad);
+                    } else {
+                        allEmployeeData = [];
+                    }
+                    updateEmployeeTable();
+                } else {
+                    console.error('Ошибка загрузки данных:', data.error || 'Неизвестная ошибка');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки данных:', error);
+            });
+    }
+    
+    // Функция обновления таблицы
+    function updateEmployeeTable() {
+        const container = document.getElementById('employee-load-container');
+        const table = document.getElementById('employee-load-table');
+        
+        // Проверяем, что allEmployeeData является массивом
+        if (!Array.isArray(allEmployeeData)) {
+            allEmployeeData = [];
+        }
+        
+        if (allEmployeeData.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center">Нет данных</p>';
+            return;
+        }
+        
+        let html = `
+            <div class="table-responsive">
+                <table class="table table-hover" id="employee-load-table">
+                    <thead>
+                        <tr>
+                            <th>Ветеринар</th>
+                            <th class="d-none-mobile">Приёмов</th>
+                            <th class="d-none-mobile">Средняя загруженность</th>
+                            <th>Загруженность</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        allEmployeeData.forEach((employee, index) => {
+            const isHidden = index >= 10 ? 'd-none' : '';
+            const specialties = employee.employee.specialties ? 
+                employee.employee.specialties.map(s => s.name).join(', ') : '';
+            
+            html += `
+                <tr class="employee-row ${isHidden}" data-index="${index}">
+                    <td>
+                        <strong><a href="/admin/employees/${employee.employee.id}" class="text-decoration-none text-body">${employee.employee.name}</a></strong>
+                        ${specialties ? `<br><small class="text-muted d-none-mobile">${specialties}</small>` : ''}
+                    </td>
+                    <td class="d-none-mobile">${employee.visits_count}</td>
+                    <td class="d-none-mobile">
+                        <span class="badge bg-${employee.load_color}">${employee.load_level}</span>
+                        <small class="text-muted d-block">${parseFloat(employee.avg_visits_per_day).toFixed(1)} приёмов/день</small>
+                    </td>
+                    <td>
+                        <div class="progress position-relative" style="height: 20px;">
+                            <div class="progress-bar bg-${employee.load_color}" 
+                                 role="progressbar" 
+                                 style="width: ${employee.progress_width}%"
+                                 aria-valuenow="${employee.avg_visits_per_day}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="6">
+                            </div>
+                            <span class="position-absolute top-50 start-50 translate-middle" style="font-size: 0.75rem; font-weight: 500; color: ${employee.progress_width > 50 ? 'white' : 'var(--bs-body-color)'};">
+                                ${employee.progress_percentage}%
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+        
+        // Обновляем кнопку сворачивания
+        updateToggleButton();
+    }
+    
+    // Функция обновления кнопки сворачивания
+    function updateToggleButton() {
+        const toggleBtn = document.getElementById('toggle-table');
+        const hiddenRows = document.querySelectorAll('.employee-row.d-none');
+        
+        if (hiddenRows.length > 0) {
+            toggleBtn.style.display = 'inline-block';
+        } else {
+            toggleBtn.style.display = 'none';
+        }
+    }
+    
+    // Обработчик кнопки сворачивания/разворачивания
+    document.getElementById('toggle-table').addEventListener('click', function() {
+        const hiddenRows = document.querySelectorAll('.employee-row.d-none');
+        const visibleRows = document.querySelectorAll('.employee-row:not(.d-none)');
+        
+        if (isTableExpanded) {
+            // Сворачиваем - показываем только первые 10
+            hiddenRows.forEach(row => {
+                row.classList.add('d-none');
+            });
+            this.innerHTML = '<i class="bi bi-chevron-down"></i> Показать все';
+            isTableExpanded = false;
+        } else {
+            // Разворачиваем - показываем все
+            hiddenRows.forEach(row => {
+                row.classList.remove('d-none');
+            });
+            this.innerHTML = '<i class="bi bi-chevron-up"></i> Свернуть';
+            isTableExpanded = true;
+        }
+    });
+    
+    // Инициализация кнопки сворачивания
+    updateToggleButton();
 });
 </script>
 @endpush 

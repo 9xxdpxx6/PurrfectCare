@@ -1,4 +1,4 @@
-@if(auth('admin')->user()->can('statistics_general.read') || auth('admin')->user()->can('statistics_finance.read') || auth('admin')->user()->can('statistics_efficiency.read') || auth('admin')->user()->can('statistics_clients.read') || auth('admin')->user()->can('statistics_medicine.read') || auth('admin')->user()->can('statistics_conversion.read'))
+@canany(['statistics_general.read', 'statistics_finance.read', 'statistics_efficiency.read', 'statistics_clients.read', 'statistics_medicine.read', 'statistics_conversion.read'])
 <ul class="nav flex-column mb-4">
     <li class="nav-item">
         <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#statisticsMenu" aria-expanded="true">
@@ -53,4 +53,4 @@
         </div>
     </li>
 </ul>
-@endif
+@endcanany

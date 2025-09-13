@@ -1,4 +1,4 @@
-@if(auth('admin')->user()->can('settings_analysis_types.read') || auth('admin')->user()->can('settings_analysis_parameters.read') || auth('admin')->user()->can('settings_vaccination_types.read') || auth('admin')->user()->can('settings_statuses.read') || auth('admin')->user()->can('settings_units.read') || auth('admin')->user()->can('settings_branches.read') || auth('admin')->user()->can('settings_specialties.read') || auth('admin')->user()->can('settings_animal_types.read') || auth('admin')->user()->can('settings_breeds.read') || auth('admin')->user()->can('settings_suppliers.read') || auth('admin')->user()->can('settings_diagnoses.read') || auth('admin')->user()->can('settings_symptoms.read'))
+@canany(['settings_analysis_types.read', 'settings_analysis_parameters.read', 'settings_vaccination_types.read', 'settings_statuses.read', 'settings_units.read', 'settings_branches.read', 'settings_specialties.read', 'settings_animal_types.read', 'settings_breeds.read', 'settings_suppliers.read', 'settings_diagnoses.read', 'settings_symptoms.read'])
 <ul class="nav flex-column mb-4">
     <li class="nav-item">
         <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#settingsMenu" aria-expanded="true">
@@ -95,4 +95,4 @@
         </div>
     </li>
 </ul>
-@endif
+@endcanany

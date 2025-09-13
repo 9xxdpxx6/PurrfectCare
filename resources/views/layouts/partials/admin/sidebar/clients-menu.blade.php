@@ -1,4 +1,4 @@
-@if(auth('admin')->user()->can('clients.read') || auth('admin')->user()->can('pets.read'))
+@canany(['clients.read', 'pets.read'])
 <ul class="nav flex-column mb-4">
     <li class="nav-item">
         <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#clientsMenu" aria-expanded="true">
@@ -25,4 +25,4 @@
         </div>
     </li>
 </ul>
-@endif
+@endcanany

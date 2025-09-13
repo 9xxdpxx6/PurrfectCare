@@ -1,4 +1,4 @@
-@if(auth('admin')->user()->can('employees.read') || auth('admin')->user()->can('roles.read') || auth('admin')->user()->can('schedules.read') || auth('admin')->user()->can('deliveries.read'))
+@canany(['employees.read', 'roles.read', 'schedules.read', 'deliveries.read'])
 <ul class="nav flex-column mb-4">
     <li class="nav-item">
         <a class="nav-link d-flex justify-content-between align-items-center text-body" href="#" data-bs-toggle="collapse" data-bs-target="#organizationMenu" aria-expanded="true">
@@ -39,4 +39,4 @@
         </div>
     </li>
 </ul>
-@endif
+@endcanany

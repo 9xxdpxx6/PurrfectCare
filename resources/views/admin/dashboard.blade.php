@@ -20,7 +20,7 @@
 </div>
 
 <!-- Быстрые переходы -->
-@if(auth('admin')->user()->can('visits.read') || auth('admin')->user()->can('orders.read') || auth('admin')->user()->can('clients.read') || auth('admin')->user()->can('pets.read') || auth('admin')->user()->can('employees.read') || auth('admin')->user()->can('statistics_general.read'))
+@canany(['visits.read', 'orders.read', 'clients.read', 'pets.read', 'employees.read', 'statistics_general.read'])
 <h5 class="text-muted mb-3">Быстрые переходы</h5>
 <div class="row mb-4">
     @can('visits.read')
@@ -77,10 +77,10 @@
     </div>
     @endcan
 </div>
-@endif
+@endcanany
 
 <!-- Основные метрики -->
-@if(auth('admin')->user()->can('visits.read') || auth('admin')->user()->can('orders.read') || auth('admin')->user()->can('clients.read') || auth('admin')->user()->can('statistics_finance.read'))
+@canany(['visits.read', 'orders.read', 'clients.read', 'statistics_finance.read'])
 <h5 class="text-muted mb-3">Ключевые показатели за текущий месяц</h5>
 <div class="row mb-4">
     @can('visits.read')
@@ -139,10 +139,10 @@
     </div>
     @endcan
 </div>
-@endif
+@endcanany
 
 <!-- Дополнительные метрики -->
-@if(auth('admin')->user()->can('orders.read') || auth('admin')->user()->can('pets.read') || auth('admin')->user()->can('statistics_conversion.read'))
+@canany(['orders.read', 'pets.read', 'statistics_conversion.read'])
 <div class="row mb-4">
     @can('orders.read')
     <div class="col-md-4 mb-3">
@@ -177,10 +177,10 @@
     </div>
     @endcan
 </div>
-@endif
+@endcanany
 
 <!-- Основной контент -->
-@if(auth('admin')->user()->can('visits.read') || auth('admin')->user()->can('orders.read'))
+@canany(['visits.read', 'orders.read'])
 <div class="row">
     <!-- Сегодняшние приёмы -->
     @can('visits.read')
@@ -206,7 +206,7 @@
                                                         {{ $visit->pet->client->name ?? 'Неизвестный владелец' }} ({{ $visit->pet->name }})
                                                     @else
                                                         {{ $visit->pet->client->name ?? 'Неизвестный владелец' }}
-                                                    @endif
+                                                    @endcanany
                                                 </a>
                                             </h6>
                                             <small class="text-muted">
@@ -231,7 +231,7 @@
                         <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
                         <p class="text-muted mb-0">Сегодня приёмов нет</p>
                     </div>
-                @endif
+                @endcanany
             </div>
         </div>
     </div>
@@ -286,16 +286,16 @@
                         <i class="bi bi-bag-x fs-1 text-muted mb-3"></i>
                         <p class="text-muted mb-0">Заказов пока нет</p>
                     </div>
-                @endif
+                @endcanany
             </div>
         </div>
     </div>
     @endcan
 </div>
-@endif
+@endcanany
 
 <!-- Дополнительная информация -->
-@if(auth('admin')->user()->can('visits.read') || auth('admin')->user()->can('services.read'))
+@canany(['visits.read', 'services.read'])
 <div class="row">
     <!-- Ближайшие приёмы -->
     @can('visits.read')
@@ -318,7 +318,7 @@
                                                 {{ $visit->pet->client->name ?? 'Неизвестный владелец' }} ({{ $visit->pet->name }})
                                             @else
                                                 {{ $visit->pet->client->name ?? 'Неизвестный владелец' }}
-                                            @endif
+                                            @endcanany
                                         </a>
                                     </h6>
                                     <small class="text-muted">
@@ -334,7 +334,7 @@
                         <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
                         <p class="text-muted mb-0">Завтра приёмов нет</p>
                     </div>
-                @endif
+                @endcanany
             </div>
         </div>
     </div>
@@ -370,13 +370,13 @@
                     </div>
                 @else
                     <p class="text-muted text-center">Нет данных</p>
-                @endif
+                @endcanany
             </div>
         </div>
     </div>
     @endcan
 </div>
-@endif
+@endcanany
 
 <!-- Статистика по дням недели -->
 @can('statistics_general.read')
@@ -401,7 +401,7 @@
                                                 $trophyColor = $trophyColors[$stats['rank'] - 1] ?? 'secondary';
                                             @endphp
                                             <i class="bi bi-trophy-fill text-{{ $trophyColor }} me-2"></i>
-                                        @endif
+                                        @endcanany
                                         <h6 class="card-title text-muted mb-0">{{ $day }}</h6>
                                     </div>
                                     <div class="row">
@@ -462,7 +462,7 @@
                                 </div>
                             </div>
                         </div>
-                    @endif
+                    @endcanany
                 </div>
             </div>
         </div>
@@ -473,9 +473,9 @@
 
 
 <!-- Общая информация -->
-@if(auth('admin')->user()->can('settings_branches.read') || auth('admin')->user()->can('employees.read') || auth('admin')->user()->can('services.read') || auth('admin')->user()->can('visits.create') || auth('admin')->user()->can('orders.create') || auth('admin')->user()->can('clients.create') || auth('admin')->user()->can('pets.create') || auth('admin')->user()->can('schedules.read') || auth('admin')->user()->can('drugs.read') || auth('admin')->user()->can('settings_analysis_types.read'))
+@canany(['settings_branches.read', 'employees.read', 'services.read', 'visits.create', 'orders.create', 'clients.create', 'pets.create', 'schedules.read', 'drugs.read', 'settings_analysis_types.read'])
 <div class="row">
-    @if(auth('admin')->user()->can('settings_branches.read') || auth('admin')->user()->can('employees.read') || auth('admin')->user()->can('services.read'))
+    @canany(['settings_branches.read', 'employees.read', 'services.read'])
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
@@ -513,9 +513,9 @@
             </div>
         </div>
     </div>
-    @endif
+    @endcanany
     
-    @if(auth('admin')->user()->can('visits.create') || auth('admin')->user()->can('orders.create') || auth('admin')->user()->can('clients.create') || auth('admin')->user()->can('pets.create') || auth('admin')->user()->can('schedules.read') || auth('admin')->user()->can('drugs.read') || auth('admin')->user()->can('settings_analysis_types.read'))
+    @canany(['visits.create', 'orders.create', 'clients.create', 'pets.create', 'schedules.read', 'drugs.read', 'settings_analysis_types.read'])
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
@@ -578,12 +578,11 @@
             </div>
         </div>
     </div>
-    @endif
+    @endcanany
 </div>
-@endif
 
 <!-- Fallback контент для пользователей с ограниченными правами -->
-@if(!auth('admin')->user()->can('visits.read') && !auth('admin')->user()->can('orders.read') && !auth('admin')->user()->can('clients.read') && !auth('admin')->user()->can('pets.read') && !auth('admin')->user()->can('employees.read') && !auth('admin')->user()->can('statistics_general.read') && !auth('admin')->user()->can('services.read') && !auth('admin')->user()->can('settings_branches.read') && !auth('admin')->user()->can('visits.create') && !auth('admin')->user()->can('orders.create') && !auth('admin')->user()->can('clients.create') && !auth('admin')->user()->can('pets.create') && !auth('admin')->user()->can('schedules.read') && !auth('admin')->user()->can('drugs.read') && !auth('admin')->user()->can('settings_analysis_types.read'))
+@cannotany(['visits.read', 'orders.read', 'clients.read', 'pets.read', 'employees.read', 'statistics_general.read', 'services.read', 'settings_branches.read', 'visits.create', 'orders.create', 'clients.create', 'pets.create', 'schedules.read', 'drugs.read', 'settings_analysis_types.read'])
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -617,7 +616,7 @@
         </div>
     </div>
 </div>
-@endif
+@endcanany
 
 @endsection
 

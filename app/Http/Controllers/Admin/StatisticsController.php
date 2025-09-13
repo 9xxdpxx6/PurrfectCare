@@ -510,4 +510,69 @@ class StatisticsController extends AdminController
         }
     }
     
+    /**
+     * Получение опций филиалов для tomselect
+     */
+    public function branchOptions(Request $request)
+    {
+        $query = $request->get('q', '');
+        $selected = $request->get('selected', '');
+        
+        $branches = Branch::select('id', 'name')
+            ->when($query, function($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%");
+            })
+            ->when($selected, function($q) use ($selected) {
+                $q->orWhere('id', $selected);
+            })
+            ->orderBy('name')
+            ->limit(30)
+            ->get();
+        
+        return response()->json($branches->map(function($branch) {
+            return [
+                'value' => $branch->id,
+                'text' => $branch->name
+            ];
+        }));
+    }
+    
+    /**
+     * Получение данных загруженности сотрудников по филиалу
+     */
+    public function employeeLoad(Request $request)
+    {
+        try {
+            $this->authorize('statistics_efficiency.read');
+            
+            $period = $request->get('period', 'month');
+            $startDateInput = $request->get('start_date');
+            $endDateInput = $request->get('end_date');
+            $branchId = $request->get('branch_id');
+            
+            $dateRange = $this->dateRangeService->processDateRange($period, $startDateInput, $endDateInput);
+            $startDate = $dateRange['startDate'];
+            $endDate = $dateRange['endDate'];
+            
+            // Получаем данные загруженности с фильтрацией по филиалу
+            $employeeLoad = $this->operationalService->getEmployeeLoadByBranch($startDate, $endDate, $branchId);
+            
+            return response()->json([
+                'success' => true,
+                'employeeLoad' => $employeeLoad->toArray(),
+                'total' => $employeeLoad->count()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Ошибка в employeeLoad', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
 } 

@@ -65,18 +65,6 @@ class PermissionsSeeder extends Seeder
             ->whereNotIn('name', [
                 'employees.create', 'employees.update', 'employees.delete',
                 'roles.create', 'roles.update', 'roles.delete',
-                'settings_analysis_types.create', 'settings_analysis_types.update', 'settings_analysis_types.delete',
-                'settings_analysis_parameters.create', 'settings_analysis_parameters.update', 'settings_analysis_parameters.delete',
-                'settings_vaccination_types.create', 'settings_vaccination_types.update', 'settings_vaccination_types.delete',
-                'settings_statuses.create', 'settings_statuses.update', 'settings_statuses.delete',
-                'settings_units.create', 'settings_units.update', 'settings_units.delete',
-                'settings_branches.create', 'settings_branches.update', 'settings_branches.delete',
-                'settings_specialties.create', 'settings_specialties.update', 'settings_specialties.delete',
-                'settings_animal_types.create', 'settings_animal_types.update', 'settings_animal_types.delete',
-                'settings_breeds.create', 'settings_breeds.update', 'settings_breeds.delete',
-                'settings_suppliers.create', 'settings_suppliers.update', 'settings_suppliers.delete',
-                'settings_diagnoses.create', 'settings_diagnoses.update', 'settings_diagnoses.delete',
-                'settings_symptoms.create', 'settings_symptoms.update', 'settings_symptoms.delete',
             ])->get());
 
 

@@ -31,6 +31,22 @@ class Handler extends ExceptionHandler
     }
 
     /**
+     * Convert an authentication exception into a response.
+     */
+    protected function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception)
+    {
+        // Если это админский запрос, редиректим на админский логин
+        if ($this->isAdminRequest($request)) {
+            return redirect()->guest(route('admin.login'));
+        }
+
+        // Для остальных запросов используем стандартное поведение
+        return $request->expectsJson()
+            ? response()->json(['message' => $exception->getMessage()], 401)
+            : redirect()->guest(route('login'));
+    }
+
+    /**
      * Render an exception into an HTTP response.
      */
     public function render($request, Throwable $e)
@@ -38,6 +54,12 @@ class Handler extends ExceptionHandler
         // ValidationException всегда обрабатываем стандартно - не перенаправляем на страницу ошибки
         if ($e instanceof \Illuminate\Validation\ValidationException) {
             \Log::info('ValidationException caught, using standard Laravel handling');
+            return parent::render($request, $e);
+        }
+        
+        // AuthenticationException тоже обрабатываем стандартно - чтобы работал редирект на логин
+        if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+            \Log::info('AuthenticationException caught, using standard Laravel handling for redirect');
             return parent::render($request, $e);
         }
         

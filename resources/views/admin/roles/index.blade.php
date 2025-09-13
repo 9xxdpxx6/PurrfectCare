@@ -87,7 +87,7 @@
                                                                 return $parts[1] ?? '';
                                                             });
                                                         @endphp
-                                                        @foreach(['read', 'create', 'update', 'delete'] as $operation)
+                                                        @foreach(['read', 'create', 'update', 'delete', 'export'] as $operation)
                                                             <div style="width: 20px; text-align: center;">
                                                                 @if($operations->contains($operation))
                                                                     @if($operation === 'read')
@@ -98,6 +98,8 @@
                                                                         <i class="bi bi-pencil text-warning" title="Редактирование"></i>
                                                                     @elseif($operation === 'delete')
                                                                         <i class="bi bi-trash text-danger" title="Удаление"></i>
+                                                                    @elseif($operation === 'export')
+                                                                        <i class="bi bi-file-earmark-arrow-up text-primary" title="Экспорт"></i>
                                                                     @endif
                                                                 @endif
                                                             </div>

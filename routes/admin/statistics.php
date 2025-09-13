@@ -21,6 +21,10 @@ Route::prefix('statistics')->name('statistics.')->group(function () {
     Route::get('/top-services/export', [StatisticsController::class, 'exportTopServices'])->name('top-services.export');
     Route::get('/medical/export', [StatisticsController::class, 'exportMedical'])->name('medical.export');
     Route::get('/conversion/export', [StatisticsController::class, 'exportConversion'])->name('conversion.export');
+    
+    // AJAX routes for dynamic loading
+    Route::get('/branch-options', [StatisticsController::class, 'branchOptions'])->name('branch-options');
+    Route::get('/employee-load', [StatisticsController::class, 'employeeLoad'])->name('employee-load');
 });
 
 

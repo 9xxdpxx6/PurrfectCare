@@ -57,13 +57,12 @@
                                         <div class="card-header">
                                             <h6 class="mb-0">
                                                 {{ $moduleTranslations[$module] ?? ucfirst(str_replace('_', ' ', $module)) }}
-                                                <span class="badge bg-secondary ms-2">{{ $modulePermissions->count() }}</span>
                                             </h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
                                                 @foreach($modulePermissions as $permission)
-                                                    <div class="col-md-3 col-sm-4 col-6 mb-2">
+                                                    <div class="col-xl-2 col-lg-4 col-md-6 col-sm-6 col-12 mb-2">
                                                         <div class="form-check">
                                                             <input class="form-check-input" 
                                                                    type="checkbox" 
@@ -77,6 +76,17 @@
                                                                     $operation = $parts[1] ?? '';
                                                                     $operationName = $operationTranslations[$operation] ?? ucfirst($operation);
                                                                 @endphp
+                                                                @if($operation === 'read')
+                                                                    <i class="bi bi-eye text-info me-1"></i>
+                                                                @elseif($operation === 'create')
+                                                                    <i class="bi bi-patch-plus text-success me-1"></i>
+                                                                @elseif($operation === 'update')
+                                                                    <i class="bi bi-pencil text-warning me-1"></i>
+                                                                @elseif($operation === 'delete')
+                                                                    <i class="bi bi-trash text-danger me-1"></i>
+                                                                @elseif($operation === 'export')
+                                                                    <i class="bi bi-file-earmark-arrow-up text-primary me-1"></i>
+                                                                @endif
                                                                 {{ $operationName }}
                                                             </label>
                                                         </div>
