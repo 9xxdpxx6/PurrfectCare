@@ -1,4 +1,494 @@
 // Основной SASS файл для админ-панели
+@use "bootstrap/dist/css/bootstrap.min.css";
+@use "bootstrap-icons/font/bootstrap-icons.css";
+@use "tom-select/dist/css/tom-select.bootstrap5.min.css";
+@use "air-datepicker/air-datepicker.css";
+@use "themes";
 @use "admin/overlays";
 @use "admin/sidebar";
 @use "admin/errors";
+
+// ====================
+// Статистика - Премиум UI 
+// ====================
+
+// CSS переменные
+:root {
+    --surface-1: rgba(255, 255, 255, 0.03);
+    --surface-2: rgba(255, 255, 255, 0.05);
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glow: rgba(0, 0, 0, 0.25);
+    --btn-border-radius: 12px;
+    --card-border-radius: 16px;
+}
+
+// Навигационные кнопки разделов
+.nav-btn {
+    min-height: 140px;
+    padding: 24px 20px;
+    border-radius: var(--card-border-radius);
+    transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: saturate(120%) blur(2px);
+    position: relative;
+    
+    &:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    h6 {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    
+    small {
+        font-size: 0.875rem;
+        line-height: 1.3;
+    }
+}
+
+// KPI карточки
+.kpi-card {
+    border-radius: var(--card-border-radius);
+    background: linear-gradient(180deg, var(--surface-1), transparent);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+
+    .card-body {
+        padding: 24px 20px;
+    }
+
+    .card-text {
+        margin: 0;
+    }
+
+    &.grad-primary {
+        background: linear-gradient(180deg, rgba(13, 110, 253, 0.12), transparent);
+        border-color: rgba(13, 110, 253, 0.2);
+    }
+
+    &.grad-success {
+        background: linear-gradient(180deg, rgba(25, 135, 84, 0.12), transparent);
+        border-color: rgba(25, 135, 84, 0.2);
+    }
+
+    &.grad-info {
+        background: linear-gradient(180deg, rgba(13, 202, 240, 0.12), transparent);
+        border-color: rgba(13, 202, 240, 0.2);
+    }
+
+    &.grad-warning {
+        background: linear-gradient(180deg, rgba(255, 193, 7, 0.12), transparent);
+        border-color: rgba(255, 193, 7, 0.2);
+    }
+}
+
+// Дополнительные KPI карточки с оутлайном
+.kpi-outline {
+    border-radius: var(--card-border-radius);
+    background: rgba(255, 255, 255, 0.04);
+    border: 2px solid transparent;
+    backdrop-filter: blur(10px);
+    position: relative;
+
+    // Усиленная контрастность для цифр
+    h3 {
+        color: #ffffff !important;
+        font-weight: 700;
+    }
+    
+    // В светлой теме - темный цвет
+    [data-bs-theme="light"] & h3 {
+        color: #212529 !important;
+    }
+
+    &.primary {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent) padding-box,
+                   linear-gradient(135deg, #0d6efd, rgba(66, 165, 245, 0.6)) border-box;
+                   
+        h3 {
+            color: #ffffff !important;
+        }
+        
+        // В светлой теме - темный цвет
+        [data-bs-theme="light"] & h3 {
+            color: #212529 !important;
+        }
+    }
+
+    &.success {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent) padding-box,
+                   linear-gradient(135deg, #198754, rgba(129, 199, 132, 0.6)) border-box;
+                   
+        h3 {
+            color: #ffffff !important;
+        }
+        
+        // В светлой теме - темный цвет
+        [data-bs-theme="light"] & h3 {
+            color: #212529 !important;
+        }
+    }
+
+    &.info {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent) padding-box,
+                   linear-gradient(135deg, #0dcaf0, rgba(77, 208, 225, 0.6)) border-box;
+                   
+        h3 {
+            color: #ffffff !important;
+        }
+        
+        // В светлой теме - темный цвет
+        [data-bs-theme="light"] & h3 {
+            color: #212529 !important;
+        }
+    }
+
+    &.warning {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent) padding-box,
+                   linear-gradient(135deg, #ffc107, rgba(255, 183, 77, 0.6)) border-box;
+                   
+        h3 {
+            color: #ffffff !important;
+        }
+        
+        // В светлой теме - темный цвет
+        [data-bs-theme="light"] & h3 {
+            color: #212529 !important;
+        }
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+}
+
+// Градиентные числа
+.gradient-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
+}
+
+.gradient-text-primary {
+    color: #ffffff !important;
+}
+
+.gradient-text-success {
+    color: #ffffff !important;
+}
+
+.gradient-text-info {
+    color: #ffffff !important;
+}
+
+.gradient-text-warning {
+    color: #ffffff !important;
+}
+
+// В светлой теме - темный цвет
+[data-bs-theme="light"] .gradient-text-primary,
+[data-bs-theme="light"] .gradient-text-success,
+[data-bs-theme="light"] .gradient-text-info,
+[data-bs-theme="light"] .gradient-text-warning {
+    color: #212529 !important;
+}
+
+// Кнопки периодов - обычный Bootstrap стиль без эффектов
+.btn-group .btn-outline-secondary {
+    // Убираем все кастомные стили, возвращаем к Bootstrap по умолчанию
+    border-radius: 0.375rem;
+    
+    &.active {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
+        // Убираем transform и тени
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    &:hover {
+        // Убираем transform при hover
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
+// Поле интервала - обычный Bootstrap стиль 
+#date_range.form-control {
+    // Убираем кастомные стили, оставляем Bootstrap по умолчанию
+    border-radius: 0.375rem;
+}
+
+// Стили для tom-select
+.ts-control .item {
+    background-color: #efefef;
+    border-radius: 0.25rem;
+    padding: 0 0.5rem;
+}
+
+// Оптимизация графиков
+.chart-container {
+    canvas {
+        max-height: 280px !important;
+    }
+}
+
+// Убираем лишние отступы в карточках с графиками
+.card-body .chart-container {
+    margin: 0 auto;
+}
+
+// Адаптивные графики
+@media (max-width: 768px) {
+    .chart-container {
+        max-width: 250px !important;
+        height: 250px !important;
+        
+        canvas {
+            max-height: 250px !important;
+        }
+    }
+}
+
+@media (max-width: 576px) {
+    .chart-container {
+        max-width: 220px !important;
+        height: 220px !important;
+        
+        canvas {
+            max-height: 220px !important;
+        }
+    }
+}
+
+// admin.blade
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+
+    &-sticky {
+        position: relative;
+        top: 0;
+        height: calc(100vh - 48px);
+        padding-top: 0.5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        box-shadow: 2px 0 15px 0 rgba(26, 26, 26, 0.5);
+    }
+}
+
+.navbar {
+    &-brand {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        img {
+            height: 32px;
+            width: auto;
+        }
+    }
+
+    &-toggler {
+        top: 0.25rem;
+        right: 1rem;
+    }
+}
+
+.main-content {
+    margin-left: 240px;
+    padding: 20px;
+
+    @media (max-width: 767.98px) {
+        margin-left: 0;
+    }
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+
+    .card {
+        height: 100%;
+    }
+
+    @media (min-width: 992px) {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+.theme-switch {
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    i {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: static;
+        height: auto;
+        padding-top: 0;
+    }
+}
+
+.ts-wrapper.form-select,
+.ts-control.form-select {
+    width: 100% !important;
+}
+
+// Адаптивная легенда для вакцинаций
+.vaccinations-legend {
+    @media (max-width: 991.98px) {
+        margin-top: 1rem;
+        text-align: center;
+        
+        .d-flex {
+            justify-content: center;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        padding-left: 0.5rem;
+        max-height: 280px;
+        overflow-y: auto;
+    }
+}
+
+// Адаптивная легенда для распределения приёмов
+.weekday-legend {
+    @media (max-width: 991.98px) {
+        margin-top: 1rem;
+        text-align: center;
+        
+        .d-flex {
+            justify-content: center;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        padding-left: 0.5rem;
+        max-height: 280px;
+        overflow-y: auto;
+    }
+}
+
+// Отключение зеленых обводок для валидных полей
+.form-control.is-valid,
+.was-validated .form-control:valid {
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
+}
+
+.form-control.is-valid:focus,
+.was-validated .form-control:valid:focus {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.form-select.is-valid,
+.was-validated .form-select:valid {
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
+}
+
+.form-select.is-valid:focus,
+.was-validated .form-select:valid:focus {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+// Отключение зеленых обводок для всех типов полей
+.form-control.is-valid,
+.form-select.is-valid,
+.form-check-input.is-valid,
+.was-validated .form-control:valid,
+.was-validated .form-select:valid,
+.was-validated .form-check-input:valid {
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
+}
+
+// Сохранение синих обводок при фокусе для валидных полей
+.form-control.is-valid:focus,
+.form-select.is-valid:focus,
+.was-validated .form-control:valid:focus,
+.was-validated .form-select:valid:focus {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+// Стили пагинации для админки
+.pagination {
+    .page-link {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        border-radius: 0.375rem;
+        margin: 0 0.125rem;
+        border: 1px solid #dee2e6;
+        color: #0d6efd;
+        transition: all 0.2s ease;
+        
+        &:hover {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        &:focus {
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+    }
+    
+    .page-item {
+        &.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: white;
+        }
+        
+        &.disabled .page-link {
+            color: #6c757d;
+            background-color: #fff;
+            border-color: #dee2e6;
+            cursor: not-allowed;
+        }
+    }
+    
+    // Стили для иконок в стрелках
+    .bi {
+        font-size: 0.75rem;
+        line-height: 1;
+        vertical-align: middle;
+    }
+    
+    // Уменьшаем размер стрелок
+    .page-link i {
+        font-size: 0.625rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}

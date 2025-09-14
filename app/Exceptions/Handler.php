@@ -43,7 +43,7 @@ class Handler extends ExceptionHandler
         // Для остальных запросов используем стандартное поведение
         return $request->expectsJson()
             ? response()->json(['message' => $exception->getMessage()], 401)
-            : redirect()->guest(route('login'));
+            : redirect()->guest(route('client.login'));
     }
 
     /**

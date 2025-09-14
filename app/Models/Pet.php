@@ -50,6 +50,11 @@ class Pet extends Model
         return $this->belongsTo(Breed::class);
     }
 
+    public function species()
+    {
+        return $this->hasOneThrough(Species::class, Breed::class, 'id', 'id', 'breed_id', 'species_id');
+    }
+
     public function client()
     {
         return $this->belongsTo(User::class, 'client_id');

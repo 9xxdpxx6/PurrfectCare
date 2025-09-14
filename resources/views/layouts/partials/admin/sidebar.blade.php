@@ -1,7 +1,5 @@
 <div class="sidebar bg-body border-end" id="sidebarMenu">
-    <div class="px-3">
-        <h4 class="mb-4">Админ-панель</h4>
-
+    <div class="px-3 mt-3">
         <!-- Основное -->
         @include('layouts.partials.admin.sidebar.main-menu')
         

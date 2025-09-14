@@ -1,0 +1,216 @@
+// Common components for client
+// ==========================================
+
+@use "variables" as *;
+
+// Hero section
+.bg-primary {
+    background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%) !important;
+}
+
+// Card styles
+.card {
+    // Убираем hover эффекты для обычных карточек
+}
+
+.no-hover {
+    cursor: default;
+    
+    &:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
+// Button styles
+.btn {
+    font-weight: 500;
+    border-radius: $border-radius-base;
+    
+    &:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+// Icon styles
+.bi {
+    &.display-1 {
+        font-size: 4rem;
+    }
+    
+    &.fs-1 {
+        font-size: 2.5rem;
+    }
+}
+
+// Feature cards
+.feature-card {
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .icon-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+}
+
+// Progress Steps
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.step.active .step-number {
+    background-color: $primary-color;
+    color: white;
+}
+
+.step.completed .step-number {
+    background-color: $success-color;
+    color: white;
+}
+
+.step-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-align: center;
+}
+
+.step.active .step-label {
+    color: $primary-color;
+    font-weight: 600;
+}
+
+.step.completed .step-label {
+    color: $success-color;
+    font-weight: 600;
+}
+
+.step-line {
+    width: 60px;
+    height: 2px;
+    background-color: #e9ecef;
+    margin: 0 10px;
+    margin-top: -20px;
+}
+
+.step-line.completed {
+    background-color: $success-color;
+}
+
+// Veterinarian Cards
+.veterinarian-card {
+    cursor: pointer;
+    
+    &:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+.veterinarian-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, $success-color, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: white;
+    font-size: 2rem;
+}
+
+// Schedule Cards
+.schedule-card {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: $transition-fast;
+    background: white;
+    
+    &:hover {
+        border-color: $primary-color;
+        background-color: #f8f9fa;
+    }
+    
+    &.selected {
+        border-color: $primary-color;
+        background-color: #e3f2fd;
+    }
+}
+
+.schedule-time {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.schedule-status .badge {
+    font-size: 0.75rem;
+}
+
+// Profile Sidebar
+.profile-sidebar {
+    .list-group-item.active {
+        background-color: $primary-color;
+        border-color: $primary-color;
+    }
+}
+
+// Form Enhancements
+.form-label {
+    font-weight: 500;
+}
+
+.required {
+    color: $danger-color;
+}
+
+// Badge Styles
+.badge {
+    font-size: 0.75rem;
+}
+
+// Card Title Styles
+.card-title {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+// Footer styles
+footer {
+    background: linear-gradient(135deg, $dark-color 0%, lighten($dark-color, 5%) 100%) !important;
+    
+    .text-primary {
+        color: $primary-color !important;
+    }
+    
+    .text-muted {
+        color: #adb5bd !important;
+    }
+}

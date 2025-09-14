@@ -1,0 +1,6 @@
+---
+description: "Strict Rule for Laravel Projects: Never execute terminal commands (e.g., php artisan, npm, composer, git) unless explicitly required by the user and no editor-based alternative exists. All operations must be performed via direct file editing or Cursor's built-in tools."
+globs:
+  - "**/*"
+alwaysApply: true
+---

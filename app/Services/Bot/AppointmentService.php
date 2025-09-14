@@ -8,6 +8,7 @@ use App\Models\Schedule;
 use App\Models\Visit;
 use App\Models\Status;
 use App\Models\TelegramProfile;
+use App\Services\VeterinarianService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -72,35 +73,13 @@ class AppointmentService
     {
         Log::info('AppointmentService: sending veterinarians', ['branch_id' => $branchId, 'page' => $page]);
 
-        // Упрощаем запрос - сначала получаем ID сотрудников филиала
-        $employeeIds = \DB::table('branch_employee')
-            ->where('branch_id', $branchId)
-            ->pluck('employee_id');
-
-        if ($employeeIds->isEmpty()) {
-            return [
-                'action' => 'send_message',
-                'message' => '❌ В этом филиале нет сотрудников.',
-                'keyboard' => []
-            ];
-        }
-
         // Получаем название филиала для отображения
         $branch = Branch::select('name')->find($branchId);
         $branchName = $branch ? $this->cleanUtf8($branch->name) : 'Филиал';
 
-        // Теперь получаем ветеринаров с их специальностями
-        $veterinarians = Employee::select('employees.id', 'employees.name')
-            ->whereIn('employees.id', $employeeIds)
-            ->whereHas('specialties', function ($query) {
-                $query->where('is_veterinarian', true);
-            })
-            ->with(['specialties' => function ($query) {
-                $query->select('specialties.id', 'specialties.name', 'specialties.is_veterinarian')
-                    ->where('specialties.is_veterinarian', true);
-            }])
-            ->orderBy('employees.name')
-            ->get();
+        // Используем общий сервис для получения ветеринаров
+        $veterinarianService = app(VeterinarianService::class);
+        $veterinarians = $veterinarianService->getVeterinariansForBranch($branchId);
 
         if ($veterinarians->isEmpty()) {
             $keyboard = [

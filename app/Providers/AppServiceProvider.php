@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,15 +22,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-                            // Настройка Spatie Permissions для работы с разными guard'ами
-                    Gate::before(function ($user, $ability) {
-                        // Если пользователь аутентифицирован через admin guard
-                        if (Auth::guard('admin')->check()) {
-                            $adminUser = Auth::guard('admin')->user();
-                            if ($adminUser && $adminUser->hasRole('super-admin')) {
-                                return true;
-                            }
-                        }
-                    });
+        // Настройка глобальной пагинации
+        Paginator::defaultView('vendor.pagination.custom');
+        
+        // Настройка Spatie Permissions для работы с разными guard'ами
+        Gate::before(function ($user, $ability) {
+            // Если пользователь аутентифицирован через admin guard
+            if (Auth::guard('admin')->check()) {
+                $adminUser = Auth::guard('admin')->user();
+                if ($adminUser && $adminUser->hasRole('super-admin')) {
+                    return true;
+                }
+            }
+        });
     }
 }

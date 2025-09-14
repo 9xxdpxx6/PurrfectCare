@@ -1,5 +1,6 @@
 ---
-description: do not try to add or change or touch .env file in this project. Never@ regardless of errors or linter and etc
+description: do not try to add or change or touch .env file in this project. Never! regardless of errors or linter and etc
 globs:
+  - "**/*"
 alwaysApply: true
 ---

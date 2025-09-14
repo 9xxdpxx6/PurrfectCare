@@ -1,0 +1,14 @@
+// Client-specific styles
+// ==========================================
+
+// Import Bootstrap
+@use "bootstrap/dist/css/bootstrap.min.css";
+@use "bootstrap-icons/font/bootstrap-icons.css";
+
+// Import client modules
+@use "client/variables";
+@use "client/base";
+@use "client/navigation";
+@use "client/components";
+@use "client/responsive";
+@use "client/animations";

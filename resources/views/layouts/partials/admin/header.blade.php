@@ -2,7 +2,10 @@
     <button class="navbar-toggler sidebar-toggle d-md-none collapsed me-2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{{ route('admin.dashboard') }}">PurrfectCare</a>
+    <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{{ route('admin.dashboard') }}">
+        <img src="{{ asset('logo.png') }}" alt="PurrfectCare" class="logo">
+        <span>PurrfectCare</span>
+    </a>
     <div class="w-100"></div>
     <div class="navbar-nav d-flex flex-row align-items-center">
         <div class="nav-item text-nowrap me-3">

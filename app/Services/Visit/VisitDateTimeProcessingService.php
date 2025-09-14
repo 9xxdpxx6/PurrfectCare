@@ -236,40 +236,46 @@ class VisitDateTimeProcessingService
      */
     public function checkTimeConflicts(int $scheduleId, string $startTime, int $duration, ?int $excludeVisitId = null): array
     {
-        $start = Carbon::createFromFormat('H:i', $startTime);
-        $end = $start->copy()->addMinutes($duration);
-        
-        // Оптимизация: используем индексы на schedule_id и starts_at, select для выбора нужных полей
-        $query = \App\Models\Visit::select(['id', 'starts_at'])
-            ->where('schedule_id', $scheduleId)
-            ->where(function($q) use ($start, $end) {
-                $q->where(function($subQ) use ($start, $end) {
-                    $subQ->where('starts_at', '<', $end)
-                         ->whereRaw('DATE_ADD(starts_at, INTERVAL 30 MINUTE)', '>', $start);
-                });
-            });
-        
-        if ($excludeVisitId) {
-            $query->where('id', '!=', $excludeVisitId);
-        }
-        
-        $conflictingVisits = $query->get();
-        
-        $conflicts = [];
-        foreach ($conflictingVisits as $visit) {
-            $visitStart = Carbon::parse($visit->starts_at);
-            $visitEnd = $visitStart->copy()->addMinutes(30); // Предполагаем стандартную длительность
+        try {
+            $start = Carbon::createFromFormat('H:i', $startTime);
+            $end = $start->copy()->addMinutes($duration);
             
-            if ($start < $visitEnd && $end > $visitStart) {
-                $conflicts[] = [
-                    'visit_id' => $visit->id,
-                    'visit_start' => $visitStart->format('H:i'),
-                    'visit_end' => $visitEnd->format('H:i'),
-                    'conflict_type' => 'overlap'
-                ];
+            // Получаем все визиты для данного расписания
+            $query = \App\Models\Visit::select(['id', 'starts_at'])
+                ->where('schedule_id', $scheduleId);
+            
+            if ($excludeVisitId) {
+                $query->where('id', '!=', $excludeVisitId);
             }
+            
+            $visits = $query->get();
+            
+            $conflicts = [];
+            foreach ($visits as $visit) {
+                $visitStart = Carbon::parse($visit->starts_at);
+                $visitEnd = $visitStart->copy()->addMinutes(30); // Стандартная длительность
+                
+                // Проверяем пересечение временных интервалов
+                if ($start < $visitEnd && $end > $visitStart) {
+                    $conflicts[] = [
+                        'visit_id' => $visit->id,
+                        'visit_start' => $visitStart->format('H:i'),
+                        'visit_end' => $visitEnd->format('H:i'),
+                        'conflict_type' => 'overlap'
+                    ];
+                }
+            }
+            
+            return $conflicts;
+            
+        } catch (\Exception $e) {
+            \Log::error('Ошибка при проверке конфликтов времени', [
+                'schedule_id' => $scheduleId,
+                'start_time' => $startTime,
+                'duration' => $duration,
+                'error' => $e->getMessage()
+            ]);
+            return [];
         }
-        
-        return $conflicts;
     }
 }

@@ -1,0 +1,158 @@
+<?php
+
+namespace App\Http\Controllers\Client;
+
+use App\Http\Controllers\Controller;
+use App\Models\Branch;
+use App\Models\Employee;
+use App\Models\User;
+use App\Services\VeterinarianService;
+use App\Notifications\ClientRegistrationNotification;
+use App\Http\Requests\Client\LoginRequest;
+use App\Http\Requests\Client\RegisterRequest;
+use App\Http\Requests\Client\Profile\UpdateRequest as UpdateProfileRequest;
+use App\Http\Requests\Client\ChangePasswordRequest;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
+class ClientController extends Controller
+{
+    protected $veterinarianService;
+
+    public function __construct(VeterinarianService $veterinarianService)
+    {
+        $this->veterinarianService = $veterinarianService;
+    }
+
+    /**
+     * Главная страница клиентской части
+     */
+    public function index(): View
+    {
+        return view('client.index');
+    }
+
+    /**
+     * Страница входа
+     */
+    public function login(): View
+    {
+        return view('client.auth.login');
+    }
+
+    /**
+     * Страница регистрации
+     */
+    public function register(): View
+    {
+        return view('client.auth.register');
+    }
+
+    /**
+     * Обработка входа
+     */
+    public function authenticate(LoginRequest $request)
+    {
+
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $request->session()->regenerate();
+            return redirect()->intended('/');
+        }
+
+        return back()->withErrors([
+            'email' => 'Неверные учетные данные.',
+        ])->onlyInput('email');
+    }
+
+    /**
+     * Обработка регистрации
+     */
+    public function store(RegisterRequest $request)
+    {
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password),
+        ]);
+
+        Auth::login($user);
+
+        // Отправляем уведомление о регистрации
+        $user->notify(new ClientRegistrationNotification($user));
+
+        return redirect()->route('client.index')
+            ->with('success', 'Регистрация прошла успешно! Добро пожаловать!');
+    }
+
+    /**
+     * Выход
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/');
+    }
+
+    /**
+     * Личный кабинет - профиль
+     */
+    public function profile(): View
+    {
+        $user = Auth::user();
+        return view('client.profile.index', compact('user'));
+    }
+
+    /**
+     * Обновление профиля
+     */
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+
+        $user = Auth::user();
+        $user->update($request->only(['name', 'email', 'phone', 'address']));
+
+        return back()->with('success', 'Профиль успешно обновлен!');
+    }
+
+    /**
+     * Смена пароля
+     */
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        $user = Auth::user();
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return back()->with('success', 'Пароль успешно изменен!');
+    }
+
+    /**
+     * Страница "О нас"
+     */
+    public function about(): View
+    {
+        // Получаем информацию о команде через сервис
+        $veterinarians = $this->veterinarianService->getAllVeterinarians();
+
+        return view('client.about', compact('veterinarians'));
+    }
+
+    /**
+     * Страница "Контакты"
+     */
+    public function contacts(): View
+    {
+        // Получаем все филиалы с их данными
+        $branches = Branch::distinct()->get();
+
+        return view('client.contacts', compact('branches'));
+    }
+}

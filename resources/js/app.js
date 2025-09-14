@@ -4,12 +4,6 @@ import TomSelect from 'tom-select';
 import AirDatepicker from 'air-datepicker';
 import localeRu from 'air-datepicker/locale/ru.js';
 
-// Импорт админ-скриптов
-import './admin/core';
-import './admin/menu';
-import './admin/notifications';
-import './admin/mobile';
-
 window.bootstrap = bootstrap;
 
 window.createTomSelect = function (selector, options = {}) {

@@ -1,0 +1,50 @@
+// Base styles for client
+// ==========================================
+
+@use "variables" as *;
+
+// Base styles
+body {
+    font-family: $font-family-base;
+    line-height: $line-height-base;
+    background-color: $light-color;
+}
+
+// Smooth scrolling
+html {
+    scroll-behavior: smooth;
+}
+
+// Focus styles for accessibility
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+// Focus improvements
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+}
+
+// Accessibility improvements
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// Loading states
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}

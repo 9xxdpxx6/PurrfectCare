@@ -1,0 +1,63 @@
+// Navigation styles for client
+// ==========================================
+
+@use "variables" as *;
+
+// Navigation styles
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease;
+    
+    &:hover {
+        color: $primary-color !important;
+    }
+}
+
+// Navigation improvements
+.navbar {
+    @media (max-width: 991px) {
+        .navbar-nav {
+            .nav-item {
+                .nav-link {
+                    padding: 0.75rem 1rem;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                    
+                    &:last-child {
+                        border-bottom: none;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Mobile navigation improvements
+@media (max-width: 768px) {
+    .navbar-toggler {
+        border: none;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .navbar-collapse {
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .navbar-nav {
+        text-align: center;
+        margin-top: 1rem;
+    }
+    
+    .navbar-nav .nav-item {
+        margin: 0.25rem 0;
+    }
+}

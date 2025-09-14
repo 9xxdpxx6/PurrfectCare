@@ -1,0 +1,38 @@
+// Client-specific variables
+// ==========================================
+
+// Color variables
+$primary-color: #0d6efd;
+$secondary-color: #6c757d;
+$success-color: #198754;
+$info-color: #0dcaf0;
+$warning-color: #ffc107;
+$danger-color: #dc3545;
+$light-color: #f8f9fa;
+$dark-color: #212529;
+
+// Typography
+$font-family-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$line-height-base: 1.6;
+
+// Spacing
+$spacer: 1rem;
+
+// Border radius
+$border-radius-base: 0.5rem;
+$border-radius-card: 0.75rem;
+
+// Shadows
+$shadow-soft: 0 5px 15px rgba(0, 0, 0, 0.08);
+$shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.1);
+$shadow-card: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+
+// Transitions
+$transition-base: all 0.3s ease;
+$transition-fast: all 0.2s ease-in-out;
+
+// Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;

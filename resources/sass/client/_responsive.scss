@@ -1,0 +1,168 @@
+// Responsive styles for client
+// ==========================================
+
+@use "variables" as *;
+
+// Responsive adjustments
+@media (max-width: 1200px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .card-columns {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .display-5 {
+        font-size: 1.75rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .card-columns {
+        column-count: 1;
+    }
+    
+    .feature-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .feature-card .icon-wrapper {
+        width: 60px;
+        height: 60px;
+    }
+    
+    // Mobile forms
+    .form-control,
+    .form-select {
+        font-size: 16px; // Prevents zoom on iOS
+    }
+    
+    // Mobile tables
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    // Mobile cards
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .btn-group-vertical .btn {
+        width: 100%;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+    }
+    
+    .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+    
+    // Mobile hero section
+    .hero-section {
+        padding: 2rem 0;
+        
+        h1 {
+            font-size: 1.75rem;
+        }
+        
+        .lead {
+            font-size: 0.95rem;
+        }
+    }
+    
+    // Mobile sidebar
+    .sidebar {
+        margin-bottom: 2rem;
+    }
+    
+    .list-group-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    // Mobile tables
+    .table-responsive {
+        font-size: 0.8rem;
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
+    
+    // Mobile cards
+    .card {
+        margin-bottom: 1rem;
+        border-radius: $border-radius-card;
+    }
+    
+    // Mobile forms
+    .form-control,
+    .form-select {
+        font-size: 16px; // Prevents zoom on iOS
+        padding: 0.75rem;
+    }
+    
+    // Mobile alerts
+    .alert {
+        font-size: 0.9rem;
+        padding: 0.75rem;
+    }
+    
+    // Mobile pagination
+    .pagination {
+        .page-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+    }
+    
+    // Mobile modals
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+}
+
+// Sidebar improvements
+.sidebar {
+    @media (max-width: 991px) {
+        margin-bottom: 2rem;
+    }
+}

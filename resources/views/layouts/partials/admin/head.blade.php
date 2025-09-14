@@ -4,4 +4,4 @@
 <title>@yield('title', 'PurrfectCare - Админ-панель')</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3.4.0/air-datepicker.css">
 @stack('styles')
-@vite(['resources/sass/app.scss', 'resources/sass/admin.scss', 'resources/js/app.js'])
+@vite(['resources/sass/app.scss', 'resources/sass/admin.scss', 'resources/js/admin.js'])
