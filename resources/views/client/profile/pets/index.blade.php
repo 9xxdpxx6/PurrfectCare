@@ -6,29 +6,7 @@
 <div class="container py-5">
     <div class="row">
         <!-- Боковая навигация -->
-        <div class="col-lg-3 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        <a href="{{ route('client.profile') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-person me-2"></i>Профиль
-                        </a>
-                        <a href="{{ route('client.profile.visits') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-calendar-check me-2"></i>История визитов
-                        </a>
-                        <a href="{{ route('client.profile.orders') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-bag me-2"></i>История заказов
-                        </a>
-                        <a href="{{ route('client.appointment.appointments') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-calendar-plus me-2"></i>Новая запись
-                        </a>
-                        <a href="{{ route('client.profile.pets') }}" class="list-group-item list-group-item-action active">
-                            <i class="bi bi-heart me-2"></i>Мои питомцы
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-client.profile-sidebar active="pets" />
 
         <!-- Основной контент -->
         <div class="col-lg-9">
@@ -87,87 +65,93 @@
 
             <!-- Список питомцев -->
             @if($pets->count() > 0)
-                <div class="row g-4">
+                <div class="row">
                     @foreach($pets as $pet)
-                    <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card border-0 shadow-sm h-100">
+                    <div class="col-12 mb-3">
+                        <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
-                                <!-- Фото питомца -->
-                                <div class="text-center mb-3">
-                                    @if($pet->photo)
-                                        <img src="{{ Storage::url($pet->photo) }}" 
-                                             alt="{{ $pet->name }}" 
-                                             class="rounded-circle" 
-                                             style="width: 80px; height: 80px; object-fit: cover;">
-                                    @else
-                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto" 
-                                             style="width: 80px; height: 80px;">
-                                            <i class="bi bi-heart text-muted" style="font-size: 2rem;"></i>
-                                        </div>
-                                    @endif
-                                </div>
-
-                                <!-- Информация о питомце -->
-                                <h5 class="card-title text-center mb-3">{{ $pet->name }}</h5>
-                                
-                                <div class="mb-2">
-                                    <small class="text-muted">
-                                        <i class="bi bi-tag me-1"></i>
-                                        <strong>Порода:</strong> {{ $pet->breed->name ?? 'Не указана' }}
-                                    </small>
-                                </div>
-                                
-                                <div class="mb-2">
-                                    <small class="text-muted">
-                                        <i class="bi bi-calendar me-1"></i>
-                                        <strong>Возраст:</strong> {{ $pet->birthdate ? $pet->birthdate->age : 'Не указан' }}
-                                    </small>
-                                </div>
-                                
-                                <div class="mb-2">
-                                    <small class="text-muted">
-                                        <i class="bi bi-gender-ambiguous me-1"></i>
-                                        <strong>Пол:</strong> 
-                                        @if($pet->gender === 'male') Самец
-                                        @elseif($pet->gender === 'female') Самка
-                                        @else Не указан
+                                <div class="row align-items-center">
+                                    <!-- Фото питомца -->
+                                    <div class="col-auto">
+                                        @if($pet->photo)
+                                            <img src="{{ Storage::url($pet->photo) }}" 
+                                                 alt="{{ $pet->name }}" 
+                                                 class="rounded-circle" 
+                                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" 
+                                                 style="width: 60px; height: 60px;">
+                                                <i class="bi bi-heart text-muted" style="font-size: 1.5rem;"></i>
+                                            </div>
                                         @endif
-                                    </small>
-                                </div>
-                                
-                                @if($pet->weight)
-                                <div class="mb-2">
-                                    <small class="text-muted">
-                                        <i class="bi bi-speedometer me-1"></i>
-                                        <strong>Вес:</strong> {{ $pet->weight }} кг
-                                    </small>
-                                </div>
-                                @endif
-                                
-                                @if($pet->color)
-                                <div class="mb-3">
-                                    <small class="text-muted">
-                                        <i class="bi bi-palette me-1"></i>
-                                        <strong>Окрас:</strong> {{ $pet->color }}
-                                    </small>
-                                </div>
-                                @endif
+                                    </div>
 
-                                <!-- Действия -->
-                                <div class="d-grid gap-2">
-                                    <a href="{{ route('client.profile.pets.edit', $pet) }}" 
-                                       class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-pencil me-1"></i>Редактировать
-                                    </a>
-                                    
-                                    <form method="POST" action="{{ route('client.profile.pets.destroy', $pet) }}" 
-                                          onsubmit="return confirm('Вы уверены, что хотите удалить питомца? Это действие нельзя отменить.')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                            <i class="bi bi-trash me-1"></i>Удалить
-                                        </button>
-                                    </form>
+                                    <!-- Информация о питомце -->
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5 class="card-title mb-2">{{ $pet->name }}</h5>
+                                                <div class="mb-1">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-tag me-1"></i>
+                                                        <strong>Порода:</strong> {{ $pet->breed->name ?? 'Не указана' }}
+                                                    </small>
+                                                </div>
+                                                <div class="mb-1">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-calendar me-1"></i>
+                                                        <strong>Возраст:</strong> {{ $pet->birthdate ? $pet->birthdate->age : 'Не указан' }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-1">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-gender-ambiguous me-1"></i>
+                                                        <strong>Пол:</strong> 
+                                                        @if($pet->gender === 'male') Самец
+                                                        @elseif($pet->gender === 'female') Самка
+                                                        @else Не указан
+                                                        @endif
+                                                    </small>
+                                                </div>
+                                                @if($pet->weight)
+                                                <div class="mb-1">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-speedometer me-1"></i>
+                                                        <strong>Вес:</strong> {{ $pet->weight }} кг
+                                                    </small>
+                                                </div>
+                                                @endif
+                                                @if($pet->color)
+                                                <div class="mb-1">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-palette me-1"></i>
+                                                        <strong>Окрас:</strong> {{ $pet->color }}
+                                                    </small>
+                                                </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Действия -->
+                                    <div class="col-auto d-flex flex-column align-items-end">
+                                        <a href="{{ route('client.profile.pets.edit', $pet) }}" 
+                                           class="btn btn-outline-primary btn-sm mb-2 w-100">
+                                            <i class="bi bi-pencil me-1"></i>Редактировать
+                                        </a>
+                                        
+                                        <form method="POST" action="{{ route('client.profile.pets.destroy', $pet) }}" 
+                                              onsubmit="return confirm('Вы уверены, что хотите удалить питомца? Это действие нельзя отменить.')"
+                                              class="w-100">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                                <i class="bi bi-trash me-1"></i>Удалить
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -2,17 +2,14 @@
 // ==========================================
 
 @use "variables" as *;
+@use "sass:color";
 
 // Hero section
 .bg-primary {
-    background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%) !important;
+    background: linear-gradient(135deg, $primary-color 0%, color.scale($primary-color, $lightness: -10%) 100%) !important;
 }
 
 // Card styles
-.card {
-    // Убираем hover эффекты для обычных карточек
-}
-
 .no-hover {
     cursor: default;
     
@@ -202,9 +199,73 @@
     font-weight: 600;
 }
 
+// Hero Section
+.hero-section {
+    h1 {
+        // Предотвращаем прыжки текста
+        .hero-title-part-1,
+        .hero-title-part-2 {
+            display: inline-block;
+            vertical-align: top;
+        }
+        
+        .typewriter-text {
+            display: inline-block;
+            min-width: 200px; // Резервируем место для текста
+        }
+    }
+}
+
+// Statistics Cards
+.stat-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    
+    .stat-number {
+        font-size: 3.5rem;
+        line-height: 1;
+        color: $primary-color;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 0.5rem;
+        
+        @media (max-width: 768px) {
+            font-size: 2.5rem;
+        }
+    }
+    
+    p {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #6c757d;
+        letter-spacing: 0.3px;
+        margin-bottom: 0;
+        text-transform: uppercase;
+    }
+}
+
+// Technology Cards
+.tech-image {
+    img {
+        transition: transform 0.3s ease;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+}
+
+// Gallery Images
+.gallery-item img {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+}
+
 // Footer styles
 footer {
-    background: linear-gradient(135deg, $dark-color 0%, lighten($dark-color, 5%) 100%) !important;
+    background: linear-gradient(135deg, $dark-color 0%, color.scale($dark-color, $lightness: 5%) 100%) !important;
     
     .text-primary {
         color: $primary-color !important;

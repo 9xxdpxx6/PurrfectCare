@@ -31,7 +31,92 @@ class ClientController extends Controller
      */
     public function index(): View
     {
-        return view('client.index');
+        // Получаем статистику с сервера
+        $stats = $this->getStatistics();
+        
+        return view('client.index', compact('stats'));
+    }
+
+    /**
+     * Получение статистики для главной страницы
+     */
+    private function getStatistics(): array
+    {
+        // Реалистичные минимумы
+        $minSatisfiedClients = 150;
+        $minYearsExperience = 3;
+        $minTreatedPets = 50;
+        $minServicesCount = 10;
+        
+        // Получаем реальные данные
+        $satisfiedClients = User::role('client', 'web')->count();
+        $yearsExperience = $this->getYearsExperience();
+        $treatedPets = $this->getTreatedPets();
+        $servicesCount = $this->getServicesCount();
+        
+        return [
+            'satisfied_clients' => $satisfiedClients,
+            'years_experience' => $yearsExperience,
+            'treated_pets' => $treatedPets,
+            'services_count' => $servicesCount,
+        ];
+    }
+
+    /**
+     * Получение лет опыта (считается с 1 сентября 2018 года)
+     */
+    private function getYearsExperience(): int
+    {
+        // Дата основания клиники
+        $foundingDate = \Carbon\Carbon::create(2018, 9, 1);
+        $now = \Carbon\Carbon::now();
+        
+        // Считаем разность в годах
+        $yearsExperience = $foundingDate->diffInYears($now);
+        
+        return $yearsExperience;
+    }
+
+    /**
+     * Получение количества вылеченных питомцев
+     */
+    private function getTreatedPets(): int
+    {
+        // Считаем количество уникальных питомцев, которые посещали клинику
+        $treatedPets = \App\Models\Pet::whereHas('visits')->count();
+        return $treatedPets;
+    }
+
+    /**
+     * Получение количества ветеринаров
+     */
+    private function getVeterinariansCount(): int
+    {
+        // Считаем количество активных ветеринаров
+        $veterinarians = \App\Models\Employee::role('veterinarian', 'admin')
+            ->where('is_active', true)
+            ->count();
+        return $veterinarians;
+    }
+
+    /**
+     * Получение количества услуг
+     */
+    private function getServicesCount(): int
+    {
+        // Считаем количество активных услуг
+        $servicesCount = \App\Models\Service::count();
+        return $servicesCount;
+    }
+
+    /**
+     * Получение количества филиалов
+     */
+    private function getBranchesCount(): int
+    {
+        // Считаем количество активных филиалов
+        $branchesCount = \App\Models\Branch::count();
+        return $branchesCount;
     }
 
     /**
@@ -154,5 +239,21 @@ class ClientController extends Controller
         $branches = Branch::distinct()->get();
 
         return view('client.contacts', compact('branches'));
+    }
+
+    /**
+     * Страница "Политика конфиденциальности"
+     */
+    public function privacy(): View
+    {
+        return view('client.privacy');
+    }
+
+    /**
+     * Страница "Условия использования"
+     */
+    public function terms(): View
+    {
+        return view('client.terms');
     }
 }

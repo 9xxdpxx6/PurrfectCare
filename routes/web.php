@@ -68,6 +68,8 @@ Route::middleware('auth')->group(function () {
 // Публичные страницы
 Route::get('/about', [ClientController::class, 'about'])->name('client.about');
 Route::get('/contacts', [ClientController::class, 'contacts'])->name('client.contacts');
+Route::get('/privacy', [ClientController::class, 'privacy'])->name('client.privacy');
+Route::get('/terms', [ClientController::class, 'terms'])->name('client.terms');
 
 
 

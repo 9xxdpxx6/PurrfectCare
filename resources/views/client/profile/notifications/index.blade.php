@@ -6,32 +6,7 @@
 <div class="container py-5">
     <div class="row">
         <!-- Боковая навигация -->
-        <div class="col-lg-3 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        <a href="{{ route('client.profile') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-person me-2"></i>Профиль
-                        </a>
-                        <a href="{{ route('client.profile.visits') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-calendar-check me-2"></i>История визитов
-                        </a>
-                        <a href="{{ route('client.profile.orders') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-bag me-2"></i>История заказов
-                        </a>
-                        <a href="{{ route('client.appointment.appointments') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-calendar-plus me-2"></i>Новая запись
-                        </a>
-                        <a href="{{ route('client.profile.pets') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-heart me-2"></i>Мои питомцы
-                        </a>
-                        <a href="{{ route('client.profile.notifications') }}" class="list-group-item list-group-item-action active">
-                            <i class="bi bi-bell me-2"></i>Уведомления
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-client.profile-sidebar active="notifications" />
 
         <!-- Основной контент -->
         <div class="col-lg-9">
