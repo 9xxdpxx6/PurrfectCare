@@ -6,7 +6,7 @@
 <div class="container py-5">
     <div class="row">
         <!-- Боковая навигация -->
-        <div class="col-lg-3 mb-4">
+        <div class="col-lg-3 mb-4 d-none d-lg-block">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
@@ -31,9 +31,9 @@
         </div>
 
         <!-- Основной контент -->
-        <div class="col-lg-9">
+        <div class="col-lg-9 col-12">
             <!-- Заголовок -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
                 <h2 class="h3 mb-0">Мои записи на прием</h2>
                 <a href="{{ route('client.appointment.branches') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>Новая запись
@@ -91,25 +91,25 @@
                                     @endif
                                 </div>
                                 
-                                <div class="col-md-4 text-md-end">
-                                    <div class="d-grid gap-2">
+                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                    <div class="d-grid gap-2 d-md-block">
                                         @if($visit->status->name === 'Запланирован')
                                             @if($visit->starts_at->diffInHours(now()) >= 2)
                                                 <form method="POST" action="{{ route('client.appointment.cancel', $visit) }}" 
                                                       class="d-inline" onsubmit="return confirm('Вы уверены, что хотите отменить запись?')">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 w-md-auto">
                                                         <i class="bi bi-x-circle me-1"></i>Отменить
                                                     </button>
                                                 </form>
                                             @else
-                                                <small class="text-muted">
+                                                <small class="text-muted d-block text-center text-md-start">
                                                     Отмена возможна не менее чем за 2 часа
                                                 </small>
                                             @endif
                                         @endif
                                         
-                                        <a href="#" class="btn btn-outline-primary btn-sm">
+                                        <a href="#" class="btn btn-outline-primary btn-sm w-100 w-md-auto">
                                             <i class="bi bi-eye me-1"></i>Подробнее
                                         </a>
                                     </div>

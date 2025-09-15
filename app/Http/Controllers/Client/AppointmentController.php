@@ -80,15 +80,80 @@ class AppointmentController extends Controller
         $schedules = Schedule::where('veterinarian_id', $request->veterinarian_id)
             ->where('branch_id', $request->branch_id)
             ->where('shift_starts_at', '>=', now())
+            ->where('shift_starts_at', '<=', now()->addDays(30))
             ->orderBy('shift_starts_at')
             ->get();
 
-        // Группируем по датам
+        // Группируем по датам и генерируем доступные слоты (как в боте)
         $schedulesByDate = $schedules->groupBy(function($schedule) {
             return Carbon::parse($schedule->shift_starts_at)->format('Y-m-d');
         });
 
-        return view('client.appointment.time', compact('schedulesByDate', 'branch', 'veterinarian'));
+        // Генерируем доступные временные слоты для каждой даты
+        $availableSlotsByDate = [];
+        foreach ($schedulesByDate as $date => $daySchedules) {
+            $availableSlots = $this->generateAvailableTimeSlots($daySchedules, $date);
+            if (!empty($availableSlots)) {
+                $availableSlotsByDate[$date] = $availableSlots;
+            }
+        }
+
+        return view('client.appointment.time', compact('availableSlotsByDate', 'branch', 'veterinarian'));
+    }
+
+    /**
+     * Генерировать доступные временные слоты для даты (логика из бота)
+     */
+    private function generateAvailableTimeSlots($schedules, string $date): array
+    {
+        $allAvailableSlots = [];
+        
+        // Загружаем все визиты за этот день одним запросом
+        $scheduleIds = $schedules->pluck('id')->all();
+        $dayStart = $date . ' 00:00:00';
+        $dayEnd = $date . ' 23:59:59';
+        $visits = Visit::select('schedule_id', 'starts_at')
+            ->whereIn('schedule_id', $scheduleIds)
+            ->whereBetween('starts_at', [$dayStart, $dayEnd])
+            ->get();
+        
+        $busy = [];
+        foreach ($visits as $visit) {
+            $busy[$visit->schedule_id . '|' . Carbon::parse($visit->starts_at)->format('Y-m-d H:i:s')] = true;
+        }
+        
+        foreach ($schedules as $schedule) {
+            // Генерируем временные слоты с 9:00 до 18:00 с интервалом 30 минут
+            $startTime = Carbon::parse($schedule->shift_starts_at)->setTime(9, 0);
+            $endTime = Carbon::parse($schedule->shift_starts_at)->setTime(18, 0);
+            
+            $currentTime = $startTime->copy();
+            
+            while ($currentTime < $endTime) {
+                $key = $schedule->id . '|' . $currentTime->format('Y-m-d H:i:s');
+                if (!isset($busy[$key])) {
+                    $allAvailableSlots[] = [
+                        'time' => $currentTime->format('H:i'),
+                        'datetime' => $currentTime->format('Y-m-d H:i:s'),
+                        'schedule_id' => $schedule->id
+                    ];
+                }
+                $currentTime->addMinutes(30);
+            }
+        }
+        
+        // Убираем дублирующиеся временные слоты
+        $uniqueSlots = [];
+        foreach ($allAvailableSlots as $slot) {
+            $timeKey = $slot['time'];
+            if (!isset($uniqueSlots[$timeKey])) {
+                $uniqueSlots[$timeKey] = $slot;
+            }
+        }
+        
+        // Сортируем по времени
+        ksort($uniqueSlots);
+        return array_values($uniqueSlots);
     }
 
     /**
@@ -186,10 +251,18 @@ class AppointmentController extends Controller
                     ->firstOrFail();
             }
 
-            // Формируем дату и время
+            // Формируем дату и время с округлением до получаса
             $schedule = Schedule::findOrFail($request->schedule_id);
             $date = Carbon::parse($schedule->shift_starts_at)->format('Y-m-d');
-            $startsAt = Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . $cleanTime);
+            
+            // Округляем время до получаса (как в боте)
+            $timeParts = explode(':', $cleanTime);
+            $hour = (int)$timeParts[0];
+            $minute = (int)$timeParts[1];
+            $roundedMinute = $minute >= 30 ? 30 : 0;
+            $roundedTime = sprintf('%02d:%02d', $hour, $roundedMinute);
+            
+            $startsAt = Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . $roundedTime);
             
             \Log::info('AppointmentController::store - Формирование даты и времени', [
                 'schedule_date' => $date,
@@ -200,7 +273,7 @@ class AppointmentController extends Controller
             // Проверяем конфликты времени
             $conflicts = $this->visitManagementService->checkTimeConflicts(
                 $request->schedule_id,
-                $cleanTime,
+                $roundedTime,
                 30 // Стандартная длительность 30 минут
             );
 

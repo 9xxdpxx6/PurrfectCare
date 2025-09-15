@@ -23,25 +23,25 @@
         <div class="row">
             <div class="col-12">
                 <div class="d-flex justify-content-center">
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center flex-wrap justify-content-center">
                         <div class="step active">
                             <div class="step-number">1</div>
-                            <div class="step-label">Филиал</div>
+                            <div class="step-label d-none d-sm-block">Филиал</div>
                         </div>
                         <div class="step-line"></div>
                         <div class="step">
                             <div class="step-number">2</div>
-                            <div class="step-label">Ветеринар</div>
+                            <div class="step-label d-none d-sm-block">Ветеринар</div>
                         </div>
                         <div class="step-line"></div>
                         <div class="step">
                             <div class="step-number">3</div>
-                            <div class="step-label">Время</div>
+                            <div class="step-label d-none d-sm-block">Время</div>
                         </div>
                         <div class="step-line"></div>
                         <div class="step">
                             <div class="step-number">4</div>
-                            <div class="step-label">Подтверждение</div>
+                            <div class="step-label d-none d-sm-block">Подтверждение</div>
                         </div>
                     </div>
                 </div>
@@ -56,7 +56,7 @@
         @if($branches->count() > 0)
             <div class="row g-4">
                 @foreach($branches as $branch)
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 col-12">
                     <div class="card h-100 border-0 shadow-sm branch-card">
                         <div class="card-body p-4">
                             <div class="text-center mb-4">
@@ -134,58 +134,8 @@
 
 @push('styles')
 <style>
-.step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-}
-
-.step-number {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #e9ecef;
-    color: #6c757d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-
-.step.active .step-number {
-    background-color: #007bff;
-    color: white;
-}
-
-.step-label {
-    font-size: 0.875rem;
-    color: #6c757d;
-    text-align: center;
-}
-
-.step.active .step-label {
-    color: #007bff;
-    font-weight: 600;
-}
-
-.step-line {
-    width: 60px;
-    height: 2px;
-    background-color: #e9ecef;
-    margin: 0 10px;
-    margin-top: -20px;
-}
-
 .branch-card {
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    cursor: pointer;
-}
-
-.branch-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
 
 .branch-icon {

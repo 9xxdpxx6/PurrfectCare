@@ -23,25 +23,25 @@
         <div class="row">
             <div class="col-12">
                 <div class="d-flex justify-content-center">
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center flex-wrap justify-content-center">
                         <div class="step completed">
                             <div class="step-number">1</div>
-                            <div class="step-label">Филиал</div>
+                            <div class="step-label d-none d-sm-block">Филиал</div>
                         </div>
                         <div class="step-line completed"></div>
                         <div class="step completed">
                             <div class="step-number">2</div>
-                            <div class="step-label">Ветеринар</div>
+                            <div class="step-label d-none d-sm-block">Ветеринар</div>
                         </div>
                         <div class="step-line completed"></div>
                         <div class="step completed">
                             <div class="step-number">3</div>
-                            <div class="step-label">Время</div>
+                            <div class="step-label d-none d-sm-block">Время</div>
                         </div>
                         <div class="step-line completed"></div>
                         <div class="step active">
                             <div class="step-number">4</div>
-                            <div class="step-label">Подтверждение</div>
+                            <div class="step-label d-none d-sm-block">Подтверждение</div>
                         </div>
                     </div>
                 </div>
@@ -60,8 +60,8 @@
                         <h4 class="card-title mb-4">Данные записи</h4>
                         
                         <!-- Appointment Details -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
                                 <div class="info-card">
                                     <h6 class="text-primary mb-2">
                                         <i class="bi bi-building me-2"></i>Филиал
@@ -70,7 +70,7 @@
                                     <small class="text-muted">{{ $branch->address }}</small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="info-card">
                                     <h6 class="text-primary mb-2">
                                         <i class="bi bi-person me-2"></i>Ветеринар
@@ -81,8 +81,8 @@
                             </div>
                         </div>
                         
-                        <div class="row mb-4">
-                            <div class="col-md-6">
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
                                 <div class="info-card">
                                     <h6 class="text-primary mb-2">
                                         <i class="bi bi-calendar me-2"></i>Дата и время
@@ -91,7 +91,7 @@
                                     <small class="text-muted">{{ $datetime->format('H:i') }} - {{ $datetime->addMinutes(30)->format('H:i') }}</small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <div class="info-card">
                                     <h6 class="text-primary mb-2">
                                         <i class="bi bi-clock me-2"></i>Длительность
@@ -102,7 +102,7 @@
                             </div>
                         </div>
                         
-                        <hr>
+                        <hr class="my-4">
                         
                         <!-- Pet Selection -->
                         <div class="mb-4">
@@ -110,10 +110,10 @@
                             @if($pets->count() > 0)
                                 <div class="row g-3">
                                     @foreach($pets as $pet)
-                                    <div class="col-md-6">
+                                    <div class="col-12 col-md-6">
                                         <div class="pet-card" data-pet-id="{{ $pet->id }}">
                                             <div class="pet-avatar">
-                                                <i class="bi bi-heart-pulse"></i>
+                                                <i class="bi bi-heart"></i>
                                             </div>
                                             <div class="pet-info">
                                                 <h6 class="pet-name">{{ $pet->name }}</h6>
@@ -141,15 +141,15 @@
                         </div>
                         
                         <!-- Action Buttons -->
-                        <div class="d-flex gap-3 justify-content-between">
+                        <div class="d-flex flex-column flex-md-row gap-3 justify-content-between">
                             <a href="{{ route('client.appointment.time', [
                                 'branch_id' => $branch->id,
                                 'veterinarian_id' => $veterinarian->id
-                            ]) }}" class="btn btn-outline-secondary">
+                            ]) }}" class="btn btn-outline-secondary order-2 order-md-1">
                                 <i class="bi bi-arrow-left me-2"></i>Назад
                             </a>
                             
-                            <button type="button" class="btn btn-primary btn-lg" id="confirmAppointment">
+                            <button type="button" class="btn btn-primary btn-lg order-1 order-md-2" id="confirmAppointment">
                                 <i class="bi bi-check-circle me-2"></i>Подтвердить запись
                             </button>
                         </div>
@@ -174,69 +174,20 @@
 
 @push('styles')
 <style>
-.step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-}
-
-.step-number {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #e9ecef;
-    color: #6c757d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-
-.step.active .step-number {
-    background-color: #007bff;
-    color: white;
-}
-
-.step.completed .step-number {
-    background-color: #28a745;
-    color: white;
-}
-
-.step-label {
-    font-size: 0.875rem;
-    color: #6c757d;
-    text-align: center;
-}
-
-.step.active .step-label {
-    color: #007bff;
-    font-weight: 600;
-}
-
-.step.completed .step-label {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.step-line {
-    width: 60px;
-    height: 2px;
-    background-color: #e9ecef;
-    margin: 0 10px;
-    margin-top: -20px;
-}
-
-.step-line.completed {
-    background-color: #28a745;
-}
 
 .info-card {
     background-color: #f8f9fa;
     border-radius: 8px;
     padding: 15px;
     border-left: 4px solid #007bff;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 767.98px) {
+    .info-card {
+        padding: 20px;
+        margin-bottom: 1.5rem;
+    }
 }
 
 .pet-card {
@@ -248,6 +199,14 @@
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     background: white;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 767.98px) {
+    .pet-card {
+        padding: 20px;
+        margin-bottom: 1.5rem;
+    }
 }
 
 .pet-card:hover {

@@ -23,25 +23,25 @@
         <div class="row">
             <div class="col-12">
                 <div class="d-flex justify-content-center">
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center flex-wrap justify-content-center">
                         <div class="step completed">
                             <div class="step-number">1</div>
-                            <div class="step-label">Филиал</div>
+                            <div class="step-label d-none d-sm-block">Филиал</div>
                         </div>
                         <div class="step-line completed"></div>
                         <div class="step active">
                             <div class="step-number">2</div>
-                            <div class="step-label">Ветеринар</div>
+                            <div class="step-label d-none d-sm-block">Ветеринар</div>
                         </div>
                         <div class="step-line"></div>
                         <div class="step">
                             <div class="step-number">3</div>
-                            <div class="step-label">Время</div>
+                            <div class="step-label d-none d-sm-block">Время</div>
                         </div>
                         <div class="step-line"></div>
                         <div class="step">
                             <div class="step-number">4</div>
-                            <div class="step-label">Подтверждение</div>
+                            <div class="step-label d-none d-sm-block">Подтверждение</div>
                         </div>
                     </div>
                 </div>
@@ -55,22 +55,22 @@
     <div class="container">
         <!-- Поиск -->
         <div class="row mb-4">
-            <div class="col-md-6">
-                <form method="GET" action="{{ route('client.appointment.veterinarians') }}">
+            <div class="col-12">
+                <form method="GET" action="{{ route('client.appointment.veterinarians') }}" class="d-flex flex-column flex-md-row gap-2">
                     <input type="hidden" name="branch_id" value="{{ $branch->id }}">
-                    <div class="input-group">
-                        <input type="text" 
-                               class="form-control" 
-                               name="search" 
-                               value="{{ request('search') }}"
-                               placeholder="Поиск по имени или специальности...">
-                        <button class="btn btn-outline-primary" type="submit">
-                            <i class="bi bi-search"></i>
+                    <input type="text" 
+                           class="form-control" 
+                           name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Поиск по имени или специальности...">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary text-nowrap" type="submit">
+                            <i class="bi bi-search me-1"></i>Найти
                         </button>
                         @if(request('search'))
                             <a href="{{ route('client.appointment.veterinarians', ['branch_id' => $branch->id]) }}" 
-                               class="btn btn-outline-secondary">
-                                <i class="bi bi-x"></i>
+                               class="btn btn-outline-secondary text-nowrap">
+                                <i class="bi bi-x me-1"></i>Очистить
                             </a>
                         @endif
                     </div>
