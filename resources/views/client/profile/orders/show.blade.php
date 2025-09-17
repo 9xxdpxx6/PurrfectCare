@@ -6,35 +6,18 @@
 <div class="container py-5">
     <div class="row">
         <!-- Боковая навигация -->
-        <div class="col-12 col-lg-3 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        <a href="{{ route('client.profile') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-person me-2"></i>Профиль
-                        </a>
-                        <a href="{{ route('client.profile.visits') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-calendar-check me-2"></i>История визитов
-                        </a>
-                        <a href="{{ route('client.profile.orders') }}" class="list-group-item list-group-item-action active">
-                            <i class="bi bi-bag me-2"></i>История заказов
-                        </a>
-                        <a href="{{ route('client.appointment.appointments') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-calendar-plus me-2"></i>Новая запись
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="bi bi-heart me-2"></i>Мои питомцы
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-client.profile-sidebar active="orders" />
 
         <!-- Основной контент -->
         <div class="col-12 col-lg-9">
             <!-- Заголовок -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h3 mb-0">Заказ #{{ $order->id }}</h2>
+                <div class="d-flex align-items-center">
+                    <h2 class="h3 mb-0 me-3">Заказ #{{ $order->id }}</h2>
+                    <span class="badge" style="background-color: {{ $order->status->color }}">
+                        {{ $order->status->name }}
+                    </span>
+                </div>
                 <a href="{{ route('client.profile.orders') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-2"></i>Назад к списку
                 </a>
@@ -76,90 +59,263 @@
             <div class="row">
                 <!-- Основная информация -->
                 <div class="col-12 col-md-8">
-                    <!-- Статус заказа -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white border-bottom">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-info-circle me-2"></i>Статус заказа
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <span class="badge 
-                                    @if($order->status->name === 'Новый') bg-primary
-                                    @elseif($order->status->name === 'Подтвержден') bg-info
-                                    @elseif($order->status->name === 'В обработке') bg-warning
-                                    @elseif($order->status->name === 'Отправлен') bg-info
-                                    @elseif($order->status->name === 'Доставлен') bg-success
-                                    @elseif($order->status->name === 'Отменен') bg-danger
-                                    @else bg-secondary
-                                    @endif fs-6 me-3">
-                                    {{ $order->status->name }}
-                                </span>
-                                <span class="text-muted">
-                                    @if($order->status->name === 'Новый')
-                                        Заказ создан и ожидает подтверждения
-                                    @elseif($order->status->name === 'Подтвержден')
-                                        Заказ подтвержден и принят в работу
-                                    @elseif($order->status->name === 'В обработке')
-                                        Заказ обрабатывается
-                                    @elseif($order->status->name === 'Отправлен')
-                                        Заказ отправлен
-                                    @elseif($order->status->name === 'Доставлен')
-                                        Заказ доставлен
-                                    @elseif($order->status->name === 'Отменен')
-                                        Заказ отменен
-                                    @endif
-                                </span>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Товары в заказе -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white border-bottom">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-box me-2"></i>Товары в заказе
-                            </h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Услуга</th>
-                                            <th class="text-center">Количество</th>
-                                            <th class="text-end">Цена</th>
-                                            <th class="text-end">Сумма</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($order->items as $item)
-                                        <tr>
-                                            <td>
-                                                <div>
-                                                    <strong>{{ $item->item->name ?? 'Без названия' }}</strong>
-                                                    @if($item->item->description ?? false)
-                                                        <br><small class="text-muted">{{ Str::limit($item->item->description, 100) }}</small>
-                                                    @endif
+                    @php
+                        $services = $order->services()->get();
+                        $drugs = $order->drugs()->get();
+                        $labTests = $order->labTests()->get();
+                        $vaccinations = $order->vaccinations()->get();
+                    @endphp
+
+                    @if($services->count() > 0)
+                        <!-- Услуги -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-gear text-primary me-2"></i>Услуги ({{ $services->count() }})
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex flex-column gap-3">
+                                    @foreach($services as $orderItem)
+                                        <div class="border rounded p-3 bg-light">
+                                            <div class="row align-items-center g-2">
+                                                <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
+                                                    <h6 class="mb-1">
+                                                        @if($orderItem->item)
+                                                            <a href="{{ route('client.services.show', $orderItem->item) }}" class="text-decoration-none">
+                                                                {{ $orderItem->item_name }}
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted">Услуга не найдена</span>
+                                                        @endif
+                                                    </h6>
                                                 </div>
-                                            </td>
-                                            <td class="text-center">{{ $item->quantity }}</td>
-                                            <td class="text-end">{{ number_format($item->price, 0, ',', ' ') }} ₽</td>
-                                            <td class="text-end">{{ number_format($item->total, 0, ',', ' ') }} ₽</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot class="table-light">
-                                        <tr>
-                                            <th colspan="3" class="text-end">Итого:</th>
-                                            <th class="text-end">{{ number_format($order->total_amount, 0, ',', ' ') }} ₽</th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                                                <div class="col-12 col-md-5 col-xl-3 mb-2 mb-xl-0">
+                                                    <div class="d-flex justify-content-between w-100 gap-md-1">
+                                                        <div>
+                                                            <small class="text-muted d-block">Кол-во</small>
+                                                            <span class="fw-bold">{{ $orderItem->quantity }}</span>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <small class="text-muted d-block">Цена</small>
+                                                            <span class="fw-bold">{{ number_format($orderItem->unit_price, 0, ',', ' ') }} ₽</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-3 col-xl-2 text-xl-end">
+                                                    <div class="d-flex justify-content-end align-items-center">
+                                                        <div class="text-end">
+                                                            <small class="text-muted d-block">Сумма</small>
+                                                            <div class="fw-bold">
+                                                                {{ number_format($orderItem->quantity * $orderItem->unit_price, 0, ',', ' ') }} ₽
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                    <div class="border-top pt-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold">Услуг на сумму:</span>
+                                            <span class="fw-bold">{{ number_format($order->servicesTotal(), 0, ',', ' ') }} ₽</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
+
+                    @if($drugs->count() > 0)
+                        <!-- Препараты -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-capsule text-success me-2"></i>Препараты ({{ $drugs->count() }})
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex flex-column gap-3">
+                                    @foreach($drugs as $orderItem)
+                                        <div class="border rounded p-3 bg-light">
+                                            <div class="row align-items-center g-2">
+                                                <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
+                                                    <h6 class="mb-1">
+                                                        @if($orderItem->item)
+                                                            <a href="{{ route('client.services.show', $orderItem->item) }}" class="text-decoration-none">
+                                                                {{ $orderItem->item_name }}
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted">Препарат не найден</span>
+                                                        @endif
+                                                    </h6>
+                                                </div>
+                                                <div class="col-12 col-md-5 col-xl-3 mb-2 mb-xl-0">
+                                                    <div class="d-flex justify-content-between w-100 gap-md-1">
+                                                        <div>
+                                                            <small class="text-muted d-block">Кол-во</small>
+                                                            <span class="fw-bold">{{ $orderItem->quantity }}</span>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <small class="text-muted d-block">Цена</small>
+                                                            <span class="fw-bold">{{ number_format($orderItem->unit_price, 0, ',', ' ') }} ₽</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-3 col-xl-2 text-xl-end">
+                                                    <div class="d-flex justify-content-end align-items-center">
+                                                        <div class="text-end">
+                                                            <small class="text-muted d-block">Сумма</small>
+                                                            <div class="fw-bold">
+                                                                {{ number_format($orderItem->quantity * $orderItem->unit_price, 0, ',', ' ') }} ₽
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                    <div class="border-top pt-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold">Препаратов на сумму:</span>
+                                            <span class="fw-bold">{{ number_format($order->drugsTotal(), 0, ',', ' ') }} ₽</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($labTests->count() > 0)
+                        <!-- Анализы -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-clipboard-data text-info me-2"></i>Анализы ({{ $labTests->count() }})
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex flex-column gap-3">
+                                    @foreach($labTests as $orderItem)
+                                        <div class="border rounded p-3 bg-light">
+                                            <div class="row align-items-center g-2">
+                                                <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
+                                                    <h6 class="mb-1">
+                                                        @if($orderItem->item)
+                                                            <a href="{{ route('client.services.show', $orderItem->item) }}" class="text-decoration-none">
+                                                                {{ $orderItem->item_name }}
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted">Анализ не найден</span>
+                                                        @endif
+                                                    </h6>
+                                                </div>
+                                                <div class="col-12 col-md-5 col-xl-3 mb-2 mb-xl-0">
+                                                    <div class="d-flex justify-content-between w-100 gap-md-1">
+                                                        <div>
+                                                            <small class="text-muted d-block">Кол-во</small>
+                                                            <span class="fw-bold">{{ $orderItem->quantity }}</span>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <small class="text-muted d-block">Цена</small>
+                                                            <span class="fw-bold">{{ number_format($orderItem->unit_price, 0, ',', ' ') }} ₽</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-3 col-xl-2 text-xl-end">
+                                                    <div class="d-flex justify-content-end align-items-center">
+                                                        <div class="text-end">
+                                                            <small class="text-muted d-block">Сумма</small>
+                                                            <div class="fw-bold">
+                                                                {{ number_format($orderItem->quantity * $orderItem->unit_price, 0, ',', ' ') }} ₽
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                    <div class="border-top pt-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold">Анализов на сумму:</span>
+                                            <span class="fw-bold">{{ number_format($order->labTestsTotal(), 0, ',', ' ') }} ₽</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($vaccinations->count() > 0)
+                        <!-- Вакцинации -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-shield-check text-warning me-2"></i>Вакцинации ({{ $vaccinations->count() }})
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex flex-column gap-3">
+                                    @foreach($vaccinations as $orderItem)
+                                        <div class="border rounded p-3 bg-light">
+                                            <div class="row align-items-center g-2">
+                                                <div class="col-12 col-md-4 col-xl-7 mb-2 mb-xl-0">
+                                                    <h6 class="mb-1">
+                                                        @if($orderItem->item)
+                                                            <a href="{{ route('client.services.show', $orderItem->item) }}" class="text-decoration-none">
+                                                                {{ $orderItem->item_name }}
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted">Вакцинация не найдена</span>
+                                                        @endif
+                                                    </h6>
+                                                </div>
+                                                <div class="col-12 col-md-5 col-xl-3 mb-2 mb-xl-0">
+                                                    <div class="d-flex justify-content-between w-100 gap-md-1">
+                                                        <div>
+                                                            <small class="text-muted d-block">Кол-во</small>
+                                                            <span class="fw-bold">{{ $orderItem->quantity }}</span>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <small class="text-muted d-block">Цена</small>
+                                                            <span class="fw-bold">{{ number_format($orderItem->unit_price, 0, ',', ' ') }} ₽</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-3 col-xl-2 text-xl-end">
+                                                    <div class="d-flex justify-content-end align-items-center">
+                                                        <div class="text-end">
+                                                            <small class="text-muted d-block">Сумма</small>
+                                                            <div class="fw-bold">
+                                                                {{ number_format($orderItem->quantity * $orderItem->unit_price, 0, ',', ' ') }} ₽
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                    <div class="border-top pt-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold">Вакцинаций на сумму:</span>
+                                            <span class="fw-bold">{{ number_format($order->vaccinationsTotal(), 0, ',', ' ') }} ₽</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($order->items->count() == 0)
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body text-center py-4">
+                                <i class="bi bi-bag-x display-4 text-muted"></i>
+                                <h5 class="mt-3">Состав заказа отсутствует</h5>
+                                <p class="text-muted">В данном заказе нет позиций.</p>
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- Информация о заказе -->
                     <div class="card border-0 shadow-sm">
@@ -188,7 +344,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label text-muted">Общая сумма</label>
-                                    <p class="fw-bold text-primary fs-5">{{ number_format($order->total_amount, 0, ',', ' ') }} ₽</p>
+                                    <p class="fw-bold text-primary fs-5">{{ number_format($order->total, 0, ',', ' ') }} ₽</p>
                                 </div>
                             </div>
 

@@ -11,6 +11,11 @@ window.bootstrap = bootstrap;
 
 // TomSelect wrapper function
 window.createTomSelect = function (selector, options = {}) {
+    // Проверяем, не инициализирован ли уже элемент
+    if (selector.tomselect) {
+        return selector.tomselect;
+    }
+
     const defaultTomSelectOptions = {
         create: false,
         plugins: ['remove_button'],
@@ -425,6 +430,79 @@ function initializeCommonComponents() {
     initializeFormValidation();
     initializeAjaxForms();
     initializeComponents();
+    initializeMobileMenu();
+}
+
+// Initialize mobile menu functionality
+function initializeMobileMenu() {
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    const navbarCollapse = document.querySelector('.navbar-collapse');
+    
+    if (navbarToggler && navbarCollapse) {
+        // Custom mobile menu toggle
+        navbarToggler.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Check if menu is currently visible (either show or collapsing)
+            const isVisible = navbarCollapse.classList.contains('show') || navbarCollapse.classList.contains('collapsing');
+            
+            if (isVisible) {
+                // Close menu with animation
+                navbarCollapse.classList.remove('show');
+                navbarToggler.setAttribute('aria-expanded', 'false');
+                
+                // Remove display: none after animation
+                setTimeout(() => {
+                    if (!navbarCollapse.classList.contains('show')) {
+                        navbarCollapse.style.display = 'none';
+                    }
+                }, 300);
+            } else {
+                // Open menu with animation
+                navbarCollapse.style.display = 'block';
+                // Force reflow to ensure display is applied
+                navbarCollapse.offsetHeight;
+                navbarCollapse.classList.add('show');
+                navbarToggler.setAttribute('aria-expanded', 'true');
+            }
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!navbarToggler.contains(e.target) && !navbarCollapse.contains(e.target)) {
+                const isVisible = navbarCollapse.classList.contains('show') || navbarCollapse.classList.contains('collapsing');
+                if (isVisible) {
+                    navbarCollapse.classList.remove('show');
+                    navbarToggler.setAttribute('aria-expanded', 'false');
+                    
+                    setTimeout(() => {
+                        if (!navbarCollapse.classList.contains('show')) {
+                            navbarCollapse.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            }
+        });
+        
+        // Close menu when clicking on nav links
+        const navLinks = navbarCollapse.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                const isVisible = navbarCollapse.classList.contains('show') || navbarCollapse.classList.contains('collapsing');
+                if (isVisible) {
+                    navbarCollapse.classList.remove('show');
+                    navbarToggler.setAttribute('aria-expanded', 'false');
+                    
+                    setTimeout(() => {
+                        if (!navbarCollapse.classList.contains('show')) {
+                            navbarCollapse.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            });
+        });
+    }
 }
 
 // Export functions for global use

@@ -27,14 +27,9 @@
                                 <div class="col-md-8">
                                     <div class="d-flex align-items-center mb-2">
                                         <h5 class="card-title mb-0 me-3">{{ $visit->pet->name ?? 'Без питомца' }}</h5>
-                                        <span class="badge 
-                                            @if($visit->status->name === 'Запланирован') bg-primary
-                                            @elseif($visit->status->name === 'Завершен') bg-success
-                                            @elseif($visit->status->name === 'Отменен') bg-danger
-                                            @else bg-secondary
-                                            @endif">
-                                            {{ $visit->status->name }}
-                                        </span>
+                                            <span class="badge" style="background-color: {{ $visit->status->color }}">
+                                                {{ $visit->status->name }}
+                                            </span>
                                     </div>
                                     
                                     <div class="row text-muted small">
@@ -87,7 +82,7 @@
                                             @endif
                                         @endif
                                         
-                                        <a href="#" class="btn btn-outline-primary btn-sm w-100 w-md-auto">
+                                        <a href="{{ route('client.profile.visits.show', $visit) }}" class="btn btn-outline-primary btn-sm w-100 w-md-auto">
                                             <i class="bi bi-eye me-1"></i>Подробнее
                                         </a>
                                     </div>

@@ -73,12 +73,7 @@
                                     <h5 class="card-title mb-0 me-3">
                                         {{ \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') }}
                                     </h5>
-                                    <span class="badge 
-                                        @if($visit->status->name === 'Запланирован') bg-primary
-                                        @elseif($visit->status->name === 'Завершен') bg-success
-                                        @elseif($visit->status->name === 'Отменен') bg-danger
-                                        @else bg-secondary
-                                        @endif">
+                                    <span class="badge" style="background-color: {{ $visit->status->color }}">
                                         {{ $visit->status->name }}
                                     </span>
                                 </div>
@@ -178,25 +173,7 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация TomSelect и AirDatepicker
-    if (typeof window.createTomSelect === 'function') {
-        const tomSelectElements = document.querySelectorAll('[data-tomselect]');
-        tomSelectElements.forEach(element => {
-            const placeholder = element.dataset.placeholder || 'Выберите значение...';
-            window.createTomSelect(element, {
-                placeholder: placeholder,
-            });
-        });
-    }
-
-    if (typeof window.createDatepicker === 'function') {
-        const datepickerElements = document.querySelectorAll('[data-datepicker]');
-        datepickerElements.forEach(element => {
-            window.createDatepicker(element);
-        });
-    }
-});
+// Дополнительная инициализация не требуется, так как она уже происходит в client.js
 </script>
 @endpush
 

@@ -6,29 +6,7 @@
 <div class="container py-5">
     <div class="row">
         <!-- Боковая навигация -->
-        <div class="col-12 col-lg-3 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        <a href="{{ route('client.profile') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-person me-2"></i>Профиль
-                        </a>
-                        <a href="{{ route('client.profile.visits') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-calendar-check me-2"></i>История визитов
-                        </a>
-                        <a href="{{ route('client.appointment.appointments') }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-calendar-plus me-2"></i>Новая запись
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="bi bi-bag me-2"></i>Мои заказы
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="bi bi-heart me-2"></i>Мои питомцы
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-client.profile-sidebar active="visits" />
 
         <!-- Основной контент -->
         <div class="col-12 col-lg-9">
@@ -91,12 +69,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label text-muted">Статус</label>
                                     <p>
-                                        <span class="badge 
-                                            @if($visit->status->name === 'Запланирован') bg-primary
-                                            @elseif($visit->status->name === 'Завершен') bg-success
-                                            @elseif($visit->status->name === 'Отменен') bg-danger
-                                            @else bg-secondary
-                                            @endif">
+                                        <span class="badge" style="background-color: {{ $visit->status->color }}">
                                             {{ $visit->status->name }}
                                         </span>
                                     </p>

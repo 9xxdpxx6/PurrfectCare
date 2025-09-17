@@ -76,15 +76,7 @@
                                     <h5 class="card-title mb-0 me-3">
                                         Заказ #{{ $order->id }}
                                     </h5>
-                                    <span class="badge 
-                                        @if($order->status->name === 'Новый') bg-primary
-                                        @elseif($order->status->name === 'Подтвержден') bg-info
-                                        @elseif($order->status->name === 'В обработке') bg-warning
-                                        @elseif($order->status->name === 'Отправлен') bg-info
-                                        @elseif($order->status->name === 'Доставлен') bg-success
-                                        @elseif($order->status->name === 'Отменен') bg-danger
-                                        @else bg-secondary
-                                        @endif">
+                                    <span class="badge" style="background-color: {{ $order->status->color }}">
                                         {{ $order->status->name }}
                                     </span>
                                 </div>
