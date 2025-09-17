@@ -63,10 +63,83 @@ window.createDatepicker = function (selector, options = {}) {
     return new AirDatepicker(selector, { ...defaultDatepickerOptions, ...options });
 };
 
+// Initialize profile overlay
+let profileOverlayInitialized = false;
+let profileOverlayOpen = false;
+
+function initializeProfileOverlay() {
+    if (profileOverlayInitialized) return;
+    
+    const profileToggle = document.getElementById('profileToggle');
+    const profileOverlay = document.getElementById('profileOverlay');
+
+    if (profileToggle && profileOverlay) {
+        profileToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleProfileOverlay();
+        });
+
+        function toggleProfileOverlay() {
+            if (profileOverlayOpen) {
+                closeProfileOverlay();
+            } else {
+                openProfileOverlay();
+            }
+        }
+
+        function openProfileOverlay() {
+            profileOverlayOpen = true;
+            profileToggle.classList.add('active');
+            
+            // Показываем overlay
+            profileOverlay.classList.add('show');
+            
+            // Запускаем анимацию контента
+            setTimeout(() => {
+                const overlayContent = profileOverlay.querySelector('.overlay-content');
+                overlayContent.classList.add('show');
+            }, 10);
+        }
+
+        function closeProfileOverlay() {
+            const overlayContent = profileOverlay.querySelector('.overlay-content');
+            
+            // Убираем класс show с контента
+            overlayContent.classList.remove('show');
+            
+            // Через время анимации скрываем overlay
+            setTimeout(() => {
+                profileOverlay.classList.remove('show');
+                profileOverlayOpen = false;
+                profileToggle.classList.remove('active');
+            }, 200);
+        }
+
+        // Close overlay when clicking on the overlay background
+        profileOverlay.addEventListener('click', (e) => {
+            if (e.target === profileOverlay) {
+                closeProfileOverlay();
+            }
+        });
+
+        // Close overlay when pressing Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && profileOverlayOpen) {
+                closeProfileOverlay();
+            }
+        });
+        
+        profileOverlayInitialized = true;
+    }
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Bootstrap tooltips
     initializeTooltips();
+    
+    // Initialize profile overlay
+    initializeProfileOverlay();
     
     // Initialize smooth scrolling
     initializeSmoothScrolling();
@@ -97,6 +170,12 @@ function initializeSmoothScrolling() {
     links.forEach(link => {
         link.addEventListener('click', function(e) {
             const targetId = this.getAttribute('href');
+            
+            // Пропускаем ссылки с невалидными селекторами (dropdown меню)
+            if (targetId === '#' || targetId === '#!' || targetId.length <= 1) {
+                return;
+            }
+            
             const targetElement = document.querySelector(targetId);
             
             if (targetElement) {

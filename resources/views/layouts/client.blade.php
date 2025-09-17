@@ -50,24 +50,10 @@
                                 <i class="bi bi-calendar-plus me-1"></i>Записаться
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <li class="nav-item">
+                            <button class="btn btn-link nav-link px-3 text-dark" type="button" id="profileToggle">
                                 <i class="bi bi-person-circle me-1"></i>{{ Auth::user()->name }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ route('client.profile') }}">Личный кабинет</a></li>
-                                <li><a class="dropdown-item" href="{{ route('client.appointment.appointments') }}">Мои записи</a></li>
-                                <li><a class="dropdown-item" href="{{ route('client.profile.visits') }}">История визитов</a></li>
-                                <li><a class="dropdown-item" href="{{ route('client.profile.orders') }}">Мои заказы</a></li>
-                                <li><a class="dropdown-item" href="{{ route('client.profile.pets') }}">Мои питомцы</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="POST" action="{{ route('client.logout') }}">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item">Выйти</button>
-                                    </form>
-                                </li>
-                            </ul>
+                            </button>
                         </li>
                     @else
                         <li class="nav-item">
@@ -86,6 +72,39 @@
     <main class="min-vh-100">
         @yield('content')
     </main>
+
+    <!-- Profile Overlay -->
+    <div id="profileOverlay" class="overlay-overlay">
+        <div class="overlay-content profile-overlay">
+            <div class="overlay-header">
+                <h6>Профиль</h6>
+            </div>
+            <div class="overlay-body">
+                <a href="{{ route('client.profile') }}" class="dropdown-item">
+                    <i class="bi bi-person"></i>Личный кабинет
+                </a>
+                <a href="{{ route('client.appointment.appointments') }}" class="dropdown-item">
+                    <i class="bi bi-calendar-check"></i>Мои записи
+                </a>
+                <a href="{{ route('client.profile.visits') }}" class="dropdown-item">
+                    <i class="bi bi-clock-history"></i>История визитов
+                </a>
+                <a href="{{ route('client.profile.orders') }}" class="dropdown-item">
+                    <i class="bi bi-bag"></i>Мои заказы
+                </a>
+                <a href="{{ route('client.profile.pets') }}" class="dropdown-item">
+                    <i class="bi bi-heart"></i>Мои питомцы
+                </a>
+                <div class="dropdown-divider"></div>
+                <form method="POST" action="{{ route('client.logout') }}" class="d-inline">
+                    @csrf
+                    <button type="submit" class="dropdown-item w-100 text-start border-0 bg-transparent">
+                        <i class="bi bi-box-arrow-right"></i>Выйти
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-dark text-light py-5">
@@ -116,7 +135,7 @@
                 <div class="col-md-4 mb-4">
                     <h6 class="text-primary mb-3">Быстрые действия</h6>
                     <div class="d-flex flex-column">
-                        <a href="{{ route('client.appointment.veterinarians') }}" class="text-muted mb-2 text-decoration-none">
+                        <a href="{{ route('client.appointment.branches') }}" class="text-muted mb-2 text-decoration-none">
                             Записаться на прием
                         </a>
                         @auth
