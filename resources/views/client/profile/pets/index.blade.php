@@ -9,7 +9,7 @@
         <x-client.profile-sidebar active="pets" />
 
         <!-- Основной контент -->
-        <div class="col-lg-9">
+        <div class="col-12 col-lg-9">
             <!-- Заголовок -->
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
                 <h2 class="h3 mb-3 mb-sm-0">Мои питомцы</h2>
@@ -29,7 +29,8 @@
             @if ($errors->any())
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    <ul class="mb-0">
+                    <strong>Ошибка:</strong>
+                    <ul class="mb-0 mt-2">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -43,20 +44,40 @@
                 <div class="card-body">
                     <form method="GET" action="{{ route('client.profile.pets') }}">
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-12 col-sm-6 col-md-4">
                                 <label for="search" class="form-label">Поиск</label>
                                 <input type="text" class="form-control" id="search" name="search" 
                                        placeholder="Имя питомца..." value="{{ request('search') }}">
                             </div>
-                            <div class="col-md-6 d-flex align-items-end">
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <label for="breed" class="form-label">Порода</label>
+                                <select class="form-select" id="breed" name="breed" data-tomselect data-placeholder="Все породы">
+                                    <option value="">Все породы</option>
+                                    @foreach($breeds as $breed)
+                                        <option value="{{ $breed->id }}" 
+                                                {{ request('breed') == $breed->id ? 'selected' : '' }}>
+                                            {{ $breed->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <label for="gender" class="form-label">Пол</label>
+                                <select class="form-select" id="gender" name="gender" data-tomselect data-placeholder="Все">
+                                    <option value="">Все</option>
+                                    <option value="male" {{ request('gender') == 'male' ? 'selected' : '' }}>Самец</option>
+                                    <option value="female" {{ request('gender') == 'female' ? 'selected' : '' }}>Самка</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
                                 <button type="submit" class="btn btn-outline-primary me-2">
                                     <i class="bi bi-search me-1"></i>Найти
                                 </button>
-                                @if(request('search'))
-                                    <a href="{{ route('client.profile.pets') }}" class="btn btn-outline-secondary">
-                                        <i class="bi bi-x me-1"></i>Сбросить
-                                    </a>
-                                @endif
+                                <a href="{{ route('client.profile.pets') }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-1"></i>Сбросить
+                                </a>
                             </div>
                         </div>
                     </form>
@@ -65,99 +86,69 @@
 
             <!-- Список питомцев -->
             @if($pets->count() > 0)
-                <div class="row">
-                    @foreach($pets as $pet)
-                    <div class="col-12 mb-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body p-4">
-                                <div class="row align-items-center">
-                                    <!-- Фото питомца -->
-                                    <div class="col-auto">
-                                        @if($pet->photo)
-                                            <img src="{{ Storage::url($pet->photo) }}" 
-                                                 alt="{{ $pet->name }}" 
-                                                 class="rounded-circle" 
-                                                 style="width: 60px; height: 60px; object-fit: cover;">
-                                        @else
-                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" 
-                                                 style="width: 60px; height: 60px;">
-                                                <i class="bi bi-heart text-muted" style="font-size: 1.5rem;"></i>
-                                            </div>
+                @foreach($pets as $pet)
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-12 col-md-8">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h5 class="card-title mb-0 me-3">
+                                        {{ $pet->name }}
+                                    </h5>
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 40px; height: 40px;">
+                                        <i class="bi bi-heart text-muted"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="row text-muted small">
+                                    <div class="col-md-6">
+                                        <i class="bi bi-tag me-1"></i>
+                                        <strong>Порода:</strong> {{ $pet->breed->name ?? 'Не указана' }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        <strong>Возраст:</strong> {{ $pet->birthdate ? $pet->birthdate->age . ' ' . (in_array($pet->birthdate->age % 100, [11, 12, 13, 14]) ? 'лет' : ($pet->birthdate->age % 10 == 1 ? 'год' : ($pet->birthdate->age % 10 >= 2 && $pet->birthdate->age % 10 <= 4 ? 'года' : 'лет'))) : 'Не указан' }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row text-muted small mt-1">
+                                    <div class="col-md-6">
+                                        <i class="bi bi-gender-ambiguous me-1"></i>
+                                        <strong>Пол:</strong> 
+                                        @if($pet->gender === 'male') Самец
+                                        @elseif($pet->gender === 'female') Самка
+                                        @else Не указан
                                         @endif
                                     </div>
-
-                                    <!-- Информация о питомце -->
-                                    <div class="col">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <h5 class="card-title mb-2">{{ $pet->name }}</h5>
-                                                <div class="mb-1">
-                                                    <small class="text-muted">
-                                                        <i class="bi bi-tag me-1"></i>
-                                                        <strong>Порода:</strong> {{ $pet->breed->name ?? 'Не указана' }}
-                                                    </small>
-                                                </div>
-                                                <div class="mb-1">
-                                                    <small class="text-muted">
-                                                        <i class="bi bi-calendar me-1"></i>
-                                                        <strong>Возраст:</strong> {{ $pet->birthdate ? $pet->birthdate->age : 'Не указан' }}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-1">
-                                                    <small class="text-muted">
-                                                        <i class="bi bi-gender-ambiguous me-1"></i>
-                                                        <strong>Пол:</strong> 
-                                                        @if($pet->gender === 'male') Самец
-                                                        @elseif($pet->gender === 'female') Самка
-                                                        @else Не указан
-                                                        @endif
-                                                    </small>
-                                                </div>
-                                                @if($pet->weight)
-                                                <div class="mb-1">
-                                                    <small class="text-muted">
-                                                        <i class="bi bi-speedometer me-1"></i>
-                                                        <strong>Вес:</strong> {{ $pet->weight }} кг
-                                                    </small>
-                                                </div>
-                                                @endif
-                                                @if($pet->color)
-                                                <div class="mb-1">
-                                                    <small class="text-muted">
-                                                        <i class="bi bi-palette me-1"></i>
-                                                        <strong>Окрас:</strong> {{ $pet->color }}
-                                                    </small>
-                                                </div>
-                                                @endif
-                                            </div>
-                                        </div>
+                                    <div class="col-md-6">
+                                        <i class="bi bi-calendar-plus me-1"></i>
+                                        <strong>Добавлен:</strong> {{ $pet->created_at->format('d.m.Y') }}
                                     </div>
-
-                                    <!-- Действия -->
-                                    <div class="col-auto d-flex flex-column align-items-end">
-                                        <a href="{{ route('client.profile.pets.edit', $pet) }}" 
-                                           class="btn btn-outline-primary btn-sm mb-2 w-100">
-                                            <i class="bi bi-pencil me-1"></i>Редактировать
-                                        </a>
-                                        
-                                        <form method="POST" action="{{ route('client.profile.pets.destroy', $pet) }}" 
-                                              onsubmit="return confirm('Вы уверены, что хотите удалить питомца? Это действие нельзя отменить.')"
-                                              class="w-100">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                                <i class="bi bi-trash me-1"></i>Удалить
-                                            </button>
-                                        </form>
-                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ route('client.profile.pets.edit', $pet) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-pencil me-1"></i>Редактировать
+                                    </a>
+                                    
+                                    <form method="POST" action="{{ route('client.profile.pets.destroy', $pet) }}" 
+                                          class="delete-pet-form d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                            <i class="bi bi-trash me-1"></i>Удалить
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    @endforeach
                 </div>
+                @endforeach
 
                 <!-- Пагинация -->
                 <div class="d-flex justify-content-center mt-4">
@@ -199,4 +190,53 @@
     object-fit: cover;
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка форм удаления питомцев
+    const deleteForms = document.querySelectorAll('.delete-pet-form');
+    
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            if (confirm('Вы уверены, что хотите удалить питомца? Это действие нельзя отменить.')) {
+                // Показываем состояние загрузки
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Загрузка...';
+                
+                // Отправляем форму
+                this.submit();
+            } else {
+                // Если пользователь отменил, сбрасываем состояние кнопки
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+    });
+
+    // Инициализация TomSelect и AirDatepicker
+    if (typeof window.createTomSelect === 'function') {
+        const tomSelectElements = document.querySelectorAll('[data-tomselect]');
+        tomSelectElements.forEach(element => {
+            const placeholder = element.dataset.placeholder || 'Выберите значение...';
+            window.createTomSelect(element, {
+                placeholder: placeholder,
+            });
+        });
+    }
+
+    if (typeof window.createDatepicker === 'function') {
+        const datepickerElements = document.querySelectorAll('[data-datepicker]');
+        datepickerElements.forEach(element => {
+            window.createDatepicker(element);
+        });
+    }
+});
+</script>
 @endpush

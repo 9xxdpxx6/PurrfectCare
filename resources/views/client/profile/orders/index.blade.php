@@ -9,10 +9,10 @@
         <x-client.profile-sidebar active="orders" />
 
         <!-- Основной контент -->
-        <div class="col-lg-9">
+        <div class="col-12 col-lg-9">
             <!-- Заголовок -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h3 mb-0">История заказов</h2>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
+                <h2 class="h3 mb-3 mb-sm-0">История заказов</h2>
                 <a href="{{ route('client.services') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>Новый заказ
                 </a>
@@ -23,14 +23,14 @@
                 <div class="card-body">
                     <form method="GET" action="{{ route('client.profile.orders') }}">
                         <div class="row g-3">
-                            <div class="col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3">
                                 <label for="search" class="form-label">Поиск</label>
                                 <input type="text" class="form-control" id="search" name="search" 
                                        placeholder="Номер заказа или услуга..." value="{{ request('search') }}">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3">
                                 <label for="status" class="form-label">Статус</label>
-                                <select class="form-select" id="status" name="status">
+                                <select class="form-select" id="status" name="status" data-tomselect data-placeholder="Все статусы">
                                     <option value="">Все статусы</option>
                                     @foreach($statuses as $status)
                                         <option value="{{ $status->name }}" 
@@ -40,15 +40,15 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3">
                                 <label for="date_from" class="form-label">Дата с</label>
-                                <input type="date" class="form-control" id="date_from" name="date_from" 
-                                       value="{{ request('date_from') }}">
+                                <input type="text" class="form-control" id="date_from" name="date_from" 
+                                       value="{{ request('date_from') }}" placeholder="дд.мм.гггг" data-datepicker readonly>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3">
                                 <label for="date_to" class="form-label">Дата по</label>
-                                <input type="date" class="form-control" id="date_to" name="date_to" 
-                                       value="{{ request('date_to') }}">
+                                <input type="text" class="form-control" id="date_to" name="date_to" 
+                                       value="{{ request('date_to') }}" placeholder="дд.мм.гггг" data-datepicker readonly>
                             </div>
                         </div>
                         <div class="row mt-3">
@@ -71,7 +71,7 @@
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-body">
                         <div class="row align-items-center">
-                            <div class="col-md-8">
+                            <div class="col-12 col-md-8">
                                 <div class="d-flex align-items-center mb-2">
                                     <h5 class="card-title mb-0 me-3">
                                         Заказ #{{ $order->id }}
@@ -120,32 +120,12 @@
                                 @endif
                             </div>
                             
-                            <div class="col-md-4 text-md-end">
+                            <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
                                 <div class="d-grid gap-2">
                                     <a href="{{ route('client.profile.orders.show', $order) }}" 
                                        class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-eye me-1"></i>Подробнее
                                     </a>
-                                    
-                                    @if($order->status->name !== 'Отменен')
-                                        <form method="POST" action="{{ route('client.profile.orders.reorder', $order) }}" 
-                                              class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-outline-success btn-sm w-100">
-                                                <i class="bi bi-arrow-clockwise me-1"></i>Повторить заказ
-                                            </button>
-                                        </form>
-                                    @endif
-                                    
-                                    @if(in_array($order->status->name, ['Новый', 'Подтвержден']))
-                                        <form method="POST" action="{{ route('client.profile.orders.cancel', $order) }}" 
-                                              class="d-inline" onsubmit="return confirm('Вы уверены, что хотите отменить заказ?')">
-                                            @csrf
-                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                                <i class="bi bi-x-circle me-1"></i>Отменить
-                                            </button>
-                                        </form>
-                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -179,4 +159,28 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация TomSelect и AirDatepicker
+    if (typeof window.createTomSelect === 'function') {
+        const tomSelectElements = document.querySelectorAll('[data-tomselect]');
+        tomSelectElements.forEach(element => {
+            const placeholder = element.dataset.placeholder || 'Выберите значение...';
+            window.createTomSelect(element, {
+                placeholder: placeholder,
+            });
+        });
+    }
+
+    if (typeof window.createDatepicker === 'function') {
+        const datepickerElements = document.querySelectorAll('[data-datepicker]');
+        datepickerElements.forEach(element => {
+            window.createDatepicker(element);
+        });
+    }
+});
+</script>
+@endpush
 

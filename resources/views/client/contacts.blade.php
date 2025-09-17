@@ -53,9 +53,23 @@
                         </div>
                         
                         <div class="mt-auto">
-                            <a href="tel:{{ $branch->phone }}" class="btn btn-outline-primary btn-sm w-100">
-                                <i class="bi bi-telephone me-1"></i>Позвонить
-                            </a>
+                            <div class="d-grid gap-2">
+                                <a href="tel:{{ $branch->phone }}" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-telephone me-1"></i>Позвонить
+                                </a>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <a href="https://t.me/{{ $branch->phone }}" class="btn btn-outline-primary btn-sm w-100" target="_blank">
+                                            <i class="bi bi-telegram me-1"></i>Telegram
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="https://wa.me/{{ $branch->phone }}" class="btn btn-outline-success btn-sm w-100" target="_blank">
+                                            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -109,14 +123,8 @@
                             Свяжитесь с нами любым удобным способом или запишитесь на прием онлайн
                         </p>
                         <div class="d-flex gap-3 justify-content-center flex-wrap">
-                            <a href="tel:+7XXXXXXXXXX" class="btn btn-primary">
-                                <i class="bi bi-telephone me-2"></i>Позвонить
-                            </a>
-                            <a href="mailto:info@purrfectcare.ru" class="btn btn-outline-primary">
-                                <i class="bi bi-envelope me-2"></i>Написать
-                            </a>
-                            <a href="{{ route('client.appointment') }}" class="btn btn-success">
-                                <i class="bi bi-calendar-plus me-2"></i>Записаться
+                            <a href="{{ route('client.appointment') }}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-calendar-plus me-2"></i>Записаться на прием
                             </a>
                         </div>
                     </div>

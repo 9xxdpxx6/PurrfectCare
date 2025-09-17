@@ -9,10 +9,10 @@
         <x-client.profile-sidebar active="profile" />
 
         <!-- Основной контент -->
-        <div class="col-lg-9">
+        <div class="col-12 col-lg-9">
             <!-- Заголовок -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h3 mb-0">Личный кабинет</h2>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
+                <h2 class="h3 mb-3 mb-sm-0">Личный кабинет</h2>
             </div>
 
             <!-- Уведомления -->
@@ -36,7 +36,8 @@
                 @if (!empty($generalErrors))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        <ul class="mb-0">
+                        <strong>Ошибка:</strong>
+                        <ul class="mb-0 mt-2">
                             @foreach ($generalErrors as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -49,7 +50,7 @@
             <!-- Информация о профиле -->
             <div class="row">
                 <!-- Основная информация -->
-                <div class="col-md-8">
+                <div class="col-12 col-md-8">
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white border-bottom">
                             <h5 class="card-title mb-0">
@@ -60,7 +61,7 @@
                             <form method="POST" action="{{ route('client.profile.update') }}">
                                 @csrf
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-12 col-md-6 mb-3">
                                         <label for="name" class="form-label">Имя</label>
                                         <input type="text" 
                                                class="form-control @error('name') is-invalid @enderror" 
@@ -72,7 +73,7 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-12 col-md-6 mb-3">
                                         <label for="email" class="form-label">Email</label>
                                         <input type="email" 
                                                class="form-control @error('email') is-invalid @enderror" 
@@ -86,7 +87,7 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-12 col-md-6 mb-3">
                                         <label for="phone" class="form-label">Телефон</label>
                                         <input type="text" 
                                                class="form-control @error('phone') is-invalid @enderror" 
@@ -97,7 +98,7 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-12 col-md-6 mb-3">
                                         <label for="address" class="form-label">Адрес</label>
                                         <input type="text" 
                                                class="form-control @error('address') is-invalid @enderror" 
@@ -120,7 +121,7 @@
                 </div>
 
                 <!-- Боковая панель -->
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <!-- Смена пароля -->
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white border-bottom">

@@ -226,8 +226,32 @@ class ClientController extends Controller
     {
         // Получаем информацию о команде через сервис
         $veterinarians = $this->veterinarianService->getAllVeterinarians();
+        
+        // Функция для честного округления чисел
+        $roundNumber = function($number) {
+            if ($number <= 20) {
+                return round($number / 5) * 5;
+            } elseif ($number <= 100) {
+                return round($number / 10) * 10;
+            } else {
+                return round($number / 50) * 50;
+            }
+        };
+        
+        // Статистика для страницы "О нас" с красивым округлением
+        $rawStats = [
+            'employees_count' => \App\Models\Employee::count(),
+            'pets_count' => \App\Models\Pet::count(),
+            'visits_count' => \App\Models\Visit::count(),
+            'orders_count' => \App\Models\Order::count(),
+            'services_count' => \App\Models\Service::count(),
+            'branches_count' => \App\Models\Branch::count(),
+            'clients_count' => \App\Models\User::count(),
+        ];
+        
+        $stats = array_map($roundNumber, $rawStats);
 
-        return view('client.about', compact('veterinarians'));
+        return view('client.about', compact('veterinarians', 'stats'));
     }
 
     /**

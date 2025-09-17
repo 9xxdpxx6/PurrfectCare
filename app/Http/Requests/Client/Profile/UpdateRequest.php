@@ -4,9 +4,11 @@ namespace App\Http\Requests\Client\Profile;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Traits\NormalizesPhone;
 
 class UpdateRequest extends FormRequest
 {
+    use NormalizesPhone;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -29,8 +31,26 @@ class UpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique('users')->ignore(auth()->id())
             ],
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'required|string|max:20',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if ($this->phone && !$this->validatePhone($this->phone)) {
+                $validator->errors()->add('phone', 'Неверный формат номера телефона. Введите корректный российский номер.');
+            }
+        });
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->phone) {
+            $this->merge([
+                'phone' => $this->normalizePhone($this->phone)
+            ]);
+        }
     }
 
     /**
@@ -44,6 +64,7 @@ class UpdateRequest extends FormRequest
             'email.required' => 'Поле email обязательно для заполнения.',
             'email.email' => 'Поле email должно содержать корректный email адрес.',
             'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
+            'phone.required' => 'Поле телефон обязательно для заполнения.',
             'phone.max' => 'Номер телефона не должен превышать 20 символов.',
         ];
     }

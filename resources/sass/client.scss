@@ -4,6 +4,8 @@
 // Import Bootstrap
 @use "bootstrap/dist/css/bootstrap.min.css";
 @use "bootstrap-icons/font/bootstrap-icons.css";
+@use "tom-select/dist/css/tom-select.bootstrap5.min.css";
+@use "air-datepicker/air-datepicker.css";
 
 // Import client modules
 @use "client/variables";

@@ -7,7 +7,7 @@
     <h1 class="h2">Личный кабинет</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a href="{{ route('admin.employees.profile.edit') }}" class="btn btn-outline-warning">
-            <i class="bi bi-pencil"></i> <span class="d-none d-lg-inline">Редактировать профиль</span>
+            <i class="bi bi-pencil me-1"></i> <span class="d-none d-sm-inline">Редактировать профиль</span>
         </a>
     </div>
 </div>
@@ -109,7 +109,7 @@
 <!-- Статистика и активности -->
 <div class="row">
     <!-- Основная статистика -->
-    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+    <div class="col-12 col-xl-3 col-lg-4 col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
                 <h6 class="card-title mb-0">
@@ -142,7 +142,7 @@
     </div>
 
     <!-- Текущий период -->
-    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+    <div class="col-12 col-xl-3 col-lg-4 col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-success text-white">
                 <h6 class="card-title mb-0">
@@ -167,7 +167,7 @@
     </div>
 
     <!-- Финансы -->
-    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+    <div class="col-12 col-xl-3 col-lg-4 col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-warning text-dark">
                 <h6 class="card-title mb-0">
@@ -192,7 +192,7 @@
     </div>
 
     <!-- Продуктивность -->
-    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+    <div class="col-12 col-xl-3 col-lg-4 col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header bg-info text-dark">
                 <h6 class="card-title mb-0">
@@ -220,7 +220,7 @@
 <!-- Детальная статистика -->
 <div class="row">
     <!-- Дни недели -->
-    <div class="col-xl-6 col-lg-6 mb-4">
+    <div class="col-12 col-xl-6 col-lg-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
                 <h6 class="card-title mb-0">
@@ -277,7 +277,7 @@
     </div>
 
     <!-- Время суток -->
-    <div class="col-xl-6 col-lg-6 mb-4">
+    <div class="col-12 col-xl-6 col-lg-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
                 <h6 class="card-title mb-0">
@@ -322,7 +322,7 @@
 <!-- Типы услуг и последние активности -->
 <div class="row">
     <!-- Типы услуг -->
-    <div class="col-xl-4 col-lg-6 mb-4">
+    <div class="col-12 col-xl-4 col-lg-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
                 <h6 class="card-title mb-0">
@@ -356,7 +356,7 @@
     </div>
 
     <!-- Последние активности -->
-    <div class="col-xl-8 col-lg-6 mb-4">
+    <div class="col-12 col-xl-8 col-lg-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
                 <h6 class="card-title mb-0">

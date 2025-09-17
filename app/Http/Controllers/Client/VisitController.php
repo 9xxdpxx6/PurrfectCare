@@ -60,7 +60,7 @@ class VisitController extends Controller
         $visits = $query->orderBy('starts_at', 'desc')->paginate(10);
         
         // Получаем все статусы для фильтра
-        $statuses = Status::all();
+        $statuses = Status::orderBy('name')->get();
         
         return view('client.profile.visits.index', compact('visits', 'statuses'));
     }

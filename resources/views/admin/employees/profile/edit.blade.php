@@ -6,12 +6,12 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Редактировать профиль</h1>
     <a href="{{ route('admin.employees.profile') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Назад в личный кабинет
+        <i class="bi bi-arrow-left me-1"></i> <span class="d-none d-sm-inline">Назад в личный кабинет</span>
     </a>
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-lg-8">
+    <div class="col-12 col-lg-8">
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
@@ -24,7 +24,7 @@
                     @method('PATCH')
                     
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label for="name" class="form-label">ФИО</label>
                             <input type="text" 
                                    class="form-control @error('name') is-invalid @enderror" 
@@ -37,7 +37,7 @@
                             @enderror
                         </div>
                         
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label for="phone" class="form-label">Телефон</label>
                             <input type="text" 
                                    class="form-control @error('phone') is-invalid @enderror" 
@@ -59,7 +59,7 @@
                             </h6>
                         </div>
                         
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label for="current_password" class="form-label">Текущий пароль <span class="text-danger">*</span></label>
                             <input type="password" 
                                    class="form-control @error('current_password') is-invalid @enderror" 
@@ -73,7 +73,7 @@
                             @enderror
                         </div>
                         
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label for="new_password" class="form-label">Новый пароль</label>
                             <input type="password" 
                                    class="form-control @error('new_password') is-invalid @enderror" 
@@ -106,7 +106,7 @@
 
                     <!-- Информация о специальностях и филиалах (только для чтения) -->
                     <div class="row g-3 mt-2">
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Специальности</label>
                             <div class="form-control-plaintext">
                                 @if($employee->specialties->count())
@@ -119,7 +119,7 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Филиалы</label>
                             <div class="form-control-plaintext">
                                 @if($employee->branches->count())
@@ -133,12 +133,12 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 d-flex flex-column flex-md-row gap-2">
+                    <div class="mt-4 d-flex flex-column flex-sm-row gap-2">
                         <a href="{{ route('admin.employees.profile') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-lg"></i> Отмена
+                            <i class="bi bi-x-lg me-1"></i> Отмена
                         </a>
-                        <button type="submit" class="btn btn-success ms-md-auto">
-                            <i class="bi bi-check-lg"></i> Сохранить изменения
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i> Сохранить изменения
                         </button>
                     </div>
                 </form>
@@ -154,11 +154,11 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <small class="text-muted">Дата регистрации:</small>
                         <div class="fw-bold">{{ $employee->created_at->format('d.m.Y H:i') }}</div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <small class="text-muted">Последнее обновление:</small>
                         <div class="fw-bold">{{ $employee->updated_at->format('d.m.Y H:i') }}</div>
                     </div>

@@ -100,62 +100,48 @@
                     <p class="text-muted">Профессиональная ветеринарная помощь для ваших питомцев. Забота, которой они заслуживают.</p>
                 </div>
                 <div class="col-md-4 mb-4">
-                    <h6 class="text-primary mb-3">Контакты</h6>
-                    @php
-                        $mainBranch = \App\Models\Branch::first();
-                    @endphp
-                    @if($mainBranch)
-                        <p class="text-muted mb-1">
-                            <i class="bi bi-telephone me-2"></i>{{ $mainBranch->phone }}
-                        </p>
-                        <p class="text-muted mb-1">
-                            <i class="bi bi-envelope me-2"></i>info@purrfectcare.ru
-                        </p>
-                        <p class="text-muted mb-2">
-                            <i class="bi bi-geo-alt me-2"></i>{{ $mainBranch->address }}
-                        </p>
-                        <a href="{{ route('client.contacts') }}" class="text-primary small">
-                            <i class="bi bi-building me-1"></i>Все филиалы
+                    <h6 class="text-primary mb-3">Полезные ссылки</h6>
+                    <div class="d-flex flex-column">
+                        <a href="{{ route('client.services') }}" class="text-muted mb-2 text-decoration-none">
+                            Наши услуги
                         </a>
-                    @else
-                        <p class="text-muted mb-1">
-                            <i class="bi bi-telephone me-2"></i>+7 (XXX) XXX-XX-XX
-                        </p>
-                        <p class="text-muted mb-1">
-                            <i class="bi bi-envelope me-2"></i>info@purrfectcare.ru
-                        </p>
-                        <p class="text-muted">
-                            <i class="bi bi-geo-alt me-2"></i>г. Москва, ул. Примерная, д. 1
-                        </p>
-                    @endif
+                        <a href="{{ route('client.about') }}" class="text-muted mb-2 text-decoration-none">
+                            О клинике
+                        </a>
+                        <a href="{{ route('client.contacts') }}" class="text-muted mb-2 text-decoration-none">
+                            Контакты
+                        </a>
+                    </div>
                 </div>
                 <div class="col-md-4 mb-4">
-                    <h6 class="text-primary mb-3">Режим работы</h6>
-                    @if($mainBranch)
-                        <p class="text-muted mb-1">
-                            Пн-Пт: {{ $mainBranch->opens_at ? $mainBranch->opens_at->format('H:i') : '9:00' }} - {{ $mainBranch->closes_at ? $mainBranch->closes_at->format('H:i') : '21:00' }}
-                        </p>
-                        <p class="text-muted mb-1">Сб-Вс: 10:00 - 18:00</p>
-                        <p class="text-muted mb-2">Экстренные случаи: 24/7</p>
-                        <a href="{{ route('client.contacts') }}" class="text-primary small">
-                            <i class="bi bi-clock me-1"></i>Режим всех филиалов
+                    <h6 class="text-primary mb-3">Быстрые действия</h6>
+                    <div class="d-flex flex-column">
+                        <a href="{{ route('client.appointment.veterinarians') }}" class="text-muted mb-2 text-decoration-none">
+                            Записаться на прием
                         </a>
-                    @else
-                        <p class="text-muted mb-1">Пн-Пт: 9:00 - 21:00</p>
-                        <p class="text-muted mb-1">Сб-Вс: 10:00 - 18:00</p>
-                        <p class="text-muted">Экстренные случаи: 24/7</p>
-                    @endif
+                        @auth
+                            <a href="{{ route('client.profile.visits') }}" class="text-muted mb-2 text-decoration-none">
+                                Мои записи
+                            </a>
+                            <a href="{{ route('client.profile.pets') }}" class="text-muted mb-2 text-decoration-none">
+                                Мои питомцы
+                            </a>
+                        @else
+                            <a href="{{ route('client.login') }}" class="text-muted mb-2 text-decoration-none">
+                                Войти в кабинет
+                            </a>
+                        @endauth
+                    </div>
                 </div>
             </div>
-            <hr class="my-4">
+            <hr class="my-3">
             <div class="row align-items-center">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <p class="text-muted mb-0">&copy; {{ date('Y') }} PurrfectCare. Все права защищены.</p>
-                    <p class="text-muted small mt-1">Информация на сайте не является публичной офертой.</p>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <a href="{{ route('client.privacy') }}" class="text-muted me-3">Политика конфиденциальности</a>
-                    <a href="{{ route('client.terms') }}" class="text-muted">Условия использования</a>
+                <div class="col-md-4 text-md-end">
+                    <a href="{{ route('client.privacy') }}" class="text-muted me-3 small">Политика конфиденциальности</a>
+                    <a href="{{ route('client.terms') }}" class="text-muted small">Условия использования</a>
                 </div>
             </div>
         </div>

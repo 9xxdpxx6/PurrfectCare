@@ -9,7 +9,7 @@
         <x-client.profile-sidebar active="notifications" />
 
         <!-- Основной контент -->
-        <div class="col-lg-9">
+        <div class="col-12 col-lg-9">
             <!-- Заголовок -->
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
                 <h2 class="h3 mb-3 mb-sm-0">Уведомления</h2>

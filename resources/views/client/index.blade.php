@@ -4,10 +4,10 @@
 
 @section('content')
 <!-- Hero Section -->
-<section class="bg-primary text-white hero-section" id="hero-section">
+<section class="bg-primary text-white hero-section position-relative" id="hero-section">
     <div class="container">
         <div class="row align-items-center min-vh-50">
-            <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="col-lg-6 mb-4 mb-lg-0 hero-blur-block">
                 <h1 class="display-4 fw-bold mb-4" style="min-height: 120px; line-height: 1.2;">
                     <span class="hero-title-part-1" style="opacity: 0;">Забота о ваших питомцах —</span>
                     <span class="hero-title-part-2" style="opacity: 0;"><span class="text-warning typewriter-text">наша профессия</span></span>
@@ -24,10 +24,14 @@
                     </a>
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <img src="{{ asset('images/client/hero/vet_holds_cat.png') }}" alt="Ветеринар с котом" class="img-fluid hero-image" style="opacity: 0; max-height: 400px; object-fit: contain;">
-            </div>
         </div>
+    </div>
+    
+    <!-- Hero Image with Fade Effect -->
+    <div class="hero-image-container position-absolute top-0 end-0 h-100 w-50">
+        <img src="{{ asset('images/client/hero/vet_holds_cat.png') }}" alt="Ветеринар с котом" class="hero-image h-100 w-100" style="opacity: 0; object-fit: cover; object-position: center;">
+        <div class="hero-image-overlay position-absolute top-0 start-0 h-100 w-100"></div>
+        <div class="hero-image-fade position-absolute top-0 start-0 h-100 w-100"></div>
     </div>
 </section>
 
@@ -207,23 +211,8 @@
         </div>
         
         <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-0">
-                        <div class="tech-image mb-3">
-                            <img src="{{ asset('images/client/technology/x_ray.png') }}" alt="Рентген оборудование" class="img-fluid" style="height: 200px; object-fit: cover; width: 100%; border-radius: 0.375rem 0.375rem 0 0;">
-                        </div>
-                        <div class="px-4 pb-4">
-                            <h5 class="card-title">Цифровой рентген</h5>
-                            <p class="card-text text-muted">
-                                Высокоточная диагностика с минимальным облучением
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
+            <!-- УЗИ диагностика - на всю ширину на md, 1/3 на lg+ -->
+            <div class="col-12 col-md-12 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center p-0">
                         <div class="tech-image mb-3">
@@ -239,7 +228,25 @@
                 </div>
             </div>
             
-            <div class="col-md-6 col-lg-4">
+            <!-- Цифровой рентген - половинка на md, 1/3 на lg+ -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-0">
+                        <div class="tech-image mb-3">
+                            <img src="{{ asset('images/client/technology/x_ray.png') }}" alt="Рентген оборудование" class="img-fluid" style="height: 200px; object-fit: cover; width: 100%; border-radius: 0.375rem 0.375rem 0 0;">
+                        </div>
+                        <div class="px-4 pb-4">
+                            <h5 class="card-title">Цифровой рентген</h5>
+                            <p class="card-text text-muted">
+                                Высокоточная диагностика с минимальным облучением
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Лаборатория - половинка на md, 1/3 на lg+ -->
+            <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center p-0">
                         <div class="tech-image mb-3">
@@ -324,17 +331,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const typewriterText = document.querySelector('.typewriter-text');
         const description = document.querySelector('.hero-description');
         const buttons = document.querySelector('.hero-buttons');
-        const icon = document.querySelector('.hero-image');
+        const heroImage = document.querySelector('.hero-image');
         
         // 1. Сначала появляется фон (уже есть)
         
-        // 2. Через 300мс появляется первая часть заголовка
+        // 2. Через 100мс появляется первая часть заголовка
         setTimeout(() => {
             titlePart1.style.transition = 'opacity 0.8s ease-in-out';
             titlePart1.style.opacity = '1';
-        }, 300);
+        }, 100);
         
-        // 3. Через 800мс начинается анимация печатания
+        // 3. Через 400мс начинается анимация печатания
         setTimeout(() => {
             titlePart2.style.transition = 'opacity 0.5s ease-in-out';
             titlePart2.style.opacity = '1';
@@ -351,25 +358,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     clearInterval(typeInterval);
                 }
             }, 100);
-        }, 800);
+        }, 400);
         
-        // 4. Через 1500мс появляется описание
+        // 4. Через 600мс появляется картинка
+        setTimeout(() => {
+            heroImage.style.transition = 'opacity 0.8s ease-in-out';
+            heroImage.style.opacity = '1';
+        }, 600);
+        
+        // 5. Через 700мс появляется blur блок (через 100мс после картинки)
+        setTimeout(() => {
+            const blurBlock = document.querySelector('.hero-blur-block');
+            if (blurBlock) {
+                blurBlock.style.opacity = '1';
+            }
+        }, 700);
+        
+        // 6. Через 900мс появляется описание
         setTimeout(() => {
             description.style.transition = 'opacity 0.8s ease-in-out';
             description.style.opacity = '1';
-        }, 1500);
+        }, 900);
         
-        // 5. Через 2000мс появляются кнопки
+        // 7. Через 1200мс появляются кнопки
         setTimeout(() => {
             buttons.style.transition = 'opacity 0.8s ease-in-out';
             buttons.style.opacity = '1';
-        }, 2000);
-        
-        // 6. Через 2200мс появляется иконка
-        setTimeout(() => {
-            icon.style.transition = 'opacity 0.8s ease-in-out';
-            icon.style.opacity = '0.75';
-        }, 2200);
+        }, 1200);
     }
     
     // Запускаем анимацию hero секции

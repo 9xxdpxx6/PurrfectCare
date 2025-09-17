@@ -49,8 +49,10 @@ class OrderController extends Controller
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('id', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('items.item', function($subQ) use ($request) {
-                      $subQ->where('name', 'like', '%' . $request->search . '%');
+                  ->orWhereHas('items', function($subQ) use ($request) {
+                      $subQ->whereHasMorph('item', ['App\Models\Service', 'App\Models\Drug'], function($morphQ, $type) use ($request) {
+                          $morphQ->where('name', 'like', '%' . $request->search . '%');
+                      });
                   });
             });
         }
@@ -58,7 +60,7 @@ class OrderController extends Controller
         $orders = $query->orderBy('created_at', 'desc')->paginate(10);
         
         // Получаем все статусы для фильтра
-        $statuses = Status::whereIn('name', ['Новый', 'Подтвержден', 'В обработке', 'Отправлен', 'Доставлен', 'Отменен'])->get();
+        $statuses = Status::orderBy('name')->get();
         
         return view('client.profile.orders.index', compact('orders', 'statuses'));
     }

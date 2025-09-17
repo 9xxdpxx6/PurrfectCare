@@ -9,10 +9,10 @@
         <x-client.profile-sidebar active="visits" />
 
         <!-- Основной контент -->
-        <div class="col-lg-9">
+        <div class="col-12 col-lg-9">
             <!-- Заголовок -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h3 mb-0">История визитов</h2>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
+                <h2 class="h3 mb-3 mb-sm-0">История визитов</h2>
             </div>
 
             <!-- Фильтры -->
@@ -20,14 +20,14 @@
                 <div class="card-body">
                     <form method="GET" action="{{ route('client.profile.visits') }}">
                         <div class="row g-3">
-                            <div class="col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3">
                                 <label for="search" class="form-label">Поиск</label>
                                 <input type="text" class="form-control" id="search" name="search" 
                                        placeholder="Ветеринар или питомец..." value="{{ request('search') }}">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3">
                                 <label for="status" class="form-label">Статус</label>
-                                <select class="form-select" id="status" name="status">
+                                <select class="form-select" id="status" name="status" data-tomselect data-placeholder="Все статусы">
                                     <option value="">Все статусы</option>
                                     @foreach($statuses as $status)
                                         <option value="{{ $status->name }}" 
@@ -37,15 +37,15 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3">
                                 <label for="date_from" class="form-label">Дата с</label>
-                                <input type="date" class="form-control" id="date_from" name="date_from" 
-                                       value="{{ request('date_from') }}">
+                                <input type="text" class="form-control" id="date_from" name="date_from" 
+                                       value="{{ request('date_from') }}" placeholder="дд.мм.гггг" data-datepicker readonly>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3">
                                 <label for="date_to" class="form-label">Дата по</label>
-                                <input type="date" class="form-control" id="date_to" name="date_to" 
-                                       value="{{ request('date_to') }}">
+                                <input type="text" class="form-control" id="date_to" name="date_to" 
+                                       value="{{ request('date_to') }}" placeholder="дд.мм.гггг" data-datepicker readonly>
                             </div>
                         </div>
                         <div class="row mt-3">
@@ -68,7 +68,7 @@
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-body">
                         <div class="row align-items-center">
-                            <div class="col-md-8">
+                            <div class="col-12 col-md-8">
                                 <div class="d-flex align-items-center mb-2">
                                     <h5 class="card-title mb-0 me-3">
                                         {{ \Carbon\Carbon::parse($visit->starts_at)->format('d.m.Y H:i') }}
@@ -112,7 +112,7 @@
                                 @endif
                             </div>
                             
-                            <div class="col-md-4 text-md-end">
+                            <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
                                 <div class="d-grid gap-2">
                                     <a href="{{ route('client.profile.visits.show', $visit) }}" 
                                        class="btn btn-outline-primary btn-sm">
@@ -175,6 +175,30 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация TomSelect и AirDatepicker
+    if (typeof window.createTomSelect === 'function') {
+        const tomSelectElements = document.querySelectorAll('[data-tomselect]');
+        tomSelectElements.forEach(element => {
+            const placeholder = element.dataset.placeholder || 'Выберите значение...';
+            window.createTomSelect(element, {
+                placeholder: placeholder,
+            });
+        });
+    }
+
+    if (typeof window.createDatepicker === 'function') {
+        const datepickerElements = document.querySelectorAll('[data-datepicker]');
+        datepickerElements.forEach(element => {
+            window.createDatepicker(element);
+        });
+    }
+});
+</script>
+@endpush
 
 @push('styles')
 <style>

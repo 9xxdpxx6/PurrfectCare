@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\Breed;
-use App\Models\Species;
 use App\Notifications\ClientPetAddedNotification;
 use App\Http\Requests\Client\Pet\StoreRequest as StorePetRequest;
 use App\Http\Requests\Client\Pet\UpdateRequest as UpdatePetRequest;
@@ -35,9 +34,20 @@ class PetController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
+        // Фильтр по породе
+        if ($request->filled('breed')) {
+            $query->where('breed_id', $request->breed);
+        }
+
+        // Фильтр по полу
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+
         $pets = $query->orderBy('created_at', 'desc')->paginate(10);
+        $breeds = Breed::orderBy('name')->get();
         
-        return view('client.profile.pets.index', compact('pets'));
+        return view('client.profile.pets.index', compact('pets', 'breeds'));
     }
 
     /**
@@ -46,9 +56,8 @@ class PetController extends Controller
     public function create(): View
     {
         $breeds = Breed::with('species')->orderBy('name')->get();
-        $species = Species::orderBy('name')->get();
         
-        return view('client.profile.pets.create', compact('breeds', 'species'));
+        return view('client.profile.pets.create', compact('breeds'));
     }
 
     /**
@@ -58,18 +67,9 @@ class PetController extends Controller
     {
 
         $data = $request->only([
-            'name', 'species_id', 'breed_id', 'birthdate', 
-            'gender', 'weight', 'color', 'description'
+            'name', 'breed_id', 'birthdate', 'gender'
         ]);
         $data['client_id'] = Auth::id();
-
-        // Обработка загрузки фото
-        if ($request->hasFile('photo')) {
-            $photo = $request->file('photo');
-            $filename = time() . '_' . $photo->getClientOriginalName();
-            $path = $photo->storeAs('pets', $filename, 'public');
-            $data['photo'] = $path;
-        }
 
         $pet = Pet::create($data);
 
@@ -91,9 +91,8 @@ class PetController extends Controller
         }
 
         $breeds = Breed::with('species')->orderBy('name')->get();
-        $species = Species::orderBy('name')->get();
         
-        return view('client.profile.pets.edit', compact('pet', 'breeds', 'species'));
+        return view('client.profile.pets.edit', compact('pet', 'breeds'));
     }
 
     /**
@@ -107,22 +106,8 @@ class PetController extends Controller
         }
 
         $data = $request->only([
-            'name', 'species_id', 'breed_id', 'birthdate', 
-            'gender', 'weight', 'color', 'description'
+            'name', 'breed_id', 'birthdate', 'gender'
         ]);
-
-        // Обработка загрузки нового фото
-        if ($request->hasFile('photo')) {
-            // Удаляем старое фото
-            if ($pet->photo) {
-                Storage::disk('public')->delete($pet->photo);
-            }
-            
-            $photo = $request->file('photo');
-            $filename = time() . '_' . $photo->getClientOriginalName();
-            $path = $photo->storeAs('pets', $filename, 'public');
-            $data['photo'] = $path;
-        }
 
         $pet->update($data);
 
@@ -143,6 +128,11 @@ class PetController extends Controller
         // Проверяем, что у питомца нет записей на прием
         if ($pet->visits()->exists()) {
             return back()->withErrors(['error' => 'Нельзя удалить питомца, у которого есть записи на прием.']);
+        }
+
+        // Проверяем, что у питомца нет заказов
+        if ($pet->orders()->exists()) {
+            return back()->withErrors(['error' => 'Нельзя удалить питомца, у которого есть заказы.']);
         }
 
         // Удаляем фото

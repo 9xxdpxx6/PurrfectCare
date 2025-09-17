@@ -6,7 +6,7 @@
 <div class="container py-5">
     <div class="row">
         <!-- Боковая навигация -->
-        <div class="col-lg-3 mb-4">
+        <div class="col-12 col-lg-3 mb-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
@@ -31,7 +31,7 @@
         </div>
 
         <!-- Основной контент -->
-        <div class="col-lg-9">
+        <div class="col-12 col-lg-9">
             <!-- Заголовок -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="h3 mb-0">Детали визита</h2>
@@ -61,7 +61,8 @@
                 @if (!empty($generalErrors))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        <ul class="mb-0">
+                        <strong>Ошибка:</strong>
+                        <ul class="mb-0 mt-2">
                             @foreach ($generalErrors as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -74,7 +75,7 @@
             <!-- Информация о визите -->
             <div class="row">
                 <!-- Основная информация -->
-                <div class="col-md-8">
+                <div class="col-12 col-md-8">
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white border-bottom">
                             <h5 class="card-title mb-0">
@@ -150,7 +151,7 @@
                 </div>
 
                 <!-- Действия -->
-                <div class="col-md-4">
+                <div class="col-12 col-md-4 mt-4 mt-md-0">
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white border-bottom">
                             <h6 class="card-title mb-0">

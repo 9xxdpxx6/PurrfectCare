@@ -1,6 +1,68 @@
 // Client-specific JavaScript
 // ==========================================
 
+import './bootstrap';
+import * as bootstrap from 'bootstrap';
+import TomSelect from 'tom-select';
+import AirDatepicker from 'air-datepicker';
+import localeRu from 'air-datepicker/locale/ru.js';
+
+window.bootstrap = bootstrap;
+
+// TomSelect wrapper function
+window.createTomSelect = function (selector, options = {}) {
+    const defaultTomSelectOptions = {
+        create: false,
+        plugins: ['remove_button'],
+        allowEmptyOption: true,
+        placeholder: 'Выберите значение...',
+        maxOptions: 30,
+        persist: false,
+        onFocus() {
+            if (this.getValue() === "") {
+                this.clear();
+            }
+        },
+        onItemAdd() {
+            this.control_input.value = '';
+            this.lastQuery = null;
+            this.refreshOptions(false);
+
+            if (this.items.length > 0) {
+                this.settings.placeholder = '';
+                this.refreshState();
+            }
+        },
+        onChange() {
+            if (this.items.length === 0) {
+                this.settings.placeholder = options.placeholder || 'Выберите значение...';
+            } else {
+                this.settings.placeholder = '';
+            }
+            this.refreshState();
+        },
+        onBlur() {
+            if (this.items.length > 0) {
+                this.settings.placeholder = '';
+                this.refreshState();
+            }
+        }
+    };
+
+    return new TomSelect(selector, { ...defaultTomSelectOptions, ...options });
+};
+
+// AirDatepicker wrapper function
+window.createDatepicker = function (selector, options = {}) {
+    const defaultDatepickerOptions = {
+        autoClose: true,
+        dateFormat: 'dd.MM.yyyy',
+        locale: localeRu,
+    };
+
+    return new AirDatepicker(selector, { ...defaultDatepickerOptions, ...options });
+};
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Bootstrap tooltips
@@ -18,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize common components
     initializeCommonComponents();
 });
+
 
 // Initialize Bootstrap tooltips
 function initializeTooltips() {
@@ -71,8 +134,8 @@ function initializeAnimations() {
 
 // Initialize form enhancements
 function initializeFormEnhancements() {
-    // Add loading state to buttons
-    const forms = document.querySelectorAll('form');
+    // Add loading state to buttons (excluding delete pet forms)
+    const forms = document.querySelectorAll('form:not(.delete-pet-form)');
     forms.forEach(form => {
         form.addEventListener('submit', function() {
             const submitBtn = this.querySelector('button[type="submit"]');
@@ -83,17 +146,7 @@ function initializeFormEnhancements() {
         });
     });
     
-    // Add focus effects to form inputs
-    const inputs = document.querySelectorAll('.form-control, .form-select');
-    inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
-        });
-        
-        input.addEventListener('blur', function() {
-            this.parentElement.classList.remove('focused');
-        });
-    });
+    // Focus effects disabled - using server-side validation only
 }
 
 // Utility functions
@@ -210,57 +263,15 @@ function initializeScheduleSelection() {
     });
 }
 
-// Form validation enhancements
+// Form validation enhancements (disabled - using server-side validation only)
 function initializeFormValidation() {
-    const forms = document.querySelectorAll('form[data-validate]');
-    
-    forms.forEach(form => {
-        const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
-        
-        inputs.forEach(input => {
-            input.addEventListener('blur', function() {
-                validateField(this);
-            });
-            
-            input.addEventListener('input', function() {
-                if (this.classList.contains('is-invalid')) {
-                    validateField(this);
-                }
-            });
-        });
-        
-        form.addEventListener('submit', function(e) {
-            let isValid = true;
-            
-            inputs.forEach(input => {
-                if (!validateField(input)) {
-                    isValid = false;
-                }
-            });
-            
-            if (!isValid) {
-                e.preventDefault();
-                showAlert('Пожалуйста, исправьте ошибки в форме', 'danger');
-            }
-        });
-    });
+    // JavaScript validation disabled - using server-side validation only
 }
 
-// Field validation helper
+// Field validation helper (disabled - using server-side validation only)
 function validateField(field) {
-    const value = field.value.trim();
-    const isRequired = field.hasAttribute('required');
-    const isValid = !isRequired || value.length > 0;
-    
-    if (isValid) {
-        field.classList.remove('is-invalid');
-        field.classList.add('is-valid');
-    } else {
-        field.classList.remove('is-valid');
-        field.classList.add('is-invalid');
-    }
-    
-    return isValid;
+    // JavaScript validation disabled - using server-side validation only
+    return true;
 }
 
 // AJAX form submission
@@ -310,12 +321,31 @@ function initializeAjaxForms() {
     });
 }
 
+// Initialize TomSelect and AirDatepicker components
+function initializeComponents() {
+    // Initialize TomSelect for elements with data-tomselect attribute
+    const tomSelectElements = document.querySelectorAll('[data-tomselect]');
+    tomSelectElements.forEach(element => {
+        const placeholder = element.dataset.placeholder || 'Выберите значение...';
+        createTomSelect(element, {
+            placeholder: placeholder,
+        });
+    });
+
+    // Initialize AirDatepicker for elements with data-datepicker attribute
+    const datepickerElements = document.querySelectorAll('[data-datepicker]');
+    datepickerElements.forEach(element => {
+        createDatepicker(element);
+    });
+}
+
 // Initialize all common components
 function initializeCommonComponents() {
     initializeBreedsLoading();
     initializeScheduleSelection();
     initializeFormValidation();
     initializeAjaxForms();
+    initializeComponents();
 }
 
 // Export functions for global use

@@ -10,62 +10,43 @@
             <div class="col-lg-8 mx-auto text-center">
                 <h1 class="display-4 fw-bold mb-4">О нашей клинике</h1>
                 <p class="lead">
-                    Более 10 лет мы заботимся о здоровье и благополучии ваших питомцев
+                    Мы стремимся разобраться в вопросе заботы о животных и, кажется, знаем ответ!
                 </p>
             </div>
         </div>
     </div>
 </section>
 
+
 <!-- About Content -->
 <section class="py-5">
     <div class="container">
         <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="card border-0 shadow-sm">
+            <div class="col-lg-10 mx-auto">
+                <!-- Main Content -->
+                <div class="card border-0 shadow-sm mb-5">
                     <div class="card-body p-5">
                         <h2 class="h3 mb-4">Наша миссия</h2>
                         <p class="lead text-muted mb-4">
-                            Мы стремимся обеспечить высочайший уровень ветеринарной помощи, 
-                            используя современные технологии и индивидуальный подход к каждому пациенту.
+                            Мы считаем, что фундаментом благополучия наших четвероногих друзей служит качественная среда, 
+                            объединяющая владельцев домашних животных, ветеринарных врачей и профессионалов зообизнеса – 
+                            всех тех, кто пронизан единым культурным кодом любви к животным.
+                        </p>
+                        
+                        <p class="text-muted mb-4">
+                            Пространство заботы PurrfectCare гармонично сочетает качественные ветеринарные услуги, 
+                            современное диагностическое оборудование, профессиональные консультации специалистов 
+                            и компетентный сервис. Наша территория заботы о животных насчитывает 
+                            {{ $stats['branches_count'] }} филиалов.
                         </p>
                         
                         <h3 class="h4 mb-3">Наша команда</h3>
                         <p class="text-muted mb-4">
-                            В нашей клинике работают высококвалифицированные ветеринары с многолетним опытом. 
-                            Каждый специалист регулярно повышает свою квалификацию и следит за новейшими 
-                            достижениями в области ветеринарии.
-                        </p>
-                        
-                        @if($veterinarians->count() > 0)
-                        <div class="row g-3 mb-4">
-                            @foreach($veterinarians as $vet)
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center p-3 bg-light rounded">
-                                    <div class="flex-shrink-0">
-                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                            <i class="bi bi-person-fill"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-1">{{ $vet->name }}</h6>
-                                        <small class="text-muted">
-                                            @foreach($vet->specialties as $specialty)
-                                                {{ $specialty->name }}@if(!$loop->last), @endif
-                                            @endforeach
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
-                        @endif
-                        
-                        <h3 class="h4 mb-3">Оборудование</h3>
-                        <p class="text-muted mb-4">
-                            Мы оснащены современным диагностическим и лечебным оборудованием, 
-                            которое позволяет проводить точную диагностику и эффективное лечение 
-                            различных заболеваний у животных.
+                            В нашей клинике работают {{ $stats['employees_count'] }} высококвалифицированных специалистов 
+                            с многолетним опытом. Каждый сотрудник регулярно повышает свою квалификацию и следит за 
+                            новейшими достижениями в области ветеринарии. Наши врачи специализируются в различных 
+                            областях: хирургии, терапии, диагностике, офтальмологии, кардиологии и других направлениях 
+                            ветеринарной медицины.
                         </p>
                         
                         <h3 class="h4 mb-3">Наши принципы</h3>
@@ -87,6 +68,54 @@
                                 Постоянное совершенствование качества услуг
                             </li>
                         </ul>
+                    </div>
+                </div>
+                
+                
+                <!-- Equipment Section -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5">
+                        <h2 class="h3 mb-4 text-center">Оборудование</h2>
+                        <div class="row align-items-center">
+                            <div class="col-lg-8">
+                                <p class="text-muted mb-4">
+                                    Мы оснащены современным диагностическим и лечебным оборудованием, 
+                                    которое позволяет проводить точную диагностику и эффективное лечение 
+                                    различных заболеваний у животных. Наша клиника использует только 
+                                    проверенные и сертифицированные медицинские приборы от ведущих 
+                                    мировых производителей.
+                                </p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                            <span>Рентгенологическое оборудование</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                            <span>Ультразвуковая диагностика</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                            <span>Лабораторные анализаторы</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                            <span>Хирургические инструменты</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <img src="{{ asset('images/client/about/equipment.png') }}" alt="Ветеринарное оборудование" class="img-fluid rounded">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

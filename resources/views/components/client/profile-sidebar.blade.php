@@ -1,12 +1,16 @@
 @props(['active' => 'profile'])
 
-<div class="col-lg-3 mb-4">
+<div class="col-12 col-lg-3 mb-4">
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="list-group list-group-flush">
                 <a href="{{ route('client.profile') }}" 
                    class="list-group-item list-group-item-action {{ $active === 'profile' ? 'active' : '' }}">
                     <i class="bi bi-person me-2"></i>Профиль
+                </a>
+                <a href="{{ route('client.appointment.appointments') }}" 
+                   class="list-group-item list-group-item-action {{ $active === 'appointments' ? 'active' : '' }}">
+                    <i class="bi bi-calendar-event me-2"></i>Предстоящие записи
                 </a>
                 <a href="{{ route('client.profile.visits') }}" 
                    class="list-group-item list-group-item-action {{ $active === 'visits' ? 'active' : '' }}">
