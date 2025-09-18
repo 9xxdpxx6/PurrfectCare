@@ -6,6 +6,7 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Models\Employee;
 use App\Notifications\BotBookingNotification;
+use App\Notifications\WebsiteBookingNotification;
 use App\Notifications\BotRegistrationNotification;
 use App\Notifications\BotPetAddedNotification;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,14 @@ class NotificationService
     public function notifyAboutBotBooking($visit)
     {
         $this->notifyAllAdmins(new BotBookingNotification($visit));
+    }
+
+    /**
+     * Отправить уведомление о новой записи через сайт
+     */
+    public function notifyAboutWebsiteBooking($visit)
+    {
+        $this->notifyAllAdmins(new WebsiteBookingNotification($visit));
     }
 
     /**

@@ -9,7 +9,7 @@
         <x-client.profile-sidebar active="notifications" />
 
         <!-- Основной контент -->
-        <div class="col-12 col-lg-9">
+        <div class="col-12 col-lg-9" style="overflow-x: hidden;">
             <!-- Заголовок -->
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
                 <h2 class="h3 mb-3 mb-sm-0">Уведомления</h2>
@@ -33,6 +33,16 @@
                                         <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" 
                                              style="width: 40px; height: 40px;">
                                             <i class="bi bi-calendar-check text-primary"></i>
+                                        </div>
+                                    @elseif($notification->data['type'] === 'website_booking')
+                                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px;">
+                                            <i class="bi bi-calendar-plus text-primary"></i>
+                                        </div>
+                                    @elseif($notification->data['type'] === 'bot_booking')
+                                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px;">
+                                            <i class="bi bi-robot text-primary"></i>
                                         </div>
                                     @elseif($notification->data['type'] === 'pet_added')
                                         <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" 
@@ -129,6 +139,8 @@
 
 .notification-item {
     transition: background-color 0.2s ease;
+    position: relative;
+    overflow: visible;
 }
 
 .notification-item:hover {
@@ -143,11 +155,94 @@
 .notification-item:last-child {
     border-bottom: none !important;
 }
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    min-width: 160px;
+    padding: 0.5rem 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    transform: translateY(2px);
+}
 </style>
 @endpush
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ждем загрузки Bootstrap
+    function initDropdowns() {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+            const dropdownElements = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+            dropdownElements.forEach(function(element) {
+                new bootstrap.Dropdown(element);
+            });
+        } else {
+            // Если Bootstrap еще не загружен, ждем еще немного
+            setTimeout(initDropdowns, 100);
+        }
+    }
+    
+    initDropdowns();
+    
+    // Fallback - ручная обработка клика если Bootstrap не работает
+    document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dropdown = this.nextElementSibling;
+            if (dropdown && dropdown.classList.contains('dropdown-menu')) {
+                // Переключаем видимость
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                } else {
+                    // Скрываем все другие дропдауны
+                    document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                        menu.classList.remove('show');
+                    });
+                    dropdown.classList.add('show');
+                }
+            }
+        });
+    });
+    
+    // Закрываем дропдауны при клике вне их
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                menu.classList.remove('show');
+            });
+        }
+    });
+});
+
 function markAsRead(notificationId) {
     fetch(`/notifications/${notificationId}/mark-as-read`, {
         method: 'POST',
@@ -162,6 +257,12 @@ function markAsRead(notificationId) {
             const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
             item.classList.remove('unread');
             item.querySelector('.badge')?.remove();
+            
+            // Закрываем dropdown
+            const dropdown = item.querySelector('.dropdown-menu');
+            if (dropdown) {
+                dropdown.classList.remove('show');
+            }
             
             // Обновляем счетчик в шапке
             updateNotificationCount();
@@ -201,6 +302,13 @@ function deleteNotification(notificationId) {
         .then(data => {
             if (data.success) {
                 const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                
+                // Закрываем dropdown перед удалением
+                const dropdown = item.querySelector('.dropdown-menu');
+                if (dropdown) {
+                    dropdown.classList.remove('show');
+                }
+                
                 item.remove();
                 
                 // Обновляем счетчик в шапке

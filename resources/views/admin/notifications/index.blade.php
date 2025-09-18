@@ -462,6 +462,7 @@ class NotificationsPage {
     getTypeLabel(type) {
         const labels = {
             'bot_booking': 'Запись',
+            'website_booking': 'Запись',
             'bot_registration': 'Регистрация',
             'bot_pet_added': 'Питомец'
         };

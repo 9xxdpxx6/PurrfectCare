@@ -311,8 +311,8 @@ class AppointmentController extends Controller
             }
 
 
-            // Отправляем уведомление администраторам о новой записи (как в боте)
-            $this->notificationService->notifyAboutBotBooking($visit);
+            // Отправляем уведомление администраторам о новой записи через сайт
+            $this->notificationService->notifyAboutWebsiteBooking($visit);
 
             return redirect()->route('client.appointment.appointments')
                 ->with('success', 'Запись на прием успешно создана!');

@@ -28,7 +28,10 @@
                 <li>
                     <a class="dropdown-item notification-item {{ $notification->unread() ? 'unread' : '' }}" 
                        href="#" 
-                       data-notification-id="{{ $notification->id }}">
+                       data-notification-id="{{ $notification->id }}"
+                       data-bs-toggle="tooltip" 
+                       data-bs-placement="top" 
+                       title="">
                         <div class="d-flex align-items-start">
                             <div class="flex-shrink-0 me-2">
                                 @if($notification->data['type'] === 'appointment_created')
@@ -112,6 +115,14 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Отключаем тултипы для элементов уведомлений
+    document.querySelectorAll('.notification-item').forEach(function(item) {
+        // Отключаем тултип
+        item.setAttribute('data-bs-toggle', 'tooltip');
+        item.setAttribute('data-bs-placement', 'top');
+        item.setAttribute('title', '');
+    });
+    
     // Обработка клика по уведомлению
     document.querySelectorAll('.notification-item').forEach(function(item) {
         item.addEventListener('click', function(e) {
@@ -136,6 +147,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Обновляем счетчик
                     updateNotificationCount();
+                    
+                    // Закрываем dropdown
+                    const dropdown = bootstrap.Dropdown.getInstance(this.closest('.dropdown').querySelector('[data-bs-toggle="dropdown"]'));
+                    if (dropdown) {
+                        dropdown.hide();
+                    }
                 }
             })
             .catch(error => console.error('Error:', error));
