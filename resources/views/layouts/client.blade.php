@@ -44,6 +44,11 @@
                 </ul>
                 
                 <ul class="navbar-nav">
+                    <li class="nav-item me-2">
+                        <a href="https://t.me/purrfectcare_bot" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-telegram me-1"></i>Расписание в Telegram
+                        </a>
+                    </li>
                     @auth
                         <li class="nav-item me-2">
                             <a href="{{ route('client.appointment.branches') }}" class="btn btn-primary">
@@ -139,17 +144,21 @@
                             Записаться на прием
                         </a>
                         @auth
-                            <a href="{{ route('client.profile.visits') }}" class="text-muted mb-2 text-decoration-none">
-                                Мои записи
-                            </a>
-                            <a href="{{ route('client.profile.pets') }}" class="text-muted mb-2 text-decoration-none">
-                                Мои питомцы
-                            </a>
+                        <a href="{{ route('client.profile.visits') }}" class="text-muted mb-2 text-decoration-none">
+                            Мои записи
+                        </a>
+                        <a href="{{ route('client.profile.pets') }}" class="text-muted mb-2 text-decoration-none">
+                            Мои питомцы
+                        </a>
                         @else
-                            <a href="{{ route('client.login') }}" class="text-muted mb-2 text-decoration-none">
-                                Войти в кабинет
-                            </a>
+                        <a href="{{ route('client.login') }}" class="text-muted mb-2 text-decoration-none">
+                            Войти в кабинет
+                        </a>
                         @endauth
+                        <a href="https://t.me/purrfectcare_bot" class="text-muted mb-2 text-decoration-none" target="_blank">
+                            Расписание в Telegram
+                            <i class="bi bi-telegram me-1"></i>
+                        </a>
                     </div>
                 </div>
             </div>

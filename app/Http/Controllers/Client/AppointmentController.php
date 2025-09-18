@@ -131,13 +131,16 @@ class AppointmentController extends Controller
             
             while ($currentTime < $endTime) {
                 $key = $schedule->id . '|' . $currentTime->format('Y-m-d H:i:s');
-                if (!isset($busy[$key])) {
+                $isBusy = isset($busy[$key]);
+                
+                if (!$isBusy) {
                     $allAvailableSlots[] = [
                         'time' => $currentTime->format('H:i'),
                         'datetime' => $currentTime->format('Y-m-d H:i:s'),
                         'schedule_id' => $schedule->id
                     ];
                 }
+                
                 $currentTime->addMinutes(30);
             }
         }

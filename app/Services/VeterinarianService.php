@@ -18,8 +18,10 @@ class VeterinarianService
             ->whereHas('specialties', function ($query) {
                 $query->where('is_veterinarian', true);
             })
-            ->whereHas('branches', function ($query) use ($branchId) {
-                $query->where('branches.id', $branchId);
+            ->whereHas('schedules', function ($query) use ($branchId) {
+                $query->where('schedules.branch_id', $branchId)
+                      ->where('schedules.shift_starts_at', '>=', now())
+                      ->where('schedules.shift_starts_at', '<=', now()->addDays(30));
             })
             ->with(['specialties' => function ($query) {
                 $query->select('specialties.id', 'specialties.name', 'specialties.is_veterinarian')
