@@ -424,19 +424,6 @@ class OrderController extends AdminController
         $vaccinations = [];
 
         foreach ($order->items as $item) {
-            // Отладочная информация для LabTest
-            if ($item->item_type === 'App\Models\LabTest') {
-                \Log::info('LabTest debug', [
-                    'item_id' => $item->id,
-                    'item_type' => $item->item_type,
-                    'item_id_value' => $item->item_id,
-                    'item_name' => $item->item_name,
-                    'item_loaded' => $item->relationLoaded('item'),
-                    'itemable_loaded' => $item->relationLoaded('itemable'),
-                    'has_item' => $item->item ? 'yes' : 'no',
-                    'has_itemable' => $item->itemable ? 'yes' : 'no'
-                ]);
-            }
             
             $itemData = [
                 'name' => $item->item_name,

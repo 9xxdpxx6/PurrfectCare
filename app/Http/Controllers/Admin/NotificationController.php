@@ -59,6 +59,11 @@ class NotificationController extends AdminController
      */
     public function getRecentNotifications(): JsonResponse
     {
+        // Дополнительная проверка авторизации
+        if (!Auth::guard('admin')->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
         $unreadCount = $this->notificationService->getUnreadCount();
         $notifications = $this->notificationService->getRecentNotifications(10);

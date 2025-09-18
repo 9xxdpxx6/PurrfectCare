@@ -46,6 +46,11 @@ class VisitManagementService
             // Обработка полей даты и времени
             $this->dateTimeProcessingService->processDateTimeFields($request);
             
+            // Добавляем starts_at из request в данные для создания
+            if ($request->has('starts_at')) {
+                $validated['starts_at'] = $request->starts_at;
+            }
+            
             // Создаем прием
             $visit = Visit::create($validated);
 

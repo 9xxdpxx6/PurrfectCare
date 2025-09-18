@@ -91,14 +91,21 @@ class AppointmentController extends Controller
 
         // Генерируем доступные временные слоты для каждой даты
         $availableSlotsByDate = [];
+        $userBookingsByDate = [];
+        
         foreach ($schedulesByDate as $date => $daySchedules) {
             $availableSlots = $this->generateAvailableTimeSlots($daySchedules, $date);
             if (!empty($availableSlots)) {
                 $availableSlotsByDate[$date] = $availableSlots;
             }
+            
+            // Подсчитываем записи пользователя на эту дату
+            $userBookingsByDate[$date] = Visit::where('client_id', Auth::id())
+                ->whereDate('starts_at', $date)
+                ->count();
         }
 
-        return view('client.appointment.time', compact('availableSlotsByDate', 'branch', 'veterinarian'));
+        return view('client.appointment.time', compact('availableSlotsByDate', 'branch', 'veterinarian', 'userBookingsByDate'));
     }
 
     /**
@@ -185,11 +192,31 @@ class AppointmentController extends Controller
                 'veterinarian_id' => 'required|exists:employees,id',
                 'schedule_id' => 'required|exists:schedules,id',
                 'time' => 'required|date_format:H:i'
+            ], [
+                'branch_id.required' => 'Поле филиал обязательно для заполнения.',
+                'branch_id.exists' => 'Выбранный филиал не существует.',
+                'veterinarian_id.required' => 'Поле ветеринар обязательно для заполнения.',
+                'veterinarian_id.exists' => 'Выбранный ветеринар не существует.',
+                'schedule_id.required' => 'Поле расписание обязательно для заполнения.',
+                'schedule_id.exists' => 'Выбранное расписание не существует.',
+                'time.required' => 'Поле время обязательно для заполнения.',
+                'time.date_format' => 'Время должно быть в формате ЧЧ:ММ (например, 09:30).'
             ]);
 
-            $branch = Branch::findOrFail($request->branch_id);
-            $veterinarian = Employee::findOrFail($request->veterinarian_id);
-            $schedule = Schedule::findOrFail($request->schedule_id);
+            $branch = Branch::find($request->branch_id);
+            $veterinarian = Employee::find($request->veterinarian_id);
+            $schedule = Schedule::find($request->schedule_id);
+            
+            // Проверяем, что все модели найдены
+            if (!$branch) {
+                return back()->withErrors(['branch_id' => 'Выбранный филиал не существует.']);
+            }
+            if (!$veterinarian) {
+                return back()->withErrors(['veterinarian_id' => 'Выбранный ветеринар не существует.']);
+            }
+            if (!$schedule) {
+                return back()->withErrors(['schedule_id' => 'Выбранное расписание не существует.']);
+            }
 
             // Получаем питомцев пользователя
             $pets = Pet::where('client_id', Auth::id())->get();
@@ -198,13 +225,6 @@ class AppointmentController extends Controller
             $date = Carbon::parse($schedule->shift_starts_at)->format('Y-m-d');
             $datetime = Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . $request->time);
 
-            \Log::info('AppointmentController::confirm - Успешно обработано', [
-                'branch_id' => $branch->id,
-                'veterinarian_id' => $veterinarian->id,
-                'schedule_id' => $schedule->id,
-                'time' => $request->time,
-                'datetime' => $datetime->format('Y-m-d H:i:s')
-            ]);
 
             return view('client.appointment.confirm', compact('branch', 'veterinarian', 'schedule', 'pets', 'datetime'));
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -227,12 +247,6 @@ class AppointmentController extends Controller
      */
     public function store(StoreAppointmentRequest $request): RedirectResponse
     {
-        \Log::info('AppointmentController::store - Начало создания записи', [
-            'user_id' => Auth::id(),
-            'request_data' => $request->all(),
-            'pet_id_raw' => $request->input('pet_id'),
-            'pet_id_type' => gettype($request->input('pet_id'))
-        ]);
 
         try {
             // Проверяем аутентификацию
@@ -254,29 +268,11 @@ class AppointmentController extends Controller
                     ->firstOrFail();
             }
 
-            // Формируем дату и время с округлением до получаса
+            // Проверяем конфликты времени перед созданием записи
             $schedule = Schedule::findOrFail($request->schedule_id);
-            $date = Carbon::parse($schedule->shift_starts_at)->format('Y-m-d');
-            
-            // Округляем время до получаса (как в боте)
-            $timeParts = explode(':', $cleanTime);
-            $hour = (int)$timeParts[0];
-            $minute = (int)$timeParts[1];
-            $roundedMinute = $minute >= 30 ? 30 : 0;
-            $roundedTime = sprintf('%02d:%02d', $hour, $roundedMinute);
-            
-            $startsAt = Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . $roundedTime);
-            
-            \Log::info('AppointmentController::store - Формирование даты и времени', [
-                'schedule_date' => $date,
-                'clean_time' => $cleanTime,
-                'starts_at' => $startsAt->format('Y-m-d H:i:s')
-            ]);
-
-            // Проверяем конфликты времени
             $conflicts = $this->visitManagementService->checkTimeConflicts(
                 $request->schedule_id,
-                $roundedTime,
+                $cleanTime,
                 30 // Стандартная длительность 30 минут
             );
 
@@ -284,21 +280,36 @@ class AppointmentController extends Controller
                 return back()->withErrors(['time' => 'Выбранное время занято. Пожалуйста, выберите другое время.']);
             }
 
-            // Создаем запись
+            // Ограничение: не более 4 записей в день (как в боте)
+            $date = Carbon::parse($schedule->shift_starts_at)->toDateString();
+            $existingCount = Visit::where('client_id', Auth::id())
+                ->whereDate('starts_at', $date)
+                ->count();
+            
+            if ($existingCount >= 4) {
+                return back()->withErrors(['error' => 'Вы уже забронировали максимум 4 интервала на этот день.']);
+            }
+
+            // Создаем запись (starts_at будет обработан в VisitDateTimeProcessingService)
             $visitData = [
                 'client_id' => Auth::id(),
                 'pet_id' => ($request->pet_id && $request->pet_id !== '') ? $request->pet_id : null,
                 'schedule_id' => $request->schedule_id,
-                'starts_at' => $startsAt,
                 'complaints' => $request->complaints,
                 'status_id' => 1 // Статус "Запланирован"
             ];
 
-            \Log::info('AppointmentController::store - Данные для создания визита', $visitData);
 
-            $visit = $this->visitManagementService->createVisit($visitData, $request);
+            try {
+                $visit = $this->visitManagementService->createVisit($visitData, $request);
+            } catch (\Exception $e) {
+                // Если ошибка связана с дублированием времени, показываем понятное сообщение
+                if (strpos($e->getMessage(), 'Запись на это время уже существует') !== false) {
+                    return back()->withErrors(['time' => $e->getMessage()]);
+                }
+                throw $e;
+            }
 
-            \Log::info('AppointmentController::store - Визит создан успешно', ['visit_id' => $visit->id]);
 
             // Отправляем уведомление администраторам о новой записи (как в боте)
             $this->notificationService->notifyAboutBotBooking($visit);
@@ -313,8 +324,51 @@ class AppointmentController extends Controller
                 'request_data' => $request->all()
             ]);
             
-            return back()->withErrors(['error' => 'Произошла ошибка при создании записи: ' . $e->getMessage()]);
+            // Определяем, показывать ли техническую ошибку или общее сообщение
+            $userMessage = $this->getUserFriendlyErrorMessage($e);
+            
+            return back()->withErrors(['error' => $userMessage]);
         }
+    }
+
+    /**
+     * Получить понятное пользователю сообщение об ошибке
+     */
+    private function getUserFriendlyErrorMessage(\Exception $e): string
+    {
+        $message = $e->getMessage();
+        
+        // Список известных понятных ошибок (из валидации и бизнес-логики)
+        $knownUserErrors = [
+            'Запись на это время уже существует',
+            'Вы уже забронировали максимум 4 интервала',
+            'Выбранное время занято',
+            'Поле филиал обязательно для заполнения',
+            'Поле ветеринар обязательно для заполнения',
+            'Поле расписание обязательно для заполнения',
+            'Поле время обязательно для заполнения',
+            'Время должно быть в формате ЧЧ:ММ',
+            'Время должно быть в формате ЧЧ:ММ (например, 09:30)',
+            'Выбранный филиал не существует',
+            'Выбранный ветеринар не существует',
+            'Выбранное расписание не существует',
+            'Выбранный питомец не существует',
+            'Жалобы не должны превышать 1000 символов',
+            'Необходимо войти в систему для записи на прием',
+            'Запись можно отменить не менее чем за 2 часа до приема',
+            'Запись успешно отменена',
+            'Произошла ошибка при отмене записи'
+        ];
+        
+        // Проверяем, является ли ошибка понятной пользователю
+        foreach ($knownUserErrors as $knownError) {
+            if (strpos($message, $knownError) !== false) {
+                return $message; // Возвращаем оригинальное сообщение
+            }
+        }
+        
+        // Если это техническая ошибка, возвращаем общее сообщение
+        return 'Произошла системная ошибка. Пожалуйста, попробуйте позже или обратитесь в поддержку.';
     }
 
     /**

@@ -65,17 +65,33 @@
                                     <h5 class="text-primary mb-3">
                                         <i class="bi bi-calendar me-2"></i>
                                         {{ \Carbon\Carbon::parse($date)->locale('ru')->isoFormat('dddd, D MMMM YYYY') }}
+                                        @if(isset($userBookingsByDate[$date]) && $userBookingsByDate[$date] > 0)
+                                            <span class="badge bg-info ms-2">
+                                                Ваших записей: {{ $userBookingsByDate[$date] }}/4
+                                            </span>
+                                        @endif
                                     </h5>
                                     
                                     <div class="row g-2">
                                         @foreach($slots as $slot)
+                                            @php
+                                                $userBookingsToday = $userBookingsByDate[$date] ?? 0;
+                                                $isLimitReached = $userBookingsToday >= 4;
+                                            @endphp
                                             <div class="col-6 col-md-4 col-lg-3">
-                                                <div class="schedule-card" data-schedule-id="{{ $slot['schedule_id'] }}" data-time="{{ $slot['time'] }}">
+                                                <div class="schedule-card {{ $isLimitReached ? 'disabled' : '' }}" 
+                                                     data-schedule-id="{{ $slot['schedule_id'] }}" 
+                                                     data-time="{{ $slot['time'] }}"
+                                                     data-limit-reached="{{ $isLimitReached ? 'true' : 'false' }}">
                                                     <div class="schedule-time">
                                                         {{ $slot['time'] }} - {{ \Carbon\Carbon::parse($slot['time'])->addMinutes(30)->format('H:i') }}
                                                     </div>
                                                     <div class="schedule-status">
-                                                        <span class="badge bg-success">Доступно</span>
+                                                        @if($isLimitReached)
+                                                            <span class="badge bg-danger">Лимит записей</span>
+                                                        @else
+                                                            <span class="badge bg-success">Доступно</span>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>
@@ -90,6 +106,27 @@
                                     Длительность приема составляет 30 минут. 
                                     Выберите время начала приема.
                                 </div>
+                                
+                                @php
+                                    $maxBookings = 0;
+                                    foreach($userBookingsByDate as $bookings) {
+                                        $maxBookings = max($maxBookings, $bookings);
+                                    }
+                                @endphp
+                                
+                                @if($maxBookings >= 3)
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        <strong>Внимание!</strong> У вас уже {{ $maxBookings }} записей в день. 
+                                        Максимальное количество записей в день: 4.
+                                    </div>
+                                @elseif($maxBookings > 0)
+                                    <div class="alert alert-success">
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        У вас {{ $maxBookings }} записей в день. 
+                                        Осталось {{ 4 - $maxBookings }} записей до лимита.
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -112,15 +149,64 @@
         </div>
     </div>
 </section>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <!-- Toasts будут добавляться сюда динамически -->
+</div>
 @endsection
 
 @push('scripts')
 <script>
+// Функция для показа toast уведомлений
+function showToast(message, type = 'info') {
+    // Создаем уникальный ID для toast
+    const toastId = 'toast-' + Date.now();
+    
+    // Создаем HTML для toast
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-${type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    // Добавляем toast в контейнер
+    document.getElementById('toast-container').insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Инициализируем и показываем toast
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: 3000
+    });
+    
+    toast.show();
+    
+    // Удаляем toast из DOM после скрытия
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const scheduleCards = document.querySelectorAll('.schedule-card');
     
     scheduleCards.forEach(card => {
         card.addEventListener('click', function() {
+            // Check if limit is reached
+            const isLimitReached = this.dataset.limitReached === 'true';
+            
+            if (isLimitReached) {
+                showToast('Вы уже забронировали максимум 4 интервала на этот день.', 'warning');
+                return;
+            }
+            
             // Remove selection from other cards
             scheduleCards.forEach(c => c.classList.remove('selected'));
             
@@ -147,4 +233,96 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@endpush
+
+@push('styles')
+<style>
+.schedule-card {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: white;
+    margin-bottom: 10px;
+}
+
+.schedule-card:hover:not(.disabled) {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.schedule-card.selected {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+}
+
+.schedule-card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.schedule-card.disabled:hover {
+    border-color: #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.schedule-time {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.schedule-card.disabled .schedule-time {
+    color: #6c757d;
+}
+
+.schedule-status .badge {
+    font-size: 0.75rem;
+}
+
+/* Toast анимации */
+.toast-container {
+    max-width: 350px;
+}
+
+.toast {
+    margin-bottom: 10px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+}
+
+.toast.show {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast.hide {
+    animation: slideOutRight 0.3s ease-in;
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+</style>
 @endpush

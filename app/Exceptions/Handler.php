@@ -6,6 +6,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
+use Illuminate\Support\Facades\Auth;
 
 class Handler extends ExceptionHandler
 {
@@ -80,7 +81,23 @@ class Handler extends ExceptionHandler
      */
     protected function isAdminRequest(Request $request): bool
     {
-        return $request->is('admin/*') || $request->routeIs('admin.*');
+        // Проверяем URL путь
+        if ($request->is('admin/*')) {
+            return true;
+        }
+        
+        // Проверяем имя маршрута
+        if ($request->routeIs('admin.*')) {
+            return true;
+        }
+        
+        // Дополнительная проверка: если пользователь не авторизован как админ, 
+        // но пытается получить доступ к админским данным, считаем это клиентским запросом
+        if (!Auth::guard('admin')->check()) {
+            return false;
+        }
+        
+        return false;
     }
 
     /**
@@ -121,6 +138,10 @@ class Handler extends ExceptionHandler
         }
 
         if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+            // Если это клиентский запрос, показываем 404 страницу клиента
+            if (!$this->isAdminRequest($request)) {
+                return response()->view('client.errors.404', [], 404);
+            }
             return 404;
         }
 

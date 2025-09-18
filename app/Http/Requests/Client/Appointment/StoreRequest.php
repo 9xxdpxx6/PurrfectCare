@@ -34,12 +34,6 @@ class StoreRequest extends FormRequest
      */
     protected function prepareForValidation()
     {
-        // Отладочная информация
-        \Log::info('StoreRequest::prepareForValidation', [
-            'original_pet_id' => $this->input('pet_id'),
-            'pet_id_type' => gettype($this->input('pet_id')),
-            'all_data' => $this->all()
-        ]);
 
         // Преобразуем пустую строку pet_id в null
         if ($this->has('pet_id') && $this->input('pet_id') === '') {

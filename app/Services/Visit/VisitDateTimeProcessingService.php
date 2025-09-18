@@ -24,15 +24,16 @@ class VisitDateTimeProcessingService
                 if ($schedule) {
                     $fullDateTime = $this->createFullDateTime($schedule, $request->visit_time);
                     
-                    // Отладочная информация
-                    Log::info('Processing datetime fields', [
-                        'original_visit_time' => $request->visit_time,
-                        'rounded_time' => $this->roundTimeToHalfHour($request->visit_time),
-                        'schedule_date' => Carbon::parse($schedule->shift_starts_at)->format('Y-m-d'),
-                        'full_datetime' => $fullDateTime,
-                        'schedule_shift_start' => $schedule->shift_starts_at,
-                        'schedule_shift_end' => $schedule->shift_ends_at
-                    ]);
+                    // Проверяем, не существует ли уже запись с таким временем
+                    $existingVisit = \App\Models\Visit::where('schedule_id', $request->schedule_id)
+                        ->where('starts_at', $fullDateTime)
+                        ->first();
+                    
+                    
+                    if ($existingVisit) {
+                        throw new \Exception('Запись на это время уже существует. Пожалуйста, выберите другое время.');
+                    }
+                    
                     
                     $request->merge([
                         'starts_at' => $fullDateTime
@@ -44,7 +45,8 @@ class VisitDateTimeProcessingService
                     'visit_time' => $request->visit_time ?? 'not set',
                     'schedule_id' => $request->schedule_id ?? 'not set'
                 ]);
-                // Игнорируем ошибки парсинга, валидация их поймает
+                // Пробрасываем ошибку дальше для обработки в контроллере
+                throw $e;
             }
         }
     }
@@ -254,6 +256,7 @@ class VisitDateTimeProcessingService
             foreach ($visits as $visit) {
                 $visitStart = Carbon::parse($visit->starts_at);
                 $visitEnd = $visitStart->copy()->addMinutes(30); // Стандартная длительность
+                
                 
                 // Проверяем пересечение временных интервалов
                 if ($start < $visitEnd && $end > $visitStart) {

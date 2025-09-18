@@ -59,6 +59,20 @@
                     <div class="card-body p-5">
                         <h4 class="card-title mb-4">Данные записи</h4>
                         
+                        <!-- Общие ошибки -->
+                        @if($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>Ошибка!</strong> Пожалуйста, исправьте следующие ошибки:
+                                <ul class="mb-0 mt-2">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+                        
                         <!-- Appointment Details -->
                         <div class="row g-3 mb-4">
                             <div class="col-12 col-md-6">
@@ -88,7 +102,7 @@
                                         <i class="bi bi-calendar me-2"></i>Дата и время
                                     </h6>
                                     <p class="mb-0">{{ $datetime->format('d.m.Y') }}</p>
-                                    <small class="text-muted">{{ $datetime->format('H:i') }} - {{ $datetime->addMinutes(30)->format('H:i') }}</small>
+                                    <small class="text-muted">{{ $datetime->format('H:i') }} - {{ $datetime->copy()->addMinutes(30)->format('H:i') }}</small>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
@@ -107,6 +121,12 @@
                         <!-- Pet Selection -->
                         <div class="mb-4">
                             <h5 class="mb-3">Выберите питомца</h5>
+                            @error('pet_id')
+                                <div class="alert alert-danger alert-sm mb-3">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    {{ $message }}
+                                </div>
+                            @enderror
                             @if($pets->count() > 0)
                                 <div class="row g-3">
                                     @foreach($pets as $pet)
@@ -136,8 +156,14 @@
                         <!-- Complaints -->
                         <div class="mb-4">
                             <label for="complaints" class="form-label">Жалобы и симптомы (необязательно)</label>
-                            <textarea class="form-control" id="complaints" name="complaints" rows="3" 
+                            <textarea class="form-control @error('complaints') is-invalid @enderror" id="complaints" name="complaints" rows="3" 
                                       placeholder="Опишите состояние питомца, жалобы или симптомы..."></textarea>
+                            @error('complaints')
+                                <div class="invalid-feedback">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
                         
                         <!-- Action Buttons -->
@@ -153,6 +179,35 @@
                                 <i class="bi bi-check-circle me-2"></i>Подтвердить запись
                             </button>
                         </div>
+                        
+                        <!-- Ошибки для скрытых полей -->
+                        @error('branch_id')
+                            <div class="alert alert-danger alert-sm mt-3">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                <strong>Филиал:</strong> {{ $message }}
+                            </div>
+                        @enderror
+                        
+                        @error('veterinarian_id')
+                            <div class="alert alert-danger alert-sm mt-3">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                <strong>Ветеринар:</strong> {{ $message }}
+                            </div>
+                        @enderror
+                        
+                        @error('schedule_id')
+                            <div class="alert alert-danger alert-sm mt-3">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                <strong>Расписание:</strong> {{ $message }}
+                            </div>
+                        @enderror
+                        
+                        @error('time')
+                            <div class="alert alert-danger alert-sm mt-3">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                <strong>Время:</strong> {{ $message }}
+                            </div>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -246,11 +301,88 @@
     color: #2c3e50;
     font-weight: 600;
 }
+
+/* Toast анимации */
+.toast-container {
+    max-width: 350px;
+}
+
+.toast {
+    margin-bottom: 10px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+}
+
+.toast.show {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast.hide {
+    animation: slideOutRight 0.3s ease-in;
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
 </style>
 @endpush
 
 @push('scripts')
 <script>
+// Функция для показа toast уведомлений
+function showToast(message, type = 'info') {
+    // Создаем уникальный ID для toast
+    const toastId = 'toast-' + Date.now();
+    
+    // Создаем HTML для toast
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-${type === 'warning' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    // Добавляем toast в контейнер
+    document.getElementById('toast-container').insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Инициализируем и показываем toast
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: 3000
+    });
+    
+    toast.show();
+    
+    // Удаляем toast из DOM после скрытия
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const petCards = document.querySelectorAll('.pet-card');
     const confirmButton = document.getElementById('confirmAppointment');
@@ -302,3 +434,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <!-- Toasts будут добавляться сюда динамически -->
+</div>
