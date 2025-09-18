@@ -8,9 +8,23 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-4 fw-bold mb-4">Наши услуги</h1>
+                <h1 class="display-4 fw-bold mb-4">
+                    @if($type === 'analyses')
+                        Наши анализы
+                    @elseif($type === 'vaccinations')
+                        Наши вакцинации
+                    @else
+                        Наши услуги
+                    @endif
+                </h1>
                 <p class="lead">
-                    Полный спектр ветеринарных услуг для ваших питомцев
+                    @if($type === 'analyses')
+                        Полный спектр лабораторных исследований для ваших питомцев
+                    @elseif($type === 'vaccinations')
+                        Все виды вакцинаций для защиты ваших питомцев
+                    @else
+                        Полный спектр ветеринарных услуг для ваших питомцев
+                    @endif
                 </p>
             </div>
         </div>
@@ -24,26 +38,27 @@
             <div class="col-md-4">
                 <label for="search" class="form-label">Поиск по названию</label>
                 <input type="text" class="form-control" id="search" name="search" 
-                       value="{{ request('search') }}" placeholder="Введите название услуги...">
+                       value="{{ request('search') }}" placeholder="Введите название...">
             </div>
             <div class="col-md-3">
-                <label for="branch_id" class="form-label">Филиал</label>
-                <select class="form-select" id="branch_id" name="branch_id">
-                    <option value="">Все филиалы</option>
-                    @foreach($branches as $branch)
-                        <option value="{{ $branch->id }}" 
-                                {{ request('branch_id') == $branch->id ? 'selected' : '' }}>
-                            {{ $branch->name }}
-                        </option>
-                    @endforeach
+                <label for="type" class="form-label">Тип</label>
+                <select class="form-select" id="type" name="type" data-tomselect data-placeholder="Все типы">
+                    <option value="services" {{ request('type', 'services') == 'services' ? 'selected' : '' }}>Услуги</option>
+                    <option value="analyses" {{ request('type') == 'analyses' ? 'selected' : '' }}>Анализы</option>
+                    <option value="vaccinations" {{ request('type') == 'vaccinations' ? 'selected' : '' }}>Вакцинации</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label for="sort" class="form-label">Сортировка</label>
-                <select class="form-select" id="sort" name="sort">
-                    <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>По названию</option>
-                    <option value="price" {{ request('sort') == 'price' ? 'selected' : '' }}>По цене</option>
-                    <option value="duration" {{ request('sort') == 'duration' ? 'selected' : '' }}>По длительности</option>
+                <select class="form-select" id="sort" name="sort" data-tomselect data-placeholder="По названию А-Я">
+                    <option value="name_asc" {{ request('sort', 'name_asc') == 'name_asc' ? 'selected' : '' }}>По названию А-Я</option>
+                    <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>По названию Я-А</option>
+                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>По цене возрастание</option>
+                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>По цене убывание</option>
+                    @if($type === 'services')
+                        <option value="duration_asc" {{ request('sort') == 'duration_asc' ? 'selected' : '' }}>По длительности возрастание</option>
+                        <option value="duration_desc" {{ request('sort') == 'duration_desc' ? 'selected' : '' }}>По длительности убывание</option>
+                    @endif
                 </select>
             </div>
             <div class="col-md-2">
@@ -58,50 +73,51 @@
 <!-- Services Grid -->
 <section class="py-5">
     <div class="container">
-        @if($services->count() > 0)
+        @if($items->count() > 0)
             <div class="row g-4">
-                @foreach($services as $service)
+                @foreach($items as $item)
                 <div class="col-lg-4 col-md-6">
                     <div class="card h-100 border-0 shadow-sm service-card d-flex flex-column">
                         <div class="card-body p-4 d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h5 class="card-title mb-0">{{ $service->name }}</h5>
-                                <span class="badge bg-primary">{{ $service->price }} ₽</span>
+                                <h5 class="card-title mb-0">{{ $item->name }}</h5>
+                                <span class="badge bg-primary">{{ $item->price }} ₽</span>
                             </div>
                             
                             <p class="card-text text-muted mb-3">
-                                {{ Str::limit($service->description, 100) }}
+                                {{ Str::limit($item->description, 100) }}
                             </p>
                             
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <small class="text-muted">
-                                    <i class="bi bi-clock me-1"></i>
-                                    {{ $service->duration }} мин
-                                </small>
-                                <small class="text-muted">
-                                    <i class="bi bi-geo-alt me-1"></i>
-                                    {{ $service->branches->count() }} филиал(ов)
-                                </small>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <small class="text-muted">Доступно в филиалах:</small>
-                                <div class="mt-1">
-                                    @foreach($service->branches->take(2) as $branch)
-                                        <span class="badge bg-light text-dark me-1">{{ $branch->name }}</span>
-                                    @endforeach
-                                    @if($service->branches->count() > 2)
-                                        <span class="badge bg-secondary">+{{ $service->branches->count() - 2 }} еще</span>
-                                    @endif
-                                </div>
+                                @if($type === 'services')
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ $item->duration }} мин
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Доступно
+                                    </small>
+                                @else
+                                    <small class="text-muted">
+                                        <i class="bi bi-tag me-1"></i>
+                                        {{ $type === 'analyses' ? 'Анализ' : 'Вакцинация' }}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Доступно
+                                    </small>
+                                @endif
                             </div>
                             
                             <div class="mt-auto">
                                 <div class="d-grid gap-2">
-                                    <a href="{{ route('client.services.show', $service) }}" 
-                                       class="btn btn-outline-primary">
-                                        <i class="bi bi-eye me-1"></i>Подробнее
-                                    </a>
+                                    @if($type === 'services')
+                                        <a href="{{ route('client.services.show', $item) }}" 
+                                           class="btn btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>Подробнее
+                                        </a>
+                                    @endif
                                     <a href="{{ route('client.appointment') }}" 
                                        class="btn btn-primary">
                                         <i class="bi bi-calendar-plus me-1"></i>Записаться
@@ -117,7 +133,7 @@
             <!-- Pagination -->
             <div class="row mt-5">
                 <div class="col-12">
-                    {{ $services->appends(request()->query())->links() }}
+                    {{ $items->appends(request()->query())->links() }}
                 </div>
             </div>
         @else
@@ -126,9 +142,17 @@
                     <div class="card border-0 bg-light">
                         <div class="card-body p-5">
                             <i class="bi bi-search display-1 text-muted mb-4"></i>
-                            <h3 class="h4 mb-3">Услуги не найдены</h3>
+                            <h3 class="h4 mb-3">
+                                @if($type === 'analyses')
+                                    Анализы не найдены
+                                @elseif($type === 'vaccinations')
+                                    Вакцинации не найдены
+                                @else
+                                    Услуги не найдены
+                                @endif
+                            </h3>
                             <p class="text-muted mb-4">
-                                По вашему запросу не найдено ни одной услуги. 
+                                По вашему запросу не найдено ни одного элемента. 
                                 Попробуйте изменить параметры поиска.
                             </p>
                             <a href="{{ route('client.services') }}" class="btn btn-primary">
@@ -163,4 +187,23 @@
     font-size: 0.75rem;
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация TomSelect
+    if (typeof window.createTomSelect === 'function') {
+        const tomSelectElements = document.querySelectorAll('[data-tomselect]');
+        tomSelectElements.forEach(element => {
+            const placeholder = element.dataset.placeholder || 'Выберите значение...';
+            window.createTomSelect(element, {
+                placeholder: placeholder,
+                allowEmptyOption: true,
+                create: false
+            });
+        });
+    }
+});
+</script>
 @endpush

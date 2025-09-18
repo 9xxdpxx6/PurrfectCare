@@ -73,7 +73,12 @@ class Handler extends ExceptionHandler
             return $this->renderAdminError($request, $e);
         }
 
-        return parent::render($request, $e);
+        // Для клиентских запросов используем кастомную обработку ошибок
+        \Log::info('Client request error, using custom error handling', [
+            'exception_type' => get_class($e),
+            'message' => $e->getMessage()
+        ]);
+        return $this->renderClientError($request, $e);
     }
 
     /**
@@ -106,7 +111,7 @@ class Handler extends ExceptionHandler
     protected function renderAdminError(Request $request, Throwable $e)
     {
         // Получаем HTTP статус код
-        $statusCode = $this->getStatusCode($e);
+        $statusCode = $this->getStatusCode($request, $e);
         
         // Создаем HTTP исключение с нужным статусом
         $httpException = new HttpException($statusCode, $e->getMessage(), $e);
@@ -118,9 +123,26 @@ class Handler extends ExceptionHandler
     }
 
     /**
+     * Рендерит страницу ошибки для клиента
+     */
+    protected function renderClientError(Request $request, Throwable $e)
+    {
+        // Получаем HTTP статус код
+        $statusCode = $this->getStatusCode($request, $e);
+        
+        // Создаем HTTP исключение с нужным статусом
+        $httpException = new HttpException($statusCode, $e->getMessage(), $e);
+        
+        // Рендерим кастомный шаблон
+        return response()->view('client.errors.error', [
+            'exception' => $httpException
+        ], $statusCode);
+    }
+
+    /**
      * Получает HTTP статус код из исключения
      */
-    protected function getStatusCode(Throwable $e): int
+    protected function getStatusCode(Request $request, Throwable $e): int
     {
         if ($e instanceof HttpException) {
             return $e->getStatusCode();
@@ -138,10 +160,6 @@ class Handler extends ExceptionHandler
         }
 
         if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
-            // Если это клиентский запрос, показываем 404 страницу клиента
-            if (!$this->isAdminRequest($request)) {
-                return response()->view('client.errors.404', [], 404);
-            }
             return 404;
         }
 

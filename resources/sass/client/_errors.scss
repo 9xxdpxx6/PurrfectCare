@@ -1,0 +1,216 @@
+// Стили для страниц ошибок клиентской части
+// ==========================================
+
+// Импорт переменных
+@use "variables" as *;
+
+// Иконки ошибок
+.error-icon {
+    i {
+        opacity: 0.7;
+        transition: all 0.3s ease;
+        
+        &:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    }
+}
+
+// Карточки ошибок
+.error-card {
+    backdrop-filter: blur(10px);
+    border-radius: $border-radius-card;
+}
+
+// Кнопки ошибок
+.error-btn {
+    transition: all 0.3s ease;
+    border-radius: $border-radius-base;
+    
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    &.btn-sm:hover {
+        transform: translateY(-1px);
+    }
+    
+    // Специальные стили для кнопок ошибок
+    &.btn-outline-primary:hover {
+        background-color: $primary-color;
+        border-color: $primary-color;
+        color: white;
+    }
+    
+    &.btn-outline-success:hover {
+        background-color: $success-color;
+        border-color: $success-color;
+        color: white;
+    }
+    
+    &.btn-outline-info:hover {
+        background-color: $info-color;
+        border-color: $info-color;
+        color: white;
+    }
+    
+    &.btn-outline-warning:hover {
+        background-color: $warning-color;
+        border-color: $warning-color;
+        color: $dark-color;
+    }
+    
+    &.btn-outline-secondary:hover {
+        background-color: $secondary-color;
+        border-color: $secondary-color;
+        color: white;
+    }
+}
+
+// Алерты ошибок
+.error-alert {
+    border: none;
+    border-radius: $border-radius-base;
+    box-shadow: $shadow-soft;
+    
+    ul {
+        padding-left: 1.2rem;
+        margin-bottom: 0;
+        
+        li {
+            margin-bottom: 0.25rem;
+            
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+    
+    &.alert-dismissible .btn-close {
+        padding: 0.75rem 1rem;
+    }
+    
+    // Специальные стили для алертов
+    &.alert-danger {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.05));
+        border-left: 4px solid $danger-color;
+    }
+    
+    &.alert-info {
+        background: linear-gradient(135deg, rgba(13, 202, 240, 0.1), rgba(13, 202, 240, 0.05));
+        border-left: 4px solid $info-color;
+    }
+}
+
+// Поиск
+.search-suggestion {
+    .input-group {
+        box-shadow: $shadow-soft;
+        border-radius: $border-radius-base;
+        
+        .form-control {
+            border-radius: $border-radius-base 0 0 $border-radius-base;
+            border-right: none;
+            
+            &:focus {
+                box-shadow: none;
+                border-color: $primary-color;
+            }
+        }
+        
+        .btn {
+            border-radius: 0 $border-radius-base $border-radius-base 0;
+        }
+    }
+}
+
+// Быстрые ссылки
+.quick-links {
+    .btn {
+        margin: 0.125rem;
+        font-size: 0.875rem;
+    }
+}
+
+// Статус системы
+.system-status {
+    .text-success {
+        animation: pulse 2s infinite;
+    }
+}
+
+// Код ошибки
+.error-code {
+    .badge {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+}
+
+// Анимации
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+// Адаптивность
+@media (max-width: $breakpoint-sm) {
+    .error-card {
+        margin: 1rem;
+        
+        .card-body {
+            padding: 2rem 1.5rem !important;
+        }
+    }
+    
+    .error-btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+    
+    .quick-links {
+        .btn {
+            width: calc(50% - 0.25rem);
+            margin: 0.125rem;
+        }
+    }
+}
+
+@media (max-width: $breakpoint-md) {
+    .error-icon {
+        i {
+            font-size: 3rem !important;
+        }
+    }
+    
+    .search-suggestion {
+        .input-group {
+            max-width: 100% !important;
+        }
+    }
+}
+
+// Темная тема (если будет добавлена)
+[data-bs-theme="dark"] {
+    .error-card {
+        background-color: rgba(33, 37, 41, 0.9);
+        color: $light-color;
+    }
+    
+    .error-alert {
+        &.alert-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(220, 53, 69, 0.1));
+        }
+        
+        &.alert-info {
+            background: linear-gradient(135deg, rgba(13, 202, 240, 0.2), rgba(13, 202, 240, 0.1));
+        }
+    }
+}

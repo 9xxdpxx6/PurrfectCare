@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Service;
-use App\Models\Branch;
+use App\Models\VaccinationType;
+use App\Models\LabTestType;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -15,14 +16,18 @@ class ServiceController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Service::with('branches');
-
-        // Фильтрация по филиалу
-        if ($request->filled('branch_id')) {
-            $query->whereHas('branches', function($q) use ($request) {
-                $q->where('branches.id', $request->branch_id);
-            });
+        $type = $request->get('type', 'services');
+        $items = collect();
+        
+        // Получаем данные в зависимости от типа
+        if ($type === 'vaccinations') {
+            $query = VaccinationType::query();
+        } elseif ($type === 'analyses') {
+            $query = LabTestType::query();
+        } else {
+            $query = Service::with('branches');
         }
+
 
         // Поиск по названию
         if ($request->filled('search')) {
@@ -30,17 +35,26 @@ class ServiceController extends Controller
         }
 
         // Сортировка
-        $sort = $request->get('sort', 'name');
-        $direction = $request->get('direction', 'asc');
+        $sort = $request->get('sort', 'name_asc');
+        $direction = 'asc';
         
-        if (in_array($sort, ['name', 'price', 'duration'])) {
+        if (str_ends_with($sort, '_asc')) {
+            $sort = str_replace('_asc', '', $sort);
+            $direction = 'asc';
+        } elseif (str_ends_with($sort, '_desc')) {
+            $sort = str_replace('_desc', '', $sort);
+            $direction = 'desc';
+        }
+        
+        if (in_array($sort, ['name', 'price'])) {
             $query->orderBy($sort, $direction);
+        } elseif ($sort === 'duration' && $type === 'services') {
+            $query->orderBy('duration', $direction);
         }
 
-        $services = $query->paginate(12);
-        $branches = Branch::all();
+        $items = $query->paginate(12);
 
-        return view('client.services.index', compact('services', 'branches'));
+        return view('client.services.index', compact('items', 'type'));
     }
 
     /**
