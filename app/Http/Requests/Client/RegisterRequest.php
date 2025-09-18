@@ -22,7 +22,7 @@ class RegisterRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'required|string|max:20',
             'password' => 'required|string|min:8|confirmed',
         ];
     }
@@ -38,6 +38,7 @@ class RegisterRequest extends FormRequest
             'email.required' => 'Поле email обязательно для заполнения.',
             'email.email' => 'Поле email должно содержать корректный email адрес.',
             'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
+            'phone.required' => 'Поле телефон обязательно для заполнения.',
             'phone.max' => 'Номер телефона не должен превышать 20 символов.',
             'password.required' => 'Поле пароль обязательно для заполнения.',
             'password.min' => 'Пароль должен содержать минимум 8 символов.',

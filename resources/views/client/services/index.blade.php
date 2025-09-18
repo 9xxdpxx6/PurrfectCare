@@ -118,10 +118,24 @@
                                             <i class="bi bi-eye me-1"></i>Подробнее
                                         </a>
                                     @endif
-                                    <a href="{{ route('client.appointment') }}" 
-                                       class="btn btn-primary">
-                                        <i class="bi bi-calendar-plus me-1"></i>Записаться
-                                    </a>
+                                    @auth
+                                        @if(auth()->user()->hasVerifiedEmail())
+                                            <a href="{{ route('client.appointment.branches') }}" 
+                                               class="btn btn-primary">
+                                                <i class="bi bi-calendar-plus me-1"></i>Записаться
+                                            </a>
+                                        @else
+                                            <a href="{{ route('client.verify-email') }}" 
+                                               class="btn btn-warning">
+                                                <i class="bi bi-envelope-exclamation me-1"></i>Подтвердить email
+                                            </a>
+                                        @endif
+                                    @else
+                                        <a href="{{ route('client.login') }}" 
+                                           class="btn btn-primary">
+                                            <i class="bi bi-calendar-plus me-1"></i>Записаться
+                                        </a>
+                                    @endauth
                                 </div>
                             </div>
                         </div>

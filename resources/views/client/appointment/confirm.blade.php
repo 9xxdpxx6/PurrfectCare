@@ -175,7 +175,7 @@
                                 <i class="bi bi-arrow-left me-2"></i>Назад
                             </a>
                             
-                            <button type="button" class="btn btn-primary btn-lg order-1 order-md-2" id="confirmAppointment">
+                            <button type="button" class="btn btn-primary order-1 order-md-2" id="confirmAppointment">
                                 <i class="bi bi-check-circle me-2"></i>Подтвердить запись
                             </button>
                         </div>

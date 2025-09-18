@@ -123,9 +123,21 @@
                             Свяжитесь с нами любым удобным способом или запишитесь на прием онлайн
                         </p>
                         <div class="d-flex gap-3 justify-content-center flex-wrap">
-                            <a href="{{ route('client.appointment') }}" class="btn btn-primary btn-lg">
-                                <i class="bi bi-calendar-plus me-2"></i>Записаться на прием
-                            </a>
+                            @auth
+                                @if(auth()->user()->hasVerifiedEmail())
+                                    <a href="{{ route('client.appointment.branches') }}" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-calendar-plus me-2"></i>Записаться на прием
+                                    </a>
+                                @else
+                                    <a href="{{ route('client.verify-email') }}" class="btn btn-warning btn-lg">
+                                        <i class="bi bi-envelope-exclamation me-2"></i>Подтвердить email
+                                    </a>
+                                @endif
+                            @else
+                                <a href="{{ route('client.login') }}" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-calendar-plus me-2"></i>Записаться на прием
+                                </a>
+                            @endauth
                         </div>
                     </div>
                 </div>

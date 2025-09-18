@@ -8,6 +8,7 @@ use App\Http\Controllers\Client\VisitController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\PetController;
 use App\Http\Controllers\Client\NotificationController;
+use App\Http\Controllers\Client\EmailVerificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,14 @@ Route::post('/login', [ClientController::class, 'authenticate'])->name('client.l
 Route::get('/register', [ClientController::class, 'register'])->name('client.register');
 Route::post('/register', [ClientController::class, 'store'])->name('client.register');
 Route::post('/logout', [ClientController::class, 'logout'])->name('client.logout');
+
+// Верификация email
+Route::get('/verify-email', [EmailVerificationController::class, 'show'])->name('client.verify-email');
+Route::post('/verify-email/resend', [EmailVerificationController::class, 'resend'])->name('client.verify-email.resend');
+Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('client.verify-email.verify');
+Route::get('/email-verified', [EmailVerificationController::class, 'verified'])->name('client.email-verified');
 
 // Личный кабинет (требует аутентификации)
 Route::middleware('auth')->group(function () {
@@ -78,8 +87,8 @@ Route::get('/terms', [ClientController::class, 'terms'])->name('client.terms');
 Route::get('/services', [ServiceController::class, 'index'])->name('client.services');
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('client.services.show');
 
-// Маршруты записи на прием
-Route::prefix('appointment')->name('client.appointment.')->group(function () {
+// Маршруты записи на прием (требует подтверждения email)
+Route::prefix('appointment')->name('client.appointment.')->middleware(['auth', 'email.verified'])->group(function () {
     Route::get('/branches', [AppointmentController::class, 'selectBranch'])->name('branches');
     Route::get('/veterinarians', [AppointmentController::class, 'selectVeterinarian'])->name('veterinarians');
     Route::get('/time', [AppointmentController::class, 'selectTime'])->name('time');

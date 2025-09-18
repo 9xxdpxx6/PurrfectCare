@@ -10,8 +10,9 @@
                 <div class="card-body p-5">
                     <!-- Заголовок -->
                     <div class="text-center mb-4">
-                        <h2 class="h3 fw-bold text-primary mb-2">
-                            <i class="bi bi-heart-pulse me-2"></i>Регистрация
+                        <h2 class="h3 fw-bold text-primary mb-2 d-flex align-items-center justify-content-center">
+                            <img src="{{ asset('logo.png') }}" alt="PurrfectCare" class="me-2" style="height: 28px;">
+                            Регистрация
                         </h2>
                         <p class="text-muted">Создайте аккаунт для записи на прием</p>
                     </div>
@@ -52,13 +53,12 @@
                         @csrf
                         
                         <div class="mb-3">
-                            <label for="name" class="form-label">Имя и фамилия *</label>
+                            <label for="name" class="form-label">ФИО</label>
                             <input type="text" 
                                    class="form-control @error('name') is-invalid @enderror" 
                                    id="name" 
                                    name="name" 
                                    value="{{ old('name') }}" 
-                                   required 
                                    autofocus>
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -66,20 +66,19 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email *</label>
+                            <label for="email" class="form-label">Email</label>
                             <input type="email" 
                                    class="form-control @error('email') is-invalid @enderror" 
                                    id="email" 
                                    name="email" 
-                                   value="{{ old('email') }}" 
-                                   required>
+                                   value="{{ old('email') }}">
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-3">
-                            <label for="phone" class="form-label">Телефон</label>
+                            <label for="phone" class="form-label">Телефон *</label>
                             <input type="tel" 
                                    class="form-control @error('phone') is-invalid @enderror" 
                                    id="phone" 
@@ -92,32 +91,29 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="password" class="form-label">Пароль *</label>
+                            <label for="password" class="form-label">Пароль</label>
                             <div class="input-group">
                                 <input type="password" 
                                        class="form-control @error('password') is-invalid @enderror" 
                                        id="password" 
-                                       name="password" 
-                                       required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                       name="password">
+                                <button class="btn btn-outline-primary" type="button" onclick="togglePassword('password')">
                                     <i class="bi bi-eye" id="password-icon"></i>
                                 </button>
                             </div>
-                            <div class="form-text">Минимум 8 символов</div>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-4">
-                            <label for="password_confirmation" class="form-label">Подтверждение пароля *</label>
+                            <label for="password_confirmation" class="form-label">Подтверждение пароля</label>
                             <div class="input-group">
                                 <input type="password" 
                                        class="form-control @error('password_confirmation') is-invalid @enderror" 
                                        id="password_confirmation" 
-                                       name="password_confirmation" 
-                                       required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')">
+                                       name="password_confirmation">
+                                <button class="btn btn-outline-primary" type="button" onclick="togglePassword('password_confirmation')">
                                     <i class="bi bi-eye" id="password_confirmation-icon"></i>
                                 </button>
                             </div>
@@ -180,17 +176,60 @@ document.getElementById('password').addEventListener('input', function() {
     const password = this.value;
     const confirmation = document.getElementById('password_confirmation');
     
+    // Убираем только JavaScript-созданные ошибки, не трогаем серверные
+    this.classList.remove('is-invalid');
+    let jsErrorDiv = this.parentNode.querySelector('.invalid-feedback.js-error');
+    if (jsErrorDiv) {
+        jsErrorDiv.remove();
+    }
+    
     if (password.length < 8) {
-        this.setCustomValidity('Пароль должен содержать минимум 8 символов');
-    } else {
-        this.setCustomValidity('');
+        this.classList.add('is-invalid');
+        // Добавляем сообщение об ошибке с классом js-error
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback js-error';
+        errorDiv.textContent = 'Пароль должен содержать минимум 8 символов';
+        this.parentNode.appendChild(errorDiv);
     }
     
     // Проверяем совпадение паролей
     if (confirmation.value && password !== confirmation.value) {
-        confirmation.setCustomValidity('Пароли не совпадают');
+        // Подсвечиваем оба поля при несовпадении
+        this.classList.add('is-invalid');
+        confirmation.classList.add('is-invalid');
+        
+        // Добавляем сообщение об ошибке для поля password
+        let passwordErrorDiv = this.parentNode.querySelector('.invalid-feedback.js-error');
+        if (!passwordErrorDiv) {
+            passwordErrorDiv = document.createElement('div');
+            passwordErrorDiv.className = 'invalid-feedback js-error';
+            this.parentNode.appendChild(passwordErrorDiv);
+        }
+        passwordErrorDiv.textContent = 'Пароли не совпадают';
+        
+        // Добавляем сообщение об ошибке для поля confirmation
+        let confErrorDiv = confirmation.parentNode.querySelector('.invalid-feedback.js-error');
+        if (!confErrorDiv) {
+            confErrorDiv = document.createElement('div');
+            confErrorDiv.className = 'invalid-feedback js-error';
+            confirmation.parentNode.appendChild(confErrorDiv);
+        }
+        confErrorDiv.textContent = 'Пароли не совпадают';
     } else {
-        confirmation.setCustomValidity('');
+        // Убираем подсветку с обоих полей при совпадении
+        this.classList.remove('is-invalid');
+        confirmation.classList.remove('is-invalid');
+        
+        // Удаляем сообщения об ошибках
+        let passwordErrorDiv = this.parentNode.querySelector('.invalid-feedback.js-error');
+        if (passwordErrorDiv) {
+            passwordErrorDiv.remove();
+        }
+        
+        let confErrorDiv = confirmation.parentNode.querySelector('.invalid-feedback.js-error');
+        if (confErrorDiv) {
+            confErrorDiv.remove();
+        }
     }
 });
 
@@ -198,10 +237,47 @@ document.getElementById('password_confirmation').addEventListener('input', funct
     const password = document.getElementById('password').value;
     const confirmation = this.value;
     
+    // Убираем только JavaScript-созданные ошибки, не трогаем серверные
+    this.classList.remove('is-invalid');
+    let jsErrorDiv = this.parentNode.querySelector('.invalid-feedback.js-error');
+    if (jsErrorDiv) {
+        jsErrorDiv.remove();
+    }
+    
     if (password !== confirmation) {
-        this.setCustomValidity('Пароли не совпадают');
+        // Подсвечиваем оба поля при несовпадении
+        this.classList.add('is-invalid');
+        document.getElementById('password').classList.add('is-invalid');
+        
+        // Добавляем сообщение об ошибке для текущего поля
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback js-error';
+        errorDiv.textContent = 'Пароли не совпадают';
+        this.parentNode.appendChild(errorDiv);
+        
+        // Добавляем сообщение об ошибке для поля password
+        let passwordErrorDiv = document.getElementById('password').parentNode.querySelector('.invalid-feedback.js-error');
+        if (!passwordErrorDiv) {
+            passwordErrorDiv = document.createElement('div');
+            passwordErrorDiv.className = 'invalid-feedback js-error';
+            document.getElementById('password').parentNode.appendChild(passwordErrorDiv);
+        }
+        passwordErrorDiv.textContent = 'Пароли не совпадают';
     } else {
-        this.setCustomValidity('');
+        // Убираем подсветку с обоих полей при совпадении
+        this.classList.remove('is-invalid');
+        document.getElementById('password').classList.remove('is-invalid');
+        
+        // Удаляем сообщения об ошибках
+        let errorDiv = this.parentNode.querySelector('.invalid-feedback.js-error');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+        
+        let passwordErrorDiv = document.getElementById('password').parentNode.querySelector('.invalid-feedback.js-error');
+        if (passwordErrorDiv) {
+            passwordErrorDiv.remove();
+        }
     }
 });
 </script>
@@ -233,10 +309,25 @@ document.getElementById('password_confirmation').addEventListener('input', funct
 
 .input-group .btn {
     border-left: none;
+    border-color: #dee2e6;
+    color: #6c757d;
 }
 
 .input-group .form-control:focus + .btn {
     border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.input-group .btn:hover {
+    border-color: #0d6efd;
+    color: #0d6efd;
+    background-color: transparent;
+}
+
+.input-group .btn:focus {
+    border-color: #0d6efd;
+    color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
 .text-primary {

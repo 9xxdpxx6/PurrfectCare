@@ -96,9 +96,21 @@
                     <div class="card-body p-4">
                         <h4 class="h5 mb-3">Записаться на услугу</h4>
                         <div class="d-grid gap-2">
-                            <a href="{{ route('client.appointment') }}" class="btn btn-primary btn-lg">
-                                <i class="bi bi-calendar-plus me-2"></i>Записаться онлайн
-                            </a>
+                            @auth
+                                @if(auth()->user()->hasVerifiedEmail())
+                                    <a href="{{ route('client.appointment.branches') }}" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-calendar-plus me-2"></i>Записаться онлайн
+                                    </a>
+                                @else
+                                    <a href="{{ route('client.verify-email') }}" class="btn btn-warning btn-lg">
+                                        <i class="bi bi-envelope-exclamation me-2"></i>Подтвердить email
+                                    </a>
+                                @endif
+                            @else
+                                <a href="{{ route('client.login') }}" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-calendar-plus me-2"></i>Записаться онлайн
+                                </a>
+                            @endauth
                             <a href="tel:+7XXXXXXXXXX" class="btn btn-outline-primary">
                                 <i class="bi bi-telephone me-2"></i>Позвонить
                             </a>

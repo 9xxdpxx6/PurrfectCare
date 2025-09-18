@@ -19,9 +19,21 @@
                     <a href="{{ route('client.services') }}" class="btn btn-outline-light btn-lg">
                         <i class="bi bi-list-ul me-2"></i>Наши услуги
                     </a>
-                    <a href="{{ route('client.appointment') }}" class="btn btn-light btn-lg">
-                        <i class="bi bi-calendar-plus me-2"></i>Записаться на прием
-                    </a>
+                    @auth
+                        @if(auth()->user()->hasVerifiedEmail())
+                            <a href="{{ route('client.appointment.branches') }}" class="btn btn-light btn-lg">
+                                <i class="bi bi-calendar-plus me-2"></i>Записаться на прием
+                            </a>
+                        @else
+                            <a href="{{ route('client.verify-email') }}" class="btn btn-warning btn-lg">
+                                <i class="bi bi-envelope-exclamation me-2"></i>Подтвердить email
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('client.login') }}" class="btn btn-light btn-lg">
+                            <i class="bi bi-calendar-plus me-2"></i>Записаться на прием
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>
@@ -307,9 +319,21 @@
                     Выберите удобное время и запишитесь на прием к нашим специалистам
                 </p>
                 <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                    <a href="{{ route('client.appointment') }}" class="btn btn-primary btn-lg">
-                        <i class="bi bi-calendar-plus me-2"></i>Записаться онлайн
-                    </a>
+                    @auth
+                        @if(auth()->user()->hasVerifiedEmail())
+                            <a href="{{ route('client.appointment.branches') }}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-calendar-plus me-2"></i>Записаться онлайн
+                            </a>
+                        @else
+                            <a href="{{ route('client.verify-email') }}" class="btn btn-warning btn-lg">
+                                <i class="bi bi-envelope-exclamation me-2"></i>Подтвердить email
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('client.login') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-calendar-plus me-2"></i>Записаться онлайн
+                        </a>
+                    @endauth
                     <a href="{{ route('client.contacts') }}" class="btn btn-outline-primary btn-lg">
                         <i class="bi bi-telephone me-2"></i>Позвонить нам
                     </a>

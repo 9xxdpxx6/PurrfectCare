@@ -166,11 +166,14 @@ class ClientController extends Controller
 
         Auth::login($user);
 
+        // Отправляем письмо подтверждения email
+        $user->sendEmailVerificationNotification();
+
         // Отправляем уведомление о регистрации
         $user->notify(new ClientRegistrationNotification($user));
 
-        return redirect()->route('client.index')
-            ->with('success', 'Регистрация прошла успешно! Добро пожаловать!');
+        return redirect()->route('client.verify-email')
+            ->with('success', 'Регистрация прошла успешно! Проверьте email для подтверждения адреса.');
     }
 
     /**

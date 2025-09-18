@@ -11,8 +11,9 @@ use Spatie\Permission\Traits\HasRoles;
 use App\Models\Traits\Filterable;
 use App\Models\Traits\HasDeleteDependenciesCheck;
 use App\Traits\NormalizesPhone;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, Filterable, HasDeleteDependenciesCheck, NormalizesPhone, HasRoles;
 
@@ -83,5 +84,39 @@ class User extends Authenticatable
         if ($value) {
             $this->attributes['phone'] = $this->normalizePhone($value);
         }
+    }
+
+    /**
+     * Determine if the user has verified their email address.
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    /**
+     * Mark the given user's email as verified.
+     */
+    public function markEmailAsVerified(): bool
+    {
+        return $this->forceFill([
+            'email_verified_at' => $this->freshTimestamp(),
+        ])->save();
+    }
+
+    /**
+     * Get the email address that should be used for verification.
+     */
+    public function getEmailForVerification(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * Send the email verification notification.
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new \App\Notifications\ClientEmailVerificationNotification);
     }
 }

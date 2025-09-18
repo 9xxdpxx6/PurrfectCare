@@ -19,8 +19,9 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="{{ route('client.index') }}">
-                <i class="bi bi-heart-pulse me-2"></i>PurrfectCare
+            <a class="navbar-brand fw-bold text-primary d-flex align-items-center" href="{{ route('client.index') }}">
+                <img src="{{ asset('logo.png') }}" alt="PurrfectCare" class="me-2" style="height: 32px;">
+                PurrfectCare
             </a>
             
             <button class="navbar-toggler" type="button" id="navbarToggler" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -117,8 +118,9 @@
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <h5 class="text-primary mb-3">
-                        <a href="{{ route('client.index') }}" class="text-primary text-decoration-none">
-                            <i class="bi bi-heart-pulse me-2"></i>PurrfectCare
+                        <a href="{{ route('client.index') }}" class="text-primary text-decoration-none d-flex align-items-center">
+                            <img src="{{ asset('logo.png') }}" alt="PurrfectCare" class="me-2" style="height: 28px;">
+                            PurrfectCare
                         </a>
                     </h5>
                     <p class="text-muted">Профессиональная ветеринарная помощь для ваших питомцев. Забота, которой они заслуживают.</p>
