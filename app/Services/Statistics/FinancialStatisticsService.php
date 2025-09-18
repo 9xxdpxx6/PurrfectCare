@@ -97,6 +97,19 @@ class FinancialStatisticsService
             ->sortByDesc('revenue');
     }
 
+    /**
+     * Получить среднюю дневную выручку за период
+     */
+    public function getAverageDailyRevenue($startDate, $endDate)
+    {
+        $totalRevenue = $this->getTotalRevenue($startDate, $endDate);
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        $daysCount = $start->diffInDays($end) + 1; // +1 чтобы включить оба дня
+        
+        return $daysCount > 0 ? round($totalRevenue / $daysCount, 0) : 0;
+    }
+
     public function getRevenueData($startDate, $endDate)
     {
         $data = [];

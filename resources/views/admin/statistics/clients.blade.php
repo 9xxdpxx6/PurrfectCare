@@ -82,11 +82,11 @@
         <div class="card kpi-outline warning h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-star fs-1"></i>
+                    <i class="bi bi-cash-stack fs-1"></i>
                 </div>
-                <h3>{{ $topClients->count() }}</h3>
-                <p class="card-text text-muted mb-1">Топ клиентов</p>
-                <small class="text-muted d-block">Клиенты с наибольшими заказами</small>
+                <h3>{{ number_format($clientsData['average_order_value'], 0, ',', ' ') }} ₽</h3>
+                <p class="card-text text-muted mb-1">Средний чек</p>
+                <small class="text-muted d-block">Средняя сумма заказа</small>
             </div>
         </div>
     </div>

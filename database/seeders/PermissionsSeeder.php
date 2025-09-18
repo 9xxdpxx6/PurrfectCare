@@ -71,7 +71,7 @@ class PermissionsSeeder extends Seeder
         // Assign permissions to manager
         $managerRole->givePermissionTo([
             'main.read',
-            'notifications.read',
+            'notifications.read', 'notifications.update',
             'orders.create', 'orders.read', 'orders.update', 'orders.export',
             'visits.create', 'visits.read', 'visits.update', 'visits.export',
             'clients.create', 'clients.read', 'clients.update', 'clients.export',
@@ -86,7 +86,7 @@ class PermissionsSeeder extends Seeder
         // Assign permissions to veterinarian
         $veterinarianRole->givePermissionTo([
             'main.read',
-            'notifications.read',
+            'notifications.read', 'notifications.update',
             'visits.create', 'visits.read', 'visits.update', 'visits.export',
             'vaccinations.create', 'vaccinations.read', 'vaccinations.update', 'vaccinations.export',
             'lab_tests.create', 'lab_tests.read', 'lab_tests.update', 'lab_tests.export',
@@ -100,7 +100,7 @@ class PermissionsSeeder extends Seeder
         // Assign permissions to accountant
         $accountantRole->givePermissionTo([
             'main.read',
-            'notifications.read',
+            'notifications.read', 'notifications.update',
             'orders.read', 'orders.export',
             'visits.read', 'visits.export',
             'clients.read', 'clients.export',

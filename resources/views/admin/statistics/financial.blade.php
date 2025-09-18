@@ -103,28 +103,11 @@
         <div class="card kpi-outline warning h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
                 <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="bi bi-building fs-1"></i>
+                    <i class="bi bi-calendar-day fs-1"></i>
                 </div>
-                <h3>{{ $branchRevenue->count() }}</h3>
-                <p class="card-text text-muted mb-1">
-                    @php
-                        $branchCount = $branchRevenue->count();
-                        $lastDigit = $branchCount % 10;
-                        $lastTwoDigits = $branchCount % 100;
-                        
-                        if ($lastTwoDigits >= 11 && $lastTwoDigits <= 14) {
-                            $branchText = 'Активных филиалов';
-                        } elseif ($lastDigit == 1) {
-                            $branchText = 'Активный филиал';
-                        } elseif ($lastDigit >= 2 && $lastDigit <= 4) {
-                            $branchText = 'Активных филиала';
-                        } else {
-                            $branchText = 'Активных филиалов';
-                        }
-                    @endphp
-                    {{ $branchText }}
-                </p>
-                <small class="text-muted d-block">Филиалы с заказами</small>
+                <h3>{{ number_format($averageDailyRevenue, 0, ',', ' ') }} ₽</h3>
+                <p class="card-text text-muted mb-1">Средняя дневная выручка</p>
+                <small class="text-muted d-block">Средний доход в день</small>
             </div>
         </div>
     </div>

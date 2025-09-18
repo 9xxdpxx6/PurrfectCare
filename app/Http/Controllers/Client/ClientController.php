@@ -147,7 +147,7 @@ class ClientController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'Неверные учетные данные.',
+            'email' => 'Неверный логин или пароль.',
         ])->onlyInput('email');
     }
 

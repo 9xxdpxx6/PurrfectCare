@@ -59,7 +59,11 @@ class ClientStatisticsService
         $newClientsRevenuePercentage = $totalRevenue > 0 ? round(($newClientsRevenue / $totalRevenue) * 100, 1) : 0;
         $repeatClientsRevenuePercentage = $totalRevenue > 0 ? round(($repeatClientsRevenue / $totalRevenue) * 100, 1) : 0;
         
-
+        // Средний чек за период
+        $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('is_paid', true)
+            ->count();
+        $averageOrderValue = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 0) : 0;
         
         return [
             'new_clients' => $newClients,
@@ -72,6 +76,7 @@ class ClientStatisticsService
             'total_revenue' => $totalRevenue,
             'new_clients_revenue_percentage' => $newClientsRevenuePercentage,
             'repeat_clients_revenue_percentage' => $repeatClientsRevenuePercentage,
+            'average_order_value' => $averageOrderValue,
         ];
     }
 

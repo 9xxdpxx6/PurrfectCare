@@ -44,7 +44,7 @@ class AdminLoginController extends Controller {
         }
 
         throw ValidationException::withMessages([
-            'email' => ['Неверные учетные данные.'],
+            'email' => ['Неверный логин или пароль.'],
         ]);
     }
 

@@ -74,10 +74,10 @@ class NotificationController extends AdminController
      */
     public function markAsRead(string $notificationId): JsonResponse
     {
+        $this->authorize('notifications.update');
+        
         // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
         $success = $this->notificationService->markAsRead($notificationId);
-
-
 
         return response()->json([
             'success' => $success
@@ -89,10 +89,10 @@ class NotificationController extends AdminController
      */
     public function markAllAsRead(): JsonResponse
     {
+        $this->authorize('notifications.update');
+        
         // Оптимизация: используем сервис с уже оптимизированными запросами для работы с индексами
         $success = $this->notificationService->markAllAsRead();
-
-
 
         return response()->json([
             'success' => $success

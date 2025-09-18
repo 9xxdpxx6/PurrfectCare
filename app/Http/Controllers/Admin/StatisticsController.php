@@ -126,6 +126,9 @@ class StatisticsController extends AdminController
         // Выручка по филиалам
         $branchRevenue = $this->financialService->getBranchRevenue($startDate, $endDate);
         
+        // Средняя дневная выручка
+        $averageDailyRevenue = $this->financialService->getAverageDailyRevenue($startDate, $endDate);
+        
         // Топ услуг
         $topServices = $this->financialService->getTopServices($startDate, $endDate);
         
@@ -135,6 +138,7 @@ class StatisticsController extends AdminController
             'totalRevenue',
             'categoryRevenue', 
             'branchRevenue', 
+            'averageDailyRevenue',
             'topServices', 
             'period', 
             'startDate', 

@@ -312,6 +312,13 @@ class NotificationsPage {
                 const notificationId = notificationItem.dataset.id;
                 this.markAsRead(notificationId);
             }
+            
+            // Проверяем, кликнули ли по кнопке "Отметить все"
+            if (e.target.closest('#markAllAsRead')) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.markAllAsRead();
+            }
         });
         
     }
@@ -605,9 +612,7 @@ class NotificationsPage {
                 }
                 
                 // Обновляем счетчик в header
-                if (window.notificationManager) {
-                    window.notificationManager.loadNotifications();
-                }
+                this.updateHeaderCounter();
             } else {
                 // Если ответ не успешный, показываем ошибку
                 const errorData = await response.json().catch(() => ({}));
@@ -669,9 +674,7 @@ class NotificationsPage {
                 });
 
                 // Обновляем счетчик в header
-                if (window.notificationManager) {
-                    window.notificationManager.loadNotifications();
-                }
+                this.updateHeaderCounter();
 
                 // Показываем уведомление об успехе
                 this.showSuccessMessage('Все уведомления отмечены как прочитанные');
@@ -692,7 +695,7 @@ class NotificationsPage {
             const button = document.getElementById('markAllAsRead');
             if (button) {
                 button.disabled = false;
-                button.innerHTML = '<i class="bi bi-check-all"></i> Отметить все как прочитанные';
+                button.innerHTML = '<i class="bi bi-check-all"></i> Отметить все';
             }
         }
     }
@@ -906,6 +909,47 @@ class NotificationsPage {
         setTimeout(() => {
             alert.remove();
         }, 3000);
+    }
+
+    updateHeaderCounter() {
+        // Обновляем счетчик в header через notificationManager
+        if (window.notificationManager) {
+            window.notificationManager.loadNotifications();
+        }
+        
+        // Также можно обновить счетчик напрямую через API
+        this.loadUnreadCount();
+    }
+
+    async loadUnreadCount() {
+        try {
+            const response = await fetch('/admin/notifications/recent', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': this.csrfToken
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.updateNotificationBadge(data.unread_count);
+            }
+        } catch (error) {
+            console.error('Error loading unread count:', error);
+        }
+    }
+
+    updateNotificationBadge(count) {
+        // Обновляем бейдж с количеством непрочитанных уведомлений
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
     }
 }
 
