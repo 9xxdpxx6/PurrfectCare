@@ -77,7 +77,7 @@ class TelegramApiService
         
         // Делаем синхронный запрос для получения ответа
         try {
-            $response = Http::timeout(5)->post($url, $data);
+            $response = Http::telegram()->post($url, $data);
             
             if ($response->successful()) {
                 $responseData = $response->json();

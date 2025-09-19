@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +25,20 @@ class AppServiceProvider extends ServiceProvider
     {
         // Настройка глобальной пагинации
         Paginator::defaultView('vendor.pagination.custom');
+        
+        // Настройка HTTP клиента для Telegram API
+        Http::macro('telegram', function () {
+            $options = [
+                'timeout' => 10,
+            ];
+            
+            // Отключаем проверку SSL только в локальной разработке
+            if (app()->environment('local', 'testing')) {
+                $options['verify'] = false;
+            }
+            
+            return Http::withOptions($options);
+        });
         
         // Настройка Spatie Permissions для работы с разными guard'ами
         Gate::before(function ($user, $ability) {

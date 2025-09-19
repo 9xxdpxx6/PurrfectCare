@@ -570,6 +570,19 @@ class NotificationsPage {
                         <i class="bi bi-list"></i> Все клиенты
                     </a>`;
                     break;
+                    
+                case 'website_booking':
+                    // Для записи через сайт - ссылка на конкретный приём
+                    if (data.data.visit_id) {
+                        links += `<a href="/admin/visits/${data.data.visit_id}" class="btn btn-sm btn-outline-info me-2 mb-2">
+                            <i class="bi bi-calendar-check"></i> Просмотр приёма
+                        </a>`;
+                    }
+                    // Общая ссылка на все приёмы
+                    links += `<a href="/admin/visits" class="btn btn-sm btn-outline-secondary me-2 mb-2">
+                        <i class="bi bi-list"></i> Все приёмы
+                    </a>`;
+                    break;
             }
         }
         

@@ -17,7 +17,7 @@ class EmailVerificationController extends Controller
     /**
      * Показать страницу с информацией о необходимости подтверждения email
      */
-    public function show(): View
+    public function show()
     {
         $user = Auth::user();
         

@@ -9,6 +9,7 @@ use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\PetController;
 use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\EmailVerificationController;
+use App\Http\Controllers\Client\PasswordResetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,12 @@ Route::post('/login', [ClientController::class, 'authenticate'])->name('client.l
 Route::get('/register', [ClientController::class, 'register'])->name('client.register');
 Route::post('/register', [ClientController::class, 'store'])->name('client.register');
 Route::post('/logout', [ClientController::class, 'logout'])->name('client.logout');
+
+// Сброс пароля
+Route::get('/forgot-password', [PasswordResetController::class, 'showForgotPasswordForm'])->name('client.password.request');
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('client.password.email');
+Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('client.password.reset');
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('client.password.update');
 
 // Верификация email
 Route::get('/verify-email', [EmailVerificationController::class, 'show'])->name('client.verify-email');
