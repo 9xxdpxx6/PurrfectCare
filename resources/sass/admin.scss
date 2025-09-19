@@ -446,6 +446,7 @@
         margin: 0 0.125rem;
         border: 1px solid #dee2e6;
         color: #0d6efd;
+        background-color: #fff;
         transition: all 0.2s ease;
         
         &:hover {
@@ -457,20 +458,22 @@
         
         &:focus {
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            background-color: #fff;
+            border-color: #86b7fe;
         }
     }
     
     .page-item {
         &.active .page-link {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-            color: white;
+            background-color: #0d6efd !important;
+            border-color: #0d6efd !important;
+            color: white !important;
         }
         
         &.disabled .page-link {
-            color: #6c757d;
-            background-color: #fff;
-            border-color: #dee2e6;
+            color: #6c757d !important;
+            background-color: #fff !important;
+            border-color: #dee2e6 !important;
             cursor: not-allowed;
         }
     }
@@ -490,5 +493,39 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
+    }
+}
+
+// Дополнительные стили для темной темы админки
+[data-bs-theme="dark"] .pagination {
+    .page-link {
+        background-color: #212529;
+        border-color: #495057;
+        color: #0d6efd;
+        
+        &:hover {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: white;
+        }
+        
+        &:focus {
+            background-color: #212529;
+            border-color: #86b7fe;
+        }
+    }
+    
+    .page-item {
+        &.active .page-link {
+            background-color: #0d6efd !important;
+            border-color: #0d6efd !important;
+            color: white !important;
+        }
+        
+        &.disabled .page-link {
+            color: #6c757d !important;
+            background-color: #212529 !important;
+            border-color: #495057 !important;
+        }
     }
 }

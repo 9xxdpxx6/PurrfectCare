@@ -478,6 +478,15 @@ class DatabaseSeeder extends Seeder
             $employeeSpecialties = $specialties->random($specialtyCount);
             $employee->specialties()->attach($employeeSpecialties->pluck('id'));
             
+            // Назначаем роль на основе первой специальности сотрудника
+            $firstSpecialty = $employeeSpecialties->first();
+            if ($firstSpecialty) {
+                $roleName = $this->getRoleBySpecialty($firstSpecialty);
+                if ($roleName) {
+                    $employee->assignRole($roleName);
+                }
+            }
+            
             // Каждый сотрудник привязан к 1-2 филиалам
             $branchCount = fake()->randomElement([1, 1, 1, 1, 1, 1, 1, 1, 2, 2]);
             $employeeBranches = $branches->random($branchCount);
@@ -637,5 +646,38 @@ class DatabaseSeeder extends Seeder
             
         echo "Максимум заказов на приём: " . ($maxOrdersPerVisit ? $maxOrdersPerVisit->order_count : 0) . "\n";
         echo "Максимум приёмов на заказ: " . ($maxVisitsPerOrder ? $maxVisitsPerOrder->visit_count : 0) . "\n";
+    }
+    
+    /**
+     * Получить роль по специальности
+     */
+    private function getRoleBySpecialty($specialty)
+    {
+        // Врачебные специальности получают роль veterinarian
+        if ($specialty->is_veterinarian) {
+            return 'veterinarian';
+        }
+
+        // Не врачебные специальности получают роли в зависимости от названия
+        $specialtyName = strtolower($specialty->name);
+        
+        // Управленческие должности
+        if (str_contains($specialtyName, 'управляющий') || 
+            str_contains($specialtyName, 'администратор') ||
+            str_contains($specialtyName, 'менеджер')) {
+            return 'manager';
+        }
+        
+        // Помощники врачей и медицинский персонал
+        if (str_contains($specialtyName, 'ассистент') || 
+            str_contains($specialtyName, 'фельдшер') ||
+            str_contains($specialtyName, 'лаборант') ||
+            str_contains($specialtyName, 'стажёр')) {
+            return 'veterinarian';
+        }
+        
+        // Специальности без системных ролей (грумер, санитар)
+        // Возвращаем null - роль не назначается
+        return null;
     }
 }
