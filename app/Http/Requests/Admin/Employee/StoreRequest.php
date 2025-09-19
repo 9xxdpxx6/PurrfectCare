@@ -21,6 +21,7 @@ class StoreRequest extends FormRequest
             'email' => 'required|email|max:255|unique:employees,email',
             'phone' => 'required|string|max:20',
             'password' => 'nullable|string',
+            'is_active' => 'boolean',
             'specialties' => 'required|array|min:1',
             'specialties.*' => 'exists:specialties,id',
             'branches' => 'required|array|min:1',

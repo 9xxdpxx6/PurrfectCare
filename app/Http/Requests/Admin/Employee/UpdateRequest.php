@@ -20,6 +20,7 @@ class UpdateRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:employees,email,' . $this->route('employee'),
             'phone' => 'required|string|max:20',
+            'is_active' => 'boolean',
             'specialties' => 'required|array|min:1',
             'specialties.*' => 'exists:specialties,id',
             'branches' => 'required|array|min:1',

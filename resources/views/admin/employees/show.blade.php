@@ -33,6 +33,9 @@
                             <i class="bi bi-person-vcard"></i>
                         </span>
                     @endif
+                    @if(!$employee->is_active)
+                        <span class="badge bg-secondary ms-2">Пользователь не действительный</span>
+                    @endif
                 </h5>
             </div>
             <div class="card-body">

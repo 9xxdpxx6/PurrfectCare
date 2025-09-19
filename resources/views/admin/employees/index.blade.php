@@ -74,7 +74,7 @@
             <div class="card h-100 border-0 border-bottom shadow-sm d-flex flex-lg-row align-items-lg-center @if($loop->iteration % 2 == 1) bg-body-tertiary @endif">
                 <div class="card-body flex-grow-1 d-flex flex-column flex-lg-row align-items-lg-center">
                     <div class="flex-grow-1">
-                        <h5 class="card-title mb-3">
+                        <h5 class="card-title mb-3 @if(!$employee->is_active) text-secondary @endif">
                             {{ $employee->name }}
                             @if($employee->specialties->where('is_veterinarian', true)->count() > 0)
                                 <span class="text-success ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Медицинский персонал">

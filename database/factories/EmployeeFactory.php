@@ -79,23 +79,23 @@ class EmployeeFactory extends Factory
         // Не врачебные специальности получают роли в зависимости от названия
         $specialtyName = strtolower($specialty->name);
         
-        if (str_contains($specialtyName, 'управляющий') || str_contains($specialtyName, 'администратор')) {
+        // Управленческие должности
+        if (str_contains($specialtyName, 'управляющий') || 
+            str_contains($specialtyName, 'администратор') ||
+            str_contains($specialtyName, 'менеджер')) {
             return 'manager';
         }
         
-        if (str_contains($specialtyName, 'менеджер') || str_contains($specialtyName, 'закупок')) {
-            return 'manager';
+        // Помощники врачей и медицинский персонал
+        if (str_contains($specialtyName, 'ассистент') || 
+            str_contains($specialtyName, 'фельдшер') ||
+            str_contains($specialtyName, 'лаборант') ||
+            str_contains($specialtyName, 'стажёр')) {
+            return 'veterinarian';
         }
         
-        if (str_contains($specialtyName, 'лаборант') || str_contains($specialtyName, 'фельдшер')) {
-            return 'veterinarian'; // Могут работать с анализами
-        }
-        
-        if (str_contains($specialtyName, 'ассистент') || str_contains($specialtyName, 'стажёр')) {
-            return 'veterinarian'; // Помогают врачам
-        }
-        
-        // По умолчанию для остальных специальностей
-        return 'veterinarian';
+        // Специальности без системных ролей (грумер, санитар)
+        // Возвращаем null - роль не назначается
+        return null;
     }
 }

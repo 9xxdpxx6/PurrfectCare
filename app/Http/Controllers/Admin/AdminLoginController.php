@@ -36,6 +36,14 @@ class AdminLoginController extends Controller {
                 ]);
             }
             
+            // Проверяем, что сотрудник активен
+            if (!$employee->is_active) {
+                Auth::guard('admin')->logout();
+                throw ValidationException::withMessages([
+                    'email' => ['Ваш аккаунт деактивирован. Обратитесь к администратору.'],
+                ]);
+            }
+            
             // Обновляем время последнего входа
             $employee->update(['last_login_at' => now()]);
             

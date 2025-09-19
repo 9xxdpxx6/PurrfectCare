@@ -86,7 +86,7 @@ class Handler extends ExceptionHandler
      */
     protected function isAdminRequest(Request $request): bool
     {
-        // Проверяем URL путь
+        // Проверяем URL путь - это основной критерий
         if ($request->is('admin/*')) {
             return true;
         }
@@ -94,12 +94,6 @@ class Handler extends ExceptionHandler
         // Проверяем имя маршрута
         if ($request->routeIs('admin.*')) {
             return true;
-        }
-        
-        // Дополнительная проверка: если пользователь не авторизован как админ, 
-        // но пытается получить доступ к админским данным, считаем это клиентским запросом
-        if (!Auth::guard('admin')->check()) {
-            return false;
         }
         
         return false;
@@ -115,6 +109,16 @@ class Handler extends ExceptionHandler
         
         // Создаем HTTP исключение с нужным статусом
         $httpException = new HttpException($statusCode, $e->getMessage(), $e);
+        
+        // Устанавливаем контекст аутентификации для @can директив
+        $adminUser = Auth::guard('admin')->user();
+        if ($adminUser) {
+            // Устанавливаем пользователя для текущего запроса
+            app('auth')->setUser($adminUser);
+            
+            // Устанавливаем для Gate проверок
+            \Illuminate\Support\Facades\Gate::forUser($adminUser);
+        }
         
         // Рендерим кастомный шаблон
         return response()->view('admin.errors.error', [

@@ -66,6 +66,15 @@
             @error('roles')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         @endcan
+        <div class="col-md-6 col-lg-4">
+            <div class="form-check">
+                <input class="form-check-input @error('is_active') is-invalid @enderror" type="checkbox" id="is_active" name="is_active" value="1" @checked(old('is_active', $employee->is_active))>
+                <label class="form-check-label" for="is_active">
+                    Действующий сотрудник
+                </label>
+                @error('is_active')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+        </div>
     </div>
     <div class="mt-4 d-flex flex-column flex-md-row">
         <a href="{{ route('admin.employees.index') }}" class="btn btn-outline-secondary">

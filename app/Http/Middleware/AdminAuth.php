@@ -27,6 +27,12 @@ class AdminAuth
             return redirect('/admin/login')->with('error', 'У вас нет доступа к админ-панели');
         }
 
+        // Проверяем, что сотрудник активен
+        if (!$user->is_active) {
+            Auth::guard('admin')->logout();
+            return redirect('/admin/login')->with('error', 'Ваш аккаунт деактивирован. Обратитесь к администратору.');
+        }
+
         return $next($request);
     }
 }
