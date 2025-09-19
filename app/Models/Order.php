@@ -91,7 +91,7 @@ class Order extends Model
 
     public function labTests()
     {
-        return $this->items()->where('item_type', 'App\Models\LabTest');
+        return $this->items()->where('item_type', 'App\Models\LabTestType');
     }
 
     public function vaccinations()

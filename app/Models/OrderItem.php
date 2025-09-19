@@ -57,7 +57,6 @@ class OrderItem extends Model
     public function getItemNameAttribute()
     {
         try {
-            
             // Пробуем получить через itemable
             if ($this->relationLoaded('itemable') && $this->itemable) {
                 return $this->itemable->name ?? 'Без названия';
@@ -71,14 +70,7 @@ class OrderItem extends Model
             // Загружаем отношение если оно не загружено
             $itemable = $this->itemable;
             if ($itemable) {
-                // Для LabTest нужно загрузить labTestType если не загружен
-                if ($this->item_type === 'App\Models\LabTest' && $itemable instanceof \App\Models\LabTest) {
-                    if (!$itemable->relationLoaded('labTestType')) {
-                        $itemable->load('labTestType:id,name');
-                    }
-                }
-                $name = $itemable->name ?? 'Без названия';
-                return $name;
+                return $itemable->name ?? 'Без названия';
             }
             
             return 'Элемент не найден';

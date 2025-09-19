@@ -48,6 +48,12 @@ class CheckDrugStockPerBranch implements Rule
 
         // Получаем количество препаратов в филиале
         $branch = Branch::find($this->branchId);
+        
+        // Если филиал не найден, пропускаем проверку
+        if (!$branch) {
+            return true;
+        }
+        
         $branchDrugs = $branch->drugs()
             ->withPivot('quantity')
             ->whereIn('drugs.id', $drugIds)

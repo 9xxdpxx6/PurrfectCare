@@ -363,7 +363,7 @@
                         </div>
                         <div id="labTestItems">
                             @php
-                                $labTestItems = $item->items->where('item_type', 'App\Models\LabTest');
+                                $labTestItems = $item->items->where('item_type', 'App\Models\LabTestType');
                                 // dd($labTestItems->toArray());
                             @endphp
                             @foreach($labTestItems as $index => $orderItem)
@@ -723,11 +723,21 @@
                     const itemIdSelect = item.querySelector('select[name*="[item_id]"]');
                     const quantityInput = item.querySelector('input[name*="[quantity]"]');
                     const priceInput = item.querySelector('input[name*="[unit_price]"]');
+                    const itemType = item.getAttribute('data-item-type');
                     
                     // Проверяем, есть ли выбранный элемент и заполнены ли обязательные поля
                     const hasItemId = itemIdSelect && itemIdSelect.value;
-                    const hasQuantity = quantityInput && parseFloat(quantityInput.value) > 0;
                     const hasPrice = priceInput && parseFloat(priceInput.value) > 0;
+                    
+                    // Для анализов и вакцинаций количество всегда 1 (hidden input)
+                    let hasQuantity = true;
+                    if (itemType === 'lab_test' || itemType === 'vaccination') {
+                        // Для анализов и вакцинаций проверяем только наличие hidden input с quantity
+                        hasQuantity = quantityInput && parseFloat(quantityInput.value) > 0;
+                    } else {
+                        // Для услуг и препаратов проверяем обычное поле quantity
+                        hasQuantity = quantityInput && parseFloat(quantityInput.value) > 0;
+                    }
                     
                     // Если элемент не заполнен полностью, удаляем его
                     if (!hasItemId || !hasQuantity || !hasPrice) {
@@ -1208,7 +1218,7 @@
                 }
                 
                 // Обработчики для расчета суммы
-                const quantityInput = item.querySelector('.item-quantity');
+                const quantityInput = item.querySelector('input[name*="[quantity]"]');
                 const priceInput = item.querySelector('.item-price');
                 
                 if (quantityInput) {
@@ -1269,14 +1279,17 @@
         }
         
         // Обработчики для расчета суммы
-        const quantityInput = container.querySelector(`[data-item-index="${itemIndex}"] .item-quantity`);
+        const quantityInput = container.querySelector(`[data-item-index="${itemIndex}"] input[name*="[quantity]"]`);
         const priceInput = container.querySelector(`[data-item-index="${itemIndex}"] .item-price`);
         
         // Для анализов и вакцинаций количество всегда 1, для остальных - обычная обработка
         if (itemType === 'lab_test' || itemType === 'vaccination') {
             if (quantityInput) {
                 quantityInput.value = '1';
-                quantityInput.readOnly = true;
+                // Для hidden input не устанавливаем readOnly
+                if (quantityInput.type !== 'hidden') {
+                    quantityInput.readOnly = true;
+                }
             }
             if (priceInput) {
                 priceInput.addEventListener('input', calculateItemTotal);
@@ -1350,7 +1363,7 @@
                             });
                             drugSelect.tomselect.setValue(drug.id); // Устанавливаем выбранный препарат
                         }
-                        const quantityInput = lastDrugItem.querySelector('.item-quantity');
+                        const quantityInput = lastDrugItem.querySelector('input[name*="[quantity]"]');
                         if (quantityInput) {
                             quantityInput.value = drug.dosage; // Устанавливаем дозировку
                             quantityInput.readOnly = true; // Делаем поле только для чтения вместо отключения
@@ -1528,7 +1541,7 @@
         const itemDiv = this.closest ? this.closest('.order-item') : this;
         const itemType = itemDiv.getAttribute('data-item-type');
         
-        const quantityInput = itemDiv.querySelector('.item-quantity');
+        const quantityInput = itemDiv.querySelector('input[name*="[quantity]"]');
         const priceInput = itemDiv.querySelector('.item-price');
         
         // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
@@ -1560,7 +1573,7 @@
         
         items.forEach(item => {
             const itemType = item.getAttribute('data-item-type');
-            const quantityInput = item.querySelector('.item-quantity');
+            const quantityInput = item.querySelector('input[name*="[quantity]"]');
             const priceInput = item.querySelector('.item-price');
             
             // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
@@ -1611,7 +1624,7 @@
                         const drugId = drugSelect.value;
                         if (drugIds.includes(drugId)) {
                             // Помечаем препарат как препарат вакцинации
-                            const quantityInput = drugItem.querySelector('.item-quantity');
+                            const quantityInput = drugItem.querySelector('input[name*="[quantity]"]');
                             if (quantityInput) {
                                 quantityInput.setAttribute('data-vaccination-drug', 'true');
                                 quantityInput.readOnly = true;

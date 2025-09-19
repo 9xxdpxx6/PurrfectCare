@@ -25,7 +25,7 @@ class StoreRequest extends FormRequest
             'total' => 'required|numeric|min:0|max:999999.99',
             'is_paid' => 'boolean',
             'is_closed' => ['boolean', new OrderCompletionRule],
-            'items' => ['required', 'array', 'min:1', new CheckDrugStockPerBranch($this->input('branch_id'))],
+            'items' => ['required', 'array', 'min:1', new CheckDrugStockPerBranch($this->input('branch_id') ?? 0)],
             'items.*.item_type' => 'required|in:service,drug,lab_test,vaccination',
             'items.*.item_id' => 'required|integer',
             'items.*.quantity' => ['required', 'decimal:0,2', 'min:0.01', 'max:9999'],

@@ -30,15 +30,18 @@
                 if (isset($item['item_type'])) {
                     if ($item['item_type'] === 'lab_test') {
                         $labTestType = null;
-                        if (isset($item['item_id']) && $item['item_id']) {
-                            $labTestType = \App\Models\LabTestType::find($item['item_id']);
+                        if (isset($item['item_id']) && $item['item_id'] && is_numeric($item['item_id'])) {
+                            $labTestType = \App\Models\LabTestType::find((int)$item['item_id']);
                         }
                         $debugLabTests[] = [
                             'index' => $index,
                             'item_id' => $item['item_id'] ?? 'не задан',
                             'quantity' => $item['quantity'] ?? 'не задан',
                             'unit_price' => $item['unit_price'] ?? 'не задан',
-                            'name' => $labTestType ? $labTestType->name : 'не найдено'
+                            'name' => $labTestType ? $labTestType->name : 'не найдено',
+                            'is_numeric' => isset($item['item_id']) ? is_numeric($item['item_id']) : false,
+                            'raw_item' => $item,
+                            'labTestType_found' => $labTestType ? 'да' : 'нет'
                         ];
                     } elseif ($item['item_type'] === 'vaccination') {
                         $vaccinationType = null;
@@ -96,7 +99,8 @@
                     <p><strong>Анализы в old():</strong></p>
                     <ul class="mb-2">
                         @foreach ($debugLabTests as $labTest)
-                            <li>Индекс {{ $labTest['index'] }}: ID={{ $labTest['item_id'] }}, Название="{{ $labTest['name'] }}", Цена={{ $labTest['unit_price'] }}</li>
+                            <li>Индекс {{ $labTest['index'] }}: ID={{ $labTest['item_id'] }}, Название="{{ $labTest['name'] }}", Цена={{ $labTest['unit_price'] }}, Числовой={{ $labTest['is_numeric'] ? 'да' : 'нет' }}, Найден={{ $labTest['labTestType_found'] }}</li>
+                            <li style="margin-left: 20px; font-size: 0.9em; color: #666;">Raw item: {{ json_encode($labTest['raw_item']) }}</li>
                         @endforeach
                     </ul>
                 @endif
@@ -411,18 +415,25 @@
                                                     <label class="form-label">Анализ</label>
                                                     <select name="items[{{ $index }}][item_id]" class="form-select item-select" data-url="{{ route('admin.orders.lab-test-options') }}">
                                                         @php
-                                                            // Отладочная информация
-                                                            $debugItemId = $item['item_id'] ?? 'не найден';
                                                             $labTestType = null;
-                                                            if (isset($item['item_id']) && $item['item_id']) {
-                                                                $labTestType = \App\Models\LabTestType::find($item['item_id']);
+                                                            $debugInfo = [
+                                                                'item_id' => $item['item_id'] ?? 'не задан',
+                                                                'is_numeric' => isset($item['item_id']) ? is_numeric($item['item_id']) : false,
+                                                                'item_id_type' => isset($item['item_id']) ? gettype($item['item_id']) : 'не задан',
+                                                                'raw_item' => $item
+                                                            ];
+                                                            if (isset($item['item_id']) && $item['item_id'] && is_numeric($item['item_id'])) {
+                                                                $labTestType = \App\Models\LabTestType::find((int)$item['item_id']);
+                                                                $debugInfo['labTestType_found'] = $labTestType ? 'да' : 'нет';
+                                                                if ($labTestType) {
+                                                                    $debugInfo['labTestType_name'] = $labTestType->name;
+                                                                }
                                                             }
                                                         @endphp
                                                         @if($labTestType)
                                                             <option value="{{ $labTestType->id }}" selected>{{ $labTestType->name }}</option>
                                                         @else
-                                                            {{-- Отладка: показываем что не найдено --}}
-                                                            <option value="" disabled selected>Тип анализа не найден (ID: {{ $debugItemId }})</option>
+                                                            <option value="" disabled selected>Выберите анализ... (ID: {{ $debugInfo['item_id'] }}, тип: {{ $debugInfo['item_id_type'] }}, числовой: {{ $debugInfo['is_numeric'] ? 'да' : 'нет' }}, найден: {{ $debugInfo['labTestType_found'] ?? 'не проверялся' }})</option>
                                                         @endif
                                                     </select>
                                                     <input type="hidden" name="items[{{ $index }}][item_type]" value="lab_test">
@@ -758,11 +769,21 @@
                 const itemIdSelect = item.querySelector('select[name*="[item_id]"]');
                 const quantityInput = item.querySelector('input[name*="[quantity]"]');
                 const priceInput = item.querySelector('input[name*="[unit_price]"]');
+                const itemType = item.getAttribute('data-item-type');
                 
                 // Проверяем, есть ли выбранный элемент и заполнены ли обязательные поля
                 const hasItemId = itemIdSelect && itemIdSelect.value;
-                const hasQuantity = quantityInput && parseFloat(quantityInput.value) > 0;
                 const hasPrice = priceInput && parseFloat(priceInput.value) > 0;
+                
+                // Для анализов и вакцинаций количество всегда 1 (hidden input)
+                let hasQuantity = true;
+                if (itemType === 'lab_test' || itemType === 'vaccination') {
+                    // Для анализов и вакцинаций проверяем только наличие hidden input с quantity
+                    hasQuantity = quantityInput && parseFloat(quantityInput.value) > 0;
+                } else {
+                    // Для услуг и препаратов проверяем обычное поле quantity
+                    hasQuantity = quantityInput && parseFloat(quantityInput.value) > 0;
+                }
                 
                 // Если элемент не заполнен полностью, удаляем его
                 if (!hasItemId || !hasQuantity || !hasPrice) {
@@ -1226,7 +1247,7 @@
             }
             
             // Обработчики для расчета суммы
-            const quantityInput = item.querySelector('.item-quantity');
+            const quantityInput = item.querySelector('input[name*="[quantity]"]');
             const priceInput = item.querySelector('.item-price');
             
             if (quantityInput) {
@@ -1281,14 +1302,17 @@
         }
         
         // Обработчики для расчета суммы
-        const quantityInput = container.querySelector(`[data-item-index="${itemIndex}"] .item-quantity`);
+        const quantityInput = container.querySelector(`[data-item-index="${itemIndex}"] input[name*="[quantity]"]`);
         const priceInput = container.querySelector(`[data-item-index="${itemIndex}"] .item-price`);
         
         // Для анализов и вакцинаций количество всегда 1, для остальных - обычная обработка
         if (itemType === 'lab_test' || itemType === 'vaccination') {
             if (quantityInput) {
                 quantityInput.value = '1';
-                quantityInput.readOnly = true;
+                // Для hidden input не устанавливаем readOnly
+                if (quantityInput.type !== 'hidden') {
+                    quantityInput.readOnly = true;
+                }
             }
             if (priceInput) {
                 priceInput.addEventListener('input', calculateItemTotal);
@@ -1362,7 +1386,7 @@
                             });
                             drugSelect.tomselect.setValue(drug.id); // Устанавливаем выбранный препарат
                         }
-                        const quantityInput = lastDrugItem.querySelector('.item-quantity');
+                        const quantityInput = lastDrugItem.querySelector('input[name*="[quantity]"]');
                         if (quantityInput) {
                             quantityInput.value = drug.dosage; // Устанавливаем дозировку
                             quantityInput.readOnly = true; // Делаем поле только для чтения вместо отключения
@@ -1583,7 +1607,7 @@
         const itemDiv = this.closest ? this.closest('.order-item') : this;
         const itemType = itemDiv.getAttribute('data-item-type');
         
-        const quantityInput = itemDiv.querySelector('.item-quantity');
+        const quantityInput = itemDiv.querySelector('input[name*="[quantity]"]');
         const priceInput = itemDiv.querySelector('.item-price');
         
         // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
@@ -1615,7 +1639,7 @@
         
         items.forEach(item => {
             const itemType = item.getAttribute('data-item-type');
-            const quantityInput = item.querySelector('.item-quantity');
+            const quantityInput = item.querySelector('input[name*="[quantity]"]');
             const priceInput = item.querySelector('.item-price');
             
             // Для анализов и вакцинаций количество всегда 1, для остальных берем из поля
