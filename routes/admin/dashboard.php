@@ -3,6 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
 
+// Главная страница админки - перенаправление на дашборд
+Route::get('/', function () {
+    return redirect()->route('admin.dashboard');
+})->name('index');
+
 Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
 // Тестовые маршруты для проверки страниц ошибок (удалить в продакшене)
