@@ -1,66 +1,315 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PurrfectCare - Система управления ветеринарной клиникой
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Комплексная система управления ветеринарной клиникой, включающая клиентскую часть, административную панель, систему записи на приемы, управления заказами и статистику.
 
-## About Laravel
+## 🚀 Основные возможности
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Для клиентов
+- **Регистрация и аутентификация** с верификацией email
+- **Управление питомцами** - добавление, редактирование профилей животных
+- **Запись на приемы** - выбор филиала, ветеринара, времени
+- **История визитов** - просмотр всех приемов и их результатов
+- **Управление заказами** - просмотр, повторный заказ, отмена
+- **Уведомления** - email и push-уведомления о записях и изменениях
+- **Личный кабинет** - управление профилем и настройками
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Для администрации
+- **Управление заказами** - создание, редактирование, отслеживание статусов
+- **Управление приемами** - планирование, ведение медицинских карт
+- **Управление клиентами и питомцами** - полная база данных
+- **Управление услугами** - цены, описания, привязка к филиалам
+- **Управление лекарствами** - складской учет, поставки, остатки
+- **Лабораторные анализы** - типы анализов, результаты, параметры
+- **Вакцинации** - календарь прививок, типы вакцин
+- **Расписания** - управление рабочим временем сотрудников
+- **Статистика** - финансовая, операционная, клиентская, медицинская
+- **Уведомления** - система внутренних уведомлений
+- **Экспорт данных** - отчеты в Excel/PDF
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🏗 Архитектура и технологии
 
-## Learning Laravel
+### Backend Framework & Core
+- **Laravel 10.x** на PHP 8.1+ - современный фреймворк с богатой экосистемой
+- **MySQL** - надежная реляционная БД
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Authentication & Authorization  
+- **Spatie Laravel Permission** - гибкая система ролей и разрешений
+- **Laravel Auth** - стандартная аутентификация для веб-приложения
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Frontend & Build Tools
+- **Bootstrap 5.3** - responsive UI framework
+- **Vite** - современный сборщик с HMR
+- **SCSS** - препроцессор для модульных стилей
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Data Processing & Export
+- **Laravel DomPDF** - генерация медицинских отчетов и справок
+- **Maatwebsite Excel** - экспорт статистики и аналитики
 
-## Laravel Sponsors
+### UI Components & UX
+- **Tom Select** - продвинутые select элементы с поиском
+- **Air Datepicker** - интуитивный календарь для записи на приемы
+- **Bootstrap Icons** - консистентная иконография
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### External Integrations
+- **Telegram Bot API** - уведомления и запись через мессенджер
+- **Laravel Mail** - email уведомления и верификация
 
-### Premium Partners
+## 🏗 Архитектура системы
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Основные модули
 
-## Contributing
+#### 1. **Управление пользователями**
+- `User` - клиенты с верификацией email
+- `Employee` - сотрудники клиники с ролевой системой
+- Система аутентификации для клиентов и администрации
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+#### 2. **Управление питомцами**
+- `Pet` - профили животных с привязкой к клиентам
+- `Species` - виды животных (кошки, собаки, etc.)
+- `Breed` - породы животных
+- `Vaccination` - история вакцинаций
 
-## Code of Conduct
+#### 3. **Система заказов**
+- `Order` - заказы с позициями услуг/товаров
+- `OrderItem` - позиции заказов (полиморфная связь)
+- `Service` - услуги клиники
+- `Drug` - лекарственные препараты
+- `LabTest` - лабораторные анализы
+- `VaccinationType` - типы вакцин
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+#### 4. **Управление приемами**
+- `Visit` - приемы у ветеринара
+- `Schedule` - расписания сотрудников
+- `Branch` - филиалы клиники
+- `Status` - статусы заказов/приемов
+- `Diagnosis` - диагнозы
+- `Symptom` - симптомы
 
-## Security Vulnerabilities
+#### 5. **Статистика и аналитика**
+- Финансовая статистика (выручка, расходы)
+- Операционная статистика (загрузка, эффективность)
+- Клиентская статистика (новые/повторные клиенты)
+- Медицинская статистика (диагнозы, лечение)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Сервисы
 
-## License
+#### **VisitManagementService**
+- Создание и обновление приемов
+- Обработка симптомов и диагнозов
+- Расчет времени и дат
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+#### **Statistics Services**
+- `FinancialStatisticsService` - финансовая аналитика
+- `ClientStatisticsService` - клиентская аналитика
+- `MedicalStatisticsService` - медицинская статистика
+- `OperationalStatisticsService` - операционные метрики
+
+#### **NotificationService**
+- Email уведомления
+- Telegram уведомления
+- Внутренние уведомления системы
+
+## 👥 Роли и права доступа
+
+### Административные роли (admin guard)
+- **super-admin** - полный доступ ко всем функциям
+- **admin** - управление всеми модулями кроме ролей
+- **manager** - управление заказами, клиентами, расписаниями
+- **veterinarian** - управление приемами, питомцами, медицинскими данными
+- **accountant** - доступ к финансовой статистике и заказам
+
+### Клиентская роль (web guard)
+- **client** - доступ к личному кабинету, записи на приемы, управление питомцами
+
+## 📁 Структура проекта
+
+```
+app/
+├── Http/Controllers/
+│   ├── Admin/          # Контроллеры админ-панели
+│   └── Client/         # Контроллеры клиентской части
+├── Models/             # Eloquent модели
+├── Services/           # Бизнес-логика
+│   ├── Statistics/     # Сервисы статистики
+│   ├── Visit/          # Управление приемами
+│   └── Bot/            # Telegram бот
+├── Notifications/      # Email и push уведомления
+└── Rules/              # Валидационные правила
+
+resources/
+├── views/
+│   ├── admin/          # Шаблоны админ-панели
+│   ├── client/         # Шаблоны клиентской части
+│   └── emails/         # Шаблоны email
+├── sass/               # SASS стили
+└── js/                 # JavaScript файлы
+
+routes/
+├── admin/              # Маршруты админ-панели
+├── web.php             # Основные маршруты
+└── bot.php             # Маршруты Telegram бота
+```
+
+## 🚀 Установка и настройка
+
+### Требования
+- PHP 8.1+
+- Composer
+- Node.js 16+
+- MySQL (или PostgreSQL)
+
+### Установка
+
+1. **Клонирование репозитория**
+```bash
+git clone <repository-url>
+cd PurrfectCare
+```
+
+2. **Установка зависимостей**
+```bash
+composer install
+npm install
+```
+
+3. **Настройка окружения**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+4. **Настройка базы данных**
+```bash
+# Настройте MySQL в .env файле
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=purrfectcare
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+5. **Миграции и сиды**
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+6. **Сборка фронтенда**
+```bash
+npm run build
+# или для разработки
+npm run dev
+```
+
+7. **Запуск сервера**
+```bash
+php artisan serve
+```
+
+### Настройка Telegram бота
+
+1. Создайте бота через @BotFather
+2. Добавьте токен в `.env`:
+```
+TELEGRAM_BOT_TOKEN=your_bot_token
+```
+
+3. Установите webhook через браузер:
+```
+https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://<ваш_домен>/telegram/webhook
+```
+
+## 🔧 Разработка
+
+### Рабочий процесс разработки
+
+```bash
+# Разработка фронтенда
+npm run dev
+
+# Сборка для продакшена
+npm run build
+```
+
+### Управление базой данных
+
+```bash
+# Запуск миграций
+php artisan migrate
+
+# Заполнение базы данных
+php artisan db:seed
+
+# Откат миграций
+php artisan migrate:rollback
+```
+
+### Кэш и производительность
+
+```bash
+# Очистка всех кэшей
+php artisan optimize:clear
+
+# Кэширование конфигурации
+php artisan config:cache
+```
+
+### Генерация кода
+
+```bash
+# Модель с миграцией
+php artisan make:model ModelName -m
+
+# Контроллер
+php artisan make:controller ControllerName
+
+# Миграция
+php artisan make:migration create_table_name
+```
+
+### Специфичные команды проекта
+
+```bash
+# Создание тестового сотрудника
+php artisan create:test-employee
+
+# Тестирование уведомлений
+php artisan test:notifications
+```
+
+### Стиль кода
+
+Проект использует:
+- **Bootstrap** классы для стилизации
+- **SCSS** модули для кастомных стилей
+- **Blade** директивы `@can` для проверки прав доступа
+
+### Структура кода
+
+- **Контроллеры** - только обработка HTTP запросов
+- **Сервисы** - бизнес-логика и сложные операции
+- **Модели** - отношения и простые методы
+- **Request классы** - валидация входящих данных
+- **Notification классы** - отправка уведомлений
+
+## 🔗 Интеграции
+
+### Telegram Bot
+
+Бот поддерживает:
+- Регистрацию новых клиентов
+- Добавление питомцев
+- Запись на приемы
+- Уведомления о статусах
+
+## 📈 Мониторинг и логирование
+
+Система ведет логи:
+- Создание и обновление приемов
+- Ошибки валидации
+- Отправка уведомлений
+- Действия пользователей
+
+Логи доступны в `storage/logs/laravel.log`
+
